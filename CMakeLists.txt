@@ -5,8 +5,11 @@ project(baxter_collaboration)
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
-             baxter_tictactoe
-             rosconsole)
+             rosconsole
+             tf # Even if I'm not explicitly using it, adding tf is the only way I found 
+                # to avoid the undefined reference error to ros::init. See 
+                # http://answers.ros.org/question/144571/undefined-reference-to-rosxx-even-after-linking-to-catkin_libraries/?answer=145021#post-id-145021
+             baxter_tictactoe)
 
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
@@ -130,7 +133,8 @@ add_executable(baxter_collaboration_node src/test.cpp)
 add_dependencies(baxter_collaboration_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 ## Specify libraries to link a library or executable target against
-target_link_libraries(baxter_collaboration_node  ${catkin_LIBRARIES} )
+target_link_libraries(baxter_collaboration_node  baxterCollaboration
+  ${catkin_LIBRARIES} )
 
 #############
 ## Install ##
