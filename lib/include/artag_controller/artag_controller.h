@@ -3,7 +3,7 @@
 #include <aruco_msgs/MarkerArray.h>
 #include <arm_controller/arm_controller.h>
 
-class PickUpARTag : public ROSThread
+class ARTagController : public ROSThread
 {
 private:
     ros::NodeHandle _nh;
@@ -15,7 +15,7 @@ private:
 
     void hoverAboveTokens(std::string height);
 
-    void takeARTag();
+    void pickARTag();
 
 protected:
     /*
@@ -27,6 +27,6 @@ protected:
     void InternalThreadEntry();
 
 public:
-    PickUpARTag(std::string limb);
-    ~PickUpARTag();
+    ARTagController(std::string limb);
+    ~ARTagController();
 };

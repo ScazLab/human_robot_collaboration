@@ -11,7 +11,7 @@ int main(int argc, char** argv)
     ROS_INFO("Picking up AR tags");
     ros::init(argc, argv, "artag_controller");
 
-    PickUpARTag * _left_put = new PickUpARTag("left");
+    ARTagController * _left_put = new ARTagController("left");
     
     _left_put->StartInternalThread();
     while( int(_left_put->getState() != PICK_UP )) {ros::spinOnce();}

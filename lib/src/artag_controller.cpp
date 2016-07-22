@@ -3,15 +3,15 @@
 
 using namespace std;
 
-PickUpARTag::PickUpARTag(std::string limb) : ROSThread(limb)
+ARTagController::ARTagController(std::string limb) : ROSThread(limb)
 {
-    _aruco_sub = _nh.subscribe("/aruco_marker_publisher/markers", 1, &PickUpARTag::ARCallback, this);
+    _aruco_sub = _nh.subscribe("/aruco_marker_publisher/markers", 1, &ARTagController::ARCallback, this);
 }
 
-PickUpARTag::~PickUpARTag() { }
+ARTagController::~ARTagController() { }
 
 // Protected
-void PickUpARTag::InternalThreadEntry()
+void ARTagController::InternalThreadEntry()
 {
     // wait for IR sensor callback
     while(ros::ok())
@@ -31,7 +31,7 @@ void PickUpARTag::InternalThreadEntry()
     }
 
     hoverAboveTokens("high");
-    takeARTag();
+    pickARTag();
     hoverAboveTokens("low");
 
     ros::Duration(1.0).sleep();
@@ -41,7 +41,7 @@ void PickUpARTag::InternalThreadEntry()
     pthread_exit(NULL);  
 }
 
-void PickUpARTag::ARCallback(const aruco_msgs::MarkerArray& msg) 
+void ARTagController::ARCallback(const aruco_msgs::MarkerArray& msg) 
 {
     _curr_marker_pose = msg.markers[0].pose.pose;
 
@@ -51,7 +51,7 @@ void PickUpARTag::ARCallback(const aruco_msgs::MarkerArray& msg)
     // _curr_min_range = msg->min_range;
 }
 
-void PickUpARTag::hoverAboveTokens(std::string height)
+void ARTagController::hoverAboveTokens(std::string height)
 {
     geometry_msgs::PoseStamped req_pose_stamped;
     req_pose_stamped.header.frame_id = "base";
@@ -60,7 +60,7 @@ void PickUpARTag::hoverAboveTokens(std::string height)
     goToPose(req_pose_stamped);
 }
 
-void PickUpARTag::takeARTag()
+void ARTagController::pickARTag()
 {
     geometry_msgs::PoseStamped req_pose_stamped;
     ros::Time start_time = ros::Time::now();                
