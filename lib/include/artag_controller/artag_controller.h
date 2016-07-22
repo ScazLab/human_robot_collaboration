@@ -3,9 +3,15 @@
 #include <aruco_msgs/MarkerArray.h>
 #include <arm_controller/arm_controller.h>
 
+#define POS_HIGH        0.400
+#define POS_LOW         0.150
+#define PICK_UP_SPEED   0.1
+
 class ARTagController : public ROSThread
 {
 private:
+    double elapsed_time;
+
     ros::NodeHandle _nh;
     ros::Subscriber _aruco_sub;
 
@@ -13,7 +19,7 @@ private:
 
     void ARCallback(const aruco_msgs::MarkerArray& msg);
 
-    void hoverAboveTokens(std::string height);
+    void hoverAboveTokens(double height);
 
     void pickARTag();
 
