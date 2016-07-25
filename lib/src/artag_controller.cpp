@@ -111,7 +111,7 @@ bool ARTagController::pickARTag()
 
 void ARTagController::goToPose(geometry_msgs::PoseStamped req_pose_stamped)
 {
-    vector<double> joint_angles = getJointAngles(&req_pose_stamped);
+    vector<double> joint_angles = getJointAngles(req_pose_stamped);
 
     baxter_core_msgs::JointCommand joint_cmd;
     joint_cmd.mode = baxter_core_msgs::JointCommand::POSITION_MODE;
