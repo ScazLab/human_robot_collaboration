@@ -41,8 +41,8 @@
   <!--   <test_depend>gtest</test_depend> -->
   <buildtool_depend>catkin</buildtool_depend>
   <build_depend>roscpp</build_depend>
+  <depend>aruco_msgs</depend>
   <depend>baxter_tictactoe</depend>
-
 
   <!-- The export tag contains other, unspecified, tags -->
   <export>
