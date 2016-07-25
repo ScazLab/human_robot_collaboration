@@ -9,6 +9,8 @@ ARTagController::ARTagController(std::string limb) : ROSThread(limb)
                                 &ARTagController::ARCallback, this);
 
     elapsed_time = 0;
+
+    _curr_marker_pose.position.x = 100;
 }
 
 ARTagController::~ARTagController() { }
@@ -16,21 +18,6 @@ ARTagController::~ARTagController() { }
 // Protected
 void ARTagController::InternalThreadEntry()
 {
-    // wait for IR sensor callback
-    while(ros::ok())
-    {
-        if(!(_curr_range == 0 && _curr_min_range == 0 && _curr_max_range == 0))
-        {
-            break; 
-        }
-    }
-
-    // wait for aruco callback
-    while(ros::ok())
-    {
-        if(_curr_marker_pose.position.x != 0.0) break;
-    }
-
     ARTagController::hoverAboveTokens(POS_HIGH);
     pickARTag();
     ARTagController::hoverAboveTokens(POS_LOW);
@@ -48,7 +35,7 @@ void ARTagController::ARCallback(const aruco_msgs::MarkerArray& msg)
     {
         ROS_DEBUG("Processing marker with id %i",msg.markers[i].id);
 
-        if (msg.markers[i].id == 26)
+        if (msg.markers[i].id == 24)
         {
             _curr_marker_pose = msg.markers[i].pose.pose;
 
@@ -64,14 +51,25 @@ void ARTagController::hoverAboveTokens(double height)
     req_pose_stamped.header.frame_id = "base";
     setPosition(   &req_pose_stamped.pose, 0.60, 0.45, height);
     setOrientation(&req_pose_stamped.pose, VERTICAL_ORIENTATION_LEFT_ARM);
-    goToPose(req_pose_stamped);
+    ROSThread::goToPose(req_pose_stamped);
 }
 
-void ARTagController::pickARTag()
+bool ARTagController::pickARTag()
 {
     ROS_DEBUG("Start Picking up tag..");
     geometry_msgs::PoseStamped req_pose_stamped;
     ros::Time start_time = ros::Time::now();                
+
+    if (_curr_marker_pose.position.x == 100)
+    {
+        ROS_ERROR("I didn't receive a callback from ARuco! Stopping.");
+        return false;
+    }
+    else if (_curr_range == 0 || _curr_min_range == 0 || _curr_max_range == 0)
+    {
+        ROS_ERROR("I didn't receive a callback from the IR sensor! Stopping.");
+        return false;
+    }
 
     while(ros::ok())
     {
@@ -90,22 +88,11 @@ void ARTagController::pickARTag()
         ROS_INFO("Time %g Going to: %g %g %g", new_elapsed_time, req_pose_stamped.pose.position.x,
                                req_pose_stamped.pose.position.y, req_pose_stamped.pose.position.z);
 
-        vector<double> joint_angles = getJointAngles(&req_pose_stamped);
-
-        baxter_core_msgs::JointCommand joint_cmd;
-        joint_cmd.mode = baxter_core_msgs::JointCommand::POSITION_MODE;
-        joint_cmd.command.resize(7);
-        setNames(&joint_cmd, _limb);
-
-        for(int i = 0; i < 7; i++) {
-            joint_cmd.command[i] = joint_angles[i];
-        }
-
-        _joint_cmd_pub.publish(joint_cmd);
+        goToPose(req_pose_stamped);
 
         if (new_elapsed_time - elapsed_time > 0.02)
         {
-            ROS_WARN("\t\t\t\t\t\t\t\t\t\t\tTime elapsed: %g", new_elapsed_time - elapsed_time);
+            ROS_WARN("\t\t\t\t\t\t\t\t\tTime elapsed: %g", new_elapsed_time - elapsed_time);
         }
         elapsed_time = new_elapsed_time;
 
@@ -118,5 +105,22 @@ void ARTagController::pickARTag()
         ros::Rate(100).sleep();
     }
     _gripper->suck();
+
+    return true;
 }
 
+void ARTagController::goToPose(geometry_msgs::PoseStamped req_pose_stamped)
+{
+    vector<double> joint_angles = getJointAngles(&req_pose_stamped);
+
+    baxter_core_msgs::JointCommand joint_cmd;
+    joint_cmd.mode = baxter_core_msgs::JointCommand::POSITION_MODE;
+    joint_cmd.command.resize(7);
+    setNames(&joint_cmd, getLimb());
+
+    for(int i = 0; i < 7; i++) {
+        joint_cmd.command[i] = joint_angles[i];
+    }
+
+    _joint_cmd_pub.publish(joint_cmd);
+}

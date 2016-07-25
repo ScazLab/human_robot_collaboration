@@ -17,11 +17,13 @@ private:
 
     geometry_msgs::Pose _curr_marker_pose;
 
+    void goToPose(geometry_msgs::PoseStamped req_pose_stamped);
+
     void ARCallback(const aruco_msgs::MarkerArray& msg);
 
     void hoverAboveTokens(double height);
 
-    void pickARTag();
+    bool pickARTag();
 
 protected:
     /*
