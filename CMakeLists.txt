@@ -119,16 +119,18 @@ include_directories(lib/include
 add_subdirectory(lib)
 
 ## Declare a C++ executable
-add_executable(baxter_collaboration_node src/test.cpp)
+add_executable(action_provider src/actionProvider.h 
+                               src/actionProvider.cpp
+                               src/action_provider.cpp)
 
 ## Add cmake target dependencies of the executable
 ## same as for the library above
-add_dependencies(baxter_collaboration_node ${${PROJECT_NAME}_EXPORTED_TARGETS}
-                                           ${catkin_EXPORTED_TARGETS})
+add_dependencies(action_provider ${${PROJECT_NAME}_EXPORTED_TARGETS}
+                                 ${catkin_EXPORTED_TARGETS})
 
 ## Specify libraries to link a library or executable target against
-target_link_libraries(baxter_collaboration_node  baxterCollaboration
-                                                 ${catkin_LIBRARIES} )
+target_link_libraries(action_provider  baxterCollaboration
+                                       ${catkin_LIBRARIES} )
 
 #############
 ## Install ##
@@ -139,13 +141,13 @@ target_link_libraries(baxter_collaboration_node  baxterCollaboration
 
 ## Mark executable scripts (Python etc.) for installation
 ## in contrast to setup.py, you can choose the destination
- install(PROGRAMS
-   bin/remote_control_node
-   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
- )
+install(PROGRAMS
+        scripts/remote_control_node
+        DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+)
 
 ## Mark executables and/or libraries for installation
-# install(TARGETS baxter_collaboration baxter_collaboration_node
+# install(TARGETS baxter_collaboration action_provider
 #   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
 #   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
 #   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
