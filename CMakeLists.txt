@@ -5,6 +5,8 @@ project(baxter_collaboration)
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
+             roscpp
+             rospy
              rosconsole
              tf # Even if I'm not explicitly using it, adding tf is the only way
                 # I found to avoid the undefined reference error to ros::init.
@@ -51,9 +53,8 @@ find_package(catkin REQUIRED COMPONENTS
 # )
 
 ## Generate services in the 'srv' folder
- add_service_files(
-   FILES
-   DoAction.srv
+ add_service_files(FILES
+                   DoAction.srv
  )
 
 ## Generate actions in the 'action' folder
@@ -64,10 +65,9 @@ find_package(catkin REQUIRED COMPONENTS
 # )
 
 ## Generate added messages and services with any dependencies listed here
-# generate_messages(
-#   DEPENDENCIES
-#   std_msgs  # Or other packages containing msgs
-# )
+generate_messages(DEPENDENCIES
+                  # std_msgs
+)
 
 ################################################
 ## Declare ROS dynamic reconfigure parameters ##

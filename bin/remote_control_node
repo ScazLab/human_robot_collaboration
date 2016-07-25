@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 
 from remote_control import Server
-from baxter_collaboration.srv import DoAction
 
 import rospy
+from baxter_collaboration.srv import DoAction
 
 
 SERVICE = 'DoAction'
@@ -36,7 +36,7 @@ class RemoteControlNode:
             rc.run()
 
     def _remote_msg_cb(self, message):
-        return self.service(*remote_message_to_action)
+        return self.service(*remote_message_to_action(message))
 
 
 if __name__ == "__main__":
