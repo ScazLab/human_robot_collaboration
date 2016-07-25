@@ -43,6 +43,7 @@
   <build_depend>roscpp</build_depend>
   <depend>aruco_msgs</depend>
   <depend>baxter_tictactoe</depend>
+  <run_depend>remote_control</run_depend>
 
   <!-- The export tag contains other, unspecified, tags -->
   <export>

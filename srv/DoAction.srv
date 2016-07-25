@@ -1,0 +1,5 @@
+string action
+# id of object (max 255)
+int8 object
+---
+bool success
