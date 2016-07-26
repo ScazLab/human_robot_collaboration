@@ -204,7 +204,7 @@ bool ARTagController::goToPose(double px, double py, double pz,
     baxter_core_msgs::JointCommand joint_cmd;
     joint_cmd.mode = baxter_core_msgs::JointCommand::POSITION_MODE;
     joint_cmd.command.resize(7);
-    setNames(&joint_cmd, getLimb());
+    setJointNames(joint_cmd);
 
     for(int i = 0; i < 7; i++) {
         joint_cmd.command[i] = joint_angles[i];
