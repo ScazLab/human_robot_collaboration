@@ -4,6 +4,7 @@
 #include <string.h>
 
 #include "artag_controller/artag_controller.h"
+#include "hold_controller/hold_controller.h"
 
 #include "baxter_collaboration/DoAction.h"
 
@@ -16,7 +17,7 @@ private:
     ros::ServiceServer service;
 
     ARTagController*  left_ctrl;
-    // HoldController*  right_ctrl;
+    HoldController*  right_ctrl;
 
 public:
     actionProvider(std::string _name, std::string _limb);

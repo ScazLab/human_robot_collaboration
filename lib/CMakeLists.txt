@@ -11,8 +11,10 @@ project(baxterCollaboration)
 include_directories(${PROJECT_SOURCE_DIR}/include)
 
 ## Declare a C++ library
-add_library(${PROJECT_NAME}  include/artag_controller/artag_controller.h 
-                             src/artag_controller.cpp)
+add_library(${PROJECT_NAME}  include/artag_controller/artag_controller.h
+                             include/hold_controller/hold_controller.h  
+                             src/artag_controller.cpp
+                             src/hold_controller.cpp)
 
 ## Add cmake target dependencies of the library
 ## as an example, code may need to be generated before libraries
