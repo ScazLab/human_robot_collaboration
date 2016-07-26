@@ -98,6 +98,6 @@ bool actionProvider::serviceCallback(baxter_collaboration::DoAction::Request  &r
         res.success = false;
     }
 
-    ROS_INFO("Success: %i\n", res.success);
+    ROS_INFO("Service reply with success: %s\n", res.success?"true":"false");
     return true;
 };
