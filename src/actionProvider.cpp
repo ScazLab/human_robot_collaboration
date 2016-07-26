@@ -18,6 +18,12 @@ actionProvider::~actionProvider()
         delete left_ctrl;
         left_ctrl = 0;
     }
+    
+    // if (right_ctrl)
+    // {
+    //     delete right_ctrl;
+    //     right_ctrl = 0;
+    // }    
 };
 
 bool actionProvider::serviceCallback(baxter_collaboration::DoAction::Request  &req, 
@@ -72,7 +78,7 @@ bool actionProvider::serviceCallback(baxter_collaboration::DoAction::Request  &r
     }
     else if (action == ACTION_HOLD)
     {
-
+        // right_ctrl -> ...
     }
     else 
     {

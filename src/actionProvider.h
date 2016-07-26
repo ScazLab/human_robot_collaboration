@@ -16,7 +16,7 @@ private:
     ros::ServiceServer service;
 
     ARTagController*  left_ctrl;
-    ROSThread* right_ctrl;
+    // HoldController*  right_ctrl;
 
 public:
     actionProvider(std::string _name, std::string _limb);

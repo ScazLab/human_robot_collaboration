@@ -8,7 +8,7 @@ using namespace std;
 
 int main(int argc, char ** argv)
 {
-    ROS_INFO("Waiting for a service message..");
+    ROS_INFO("Waiting for a service message..\n");
 
     ros::init(argc, argv, "action_provider");
 

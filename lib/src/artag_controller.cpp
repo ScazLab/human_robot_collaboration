@@ -20,7 +20,8 @@ void ARTagController::InternalThreadEntry()
 {
     clearMarkerPose();
 
-    if (action == ACTION_GET && (int(getState()) == START || int(getState()) == ERROR))
+    if (action == ACTION_GET && 
+       (int(getState()) == START || int(getState()) == ERROR) || int(getState()) == PASSED)
     {
         if (pickObject())   setState(PICK_UP);
         else                setState(ERROR);
@@ -32,6 +33,7 @@ void ARTagController::InternalThreadEntry()
     }
     else
     {
+        ROS_ERROR("Action %s State %i", action.c_str(), int(getState()));
         setState(ERROR);
     }
 
@@ -41,7 +43,7 @@ void ARTagController::InternalThreadEntry()
 
 bool ARTagController::goHome()
 {
-    ARTagController::hoverAboveTokens(POS_HIGH);
+    ARTagController::hoverAboveTokens(POS_LOW);
     setState(START);
     return true;
 }
@@ -61,8 +63,7 @@ bool ARTagController::pickObject()
 
     if (res)
     {
-        ARTagController::hoverAboveTokens(POS_LOW);
-
+        goHome();
         // ros::Duration(2.0).sleep();
         // _gripper->blow();
         // releaseObject();
@@ -74,7 +75,15 @@ bool ARTagController::pickObject()
 bool ARTagController::passObject()
 {
     ARTagController::moveObjectTowardHuman();
-    return true;
+
+    bool res = waitForForceInteraction();
+
+    if (res)
+    {
+        releaseObject();
+        goHome();
+    }
+    return res;
 }
 
 void ARTagController::ARCallback(const aruco_msgs::MarkerArray& msg) 
@@ -109,26 +118,17 @@ void ARTagController::clearMarkerPose()
 
 void ARTagController::hoverAboveTokens(double height)
 {
-    geometry_msgs::PoseStamped req_pose_stamped;
-    req_pose_stamped.header.frame_id = "base";
-    setPosition(   &req_pose_stamped.pose, 0.60, 0.45, height);
-    setOrientation(&req_pose_stamped.pose, VERTICAL_ORIENTATION_LEFT_ARM);
-    ROSThread::goToPose(req_pose_stamped);
+    ROSThread::goToPose(0.60, 0.45, height, VERTICAL_ORIENTATION_LEFT_ARM);
 }
 
 void ARTagController::moveObjectTowardHuman()
 {
-    geometry_msgs::PoseStamped req_pose_stamped;
-    req_pose_stamped.header.frame_id = "base";
-    setPosition(   &req_pose_stamped.pose, 0.80, 0.26, 0.32);
-    setOrientation(&req_pose_stamped.pose, HORIZONTAL_ORIENTATION_LEFT_ARM);
-    ROSThread::goToPose(req_pose_stamped);
+    ROSThread::goToPose(0.80, 0.26, 0.32, HORIZONTAL_ORIENTATION_LEFT_ARM);
 }
 
 bool ARTagController::pickARTag()
 {
     ROS_DEBUG("Start Picking up tag..");
-    geometry_msgs::PoseStamped req_pose_stamped;
     ros::Time start_time = ros::Time::now();                
 
     if (_curr_marker_pose.position.x == 100)
@@ -148,21 +148,13 @@ bool ARTagController::pickARTag()
         ros::Time now_time = ros::Time::now();
         double new_elapsed_time = (now_time - start_time).toSec();
 
-        req_pose_stamped.header.frame_id = "base";
+        double x = _curr_marker_pose.position.x;
+        double y = _curr_marker_pose.position.y;
+        double z = POS_HIGH - PICK_UP_SPEED * new_elapsed_time;
 
-        // move incrementally towards token
-        setPosition(&req_pose_stamped.pose, 
-                     _curr_marker_pose.position.x, _curr_marker_pose.position.y,
-                     POS_HIGH - PICK_UP_SPEED * new_elapsed_time);
+        ROS_DEBUG("Time %g Going to: %g %g %g", new_elapsed_time, x, y, z);
 
-        setOrientation(&req_pose_stamped.pose, VERTICAL_ORIENTATION_LEFT_ARM);
-
-        ROS_DEBUG("Time %g Going to: %g %g %g", new_elapsed_time,
-                                                req_pose_stamped.pose.position.x,
-                                                req_pose_stamped.pose.position.y,
-                                                req_pose_stamped.pose.position.z);
-
-        if (goToPose(req_pose_stamped) == true)
+        if (goToPose(x,y,z,VERTICAL_ORIENTATION_LEFT_ARM) == true)
         {
             ik_failures = 0;
             if (new_elapsed_time - elapsed_time > 0.02)
@@ -193,8 +185,16 @@ bool ARTagController::pickARTag()
     return suckObject();
 }
 
-bool ARTagController::goToPose(geometry_msgs::PoseStamped req_pose_stamped)
+bool ARTagController::goToPose(double px, double py, double pz,
+                               double ox, double oy, double oz, double ow)
 {
+    geometry_msgs::PoseStamped req_pose_stamped;
+    req_pose_stamped.header.frame_id = "base";
+    req_pose_stamped.header.stamp    = ros::Time::now();
+
+    setPosition(   req_pose_stamped.pose, px, py, pz);
+    setOrientation(req_pose_stamped.pose, ox, oy, oz, ow);
+
     vector<double> joint_angles;
     if (getJointAngles(req_pose_stamped,joint_angles) == false)
     {

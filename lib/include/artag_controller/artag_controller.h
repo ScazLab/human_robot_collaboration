@@ -32,7 +32,8 @@ private:
 
     void clearMarkerPose();
 
-    bool goToPose(geometry_msgs::PoseStamped req_pose_stamped);
+    bool goToPose(double px, double py, double pz,
+                  double ox, double oy, double oz, double ow);
 
     void ARCallback(const aruco_msgs::MarkerArray& msg);
 
