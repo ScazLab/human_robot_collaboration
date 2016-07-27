@@ -36,7 +36,8 @@ class RemoteControlNode:
             rc.run()
 
     def _remote_msg_cb(self, message):
-        return self.service(*remote_message_to_action(message))
+        result = self.service(*remote_message_to_action(message))
+        return result.success
 
 
 if __name__ == "__main__":
