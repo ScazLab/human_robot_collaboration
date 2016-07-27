@@ -10,6 +10,7 @@
 #define ACTION_GET     "get"
 #define ACTION_RELEASE "release"
 #define ACTION_PASS    "pass"
+#define ACTION_HOLD    "hold"
 
 #define POS_HIGH        0.400
 #define POS_LOW         0.150
@@ -36,9 +37,9 @@ private:
 
     void ARCallback(const aruco_msgs::MarkerArray& msg);
 
-    void hoverAboveTokens(double height);
+    bool hoverAboveTokens(double height);
 
-    void moveObjectTowardHuman();
+    bool moveObjectTowardHuman();
 
     bool pickARTag();
 

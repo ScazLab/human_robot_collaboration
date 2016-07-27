@@ -7,34 +7,32 @@
 
 // #include <baxterCollaboration/artag_controller.h>
 
-#define ACTION_HOLD    "hold"
+#define HOME_POSITION_RIGHT_ARM 0.60, -0.30, 0.150
 
-#define HEIGHT  0.32
-#define PX      0.80
-#define PY      -0.26
-#define HORIZONTAL_ORIENTATION_LEFT_ARM     -0.0155113251266, 0.703354199922, -0.102825501874, 0.703192139041
-#define HORIZONTAL_ORIENTATION_RIGHT_ARM     -0.253427232811, 0.683506109838, 0.226046021433, 0.646140256971
-
+#define HORIZONTAL_ORIENTATION_RIGHT_ARM    -0.175730746765, 0.67317042445, 0.1902242414, 0.692657940308
+#define VERTICAL_ORIENTATION_RIGHT_ARM     -0.14007673309, 0.989696832226, -0.0103020489473, 0.0277949080985
 
 class HoldController : public ROSThread
 {
 private:
-    double elapsed_time;
-
-    geometry_msgs::Pose _curr_marker_pose;
-    ros::Publisher _gripper_pub;
-
     bool goHoldPose(double height);
+
+    bool hoverAboveTable(double height);
+
     bool waitForButton();
+
+    bool holdObject();
 
 protected:
 
-void InternalThreadEntry();
+    void InternalThreadEntry();
 
 public:
     HoldController(std::string limb);
 
-    void actionHold();
+    bool goHome();
+
+    bool releaseObject();
         
     ~HoldController();
 };

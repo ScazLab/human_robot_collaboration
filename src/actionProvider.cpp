@@ -9,6 +9,9 @@ actionProvider::actionProvider(std::string _name, std::string _limb) : name(_nam
 
     left_ctrl  = new ARTagController("left");
     right_ctrl = new HoldController("right");
+
+    left_ctrl  -> goHome();
+    right_ctrl -> goHome();
 };
 
 actionProvider::~actionProvider()
@@ -37,7 +40,7 @@ bool actionProvider::serviceCallback(baxter_collaboration::DoAction::Request  &r
 
     if (action == ACTION_HOME)
     {
-        res.success = left_ctrl -> goHome();
+        res.success = left_ctrl -> goHome() && right_ctrl -> goHome();
     }
     else if (action == ACTION_GET)
     {
@@ -58,7 +61,7 @@ bool actionProvider::serviceCallback(baxter_collaboration::DoAction::Request  &r
     }
     else if (action == ACTION_RELEASE)
     {
-        res.success = left_ctrl -> releaseObject();
+        res.success = left_ctrl -> releaseObject() || right_ctrl -> releaseObject();
     }
     else if (action == ACTION_PASS)
     {
@@ -78,7 +81,6 @@ bool actionProvider::serviceCallback(baxter_collaboration::DoAction::Request  &r
     }
     else if (action == ACTION_HOLD)
     {
-        right_ctrl -> actionHold();
         right_ctrl -> startInternalThread();
 
         while( int(right_ctrl->getState()) != PASSED  &&

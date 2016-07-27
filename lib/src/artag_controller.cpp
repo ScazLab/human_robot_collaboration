@@ -43,16 +43,14 @@ void ARTagController::InternalThreadEntry()
 
 bool ARTagController::goHome()
 {
-    ARTagController::hoverAboveTokens(POS_LOW);
     setState(START);
-    return true;
+    return ARTagController::hoverAboveTokens(POS_LOW);
 }
 
 bool ARTagController::releaseObject()
 {
-    bool res = ROSThread::releaseObject();
     setState(START);
-    return res;
+    return ROSThread::releaseObject();
 }
 
 bool ARTagController::pickObject()
@@ -116,14 +114,14 @@ void ARTagController::clearMarkerPose()
     _curr_marker_pose.position.x = 100;
 }
 
-void ARTagController::hoverAboveTokens(double height)
+bool ARTagController::hoverAboveTokens(double height)
 {
-    ROSThread::goToPose(0.60, 0.45, height, VERTICAL_ORIENTATION_LEFT_ARM);
+    return ROSThread::goToPose(0.60, 0.45, height, VERTICAL_ORIENTATION_LEFT_ARM);
 }
 
-void ARTagController::moveObjectTowardHuman()
+bool ARTagController::moveObjectTowardHuman()
 {
-    ROSThread::goToPose(0.80, 0.26, 0.32, HORIZONTAL_ORIENTATION_LEFT_ARM);
+    return ROSThread::goToPose(0.80, 0.26, 0.32, HORIZONTAL_ORIENTATION_LEFT_ARM);
 }
 
 bool ARTagController::pickARTag()

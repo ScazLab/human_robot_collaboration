@@ -4,37 +4,17 @@ using namespace std;
 
 HoldController::HoldController(std::string limb) : ROSThread(limb)
 {
-    elapsed_time = 0; // TODO keep?
 
-    // _button_sub //TODO
 }
 
 HoldController::~HoldController() {}
 
 void HoldController::InternalThreadEntry()
 {
-    if (int(getState()) == START)
+    if (int(getState()) == START || int(getState()) == PASSED)
     {
-        bool res = goHoldPose(HEIGHT);
-        if (res)
-        {
-            ros::Rate(100).sleep();
-            ros::spinOnce();
-            res = waitForForceInteraction();
-        }
-        if (res)
-        {
-            _gripper->suck();
-            res = waitForButton();
-        }
-        if (res)
-        {
-            _gripper->blow();
-            setState(PASSED);
-        } else
-        {
-            setState(ERROR);
-        }
+        if (holdObject())   setState(PASSED);
+        else                setState(ERROR);
     }
     else
     {
@@ -46,30 +26,45 @@ void HoldController::InternalThreadEntry()
     return;
 }
 
+bool HoldController::holdObject()
+{
+    if (!goHoldPose(0.24))              return false;
+    if (!waitForForceInteraction())     return false;
+    if (!suckObject())                  return false;
+    ros::Duration(2.0).sleep();
+    if (!waitForForceInteraction())     return false;
+    if (!releaseObject())               return false;
+    if (!goHome())                      return false;
+
+    return true;
+}
+
 bool HoldController::goHoldPose(double height)
 {
-    bool res;
-
-    if (ROSThread::getLimb() == "left")
-    {
-      res = goToPose(PX, PY, height, HORIZONTAL_ORIENTATION_LEFT_ARM);
-    }
-    else
-    {
-      res = goToPose(PX, PY, height, HORIZONTAL_ORIENTATION_RIGHT_ARM);
-    }
-
-    return res;
+    return ROSThread::goToPose(0.80, -0.4, height, HORIZONTAL_ORIENTATION_RIGHT_ARM);
 }
 
-void HoldController::actionHold()
+bool HoldController::hoverAboveTable(double height)
+{
+    return ROSThread::goToPose(HOME_POSITION_RIGHT_ARM, VERTICAL_ORIENTATION_RIGHT_ARM);
+}
+
+bool HoldController::goHome()
 {
     setState(START);
+    return HoldController::hoverAboveTable(POS_LOW);
+}
+
+bool HoldController::releaseObject()
+{
+    setState(START);
+    return ROSThread::releaseObject();
 }
 
 
-bool HoldController::waitForButton() {
+bool HoldController::waitForButton()
+{
     // TODO: implement
-    ros::Duration(2.0).sleep();
+    ros::Duration(3.0).sleep();
     return true;
 }
