@@ -10,8 +10,21 @@ actionProvider::actionProvider(std::string _name, std::string _limb) : name(_nam
     left_ctrl  = new ARTagController("left");
     right_ctrl = new HoldController("right");
 
-    left_ctrl  -> goHome();
-    right_ctrl -> goHome();
+    // Move both arms to home
+    left_ctrl -> setAction(ACTION_HOME);
+    left_ctrl -> startInternalThread();
+
+    right_ctrl -> setAction(ACTION_HOME);
+    right_ctrl -> startInternalThread();
+
+    while( (int(left_ctrl ->getState()) != START  &&
+            int(left_ctrl ->getState()) != ERROR) ||
+           (int(right_ctrl->getState()) != START  &&
+            int(right_ctrl->getState()) != ERROR) )
+    {
+        ros::spinOnce();
+    }
+
 };
 
 actionProvider::~actionProvider()
@@ -36,12 +49,30 @@ bool actionProvider::serviceCallback(baxter_collaboration::DoAction::Request  &r
     int    ID     = req.object;
 
     ROS_INFO("Service request received. Action: %s object: %i", action.c_str(), ID);
+
     res.success = false;
 
-    if (action == ACTION_HOME)
+    if (action == ACTION_HOME || action == ACTION_RELEASE)
     {
-        res.success = left_ctrl -> goHome();
-        res.success = res.success && right_ctrl -> goHome();
+        left_ctrl -> setAction(action);
+        left_ctrl -> startInternalThread();
+
+        right_ctrl -> setAction(action);
+        right_ctrl -> startInternalThread();
+
+        while( (int(left_ctrl ->getState()) != START  &&
+                int(left_ctrl ->getState()) != ERROR) ||
+               (int(right_ctrl->getState()) != START  &&
+                int(right_ctrl->getState()) != ERROR) )
+        {
+            ros::spinOnce();
+        }
+
+        if (int(left_ctrl ->getState()) == START && 
+            int(right_ctrl->getState()) == START )
+        {
+            res.success = true;
+        }
     }
     else if (action == ACTION_GET)
     {
@@ -55,15 +86,10 @@ bool actionProvider::serviceCallback(baxter_collaboration::DoAction::Request  &r
             ros::spinOnce();
         }
 
-        if (int(left_ctrl->getState() == PICK_UP ))
+        if (int(left_ctrl->getState()) == PICK_UP )
         {
             res.success = true;
         }
-    }
-    else if (action == ACTION_RELEASE)
-    {
-        res.success = left_ctrl -> releaseObject();
-        res.success = res.success || right_ctrl -> releaseObject();
     }
     else if (action == ACTION_PASS)
     {
@@ -76,13 +102,14 @@ bool actionProvider::serviceCallback(baxter_collaboration::DoAction::Request  &r
             ros::spinOnce();
         }
 
-        if (int(left_ctrl->getState() == PASSED ))
+        if (int(left_ctrl->getState()) == PASSED )
         {
             res.success = true;
         }
     }
     else if (action == ACTION_HOLD)
     {
+        right_ctrl -> setAction(action);
         right_ctrl -> startInternalThread();
 
         while( int(right_ctrl->getState()) != PASSED  &&
@@ -91,7 +118,7 @@ bool actionProvider::serviceCallback(baxter_collaboration::DoAction::Request  &r
             ros::spinOnce();
         }
 
-        if (int(right_ctrl->getState() == PASSED ))
+        if (int(right_ctrl->getState()) == PASSED )
         {
             res.success = true;
         }

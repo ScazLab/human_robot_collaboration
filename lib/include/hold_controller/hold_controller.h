@@ -4,8 +4,7 @@
 #include <geometry_msgs/Pose.h>
 #include <geometry_msgs/PoseStamped.h>
 #include <arm_controller/arm_controller.h>
-
-// #include <baxterCollaboration/artag_controller.h>
+#include <artag_controller/artag_controller.h>
 
 #define HOME_POSITION_RIGHT_ARM 0.60, -0.30, 0.150
 
@@ -15,13 +14,17 @@
 class HoldController : public ROSThread
 {
 private:
+    std::string action;
+
     bool goHoldPose(double height);
 
     bool hoverAboveTable(double height);
 
-    bool waitForButton();
-
     bool holdObject();
+
+    bool goHome();
+
+    bool releaseObject();
 
 protected:
 
@@ -30,9 +33,7 @@ protected:
 public:
     HoldController(std::string limb);
 
-    bool goHome();
-
-    bool releaseObject();
+    void setAction(std::string _action) { action = _action; };
         
     ~HoldController();
 };

@@ -47,6 +47,10 @@ private:
 
     bool passObject();
 
+    bool goHome();
+
+    bool releaseObject();
+
 protected:
     /*
      * picks up token
@@ -58,10 +62,6 @@ protected:
 
 public:
     ARTagController(std::string limb);
-
-    bool goHome();
-
-    bool releaseObject();
 
     void setAction(std::string _action) { action = _action; };
 
