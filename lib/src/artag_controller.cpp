@@ -44,7 +44,7 @@ void ARTagController::InternalThreadEntry()
 bool ARTagController::goHome()
 {
     setState(START);
-    return ARTagController::hoverAboveTokens(POS_LOW);
+    return releaseObject() && ARTagController::hoverAboveTokens(POS_LOW);
 }
 
 bool ARTagController::releaseObject()

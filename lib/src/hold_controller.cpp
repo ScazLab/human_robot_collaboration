@@ -14,7 +14,11 @@ void HoldController::InternalThreadEntry()
     if (int(getState()) == START || int(getState()) == PASSED)
     {
         if (holdObject())   setState(PASSED);
-        else                setState(ERROR);
+        else
+        {
+            goHome();
+            setState(ERROR);
+        }
     }
     else
     {
@@ -32,7 +36,7 @@ bool HoldController::holdObject()
     if (!waitForForceInteraction())     return false;
     if (!suckObject())                  return false;
     ros::Duration(2.0).sleep();
-    if (!waitForForceInteraction())     return false;
+    if (!waitForForceInteraction(30.0)) return false;
     if (!releaseObject())               return false;
     if (!goHome())                      return false;
 
@@ -52,7 +56,7 @@ bool HoldController::hoverAboveTable(double height)
 bool HoldController::goHome()
 {
     setState(START);
-    return HoldController::hoverAboveTable(POS_LOW);
+    return releaseObject() && HoldController::hoverAboveTable(POS_LOW);
 }
 
 bool HoldController::releaseObject()
