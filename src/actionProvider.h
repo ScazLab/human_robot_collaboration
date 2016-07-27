@@ -3,8 +3,8 @@
 
 #include <string.h>
 
-#include "artag_controller/artag_controller.h"
-#include "hold_controller/hold_controller.h"
+#include "robot_interface/artag_controller.h"
+#include "robot_interface/hold_controller.h"
 
 #include "baxter_collaboration/DoAction.h"
 
