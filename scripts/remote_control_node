@@ -26,7 +26,7 @@ class RemoteControlNode:
     name = 'remote_control'
 
     def __init__(self, port=5000):
-        rospy.init_node(self.name)
+        rospy.init_node(self.name, disable_signals=True)
         self.rc_port = port
 
     def run(self):
@@ -47,5 +47,8 @@ class RemoteControlNode:
 
 
 if __name__ == "__main__":
-    node = RemoteControlNode()
-    node.run()
+    try:
+        node = RemoteControlNode()
+        node.run()
+    finally:
+        rospy.signal_shutdown('') 
