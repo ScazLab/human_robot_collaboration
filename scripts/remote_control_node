@@ -6,7 +6,7 @@ import rospy
 from baxter_collaboration.srv import DoAction
 
 
-SERVICE = 'DoAction'
+SERVICE = '/action_provider/action_service'
 OBJECT_IDS = {
     'left_leg': 17,
     'right_leg': 26,
@@ -33,15 +33,19 @@ class RemoteControlNode:
         rospy.wait_for_service(SERVICE)
         self.service = rospy.ServiceProxy(SERVICE, DoAction)
         with Server(port=self.rc_port, callback=self._remote_msg_cb) as rc:
+	    rospy.loginfo("Started remote controle server.")
             rc.run()
 
     def _remote_msg_cb(self, message):
-        return self.service(*remote_message_to_action(message))
+	rospy.loginfo("Received message: %s" % message)
+        try:
+            result = self.service(*remote_message_to_action(message))
+            return result.success
+        except Exception, e:
+            rospy.logerr("Unable to call service: %s" % e)
+	    return False
 
 
 if __name__ == "__main__":
     node = RemoteControlNode()
-    try:
-        rospy.spin()
-    except KeyboardInterrupt:
-        pass
+    node.run()
