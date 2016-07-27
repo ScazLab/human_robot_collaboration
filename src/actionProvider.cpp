@@ -40,7 +40,8 @@ bool actionProvider::serviceCallback(baxter_collaboration::DoAction::Request  &r
 
     if (action == ACTION_HOME)
     {
-        res.success = left_ctrl -> goHome() && right_ctrl -> goHome();
+        res.success = left_ctrl -> goHome();
+        res.success = res.success && right_ctrl -> goHome();
     }
     else if (action == ACTION_GET)
     {
@@ -61,7 +62,8 @@ bool actionProvider::serviceCallback(baxter_collaboration::DoAction::Request  &r
     }
     else if (action == ACTION_RELEASE)
     {
-        res.success = left_ctrl -> releaseObject() || right_ctrl -> releaseObject();
+        res.success = left_ctrl -> releaseObject();
+        res.success = res.success || right_ctrl -> releaseObject();
     }
     else if (action == ACTION_PASS)
     {

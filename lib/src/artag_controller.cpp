@@ -43,29 +43,24 @@ void ARTagController::InternalThreadEntry()
 
 bool ARTagController::goHome()
 {
+    bool res = releaseObject();
+    res = res && ARTagController::hoverAboveTokens(POS_LOW);
     setState(START);
-    return releaseObject() && ARTagController::hoverAboveTokens(POS_LOW);
+    return res;
 }
 
 bool ARTagController::releaseObject()
 {
+    bool res = ROSThread::releaseObject();
     setState(START);
-    return ROSThread::releaseObject();
+    return res;
 }
 
 bool ARTagController::pickObject()
 {
-    ARTagController::hoverAboveTokens(POS_HIGH);
-        
-    bool res = pickARTag();
-
-    if (res)
-    {
-        goHome();
-        // ros::Duration(2.0).sleep();
-        // _gripper->blow();
-        // releaseObject();
-    }
+    bool res = ARTagController::hoverAboveTokens(POS_HIGH);
+    res = res && pickARTag();
+    res = res && ARTagController::hoverAboveTokens(POS_LOW);
 
     return res;
 }
