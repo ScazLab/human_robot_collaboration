@@ -4,7 +4,7 @@
 #include <geometry_msgs/Pose.h>
 #include <geometry_msgs/PoseStamped.h>
 #include <aruco_msgs/MarkerArray.h>
-#include <arm_controller/arm_controller.h>
+#include <arm_control/arm_controller.h>
 
 #define ACTION_HOME    "home"
 #define ACTION_GET     "get"

@@ -49,7 +49,7 @@ bool HoldController::holdObject()
 {
     if (!goHoldPose(0.24))              return false;
     if (!waitForForceInteraction())     return false;
-    if (!suckObject())                  return false;
+    if (!gripObject())                  return false;
     ros::Duration(2.0).sleep();
     if (!waitForForceInteraction(30.0)) return false;
     if (!releaseObject())               return false;
