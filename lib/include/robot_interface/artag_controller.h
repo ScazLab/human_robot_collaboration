@@ -1,22 +1,10 @@
 #ifndef ARTAG_CONTROLLER_H
 #define ARTAG_CONTROLLER_H
 
-#include <geometry_msgs/Pose.h>
-#include <geometry_msgs/PoseStamped.h>
 #include <aruco_msgs/MarkerArray.h>
-#include <robot_interface/arm_controller.h>
 
-#define ACTION_HOME    "home"
-#define ACTION_GET     "get"
-#define ACTION_RELEASE "release"
-#define ACTION_PASS    "pass"
-#define ACTION_HOLD    "hold"
+#include "arm_controller.h"
 
-#define POS_HIGH        0.400
-#define POS_LOW         0.150
-#define PICK_UP_SPEED   0.1
-
-#define HORIZONTAL_ORIENTATION_LEFT_ARM     -0.0155113251266, 0.703354199922, -0.102825501874, 0.703192139041
 
 class ARTagController : public ROSThread
 {

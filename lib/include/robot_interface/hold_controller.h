@@ -1,15 +1,7 @@
 #ifndef HOLD_CONTROLLER_H
 #define HOLD_CONTROLLER_H
 
-#include <geometry_msgs/Pose.h>
-#include <geometry_msgs/PoseStamped.h>
-#include <robot_interface/arm_controller.h>
-#include <robot_interface/artag_controller.h>
-
-#define HOME_POSITION_RIGHT_ARM 0.60, -0.30, 0.150
-
-#define HORIZONTAL_ORIENTATION_RIGHT_ARM    -0.175730746765, 0.67317042445, 0.1902242414, 0.692657940308
-#define VERTICAL_ORIENTATION_RIGHT_ARM     -0.14007673309, 0.989696832226, -0.0103020489473, 0.0277949080985
+#include "arm_controller.h"
 
 class HoldController : public ROSThread
 {
