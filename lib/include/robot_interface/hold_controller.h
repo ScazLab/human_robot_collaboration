@@ -3,7 +3,7 @@
 
 #include <geometry_msgs/Pose.h>
 #include <geometry_msgs/PoseStamped.h>
-#include <arm_control/arm_controller.h>
+#include <robot_interface/arm_controller.h>
 #include <robot_interface/artag_controller.h>
 
 #define HOME_POSITION_RIGHT_ARM 0.60, -0.30, 0.150

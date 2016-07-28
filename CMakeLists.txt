@@ -11,7 +11,11 @@ find_package(catkin REQUIRED COMPONENTS
              tf # Even if I'm not explicitly using it, adding tf is the only way
                 # I found to avoid the undefined reference error to ros::init.
                 # See http://goo.gl/GlbKgM
-             baxter_tictactoe)
+             cv_bridge
+             image_transport
+             )
+
+find_package(OpenCV 2.4 REQUIRED)
 
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
@@ -53,9 +57,9 @@ find_package(catkin REQUIRED COMPONENTS
 # )
 
 ## Generate services in the 'srv' folder
- add_service_files(FILES
-                   DoAction.srv
- )
+add_service_files(FILES
+                  DoAction.srv
+)
 
 ## Generate actions in the 'action' folder
 # add_action_files(
@@ -101,7 +105,7 @@ generate_messages(DEPENDENCIES
 catkin_package(
     INCLUDE_DIRS lib/include
     # LIBRARIES baxter_collaboration
-    # CATKIN_DEPENDS baxter_tictactoe
+    # CATKIN_DEPENDS 
     # DEPENDS system_lib
 )
 
@@ -112,6 +116,7 @@ catkin_package(
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
 include_directories(lib/include
+                    ${OpenCV_INCLUDE_DIRS}    
                     ${catkin_INCLUDE_DIRS}
                     ${CMAKE_CURRENT_SOURCE_DIR})
 

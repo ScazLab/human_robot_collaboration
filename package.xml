@@ -44,7 +44,9 @@
   <build_depend>message_generation</build_depend> 
 
   <depend>aruco_msgs</depend>
-  <depend>baxter_tictactoe</depend>
+  <depend>image_transport</depend>
+  <depend>cv_bridge</depend>
+  <!-- <depend>baxter_tictactoe</depend> -->
 
   <exec_depend>message_runtime</exec_depend>
 

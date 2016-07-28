@@ -11,8 +11,12 @@ project(baxterCollaboration)
 include_directories(${PROJECT_SOURCE_DIR}/include)
 
 ## Declare a C++ library
-add_library(robot_interface  include/robot_interface/artag_controller.h
+add_library(robot_interface  include/robot_interface/arm_controller.h
+                             include/robot_interface/gripper.h
+                             include/robot_interface/artag_controller.h
                              include/robot_interface/hold_controller.h  
+                             src/arm_controller.cpp
+                             src/gripper.cpp
                              src/artag_controller.cpp
                              src/hold_controller.cpp)
 
@@ -22,7 +26,8 @@ add_library(robot_interface  include/robot_interface/artag_controller.h
 add_dependencies(robot_interface    ${catkin_EXPORTED_TARGETS})
 
 ## Specify libraries to link a library or executable target against
-target_link_libraries(robot_interface  ${catkin_LIBRARIES})
+target_link_libraries(robot_interface  ${OpenCV_LIBS}
+                                       ${catkin_LIBRARIES})
 
 # ## Mark libraries for installation
 # install (TARGETS ${PROJECT_NAME}
