@@ -104,7 +104,7 @@ generate_messages(DEPENDENCIES
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
     INCLUDE_DIRS lib/include
-    # LIBRARIES baxter_collaboration
+    LIBRARIES robot_interface
     # CATKIN_DEPENDS 
     # DEPENDS system_lib
 )

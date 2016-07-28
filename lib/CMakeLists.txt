@@ -29,15 +29,14 @@ add_dependencies(robot_interface    ${catkin_EXPORTED_TARGETS})
 target_link_libraries(robot_interface  ${OpenCV_LIBS}
                                        ${catkin_LIBRARIES})
 
-# ## Mark libraries for installation
-# install (TARGETS ${PROJECT_NAME}
-#   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-#   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-# )
+## Mark libraries for installation
+install (TARGETS robot_interface
+         ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+         LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+)
 
-# ## Mark cpp header files for installation
-# install(DIRECTORY ${PROJECT_SOURCE_DIR}/include/
-#   DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
-#   FILES_MATCHING PATTERN "*.h"
-# )
-
+## Mark cpp header files for installation
+install(DIRECTORY ${PROJECT_SOURCE_DIR}/include/robot_interface
+        DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
+        FILES_MATCHING PATTERN "*.h"
+)
