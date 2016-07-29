@@ -1,3 +1,14 @@
+/*While Bootstrap uses ems or rems for defining most sizes, pxs are used for grid breakpoints and container widths.
+This is because the viewport width is in pixels and does not change with the font size.
+
+See how aspects of the Bootstrap grid system work across multiple devices with a handy table.
+                    Extra small     Small       Medium      Large       Extra Large
+                    <544px          ≥544px      ≥768px      ≥992px      ≥1200px
+Container width     None (auto)     576px       720px       940px       1140px
+Class prefix        .col-xs-        .col-sm-    .col-md-    .col-lg-    .col-xl-
+*/
+
+
 @font-face {
     font-family: 'Montserrat';
     src: url("fonts/Montserrat-Light.otf") format("opentype");
@@ -10,9 +21,13 @@
     font-weight: 100;
 }
 
+html {
+    font-size: 18px;
+}
+
 body {
     overflow-x: hidden;
-    font-size: 1.3rem;
+    font-size: 1rem;
 }
 
 body
@@ -47,13 +62,14 @@ section {
 
 section h2 {
     margin-bottom: 60px;
-    font-size: 3em;
+    font-size: 4rem;
+    word-wrap: break-word;
 }
 
 .btn {
     min-height: 120px;
     min-width: 120px;
-    font-size: 1.4em;
+    font-size: 1.8rem;
     font-weight: 300;
     margin: 20px;
 }
@@ -65,4 +81,28 @@ section h2 {
 #status .alert {
     width: 100%;
     display: block;
+}
+
+@media(max-width: 768px) {
+    section h2 {
+        font-size: 3rem;
+    }
+
+    .btn {
+        min-height: 100px;
+        min-width: 100px;
+        font-size: 1.4rem;
+        margin: 10px;
+    }
+}
+
+@media(max-width: 400px) {
+    html {
+        font-size: 16px;
+    }
+
+    .btn {
+        min-height: 80px;
+        min-width: 80px;
+    }
 }

@@ -49,7 +49,7 @@ function callback(e) {
     // console.log(e.target.tagName);
     if (e.target.tagName == 'BUTTON')
     {
-        // console.log('Pressed item: ' + e.target.firstChild.nodeValue);
+        console.log('Pressed item: ' + e.target.firstChild.nodeValue);
 
         var message = new ROSLIB.Message({
           data: e.target.firstChild.nodeValue
