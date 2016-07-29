@@ -60,6 +60,19 @@
                   ROS STATUS: Connection closed.
                 </div>
             </div>
+            <div class="col-md-12 text-xs-center">
+                <div class="btn-group" id="troubleshooting" style="display:none;">
+                    <button type="button" class="btn btn-danger dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Troubleshooting</button>
+                    <div class="dropdown-menu">
+                            <a class="dropdown-item" href="#">Run roslaunch rosbridge_server rosbridge_websocket.launch</a>
+                            <a class="dropdown-item" href="#">Reload this page</a>
+                            <a class="dropdown-item" href="#">Run rostopic echo /htm_elem_pressed</a>
+                            <div class="dropdown-divider"></div>
+                            <a class="dropdown-item" href="#">At every press of each node, a message will be sent on the topic /htm_elem_pressed with some information on the node that will be pressed</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </section>
@@ -68,11 +81,24 @@
     <script src="http://cdn.robotwebtools.org/EventEmitter2/current/eventemitter2.min.js"></script>
     <script type="text/javascript" src="http://cdn.robotwebtools.org/roslibjs/current/roslib.js"></script>
     <!-- jQuery Version 3.0.0 -->
-    <script type="text/javascript" src="http://code.jquery.com/jquery-3.0.0.min.js"></script>
+    <script type="text/javascript" src="http://code.jquery.com/jquery-2.0.0.min.js"></script>
+    <!-- Tether for Bootstrap --> 
+    <script src="https://www.atlasestateagents.co.uk/javascript/tether.min.js"></script>
     <!-- Bootstrap Core JavaScript -->
     <script src="https://cdn.rawgit.com/twbs/bootstrap/v4.0.0-alpha.2/dist/js/bootstrap.min.js"></script>
 
     <!-- ROSjs stuff -->
     <script src="ros.js"></script>
+
+    <script type="text/javascript">
+        $(function () {
+          $('[data-toggle="popover"]').popover()
+        })
+
+        $('.popover-dismiss').popover({
+            container: 'body',
+            trigger: 'focus'
+        })
+    </script>
 </body>
 </html>

@@ -78,9 +78,24 @@ section h2 {
     padding: 40px;
 }
 
-#status .alert {
+#status .alert,
+#status .btn-group,
+#status button {
     width: 100%;
-    display: block;
+}
+
+#status button {
+    font-size: 1.2rem;
+    min-height: 60px;
+}
+
+#status .dropdown-item {
+    white-space: normal;
+}
+
+#status .dropdown-menu,
+#status .dropdown-item {
+    max-width: 100%;
 }
 
 @media(max-width: 768px) {

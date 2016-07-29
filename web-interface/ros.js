@@ -8,6 +8,7 @@ ros.on('error', function(error) {
   document.getElementById('connected').style.display = 'none';
   document.getElementById('closed').style.display = 'none';
   document.getElementById('error').style.display = 'block';
+  document.getElementById('troubleshooting').style.display = 'inline-block';
   console.log(error);
 });
 
@@ -42,27 +43,28 @@ var elemPressed = new ROSLIB.Topic({
   messageType : 'std_msgs/String'
 });
 
-// Add a callback for any element on the page
-function callback(e) {
-    var e = window.e || e;
+// // Add a callback for any element on the page
+// function callback(e) {
+//     var e = window.e || e;
 
-    // console.log(e.target.tagName);
-    if (e.target.tagName == 'BUTTON')
-    {
-        console.log('Pressed item: ' + e.target.firstChild.nodeValue);
+//     // console.log(e.target.tagName);
+//     if (e.target.tagName == 'BUTTON')
+//     {
+//         console.log('Pressed '+ e.target.tagName +
+//                     ' item: ' + e.target.firstChild.nodeValue);
 
-        var message = new ROSLIB.Message({
-          data: e.target.firstChild.nodeValue
-        });
+//         var message = new ROSLIB.Message({
+//           data: e.target.firstChild.nodeValue
+//         });
 
-        elemPressed.publish(message);
-    }
+//         elemPressed.publish(message);
+//     }
 
-    return;
-}
+//     return;
+// }
 
-if (document.addEventListener)
-    document.addEventListener('click', callback, false);
-else
-    document.attachEvent('onclick', callback);
+// if (document.addEventListener)
+//     document.addEventListener('click', callback, false);
+// else
+//     document.attachEvent('onclick', callback);
 
