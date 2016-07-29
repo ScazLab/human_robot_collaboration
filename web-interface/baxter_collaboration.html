@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Baxter Collaboration</title>
+    <meta name="viewport" content="width=device-width">
+    <meta name="description" content="">
+    <meta name="author" content="Alessandro Roncone">
+    <!-- <link rel="canonical" href="{{ page.url | replace:'index.html','' | prepend: site.url }}"> -->
+
+    <!-- Custom CSS & Bootstrap Core CSS - Uses Bootswatch Flatly Theme: http://bootswatch.com/flatly/ -->
+    <link href="https://cdn.rawgit.com/twbs/bootstrap/v4.0.0-alpha.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+
+    <!-- Custom Fonts -->
+    <script src="https://use.fontawesome.com/ebd2d08b0e.js"></script>
+    <link href="//fonts.googleapis.com/css?family=Montserrat:400,700" rel="stylesheet" type="text/css">
+    <link href="//fonts.googleapis.com/css?family=Lato:400,700,400italic,700italic" rel="stylesheet" type="text/css">
+
+</head>
+
+<body id="page-top" class="index">
+<section>
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-12 text-xs-center">
+                <h2>Baxter collaboration</h2>
+            </div>
+            <div class="col-md-6 text-xs-center">
+                <!-- Indicates a successful or positive action -->
+                <button type="button" class="btn btn-success btn-lg">yes</button>
+
+                <!-- Indicates a dangerous or potentially negative action -->
+                <button type="button" class="btn btn-danger btn-lg">no</button>
+            </div>
+            <div class="col-md-6 text-xs-center">
+                <button type="button" class="btn btn-danger btn-lg">error</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="status" class="container">
+        <div class="row">
+            <div class="col-md-12 text-xs-center">
+                <div id="connecting" class="alert alert-info" role="alert">
+                  ROS STATUS: Connecting to rosbridge...
+                </div>
+                <div id="connected" style="display:none;" class="alert alert-success" role="alert">
+                  ROS STATUS: Connected!
+                </div>
+                <div id="error" style="display:none;" class="alert alert-warning" role="alert">
+                  ROS STATUS: Error in the backend!
+                </div>
+                <div id="closed" style="display:none;" class="alert alert-danger" role="alert">
+                  ROS STATUS: Connection closed.
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+    <!-- Roslib.js libraries --> 
+    <script src="http://cdn.robotwebtools.org/EventEmitter2/current/eventemitter2.min.js"></script>
+    <script type="text/javascript" src="http://cdn.robotwebtools.org/roslibjs/current/roslib.js"></script>
+    <!-- jQuery Version 3.0.0 -->
+    <script type="text/javascript" src="http://code.jquery.com/jquery-3.0.0.min.js"></script>
+    <!-- Bootstrap Core JavaScript -->
+    <script src="https://cdn.rawgit.com/twbs/bootstrap/v4.0.0-alpha.2/dist/js/bootstrap.min.js"></script>
+
+    <!-- ROSjs stuff -->
+    <script src="ros.js"></script>
+</body>
+</html>
