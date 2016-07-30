@@ -64,11 +64,11 @@
                 <div class="btn-group" id="troubleshooting" style="display:none;">
                     <button type="button" class="btn btn-danger dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Troubleshooting</button>
                     <div class="dropdown-menu">
-                            <a class="dropdown-item" href="#">Run roslaunch rosbridge_server rosbridge_websocket.launch</a>
-                            <a class="dropdown-item" href="#">Reload this page</a>
-                            <a class="dropdown-item" href="#">Run rostopic echo /htm_elem_pressed</a>
+                            <a class="dropdown-item" href="#">1. Run <code>roslaunch rosbridge_server rosbridge_websocket.launch</code></a>
+                            <a class="dropdown-item" href="#">2. Reload this page</a>
+                            <a class="dropdown-item" href="#">3. Run <code>rostopic echo /web_interface</code></a>
                             <div class="dropdown-divider"></div>
-                            <a class="dropdown-item" href="#">At every press of each node, a message will be sent on the topic /htm_elem_pressed with some information on the node that will be pressed</a>
+                            <a class="dropdown-item" href="#">4. At every press of each node, a message will be sent on the topic <code>/web_interface</code> with some information on the node that will be pressed</a>
                         </div>
                     </div>
                 </div>
