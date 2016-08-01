@@ -1,9 +1,9 @@
-#ifndef ARTAG_CONTROLLER_H
-#define ARTAG_CONTROLLER_H
+#ifndef __ARTAG_CONTROLLER_H__
+#define __ARTAG_CONTROLLER_H__
 
 #include <aruco_msgs/MarkerArray.h>
 
-#include "arm_controller.h"
+#include "ros_thread.h"
 
 class ARTagController : public ROSThread
 {
@@ -17,6 +17,14 @@ private:
 
     void clearMarkerPose();
 
+    /*
+     * Moves arm to the requested pose. This differs from ROSThread::goToPose because it 
+     * does not check if the final pose has been reached, but rather it goes in open-loop
+     * unitil a fisical contact with the table is reached
+     * 
+     * @param  requested pose (3D position + 4D quaternion for the orientation)
+     * @return true/false if success/failure
+     */
     bool goToPose(double px, double py, double pz,
                   double ox, double oy, double oz, double ow);
 

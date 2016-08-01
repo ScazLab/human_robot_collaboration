@@ -151,7 +151,7 @@ bool ARTagController::pickARTag()
 
         ROS_DEBUG("Time %g Going to: %g %g %g", new_elapsed_time, x, y, z);
 
-        if (goToPose(x,y,z,VERTICAL_ORIENTATION_LEFT_ARM) == true)
+        if (ARTagController::goToPose(x,y,z,VERTICAL_ORIENTATION_LEFT_ARM) == true)
         {
             ik_failures = 0;
             if (new_elapsed_time - elapsed_time > 0.02)
@@ -167,13 +167,14 @@ bool ARTagController::pickARTag()
             }
 
             ros::Rate(100).sleep();
+            ros::spin();
         }
         else
         {
             ik_failures++;
         }
 
-        if (ik_failures == 10)
+        if (ik_failures == 20)
         {
             return false;
         }
@@ -193,10 +194,7 @@ bool ARTagController::goToPose(double px, double py, double pz,
     setOrientation(req_pose_stamped.pose, ox, oy, oz, ow);
 
     vector<double> joint_angles;
-    if (getJointAngles(req_pose_stamped,joint_angles) == false)
-    {
-        return false;
-    }
+    if (!getJointAngles(req_pose_stamped,joint_angles)) return false;
 
     baxter_core_msgs::JointCommand joint_cmd;
     joint_cmd.mode = baxter_core_msgs::JointCommand::POSITION_MODE;

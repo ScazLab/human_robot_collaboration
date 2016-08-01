@@ -1,7 +1,7 @@
-#ifndef HOLD_CONTROLLER_H
-#define HOLD_CONTROLLER_H
+#ifndef __HOLD_CONTROLLER_H__
+#define __HOLD_CONTROLLER_H__
 
-#include "arm_controller.h"
+#include "robot_interface/ros_thread.h"
 
 class HoldController : public ROSThread
 {
