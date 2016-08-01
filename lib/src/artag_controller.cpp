@@ -113,7 +113,7 @@ void ARTagController::clearMarkerPose()
     _curr_marker_pose.position.x = 100;
 }
 
-bool hoverAboveTable(double height)
+bool ARTagController::hoverAboveTable(double height)
 {
     return ROSThread::goToPose(0.60, 0.45, height, VERTICAL_ORIENTATION_LEFT_ARM);
 }
