@@ -18,7 +18,7 @@ namespace ttt
 class Gripper
 {
 private:
-    std::string _type; // It identifies the vacuum gripper we are using: left or right
+    std::string _limb; // It identifies the vacuum gripper we are using: left or right
 
     bool first_run;    // Flag to calibrate grippers at startup if they are not calibrated
 
@@ -59,9 +59,9 @@ private:
 public:
     /**
      * Constructor of the class
-     * \param gripper This indicates if we are using the left or right vacuum gripper. Possible values are just right or left.
+     * \param limb either left or right limb
      **/
-    Gripper(std::string type);
+    Gripper(std::string limb);
 
     ~Gripper() {};
 
@@ -109,7 +109,7 @@ public:
      * This function returns the limb the gripper belongs to
      * @return the limb, either "left" or "right"
      **/
-    std::string get_type()  { return _type; };
+    std::string getLimb()  { return _limb; };
 };
 }
 

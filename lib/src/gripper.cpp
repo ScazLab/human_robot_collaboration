@@ -8,12 +8,12 @@ using namespace std;
 namespace ttt
 {
 
-Gripper::Gripper(std::string type) : _type(type), first_run(false)
+Gripper::Gripper(std::string limb) : _limb(limb), first_run(false)
 {
     _pub_command = _nh.advertise<EndEffectorCommand>(
-                   "/robot/end_effector/" + _type + "_gripper/command", 1);
+                   "/robot/end_effector/" + _limb + "_gripper/command", 1);
 
-    _sub_state = _nh.subscribe("/robot/end_effector/" + _type + "_gripper/state", 4,
+    _sub_state = _nh.subscribe("/robot/end_effector/" + _limb + "_gripper/state", 4,
                                 &Gripper::gripperStateCb, this);
 
     //Initially all the interesting properties of the state are unknown
@@ -59,7 +59,7 @@ bool Gripper::releaseObject()
         return true;
     }
 
-    ROS_WARN("Requested a release of the gripper, but the gripper is not sucking.");
+    ROS_WARN("[%s_gripper] Requested a release of the gripper, but the gripper is not sucking.", getLimb().c_str());
     return false;
 }
 
@@ -75,9 +75,10 @@ void Gripper::gripperStateCb(const EndEffectorStateConstPtr &msg)
     {
         if (!is_calibrated())
         {
+            ROS_INFO("[%s_gripper] Calibrating the gripper..", getLimb().c_str());
             calibrate();
         }
-        first_run==false;
+        first_run=false;
     }
 }
 
@@ -94,7 +95,7 @@ void Gripper::suck()
     EndEffectorCommand sucking_command;
     sucking_command.id=get_id();
     sucking_command.command=EndEffectorCommand::CMD_GRIP;
-    if (_type == "left")
+    if (_limb == "left")
     {
         sucking_command.args="{\"grip_attempt_seconds\": 5.0}";
     }
