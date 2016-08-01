@@ -26,8 +26,6 @@ public:
     HoldController(std::string limb);
 
     void setAction(std::string _action) { action = _action; };
-
-    void setMarkerID(int _id) { marker_id = _id; };
         
     ~HoldController();
 };

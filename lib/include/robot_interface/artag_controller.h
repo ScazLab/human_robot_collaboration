@@ -8,14 +8,12 @@
 class ARTagController : public ROSThread
 {
 private:
+    std::string action;
     double elapsed_time;
+    int marker_id;
 
     ros::Subscriber _aruco_sub;
-
     geometry_msgs::Pose _curr_marker_pose;
-
-    std::string action;
-    int marker_id;
 
     void clearMarkerPose();
 
@@ -39,12 +37,6 @@ private:
     bool releaseObject();
 
 protected:
-    /*
-     * picks up token
-     * 
-     * param      N/A
-     * return     N/A
-     */
     void InternalThreadEntry();
 
 public:
