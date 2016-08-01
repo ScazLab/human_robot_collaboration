@@ -12,8 +12,7 @@
 #include <baxter_core_msgs/EndEffectorState.h>
 #include <baxter_core_msgs/EndEffectorCommand.h>
 
-namespace ttt
-{
+#include "utils.h"
 
 class Gripper
 {
@@ -109,8 +108,7 @@ public:
      * This function returns the limb the gripper belongs to
      * @return the limb, either "left" or "right"
      **/
-    std::string getLimb()  { return _limb; };
+    std::string getGripperLimb()  { return _limb; };
 };
-}
 
 #endif // __GRIPPER_H__

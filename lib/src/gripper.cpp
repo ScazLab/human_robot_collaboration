@@ -5,9 +5,6 @@
 using namespace baxter_core_msgs;
 using namespace std;
 
-namespace ttt
-{
-
 Gripper::Gripper(std::string limb) : _limb(limb), first_run(true)
 {
     _pub_command = _nh.advertise<EndEffectorCommand>(
@@ -59,7 +56,7 @@ bool Gripper::releaseObject()
         return true;
     }
 
-    ROS_WARN("[%s_gripper] Requested a release of the gripper, but the gripper is not sucking.", getLimb().c_str());
+    ROS_WARN("[%s_gripper] Requested a release of the gripper, but the gripper is not sucking.", getGripperLimb().c_str());
     return false;
 }
 
@@ -74,7 +71,7 @@ void Gripper::gripperStateCb(const EndEffectorStateConstPtr &msg)
     {
         if (!is_calibrated())
         {
-            ROS_INFO("[%s_gripper] Calibrating the gripper..", getLimb().c_str());
+            ROS_INFO("[%s_gripper] Calibrating the gripper..", getGripperLimb().c_str());
             calibrate();
         }
         first_run=false;
@@ -144,6 +141,4 @@ bool Gripper::is_gripping()
 {
     return true;
     return _state.gripping==EndEffectorState::STATE_TRUE;
-}
-
 }
