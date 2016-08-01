@@ -18,8 +18,6 @@ private:
 
     bool goHome();
 
-    bool releaseObject();
-
 protected:
 
     void InternalThreadEntry();

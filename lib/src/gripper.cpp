@@ -8,7 +8,7 @@ using namespace std;
 namespace ttt
 {
 
-Gripper::Gripper(std::string limb) : _limb(limb), first_run(false)
+Gripper::Gripper(std::string limb) : _limb(limb), first_run(true)
 {
     _pub_command = _nh.advertise<EndEffectorCommand>(
                    "/robot/end_effector/" + _limb + "_gripper/command", 1);
@@ -62,7 +62,6 @@ bool Gripper::releaseObject()
     ROS_WARN("[%s_gripper] Requested a release of the gripper, but the gripper is not sucking.", getLimb().c_str());
     return false;
 }
-
 
 void Gripper::gripperStateCb(const EndEffectorStateConstPtr &msg)
 {

@@ -67,11 +67,6 @@ bool ARTagController::goHome()
     return hoverAboveTable(POS_LOW);
 }
 
-bool ARTagController::releaseObject()
-{
-    return ROSThread::releaseObject();
-}
-
 bool ARTagController::pickObject()
 {
     if (!hoverAboveTable(POS_HIGH)) return false;

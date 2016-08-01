@@ -76,8 +76,3 @@ bool HoldController::goHome()
 {
     return HoldController::hoverAboveTable(POS_LOW);
 }
-
-bool HoldController::releaseObject()
-{
-    return ROSThread::releaseObject();
-}
