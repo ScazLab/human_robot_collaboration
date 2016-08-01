@@ -1,29 +1,6 @@
 #ifndef __ARM_CONTROLLERS_H__
 #define __ARM_CONTROLLERS_H__
 
-#include <string>
-#include <iostream>
-#include <cmath>
-#include <algorithm>
-#include <vector>
-#include <pthread.h>
-
-#include <ros/ros.h>
-#include <ros/console.h>
-
-#include <image_transport/image_transport.h>
-#include <cv_bridge/cv_bridge.h>
-#include <sensor_msgs/image_encodings.h>
-#include <opencv2/imgproc/imgproc.hpp>
-#include <opencv2/highgui/highgui.hpp>
-
-#include <baxter_core_msgs/EndpointState.h>
-#include <baxter_core_msgs/SolvePositionIK.h>
-#include <baxter_core_msgs/JointCommand.h>
-#include <geometry_msgs/PoseStamped.h>
-#include <geometry_msgs/Point.h>
-#include <sensor_msgs/Range.h>
-
 #include "robot_interface/ros_thread.h"
 #include "robot_interface/gripper.h"
 

@@ -3,6 +3,9 @@
 
 #include <string>
 
+#include <ros/ros.h>
+#include <ros/console.h>
+
 #include <geometry_msgs/Pose.h>
 
 #define WORKING -2

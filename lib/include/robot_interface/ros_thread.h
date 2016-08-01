@@ -1,15 +1,11 @@
 #ifndef __ROS_THREAD_H__
 #define __ROS_THREAD_H__
 
-#include <string>
 #include <iostream>
 #include <cmath>
 #include <algorithm>
 #include <vector>
 #include <pthread.h>
-
-#include <ros/ros.h>
-#include <ros/console.h>
 
 #include <image_transport/image_transport.h>
 #include <cv_bridge/cv_bridge.h>

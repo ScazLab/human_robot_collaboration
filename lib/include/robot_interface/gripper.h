@@ -1,11 +1,8 @@
 #ifndef __GRIPPER_H__
 #define __GRIPPER_H__
 
-#include <string>
-
 #include <pthread.h>
 
-#include <ros/ros.h>
 #include <std_msgs/Empty.h>
 #include <std_msgs/Float32.h>
 
