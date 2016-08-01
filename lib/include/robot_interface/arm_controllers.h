@@ -24,7 +24,8 @@
 #include <geometry_msgs/Point.h>
 #include <sensor_msgs/Range.h>
 
-#include "ros_thread.h"
+#include "robot_interface/ros_thread.h"
+#include "robot_interface/gripper.h"
 
 class MoveToRest : public ROSThreadImage
 {
@@ -43,7 +44,7 @@ class MoveToRest : public ROSThreadImage
         void InternalThreadEntry();
 };
 
-class PickUpToken : public ROSThreadImage
+class PickUpToken : public ROSThreadImage, public Gripper
 {
     public:
         PickUpToken(std::string limb);
@@ -134,7 +135,7 @@ class PickUpToken : public ROSThreadImage
         void setOffset(Contours contours, cv::Point2d &offset, cv::Mat &output);
 };
 
-class ScanBoard : public ROSThreadImage 
+class ScanBoard : public ROSThreadImage
 {
     public:
         ScanBoard(std::string limb);
@@ -258,7 +259,7 @@ class ScanBoard : public ROSThreadImage
         bool pointReachable(cv::Point centroid, float dist);
 };
 
-class PutDownToken : public ROSThreadImage
+class PutDownToken : public ROSThreadImage, public Gripper
 {
     public:
         PutDownToken(std::string limb);     

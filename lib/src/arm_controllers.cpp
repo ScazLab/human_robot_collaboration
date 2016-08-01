@@ -70,13 +70,12 @@ void MoveToRest::InternalThreadEntry()
     pthread_exit(NULL);  
 }  
 
-
 /**************************************************************************/
 /*                         PickUpToken                               */
 /**************************************************************************/
 
 // Public
-PickUpToken::PickUpToken(string limb): ROSThreadImage(limb)
+PickUpToken::PickUpToken(string limb): ROSThreadImage(limb), Gripper(limb)
 {
     namedWindow("[PickUpToken] Raw", WINDOW_NORMAL);    
     namedWindow("[PickUpToken] Processed", WINDOW_NORMAL);
@@ -175,7 +174,7 @@ void PickUpToken::gripToken()
             break;
         }
     }
-    _gripper->gripObject();
+    gripObject();
 }   
 
 void PickUpToken::checkForToken(cv::Point2d &offset)
@@ -455,7 +454,7 @@ void PickUpToken::setOffset(Contours contours, cv::Point2d &offset, Mat &output)
 // Public
 ScanBoard::ScanBoard(string limb): ROSThreadImage(limb)
 {
-    namedWindow("[ScanBoard] Rough", WINDOW_NORMAL);
+    namedWindow("[ScanBoard] Rough",     WINDOW_NORMAL);
     namedWindow("[ScanBoard] Processed", WINDOW_NORMAL);
 }
 ScanBoard::~ScanBoard()
@@ -836,7 +835,7 @@ bool ScanBoard::pointReachable(cv::Point centroid, float dist)
 /**************************************************************************/
 
 // Public
-PutDownToken::PutDownToken(string limb): ROSThreadImage(limb) {}        
+PutDownToken::PutDownToken(string limb): ROSThreadImage(limb), Gripper(limb) {}        
 PutDownToken::~PutDownToken() {}
 
 void PutDownToken::setCell(int cell) {_cell = cell;}
@@ -848,7 +847,7 @@ void PutDownToken::InternalThreadEntry()
     hoverAboveBoard();
     hoverAboveCell();
     ros::Duration(0.8).sleep();
-    _gripper->releaseObject();
+    releaseObject();
     hoverAboveBoard();
     hoverAboveTokens(POS_HIGH);
 
@@ -877,12 +876,12 @@ void PutDownToken::hoverAboveBoard()
 /*                            ArmController                               */
 /**************************************************************************/
 
-ArmController::ArmController(string limb): _limb(limb) 
+ArmController::ArmController(string limb): _limb(limb)
 {
     _rest_class = new MoveToRest(_limb);
     _pick_class = new PickUpToken(_limb);
     _scan_class = new ScanBoard(_limb);
-    _put_class = new PutDownToken(_limb);
+    _put_class  = new PutDownToken(_limb);
 }
 
 ArmController::~ArmController()

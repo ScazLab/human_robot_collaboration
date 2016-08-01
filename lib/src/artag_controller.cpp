@@ -2,8 +2,11 @@
 
 using namespace std;
 
-ARTagController::ARTagController(std::string limb) : ROSThread(limb), marker_id(-1), action("")
+ARTagController::ARTagController(std::string limb) : ROSThread(limb), Gripper(limb),
+                                                     marker_id(-1), action("")
 {
+    setState(START);
+
     _aruco_sub = _n.subscribe("/aruco_marker_publisher/markers",
                                SUBSCRIBER_BUFFER, &ARTagController::ARCallback, this);
 

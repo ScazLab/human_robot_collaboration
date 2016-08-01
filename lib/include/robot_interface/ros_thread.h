@@ -25,7 +25,6 @@
 #include <sensor_msgs/Range.h>
 
 #include "utils.h"
-#include "gripper.h"
 
 /**
  * @brief A ROS Thread class
@@ -45,7 +44,6 @@ private:
 
     ros::Subscriber _endpt_sub;
     ros::Subscriber _ir_sub;
-    ros::Subscriber _cuff_OK_sub;  // Cuff OK button
     ros::ServiceClient _ik_client;
 
 protected:
@@ -59,8 +57,6 @@ protected:
     std::vector<double> _filt_force;
 
     float _curr_range, _curr_max_range, _curr_min_range;
-
-    ttt::Gripper   *_gripper;
 
     ros::Publisher  _joint_cmd_pub;
 
@@ -162,10 +158,6 @@ public:
      * @return     true if thread was successfully launched; false otherwise
      */        
     bool startInternalThread();
-
-    bool gripObject();
-
-    bool releaseObject();
 
     /*
      * Self-explaining "setters"

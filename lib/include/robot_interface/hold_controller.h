@@ -2,8 +2,9 @@
 #define __HOLD_CONTROLLER_H__
 
 #include "robot_interface/ros_thread.h"
+#include "robot_interface/gripper.h"
 
-class HoldController : public ROSThread
+class HoldController : public ROSThread, public Gripper
 {
 private:
     std::string action;

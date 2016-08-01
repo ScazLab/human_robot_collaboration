@@ -3,9 +3,10 @@
 
 #include <aruco_msgs/MarkerArray.h>
 
-#include "ros_thread.h"
+#include "robot_interface/ros_thread.h"
+#include "robot_interface/gripper.h"
 
-class ARTagController : public ROSThread
+class ARTagController : public ROSThread, public Gripper
 {
 private:
     std::string action;

@@ -24,7 +24,6 @@ actionProvider::actionProvider(std::string _name) : name(_name)
     {
         ros::spinOnce();
     }
-
 };
 
 actionProvider::~actionProvider()

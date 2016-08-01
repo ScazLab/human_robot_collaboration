@@ -2,9 +2,10 @@
 
 using namespace std;
 
-HoldController::HoldController(std::string limb) : ROSThread(limb)
+HoldController::HoldController(std::string limb) : ROSThread(limb),
+                                                   Gripper(limb)
 {
-
+    setState(START);
 }
 
 HoldController::~HoldController() {}

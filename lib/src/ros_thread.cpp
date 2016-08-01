@@ -17,15 +17,12 @@ using namespace cv;
 /**************************************************************************/
 /*                            ROSThread                                   */
 /**************************************************************************/
-ROSThread::ROSThread(string limb): _limb(limb), _state(START,0), _gripper(0)
+ROSThread::ROSThread(string limb): _limb(limb), _state(START,0)
 {
     _joint_cmd_pub = _n.advertise<baxter_core_msgs::JointCommand>("/robot/limb/" + _limb + "/joint_command", 1);   
     _endpt_sub     = _n.subscribe("/robot/limb/" + _limb + "/endpoint_state", SUBSCRIBER_BUFFER, &ROSThread::endpointCallback, this);
     _ir_sub        = _n.subscribe("/robot/range/" + _limb + "_hand_range/state", SUBSCRIBER_BUFFER, &ROSThread::IRCallback, this);
-    // _cuff_OK_sub   = _n.subscribe("/robot/digital_io/" + _limb + "_lower_button/state", SUBSCRIBER_BUFFER, &ROSThread::CuffOKCallback, this);
     _ik_client     = _n.serviceClient<SolvePositionIK>("/ExternalTools/" + _limb + "/PositionKinematicsNode/IKService");
-
-    _gripper = new ttt::Gripper(_limb);
 
     _init_time = ros::Time::now();
 
@@ -38,14 +35,7 @@ ROSThread::ROSThread(string limb): _limb(limb), _state(START,0), _gripper(0)
     _filt_force.push_back(0.0);
 }
 
-ROSThread::~ROSThread()
-{
-    if (_gripper)
-    {
-        delete _gripper;
-        _gripper = 0;
-    }
-}
+ROSThread::~ROSThread() { }
 
 bool ROSThread::startInternalThread() {return (pthread_create(&_thread, NULL, InternalThreadEntryFunc, this) == 0);}
 
@@ -222,16 +212,6 @@ bool ROSThread::waitForForceInteraction(double _wait_time)
             return false;
         }
     }
-}
-
-bool ROSThread::gripObject()
-{
-    return _gripper->gripObject();
-}
-
-bool ROSThread::releaseObject()
-{
-    return _gripper->releaseObject();
 }
 
 void ROSThread::setState(int state)
