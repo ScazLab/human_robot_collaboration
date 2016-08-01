@@ -19,20 +19,35 @@ void ARTagController::InternalThreadEntry()
 {
     clearMarkerPose();
 
-    if (action == ACTION_GET && 
-       (int(getState()) == START || int(getState()) == ERROR) || int(getState()) == PASSED)
+    int s = int(getState());
+
+    setState(WORKING);
+
+    if (action == ACTION_HOME)
+    {
+        if (goHome())   setState(START);
+        else            setState(ERROR);
+    }
+    else if (action == ACTION_RELEASE)
+    {
+        if (releaseObject())   setState(START);
+        else                   setState(ERROR);
+    }
+    else if (action == ACTION_GET && (s == START ||
+                                      s == ERROR ||
+                                      s == PASSED))
     {
         if (pickObject())   setState(PICK_UP);
-        else                setState(ERROR);
+        else                recoverFromError();
     }
-    else if (action == ACTION_PASS && int(getState()) == PICK_UP)
+    else if (action == ACTION_PASS && s == PICK_UP)
     {
         if(passObject())   setState(PASSED);
-        else               setState(ERROR);
+        else               recoverFromError();
     }
     else
     {
-        ROS_ERROR("Action %s State %i", action.c_str(), int(getState()));
+        ROS_ERROR("Invalid State %i", s);
         setState(ERROR);
     }
 
@@ -40,60 +55,51 @@ void ARTagController::InternalThreadEntry()
     return;
 }
 
+void ARTagController::recoverFromError()
+{
+    releaseObject();
+    goHome();
+    setState(ERROR);
+}
+
 bool ARTagController::goHome()
 {
-    setState(START);
-    return releaseObject() && hoverAboveTable(POS_LOW);
+    return hoverAboveTable(POS_LOW);
 }
 
 bool ARTagController::releaseObject()
 {
-    setState(START);
     return ROSThread::releaseObject();
 }
 
 bool ARTagController::pickObject()
 {
-    hoverAboveTable(POS_HIGH);
-        
-    bool res = pickARTag();
+    if (!hoverAboveTable(POS_HIGH)) return false;
+    if (!pickARTag())               return false;
+    if (!hoverAboveTable(POS_LOW)) return false;
 
-    if (res)
-    {
-        goHome();
-        // ros::Duration(2.0).sleep();
-        // _gripper->blow();
-        // releaseObject();
-    }
-
-    return res;
+    return true;
 }
 
 bool ARTagController::passObject()
 {
-    ARTagController::moveObjectTowardHuman();
+    if (!moveObjectTowardHuman())       return false;
+    ros::Duration(1.0).sleep();
+    if (!waitForForceInteraction())     return false;
+    if (!releaseObject())               return false;
+    if (!goHome())                      return false;
 
-    bool res = waitForForceInteraction();
-
-    if (res)
-    {
-        releaseObject();
-        goHome();
-    }
-    return res;
+    return true;
 }
 
 void ARTagController::ARCallback(const aruco_msgs::MarkerArray& msg) 
 {
-    bool marker_found = false;
-
     for (int i = 0; i < msg.markers.size(); ++i)
     {
         ROS_DEBUG("Processing marker with id %i",msg.markers[i].id);
 
         if (msg.markers[i].id == marker_id)
         {
-            marker_found = true;
             _curr_marker_pose = msg.markers[i].pose.pose;
 
             ROS_DEBUG("Marker is in: %g %g %g", _curr_marker_pose.position.x,
@@ -101,11 +107,6 @@ void ARTagController::ARCallback(const aruco_msgs::MarkerArray& msg)
                                                 _curr_marker_pose.position.z);
         }
     }
-
-    // if (!marker_found)
-    // {
-    //     _curr_marker_pose.position.x = 100;
-    // }
 }
 
 void ARTagController::clearMarkerPose()
@@ -167,7 +168,7 @@ bool ARTagController::pickARTag()
             }
 
             ros::Rate(100).sleep();
-            ros::spin();
+            ros::spinOnce();
         }
         else
         {

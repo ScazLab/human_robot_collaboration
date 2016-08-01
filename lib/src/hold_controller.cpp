@@ -11,38 +11,42 @@ HoldController::~HoldController() {}
 
 void HoldController::InternalThreadEntry()
 {
+    int s = int(getState());
+
+    setState(WORKING);
+
     if (action == ACTION_HOME)
     {
-        setState(WORKING);
         if (goHome())   setState(START);
         else            setState(ERROR);
     }
     else if (action == ACTION_RELEASE)
     {
-        setState(WORKING);
         if (releaseObject())   setState(START);
         else                   setState(ERROR);
     }
-    else if (action == ACTION_HOLD && 
-             (int(getState()) == START || int(getState()) == PASSED))
+    else if (action == ACTION_HOLD && (s == START ||
+                                       s == ERROR ||
+                                       s == PASSED))
     {
-        setState(WORKING);
         if (holdObject())   setState(PASSED);
-        else
-        {
-            releaseObject();
-            HoldController::hoverAboveTable(POS_LOW);
-            setState(ERROR);
-        }
+        else                recoverFromError();
     }
     else
     {
-        ROS_ERROR("Invalid State %i", int(getState()));
+        ROS_ERROR("Invalid State %i", s);
         setState(ERROR);
     }
 
     pthread_exit(NULL);
     return;
+}
+
+void HoldController::recoverFromError()
+{
+    releaseObject();
+    goHome();
+    setState(ERROR);
 }
 
 bool HoldController::holdObject()

@@ -30,6 +30,8 @@ private:
 
     void ARCallback(const aruco_msgs::MarkerArray& msg);
 
+    void recoverFromError();
+
     bool hoverAboveTable(double height);
 
     bool moveObjectTowardHuman();

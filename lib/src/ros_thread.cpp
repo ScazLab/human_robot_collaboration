@@ -112,7 +112,7 @@ bool ROSThread::goToPose(double px, double py, double pz,
         //           ros::Time::now().toSec()-_init_time.toSec());
         _joint_cmd_pub.publish(joint_cmd);
         ros::Rate(100).sleep();
-        ros::spin();
+        ros::spinOnce();
 
         if(hasPoseCompleted(_curr_pose, req_pose_stamped.pose, mode)) 
         {
@@ -214,7 +214,7 @@ bool ROSThread::waitForForceInteraction(double _wait_time)
         if (detectForceInteraction()) return true;
 
         ros::Rate(100).sleep();
-        ros::spin();
+        ros::spinOnce();
 
         if ((ros::Time::now()-_init).toSec() > _wait_time)
         {

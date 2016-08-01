@@ -12,6 +12,8 @@ private:
 
     bool hoverAboveTable(double height);
 
+    void recoverFromError();
+
     bool holdObject();
 
     bool goHome();
