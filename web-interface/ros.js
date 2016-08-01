@@ -29,12 +29,8 @@ ros.on('close', function() {
   document.getElementById('error').style.display = 'inline-block';
 });
 
-
 // Create a connection to the rosbridge WebSocket server.
 ros.connect('ws://localhost:9090');
-
-// Publishing a Topic
-// ------------------
 
 // First, we create a Topic object with details of the topic's name and message type.
 var elemPressed = new ROSLIB.Topic({
@@ -43,28 +39,28 @@ var elemPressed = new ROSLIB.Topic({
   messageType : 'std_msgs/String'
 });
 
-// // Add a callback for any element on the page
-// function callback(e) {
-//     var e = window.e || e;
+// Add a callback for any element on the page
+function callback(e) {
+    var e = window.e || e;
 
-//     // console.log(e.target.tagName);
-//     if (e.target.tagName == 'BUTTON')
-//     {
-//         console.log('Pressed '+ e.target.tagName +
-//                     ' item: ' + e.target.firstChild.nodeValue);
+    // console.log(e.target.tagName);
+    if (e.target.tagName == 'BUTTON')
+    {
+        console.log('Pressed '+ e.target.tagName +
+                    ' item: ' + e.target.firstChild.nodeValue);
 
-//         var message = new ROSLIB.Message({
-//           data: e.target.firstChild.nodeValue
-//         });
+        var message = new ROSLIB.Message({
+          data: e.target.firstChild.nodeValue
+        });
 
-//         elemPressed.publish(message);
-//     }
+        elemPressed.publish(message);
+    }
 
-//     return;
-// }
+    return;
+}
 
-// if (document.addEventListener)
-//     document.addEventListener('click', callback, false);
-// else
-//     document.attachEvent('onclick', callback);
+if (document.addEventListener)
+    document.addEventListener('click', callback, false);
+else
+    document.attachEvent('onclick', callback);
 
