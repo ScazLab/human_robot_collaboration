@@ -20,7 +20,7 @@ private:
     HoldController*  right_ctrl;
 
 public:
-    actionProvider(std::string _name, std::string _limb);
+    actionProvider(std::string _name);
     ~actionProvider();
 
     bool serviceCallback(baxter_collaboration::DoAction::Request  &req, 

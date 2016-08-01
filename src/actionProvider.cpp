@@ -2,7 +2,7 @@
 
 using namespace std;
 
-actionProvider::actionProvider(std::string _name, std::string _limb) : name(_name)
+actionProvider::actionProvider(std::string _name) : name(_name)
 {
     service = _n.advertiseService("/"+name+"/action_service",
                                   &actionProvider::serviceCallback, this);
