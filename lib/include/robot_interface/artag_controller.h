@@ -5,7 +5,6 @@
 
 #include "arm_controller.h"
 
-
 class ARTagController : public ROSThread
 {
 private:
@@ -25,7 +24,7 @@ private:
 
     void ARCallback(const aruco_msgs::MarkerArray& msg);
 
-    bool hoverAboveTokens(double height);
+    bool hoverAboveTable(double height);
 
     bool moveObjectTowardHuman();
 
@@ -53,7 +52,7 @@ public:
 
     void setAction(std::string _action) { action = _action; };
 
-    void setMarkerID(int _id) { marker_id = _id; }
+    void setMarkerID(int _id) { marker_id = _id; };
 
     ~ARTagController();
 };

@@ -43,7 +43,7 @@ void ARTagController::InternalThreadEntry()
 bool ARTagController::goHome()
 {
     setState(START);
-    return releaseObject() && ARTagController::hoverAboveTokens(POS_LOW);
+    return releaseObject() && hoverAboveTable(POS_LOW);
 }
 
 bool ARTagController::releaseObject()
@@ -54,7 +54,7 @@ bool ARTagController::releaseObject()
 
 bool ARTagController::pickObject()
 {
-    ARTagController::hoverAboveTokens(POS_HIGH);
+    hoverAboveTable(POS_HIGH);
         
     bool res = pickARTag();
 
@@ -113,7 +113,7 @@ void ARTagController::clearMarkerPose()
     _curr_marker_pose.position.x = 100;
 }
 
-bool ARTagController::hoverAboveTokens(double height)
+bool hoverAboveTable(double height)
 {
     return ROSThread::goToPose(0.60, 0.45, height, VERTICAL_ORIENTATION_LEFT_ARM);
 }
