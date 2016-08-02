@@ -82,7 +82,7 @@ bool ARTagController::pickObject()
 bool ARTagController::passObject()
 {
     if (!moveObjectTowardHuman())       return false;
-    ros::Duration(1.0).sleep();
+    ros::Duration(2.0).sleep();
     if (!waitForForceInteraction())     return false;
     if (!releaseObject())               return false;
     if (!goHome())                      return false;
@@ -125,17 +125,24 @@ bool ARTagController::moveObjectTowardHuman()
 bool ARTagController::pickARTag()
 {
     ROS_DEBUG("Start Picking up tag..");
-    ros::Time start_time = ros::Time::now();                
+    ros::Time start_time = ros::Time::now();
 
-    if (_curr_marker_pose.position.x == 100)
-    {
-        ROS_ERROR("No callback from ARuco, or object with ID %i not found. Stopping.", marker_id);
-        return false;
-    }
-    else if (_curr_range == 0 || _curr_min_range == 0 || _curr_max_range == 0)
+    if (_curr_range == 0 || _curr_min_range == 0 || _curr_max_range == 0)
     {
         ROS_ERROR("I didn't receive a callback from the IR sensor! Stopping.");
         return false;
+    }
+
+    int cnt=0;
+    while (_curr_marker_pose.position.x == 100)
+    {
+        ROS_ERROR("No callback from ARuco, or object with ID %i not found. Stopping.", marker_id);
+        ++cnt;
+
+        if (cnt == 10)   return false;
+
+        ros::Rate(100).sleep();
+        ros::spinOnce();
     }
 
     int ik_failures = 0;
