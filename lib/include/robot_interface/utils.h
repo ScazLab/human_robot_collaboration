@@ -23,7 +23,7 @@
 #define POS_LOW         0.150
 #define PICK_UP_SPEED   0.1
 
-#define FORCE_THRES     2.0  // [N]
+#define FORCE_THRES     2.2  // [N]
 #define FORCE_ALPHA     0.3
 
 #define ACTION_HOME    "home"
