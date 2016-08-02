@@ -38,6 +38,8 @@ private:
     pthread_t _thread;
     static void * InternalThreadEntryFunc(void * This);
 
+    ros::AsyncSpinner spinner;
+
     ros::Subscriber _endpt_sub;
     ros::Subscriber _ir_sub;
     ros::ServiceClient _ik_client;

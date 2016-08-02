@@ -17,7 +17,7 @@ using namespace cv;
 /**************************************************************************/
 /*                            ROSThread                                   */
 /**************************************************************************/
-ROSThread::ROSThread(string limb): _limb(limb), _state(START,0)
+ROSThread::ROSThread(string limb): _limb(limb), _state(START,0), spinner(4)
 {
     _joint_cmd_pub = _n.advertise<baxter_core_msgs::JointCommand>("/robot/limb/" + _limb + "/joint_command", 1);   
     _endpt_sub     = _n.subscribe("/robot/limb/" + _limb + "/endpoint_state", SUBSCRIBER_BUFFER, &ROSThread::endpointCallback, this);
@@ -33,11 +33,16 @@ ROSThread::ROSThread(string limb): _limb(limb), _state(START,0)
     _filt_force.push_back(0.0);
     _filt_force.push_back(0.0);
     _filt_force.push_back(0.0);
+
+    spinner.start();
 }
 
 ROSThread::~ROSThread() { }
 
-bool ROSThread::startInternalThread() {return (pthread_create(&_thread, NULL, InternalThreadEntryFunc, this) == 0);}
+bool ROSThread::startInternalThread()
+{
+    return (pthread_create(&_thread, NULL, InternalThreadEntryFunc, this) == 0);
+}
 
 void ROSThread::WaitForInternalThreadToExit() {(void) pthread_join(_thread, NULL);}
 
