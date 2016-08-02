@@ -137,13 +137,17 @@ bool ARTagController::pickARTag()
     int cnt=0;
     while (_curr_marker_pose.position.x == 100)
     {
-        ROS_ERROR("No callback from ARuco, or object with ID %i not found. Stopping.", marker_id);
+        ROS_DEBUG("No callback from ARuco, or object with ID %i not found.", marker_id);
         ++cnt;
 
-        if (cnt == 10)   return false;
+        if (cnt == 10)
+        {
+            ROS_ERROR("No object with ID %i found. Stopping.", marker_id);
+            return false;
+        }
 
-        ros::Rate(50).sleep();
         ros::spinOnce();
+        ros::Rate(10).sleep();
     }
 
     int ik_failures = 0;
@@ -173,8 +177,8 @@ bool ARTagController::pickARTag()
                 break;
             }
 
-            ros::Rate(100).sleep();
             ros::spinOnce();
+            ros::Rate(100).sleep();
         }
         else
         {
