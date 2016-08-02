@@ -16,7 +16,10 @@ OBJECT_IDS = {
 
 
 def remote_message_to_action(msg):
-    action, obj = msg.split(' ')
+    # TODO The addition of null is because sometimes we get
+    #      e.g. ['get', 'left_leg', ''] from msg.split(' ')
+    action, obj, null = msg.split(' ')
+
     obj_id = OBJECT_IDS[obj]
     return (action, obj_id)
 
