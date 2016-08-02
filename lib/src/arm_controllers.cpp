@@ -58,6 +58,8 @@ void MoveToRest::InternalThreadEntry()
         joint_cmd.command[6] = getLimb() == "left" ? 0.1257864246066039   : -0.011504855909140603;
 
         publish(joint_cmd);
+
+        ros::spinOnce();
         ros::Rate(100).sleep();
  
         if(hasPoseCompleted(_curr_pose, req_pose_stamped.pose, "loose")) 
@@ -102,6 +104,7 @@ void PickUpToken::InternalThreadEntry()
             break; 
         }
 
+        ros::spinOnce();
         ros::Rate(100).sleep();
     }
 
@@ -165,6 +168,8 @@ void PickUpToken::gripToken()
         }
 
         publish(joint_cmd);
+
+        ros::spinOnce();
         ros::Rate(100).sleep();
         
         // if(_curr_position.z < -0.05) break;
@@ -474,6 +479,8 @@ void ScanBoard::InternalThreadEntry()
     while(ros::ok())
     {
         if(!_curr_img_empty) break;
+
+        ros::spinOnce();
         ros::Rate(100).sleep();
     }
 
@@ -531,6 +538,7 @@ void ScanBoard::setDepth(float *dist)
         }
 
         publish(joint_cmd);
+        ros::spinOnce();
         ros::Rate(100).sleep();
      
         if(hasCollided("loose")) 
