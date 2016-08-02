@@ -17,13 +17,13 @@
 #define PUT_DOWN 4
 #define PASSED 5
 
-#define SUBSCRIBER_BUFFER 4
+#define SUBSCRIBER_BUFFER 3
 
 #define POS_HIGH        0.400
 #define POS_LOW         0.150
 #define PICK_UP_SPEED   0.1
 
-#define FORCE_THRES     2.2  // [N]
+#define FORCE_THRES     2.0  // [N]
 #define FORCE_ALPHA     0.3
 
 #define ACTION_HOME    "home"
@@ -32,24 +32,15 @@
 #define ACTION_PASS    "pass"
 #define ACTION_HOLD    "hold"
 
-#define HORIZONTAL_ORIENTATION_LEFT_ARM   -0.0155113251266, 0.703354199922, -0.102825501874, 0.703192139041
-#define VERTICAL_ORIENTATION_LEFT_ARM      0.712801568376, -0.700942136419, -0.0127158080742, -0.0207931175453
-#define HORIZONTAL_ORIENTATION_RIGHT_ARM  -0.175730746765, 0.67317042445, 0.1902242414, 0.692657940308
-#define VERTICAL_ORIENTATION_RIGHT_ARM    -0.14007673309, 0.989696832226, -0.0103020489473, 0.0277949080985
+#define HORIZONTAL_ORIENTATION_LEFT_ARM       -0.0155113251266, 0.703354199922, -0.102825501874, 0.703192139041
+#define VERTICAL_ORIENTATION_LEFT_ARM          0.712801568376, -0.700942136419, -0.0127158080742, -0.0207931175453
 
-#define HOME_POSITION_RIGHT_ARM 0.60, -0.30, 0.150
+#define HORIZONTAL_ORIENTATION_RIGHT_ARM_OLD  -0.175730746765, 0.67317042445, 0.1902242414, 0.692657940308
+#define HORIZONTAL_ORIENTATION_RIGHT_ARM      -0.589631754695, 0.239895010244, -0.298576525167, 0.711081455625
 
-/*
- * checks if end effector has made contact with a token by checking if 
- * the range of the infrared sensor has fallen below the threshold value
- * 
- * @param      current range values of the IR sensor, and a string 
- *            (strict/loose) indicating whether to use a high or low
- *            threshold value
- *             
- * return     true if end effector has made contact; false otherwise
- */
-bool hasCollided(float range, float max_range, float min_range, std::string mode);
+#define VERTICAL_ORIENTATION_RIGHT_ARM        -0.14007673309, 0.989696832226, -0.0103020489473, 0.0277949080985
+
+#define HOME_POSITION_RIGHT_ARM 0.65, -0.25, 0.20
 
 /*
  * checks if the arm has completed its intended move by comparing

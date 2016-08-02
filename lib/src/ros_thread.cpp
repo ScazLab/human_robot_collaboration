@@ -19,10 +19,13 @@ using namespace cv;
 /**************************************************************************/
 ROSThread::ROSThread(string limb): _limb(limb), _state(START,0), spinner(4)
 {
-    _joint_cmd_pub = _n.advertise<baxter_core_msgs::JointCommand>("/robot/limb/" + _limb + "/joint_command", 1);   
-    _endpt_sub     = _n.subscribe("/robot/limb/" + _limb + "/endpoint_state", SUBSCRIBER_BUFFER, &ROSThread::endpointCallback, this);
-    _ir_sub        = _n.subscribe("/robot/range/" + _limb + "_hand_range/state", SUBSCRIBER_BUFFER, &ROSThread::IRCallback, this);
-    _ik_client     = _n.serviceClient<SolvePositionIK>("/ExternalTools/" + _limb + "/PositionKinematicsNode/IKService");
+    _joint_cmd_pub = _n.advertise<JointCommand>("/robot/limb/" + _limb + "/joint_command", 1);   
+    _endpt_sub     = _n.subscribe("/robot/limb/" + _limb + "/endpoint_state",
+                                    SUBSCRIBER_BUFFER, &ROSThread::endpointCallback, this);
+    _ir_sub        = _n.subscribe("/robot/range/" + _limb + "_hand_range/state",
+                                    SUBSCRIBER_BUFFER, &ROSThread::IRCallback, this);
+    _ik_client     = _n.serviceClient<SolvePositionIK>("/ExternalTools/" + _limb + 
+                                                       "/PositionKinematicsNode/IKService");
 
     _init_time = ros::Time::now();
 
@@ -44,7 +47,10 @@ bool ROSThread::startInternalThread()
     return (pthread_create(&_thread, NULL, InternalThreadEntryFunc, this) == 0);
 }
 
-void ROSThread::WaitForInternalThreadToExit() {(void) pthread_join(_thread, NULL);}
+void ROSThread::WaitForInternalThreadToExit()
+{
+    (void) pthread_join(_thread, NULL);
+}
 
 void ROSThread::endpointCallback(const baxter_core_msgs::EndpointState& msg) 
 {
@@ -147,9 +153,10 @@ bool ROSThread::getJointAngles(geometry_msgs::PoseStamped& pose_stamped,
             {
                 // if position cannot be reached, try a position with the same x-y coordinates
                 // but higher z (useful when placing tokens)
-                ROS_WARN("IK solution not valid: %g %g %g", pose_stamped.pose.position.x,
-                                                            pose_stamped.pose.position.y,
-                                                            pose_stamped.pose.position.z);
+                ROS_DEBUG("[%s] IK solution not valid: %g %g %g", getLimb().c_str(),
+                                                       pose_stamped.pose.position.x,
+                                                       pose_stamped.pose.position.y,
+                                                       pose_stamped.pose.position.z);
                 pose_stamped.pose.position.z += 0.004;
             } 
         }
@@ -158,16 +165,29 @@ bool ROSThread::getJointAngles(geometry_msgs::PoseStamped& pose_stamped,
         // z-coordinate threshold is found, then no solution exists and exit oufof loop
         if((ros::Time::now() - start).toSec() > 0.2 || pose_stamped.pose.position.z > thresh_z) 
         {
-            ROS_ERROR("Did not find a suitable IK solution! Part %s Final Position %g %g %g",
-                                                                        getLimb().c_str(),
-                                                             pose_stamped.pose.position.x,
-                                                             pose_stamped.pose.position.y,
-                                                             pose_stamped.pose.position.z);
+            ROS_WARN("[%s] Did not find a suitable IK solution! Final Position %g %g %g",
+                                                                       getLimb().c_str(),
+                                                            pose_stamped.pose.position.x,
+                                                            pose_stamped.pose.position.y,
+                                                            pose_stamped.pose.position.z);
             return false;
         }
     }
 
     return false;
+}
+
+bool ROSThread::hasCollided(string mode)
+{
+    float threshold;
+    
+    if     (mode == "strict") threshold = 0.050;
+    else if(mode ==  "loose") threshold = 0.067;
+    
+    if(_curr_range <= _curr_max_range &&
+       _curr_range >= _curr_min_range &&
+       _curr_range <= threshold) return true;
+    else return false;
 }
 
 void ROSThread::setJointNames(JointCommand& joint_cmd)
@@ -226,6 +246,11 @@ void ROSThread::setState(int state)
     _state.time = (ros::Time::now() - _init_time).toSec();
 }
 
+void ROSThread::publish(baxter_core_msgs::JointCommand _cmd)
+{
+    _joint_cmd_pub.publish(_cmd);
+}
+
 // for syncing mutex locks (crash/errors occur if not used)
 // pause() changes timing of execution of thread locks, but unclear
 // why crash occurs w/o it and needs to be investigated
@@ -235,7 +260,7 @@ void ROSThread::pause()
 }
 
 // Private
-void * ROSThread::InternalThreadEntryFunc(void * This) 
+void * ROSThread::InternalThreadEntryFunc(void * This)
 {
     ((ROSThread *)This)->InternalThreadEntry(); 
     return NULL;
@@ -247,7 +272,8 @@ void * ROSThread::InternalThreadEntryFunc(void * This)
 
 ROSThreadImage::ROSThreadImage(string limb): _img_trp(_n), ROSThread(limb)
 {
-    _img_sub = _img_trp.subscribe("/cameras/left_hand_camera/image", SUBSCRIBER_BUFFER, &ROSThreadImage::imageCallback, this);
+    _img_sub = _img_trp.subscribe("/cameras/left_hand_camera/image", SUBSCRIBER_BUFFER,
+                                                  &ROSThreadImage::imageCallback, this);
     pthread_mutex_init(&_mutex_img, NULL);
 }
 
@@ -257,9 +283,17 @@ void ROSThreadImage::imageCallback(const sensor_msgs::ImageConstPtr& msg)
 {
     ROS_DEBUG("imageCallback");
     cv_bridge::CvImageConstPtr cv_ptr;
-    try {cv_ptr = cv_bridge::toCvShare(msg);}
-    catch(cv_bridge::Exception& e) { ROS_ERROR("[Arm Controller] cv_bridge exception: %s", e.what()); }
- 
+
+    try
+    {
+        cv_ptr = cv_bridge::toCvShare(msg);
+    }
+    catch(cv_bridge::Exception& e)
+    {
+        ROS_ERROR("[Arm Controller] cv_bridge exception: %s", e.what());
+        return;
+    }
+
     pthread_mutex_lock(&_mutex_img);
     _curr_img = cv_ptr->image.clone();
     _curr_img_size = _curr_img.size();

@@ -57,7 +57,7 @@ void MoveToRest::InternalThreadEntry()
         joint_cmd.command[5] = getLimb() == "left" ? -1.4684031092033123  : -1.469170099597255 ;
         joint_cmd.command[6] = getLimb() == "left" ? 0.1257864246066039   : -0.011504855909140603;
 
-        _joint_cmd_pub.publish(joint_cmd);
+        publish(joint_cmd);
         ros::Rate(100).sleep();
  
         if(hasPoseCompleted(_curr_pose, req_pose_stamped.pose, "loose")) 
@@ -97,7 +97,7 @@ void PickUpToken::InternalThreadEntry()
     // wait for IR sensor callback
     while(ros::ok())
     {
-        if(!(_curr_range == 0 && _curr_min_range == 0 && _curr_max_range == 0))
+        if(!(get_curr_range() == 0 && get_curr_min_range() == 0 && get_curr_max_range() == 0))
         {
             break; 
         }
@@ -164,12 +164,12 @@ void PickUpToken::gripToken()
             joint_cmd.command[i] = joint_angles[i];
         }
 
-        _joint_cmd_pub.publish(joint_cmd);
+        publish(joint_cmd);
         ros::Rate(100).sleep();
         
         // if(_curr_position.z < -0.05) break;
 
-        if(hasCollided(_curr_range, _curr_max_range, _curr_min_range, "strict")) 
+        if(hasCollided("strict")) 
         {
             break;
         }
@@ -530,10 +530,10 @@ void ScanBoard::setDepth(float *dist)
             joint_cmd.command[i] = joint_angles[i];
         }
 
-        _joint_cmd_pub.publish(joint_cmd);
+        publish(joint_cmd);
         ros::Rate(100).sleep();
      
-        if(hasCollided(_curr_range, _curr_max_range, _curr_min_range, "loose")) 
+        if(hasCollided("loose")) 
         {
             break;
         }

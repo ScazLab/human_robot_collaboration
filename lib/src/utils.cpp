@@ -22,15 +22,6 @@ using namespace geometry_msgs;
 /*                               Utils                                    */
 /**************************************************************************/
 
-bool hasCollided(float range, float max_range, float min_range, string mode)
-{
-    float threshold;
-    if(mode == "strict") threshold = 0.050;
-    if(mode == "loose") threshold = 0.067;
-    if(range <= max_range && range >= min_range && range <= threshold) return true;
-    else return false;
-}
-
 bool hasPoseCompleted(Pose a, Pose b, string mode)
 {
     // cout << "Current pose: " << a << endl;

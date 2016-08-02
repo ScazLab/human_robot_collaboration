@@ -55,9 +55,9 @@ bool actionProvider::serviceCallback(baxter_collaboration::DoAction::Request  &r
     {
         left_ctrl -> setAction(action);
         left_ctrl -> startInternalThread();
-
         right_ctrl -> setAction(action);
         right_ctrl -> startInternalThread();
+        ros::Duration(2.0).sleep();
 
         while( (int(left_ctrl ->getState()) != START  &&
                 int(left_ctrl ->getState()) != ERROR) ||
@@ -78,6 +78,7 @@ bool actionProvider::serviceCallback(baxter_collaboration::DoAction::Request  &r
         left_ctrl -> setAction(action);
         left_ctrl -> setMarkerID(ID);
         left_ctrl -> startInternalThread();
+        ros::Duration(2.0).sleep();
 
         while( int(left_ctrl->getState()) != PICK_UP  &&
                int(left_ctrl->getState()) != ERROR )
@@ -94,6 +95,7 @@ bool actionProvider::serviceCallback(baxter_collaboration::DoAction::Request  &r
     {
         left_ctrl -> setAction(action);
         left_ctrl -> startInternalThread();
+        ros::Duration(2.0).sleep();
 
         while( int(left_ctrl->getState()) != PASSED  &&
                int(left_ctrl->getState()) != ERROR )
@@ -110,6 +112,7 @@ bool actionProvider::serviceCallback(baxter_collaboration::DoAction::Request  &r
     {
         right_ctrl -> setAction(action);
         right_ctrl -> startInternalThread();
+        ros::Duration(2.0).sleep();
 
         while( int(right_ctrl->getState()) != PASSED  &&
                int(right_ctrl->getState()) != ERROR )

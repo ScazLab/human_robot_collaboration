@@ -44,6 +44,12 @@ private:
     ros::Subscriber _ir_sub;
     ros::ServiceClient _ik_client;
 
+    ros::Publisher  _joint_cmd_pub;
+
+    std::vector<double> _filt_force;
+
+    float _curr_range, _curr_max_range, _curr_min_range;
+
 protected:
 
     ros::NodeHandle _n;
@@ -52,18 +58,24 @@ protected:
     geometry_msgs::Point  _curr_position;
     geometry_msgs::Wrench _curr_wrench;
 
-    std::vector<double> _filt_force;
-
-    float _curr_range, _curr_max_range, _curr_min_range;
-
-    ros::Publisher  _joint_cmd_pub;
-
     void pause();
 
     /*
      * Function that will be spun out as a thread
      */
     virtual void InternalThreadEntry() = 0;
+
+    /*
+     * checks if end effector has made contact with a token by checking if 
+     * the range of the infrared sensor has fallen below the threshold value
+     * 
+     * @param      current range values of the IR sensor, and a string 
+     *            (strict/loose) indicating whether to use a high or low
+     *            threshold value
+     *             
+     * return     true if end effector has made contact; false otherwise
+     */
+    bool hasCollided(std::string mode = "loose");
 
     /*
      * Uses built in IK solver to find joint angles solution for desired pose
@@ -145,6 +157,14 @@ protected:
      */
     void hoverAboveTokens(double height);
 
+    /**
+     * @brief Publishes the desired joint configuration
+     * @details Publishes the desired joint configuration in the proper topic
+     * 
+     * @param _cmd The desired joint configuration
+     */
+    void publish(baxter_core_msgs::JointCommand _cmd);
+
 public:
     ROSThread(std::string limb);
     virtual ~ROSThread();
@@ -166,7 +186,11 @@ public:
      * Self-explaining "getters"
      */
     State       getState() { return _state; };
-    std::string getLimb()  { return _limb;  };
+    std::string getLimb()  { return  _limb; };
+
+    float       get_curr_range()     { return     _curr_range; };
+    float       get_curr_min_range() { return _curr_min_range; };
+    float       get_curr_max_range() { return _curr_max_range; };
 };
 
 /**

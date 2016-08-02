@@ -73,6 +73,7 @@ bool ARTagController::goHome()
 bool ARTagController::pickObject()
 {
     if (!hoverAboveTable(POS_HIGH)) return false;
+    ros::Duration(1.0).sleep();
     if (!pickARTag())               return false;
     if (!hoverAboveTable(POS_LOW)) return false;
 
@@ -127,7 +128,7 @@ bool ARTagController::pickARTag()
     ROS_DEBUG("Start Picking up tag..");
     ros::Time start_time = ros::Time::now();
 
-    if (_curr_range == 0 || _curr_min_range == 0 || _curr_max_range == 0)
+    if (get_curr_range() == 0 || get_curr_min_range() == 0 || get_curr_max_range() == 0)
     {
         ROS_ERROR("I didn't receive a callback from the IR sensor! Stopping.");
         return false;
@@ -141,7 +142,7 @@ bool ARTagController::pickARTag()
 
         if (cnt == 10)   return false;
 
-        ros::Rate(100).sleep();
+        ros::Rate(50).sleep();
         ros::spinOnce();
     }
 
@@ -166,7 +167,7 @@ bool ARTagController::pickARTag()
             }
             elapsed_time = new_elapsed_time;
 
-            if(hasCollided(_curr_range, _curr_max_range, _curr_min_range, "strict")) 
+            if(hasCollided("strict")) 
             {
                 ROS_INFO("Collision!");
                 break;
@@ -211,7 +212,7 @@ bool ARTagController::goToPose(double px, double py, double pz,
         joint_cmd.command[i] = joint_angles[i];
     }
 
-    _joint_cmd_pub.publish(joint_cmd);
+    publish(joint_cmd);
 
     return true;
 }
