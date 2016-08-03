@@ -6,14 +6,6 @@ using namespace geometry_msgs;
 using namespace sensor_msgs;
 using namespace cv;
 
-/*
-    BoardStateSensing error at start
-    Drop token faster
-    Flag option for turning off display windows when run as part of baxterTictactoe
-    Get rid of imageScreen node error and show something else via boardScheme
-    Error-checking when cellsDefinitionAuto does not see board
-*/
-
 /**************************************************************************/
 /*                            ROSThread                                   */
 /**************************************************************************/
