@@ -11,7 +11,7 @@ private:
     double elapsed_time;
 
     ros::Subscriber _aruco_sub;
-    geometry_msgs::Pose         _curr_marker_pos;
+    geometry_msgs::Point        _curr_marker_pos;
     geometry_msgs::Quaternion   _curr_marker_ori;
 
     void clearMarkerPose();
