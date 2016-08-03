@@ -1,0 +1,12 @@
+<launch>
+    <env name="ROSCONSOLE_CONFIG_FILE" value="$(find baxter_collaboration)/rosconsole.conf"/>
+    <!-- <include file="$(find baxter_collaboration)/launch/baxter_marker_publisher.launch" /> -->
+
+    <arg name="forceThreshold"      default="2.0"/>    <!-- [N] -->
+
+    <param name="action_provider/force_threshold" value="$(arg forceThreshold)"/>
+
+    <node pkg="baxter_collaboration" type="action_provider" name="action_provider" output="screen">
+    </node>
+
+</launch>
