@@ -10,7 +10,7 @@ ARTagCtrl::ARTagCtrl(std::string _name, std::string _limb) :
 
     elapsed_time = 0;
 
-    _curr_marker_pose.position.x = 100;
+    _curr_marker_pos.x = 100;
 
     if (!goHome()) setState(ERROR);
 }
@@ -106,15 +106,16 @@ void ARTagCtrl::ArucoCb(const aruco_msgs::MarkerArray& msg)
 
         if (msg.markers[i].id == getMarkerID())
         {
-            _curr_marker_pose = msg.markers[i].pose.pose;
+            _curr_marker_pos = msg.markers[i].pose.position;
+            _curr_marker_ori = msg.markers[i].pose.orientation;
 
-            ROS_DEBUG("Marker is in: %g %g %g", _curr_marker_pose.position.x,
-                                                _curr_marker_pose.position.y,
-                                                _curr_marker_pose.position.z);
-            // ROS_INFO("Marker is in: %g %g %g %g", _curr_marker_pose.orientation.x,
-            //                                       _curr_marker_pose.orientation.y,
-            //                                       _curr_marker_pose.orientation.z,
-            //                                       _curr_marker_pose.orientation.w);
+            ROS_DEBUG("Marker is in: %g %g %g", _curr_marker_pos.x,
+                                                _curr_marker_pos.y,
+                                                _curr_marker_pos.z);
+            // ROS_INFO("Marker is in: %g %g %g %g", _curr_marker_ori.x,
+            //                                       _curr_marker_ori.y,
+            //                                       _curr_marker_ori.z,
+            //                                       _curr_marker_ori.w);
         }
     }
 }
@@ -131,7 +132,7 @@ bool ARTagCtrl::pickARTag()
     }
 
     int cnt=0;
-    while (_curr_marker_pose.position.x == 100)
+    while (_curr_marker_pos.x == 100)
     {
         ROS_WARN("No callback from ARuco, or object with ID %i not found.", getMarkerID());
         ++cnt;
@@ -154,8 +155,8 @@ bool ARTagCtrl::pickARTag()
         ros::Time now_time = ros::Time::now();
         double new_elapsed_time = (now_time - start_time).toSec();
 
-        double x = _curr_marker_pose.position.x;
-        double y = _curr_marker_pose.position.y;
+        double x = _curr_marker_pos.x;
+        double y = _curr_marker_pos.y;
         double z = z_start - PICK_UP_SPEED * new_elapsed_time;
 
         ROS_DEBUG("Time %g Going to: %g %g %g", new_elapsed_time, x, y, z);
@@ -221,7 +222,7 @@ bool ARTagCtrl::goToPose(double px, double py, double pz,
 
 void ARTagCtrl::clearMarkerPose()
 {
-    _curr_marker_pose.position.x = 100;
+    _curr_marker_pos.x = 100;
 }
 
 bool ARTagCtrl::hoverAbovePool()
