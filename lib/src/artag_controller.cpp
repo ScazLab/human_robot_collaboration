@@ -38,14 +38,14 @@ void ARTagController::InternalThreadEntry()
     }
     else if (action == ACTION_GET && (s == START ||
                                       s == ERROR ||
-                                      s == PASSED))
+                                      s == DONE  ))
     {
         if (pickObject())   setState(PICK_UP);
         else                recoverFromError();
     }
     else if (action == ACTION_PASS && s == PICK_UP)
     {
-        if(passObject())   setState(PASSED);
+        if(passObject())   setState(DONE);
         else               recoverFromError();
     }
     else

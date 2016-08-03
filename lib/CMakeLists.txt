@@ -11,18 +11,20 @@ project(baxterCollaboration)
 include_directories(${PROJECT_SOURCE_DIR}/include)
 
 ## Declare a C++ library
-add_library(robot_interface  include/robot_interface/utils.h
-                             include/robot_interface/ros_thread.h
-                             include/robot_interface/ttt_controllers.h
-                             include/robot_interface/gripper.h
-                             include/robot_interface/artag_controller.h
-                             include/robot_interface/hold_controller.h  
-                             src/utils.cpp
-                             src/ttt_controllers.cpp
-                             src/ros_thread.cpp
-                             src/gripper.cpp
-                             src/artag_controller.cpp
-                             src/hold_controller.cpp)
+add_library(robot_interface include/robot_interface/utils.h
+                            include/robot_interface/ros_thread.h
+                            include/robot_interface/gripper.h
+                            include/robot_interface/ttt_controllers.h
+                            include/robot_interface/arm_ctrl.h
+                            include/robot_interface/artag_controller.h
+                            include/robot_interface/hold_controller.h  
+                            src/utils.cpp
+                            src/ros_thread.cpp
+                            src/gripper.cpp
+                            src/ttt_controllers.cpp
+                            src/arm_ctrl.cpp
+                            src/artag_controller.cpp
+                            src/hold_controller.cpp)
 
 ## Add cmake target dependencies of the library
 ## as an example, code may need to be generated before libraries

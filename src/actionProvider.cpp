@@ -97,13 +97,13 @@ bool actionProvider::serviceCallback(baxter_collaboration::DoAction::Request  &r
         left_ctrl -> startInternalThread();
         ros::Duration(2.0).sleep();
 
-        while( int(left_ctrl->getState()) != PASSED  &&
+        while( int(left_ctrl->getState()) != DONE    &&
                int(left_ctrl->getState()) != ERROR )
         {
             ros::spinOnce();
         }
 
-        if (int(left_ctrl->getState()) == PASSED )
+        if (int(left_ctrl->getState()) == DONE   )
         {
             res.success = true;
         }
@@ -114,13 +114,13 @@ bool actionProvider::serviceCallback(baxter_collaboration::DoAction::Request  &r
         right_ctrl -> startInternalThread();
         ros::Duration(2.0).sleep();
 
-        while( int(right_ctrl->getState()) != PASSED  &&
+        while( int(right_ctrl->getState()) != DONE    &&
                int(right_ctrl->getState()) != ERROR )
         {
             ros::spinOnce();
         }
 
-        if (int(right_ctrl->getState()) == PASSED )
+        if (int(right_ctrl->getState()) == DONE   )
         {
             res.success = true;
         }

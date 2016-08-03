@@ -8,14 +8,14 @@
 
 #include <geometry_msgs/Pose.h>
 
-#define WORKING -2
-#define ERROR -1
-#define START 0
-#define REST 1
-#define SCANNED 2
-#define PICK_UP 3
-#define PUT_DOWN 4
-#define PASSED 5
+#define WORKING  -2
+#define ERROR    -1
+#define START     0
+#define REST      1
+#define SCANNED   2
+#define PICK_UP   3
+#define PUT_DOWN  4
+#define DONE      5
 
 #define SUBSCRIBER_BUFFER 3
 

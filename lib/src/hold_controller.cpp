@@ -5,7 +5,7 @@ using namespace std;
 HoldController::HoldController(std::string limb) : ROSThread(limb),
                                                    Gripper(limb)
 {
-    setState(START);
+
 }
 
 HoldController::~HoldController() {}
@@ -28,9 +28,9 @@ void HoldController::InternalThreadEntry()
     }
     else if (action == ACTION_HOLD && (s == START ||
                                        s == ERROR ||
-                                       s == PASSED))
+                                       s == DONE  ))
     {
-        if (holdObject())   setState(PASSED);
+        if (holdObject())   setState(DONE);
         else                recoverFromError();
     }
     else
