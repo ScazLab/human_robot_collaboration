@@ -9,7 +9,7 @@ using namespace cv;
 /**************************************************************************/
 /*                            ROSThread                                   */
 /**************************************************************************/
-ROSThread::ROSThread(string limb): _limb(limb), _state(START,0), spinner(4),
+ROSThread::ROSThread(string limb): _n("~"), _limb(limb), _state(START,0), spinner(4),
                                    ir_ok(false)
 {
     _joint_cmd_pub = _n.advertise<JointCommand>("/robot/limb/" + _limb + "/joint_command", 1);   
@@ -31,6 +31,10 @@ ROSThread::ROSThread(string limb): _limb(limb), _state(START,0), spinner(4),
     _filt_force.push_back(0.0);
     _filt_force.push_back(0.0);
     _filt_force.push_back(0.0);
+
+    _n.param<double>("force_threshold", force_thres, FORCE_THRES);
+
+    ROS_INFO("Force Threshold : %g",force_thres);
 
     spinner.start();
 }
@@ -209,7 +213,7 @@ bool ROSThread::detectForceInteraction()
 
     ROS_DEBUG("Interaction: %g %g %g", f_x, f_y, f_z);
 
-    if (f_x > FORCE_THRES || f_y > FORCE_THRES || f_z > FORCE_THRES)
+    if (f_x > force_thres || f_y > force_thres || f_z > force_thres)
     {
         ROS_INFO("Interaction: %g %g %g", f_x, f_y, f_z);
         return true;

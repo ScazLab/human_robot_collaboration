@@ -52,6 +52,7 @@ private:
     // End-Effector stuff
     ros::Subscriber _endpt_sub;
     std::vector<double> _filt_force;
+    double force_thres;
 
 protected:
 
