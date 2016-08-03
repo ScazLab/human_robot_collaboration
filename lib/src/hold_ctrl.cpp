@@ -14,7 +14,7 @@ void HoldCtrl::InternalThreadEntry()
     string a =     getAction();
 
     setState(WORKING);
-    
+
     if (a == ACTION_HOME)
     {
         if (goHome())   setState(START);
@@ -44,15 +44,15 @@ void HoldCtrl::InternalThreadEntry()
 
 bool HoldCtrl::holdObject()
 {
-    if (!goHoldPose(0.24))              return false;
+    if (!goHoldPose(0.24))                return false;
     ros::Duration(1.0).sleep();
-    if (!waitForForceInteraction())     return false;
-    if (!gripObject())                  return false;
-    ros::Duration(2.0).sleep();
-    if (!waitForForceInteraction(30.0)) return false;
-    if (!releaseObject())               return false;
+    if (!waitForForceInteraction(30.0))   return false;
+    if (!gripObject())                    return false;
     ros::Duration(1.0).sleep();
-    if (!goHome())                      return false;
+    if (!waitForForceInteraction(180.0))  return false;
+    if (!releaseObject())                 return false;
+    ros::Duration(1.0).sleep();
+    if (!goHome())                         return false;
 
     return true;
 }
