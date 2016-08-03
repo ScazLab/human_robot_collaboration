@@ -5,7 +5,7 @@ using namespace std;
 HoldCtrl::HoldCtrl(std::string _name, std::string _limb) : 
                                     ArmCtrl(_name,_limb)
 {
-
+    if (!goHome()) setState(ERROR);
 }
 
 void HoldCtrl::InternalThreadEntry()

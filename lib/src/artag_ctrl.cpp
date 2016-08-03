@@ -11,6 +11,8 @@ ARTagCtrl::ARTagCtrl(std::string _name, std::string _limb) :
     elapsed_time = 0;
 
     _curr_marker_pose.position.x = 100;
+
+    if (!goHome()) setState(ERROR);
 }
 
 // Protected
@@ -64,11 +66,12 @@ void ARTagCtrl::InternalThreadEntry()
 
 bool ARTagCtrl::handOver()
 {
-    if (!goHome())                  return false;
+    if (!hoverAboveTable(POS_HIGH)) return false;
     if (!pickARTag())               return false;
     if (!hoverAboveTable(POS_LOW))  return false;
-    if (!releaseObject())           return false;
-    if (!goHome())                  return false;
+    if (!passObject())              return false;
+    // if (!releaseObject())           return false;
+    // if (!goHome())                  return false;
 
     return true;
 }
@@ -76,7 +79,7 @@ bool ARTagCtrl::handOver()
 bool ARTagCtrl::pickObject()
 {
     if (!hoverAbovePool())          return false;
-    ros::Duration(0.15).sleep();
+    ros::Duration(0.1).sleep();
     if (!pickARTag())               return false;
     if (!hoverAbovePool())          return false;
     if (!hoverAboveTable(POS_LOW))  return false;
@@ -108,18 +111,22 @@ void ARTagCtrl::ArucoCb(const aruco_msgs::MarkerArray& msg)
             ROS_DEBUG("Marker is in: %g %g %g", _curr_marker_pose.position.x,
                                                 _curr_marker_pose.position.y,
                                                 _curr_marker_pose.position.z);
+            // ROS_INFO("Marker is in: %g %g %g %g", _curr_marker_pose.orientation.x,
+            //                                       _curr_marker_pose.orientation.y,
+            //                                       _curr_marker_pose.orientation.z,
+            //                                       _curr_marker_pose.orientation.w);
         }
     }
 }
 
 bool ARTagCtrl::pickARTag()
 {
-    ROS_INFO("Start Picking up tag..");
+    ROS_INFO("[%s] Start Picking up tag..", getLimb().c_str());
     ros::Time start_time = ros::Time::now();
 
     if (!is_ir_ok())
     {
-        ROS_ERROR("I didn't receive a callback from the IR sensor! Stopping.");
+        ROS_ERROR("No callback from the IR sensor! Stopping.");
         return false;
     }
 
@@ -139,8 +146,9 @@ bool ARTagCtrl::pickARTag()
         ros::Rate(10).sleep();
     }
 
+    double z_start  = _curr_pos.z;
+
     int ik_failures = 0;
-    double z_start  = _curr_pose.position.z;
     while(ros::ok())
     {
         ros::Time now_time = ros::Time::now();
