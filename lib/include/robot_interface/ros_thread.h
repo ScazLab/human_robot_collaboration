@@ -48,6 +48,7 @@ private:
 
     std::vector<double> _filt_force;
 
+    bool  ir_ok;
     float _curr_range, _curr_max_range, _curr_min_range;
 
 protected:
@@ -188,9 +189,10 @@ public:
     State       getState() { return _state; };
     std::string getLimb()  { return  _limb; };
 
-    float       get_curr_range()     { return     _curr_range; };
-    float       get_curr_min_range() { return _curr_min_range; };
-    float       get_curr_max_range() { return _curr_max_range; };
+    /*
+     * Check availability of the various subscribers
+    */
+    bool    is_ir_ok() { return ir_ok; };
 };
 
 /**

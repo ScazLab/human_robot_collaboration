@@ -17,7 +17,8 @@ using namespace cv;
 /**************************************************************************/
 /*                            ROSThread                                   */
 /**************************************************************************/
-ROSThread::ROSThread(string limb): _limb(limb), _state(START,0), spinner(4)
+ROSThread::ROSThread(string limb): _limb(limb), _state(START,0), spinner(4),
+                                   ir_ok(false)
 {
     _joint_cmd_pub = _n.advertise<JointCommand>("/robot/limb/" + _limb + "/joint_command", 1);   
     _endpt_sub     = _n.subscribe("/robot/limb/" + _limb + "/endpoint_state",
@@ -68,6 +69,11 @@ void ROSThread::IRCallback(const sensor_msgs::RangeConstPtr& msg)
     _curr_range = msg->range; 
     _curr_max_range = msg->max_range; 
     _curr_min_range = msg->min_range;
+
+    if (!ir_ok)
+    {
+        ir_ok = true;
+    }
 }
 
 void ROSThread::filterForces()

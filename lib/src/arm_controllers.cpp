@@ -99,7 +99,7 @@ void PickUpToken::InternalThreadEntry()
     // wait for IR sensor callback
     while(ros::ok())
     {
-        if(!(get_curr_range() == 0 && get_curr_min_range() == 0 && get_curr_max_range() == 0))
+        if(!is_ir_ok())
         {
             break; 
         }
