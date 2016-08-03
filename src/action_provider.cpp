@@ -12,7 +12,8 @@ int main(int argc, char ** argv)
 
     actionProvider ap("action_provider");
 
-    ROS_INFO("Waiting for a service message..\n");
+    printf("\n");
+    ROS_INFO("READY! Waiting for a service message..\n");
 
     ros::spin();
     return 0;

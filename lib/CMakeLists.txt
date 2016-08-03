@@ -16,14 +16,14 @@ add_library(robot_interface include/robot_interface/utils.h
                             include/robot_interface/gripper.h
                             include/robot_interface/ttt_controllers.h
                             include/robot_interface/arm_ctrl.h
-                            include/robot_interface/artag_controller.h
+                            include/robot_interface/artag_ctrl.h
                             include/robot_interface/hold_ctrl.h  
                             src/utils.cpp
                             src/ros_thread.cpp
                             src/gripper.cpp
                             src/ttt_controllers.cpp
                             src/arm_ctrl.cpp
-                            src/artag_controller.cpp
+                            src/artag_ctrl.cpp
                             src/hold_ctrl.cpp)
 
 ## Add cmake target dependencies of the library

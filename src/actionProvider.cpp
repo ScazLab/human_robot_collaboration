@@ -7,7 +7,7 @@ actionProvider::actionProvider(std::string _name) : name(_name)
     service = _n.advertiseService("/"+name+"/action_service",
                                   &actionProvider::serviceCallback, this);
 
-    left_ctrl  = new ARTagController("left");
+    left_ctrl  = new ARTagCtrl(_name,"left");
     right_ctrl = new HoldCtrl(_name,"right");
 
     // Move both arms to home

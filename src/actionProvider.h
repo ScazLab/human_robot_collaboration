@@ -3,10 +3,8 @@
 
 #include <string.h>
 
-#include "robot_interface/artag_controller.h"
+#include "robot_interface/artag_ctrl.h"
 #include "robot_interface/hold_ctrl.h"
-
-#include "baxter_collaboration/DoAction.h"
 
 class actionProvider
 {
@@ -16,7 +14,7 @@ private:
     ros::NodeHandle _n;
     ros::ServiceServer service;
 
-    ARTagController*  left_ctrl;
+    ARTagCtrl*  left_ctrl;
     HoldCtrl*  right_ctrl;
 
 public:

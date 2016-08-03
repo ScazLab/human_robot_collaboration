@@ -1,17 +1,14 @@
-#ifndef __ARTAG_CONTROLLER_H__
-#define __ARTAG_CONTROLLER_H__
+#ifndef __ARTAG_CTRL_H__
+#define __ARTAG_CTRL_H__
 
 #include <aruco_msgs/MarkerArray.h>
 
-#include "robot_interface/ros_thread.h"
-#include "robot_interface/gripper.h"
+#include "robot_interface/arm_ctrl.h"
 
-class ARTagController : public ROSThread, public Gripper
+class ARTagCtrl : public ArmCtrl
 {
 private:
-    std::string action;
     double elapsed_time;
-    int marker_id;
 
     ros::Subscriber _aruco_sub;
     geometry_msgs::Pose _curr_marker_pose;
@@ -31,11 +28,7 @@ private:
 
     void ArucoCb(const aruco_msgs::MarkerArray& msg);
 
-    void recoverFromError();
-
     bool hoverAbovePool();
-
-    bool hoverAboveTable(double height);
 
     bool moveObjectTowardHuman();
 
@@ -45,21 +38,13 @@ private:
 
     bool passObject();
 
-    bool goHome();
-
 protected:
     void InternalThreadEntry();
 
 public:
-    ARTagController(std::string limb);
+    ARTagCtrl(std::string _name, std::string _limb);
 
-    void setAction(std::string _action) { action = _action; };
-    void setMarkerID(int _id) { marker_id = _id; };
-
-    std::string getAction()   { return action; };
-    int         getMarkerID() { return marker_id; };
-
-    ~ARTagController();
+    ~ARTagCtrl();
 };
 
 #endif

@@ -15,12 +15,12 @@ private:
 
     ros::ServiceServer service;
 
-    bool hoverAboveTable(double height);
-
 protected:
     virtual void InternalThreadEntry() = 0;
 
     void recoverFromError();
+
+    bool hoverAboveTable(double height);
 
     bool goHome();
 

@@ -3,7 +3,7 @@
 using namespace std;
 
 ArmCtrl::ArmCtrl(string _name, string _limb) : ROSThread(_limb), Gripper(_limb),
-                                               name(_name), action("")
+                                               marker_id(-1), name(_name), action("")
 {
     std::string service_name = "/"+name+"/action_service_"+_limb;
     service = _n.advertiseService(service_name, &ArmCtrl::serviceCb, this);
@@ -18,7 +18,9 @@ bool ArmCtrl::serviceCb(baxter_collaboration::DoAction::Request  &req,
     string action = req.action;
     int    ID     = req.object;
 
-    ROS_INFO("[%s] Service request received. Action: %s object: %i", getLimb().c_str(), action.c_str(), ID);
+    ROS_INFO("[%s] Service request received. Action: %s object: %i",
+                                                  getLimb().c_str(),
+                                                action.c_str(), ID);
 
     res.success = false;
 
@@ -26,7 +28,7 @@ bool ArmCtrl::serviceCb(baxter_collaboration::DoAction::Request  &req,
     setMarkerID(ID);
 
     startInternalThread();
-    ros::Duration(1.0).sleep();
+    ros::Duration(0.5).sleep();
 
     while( int(getState()) != START   &&
            int(getState()) != ERROR   &&
@@ -44,7 +46,8 @@ bool ArmCtrl::serviceCb(baxter_collaboration::DoAction::Request  &req,
         res.success = true;
     }
 
-    ROS_INFO("[%s] Service reply with success: %s\n", getLimb().c_str(), res.success?"true":"false");
+    ROS_INFO("[%s] Service reply with success: %s\n", getLimb().c_str(),
+                                            res.success?"true":"false");
     return true;
 }
 
