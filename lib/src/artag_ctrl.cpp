@@ -1,5 +1,9 @@
 #include "robot_interface/artag_ctrl.h"
 
+#include <iostream>
+
+#include <tf/transform_datatypes.h>
+
 using namespace std;
 
 ARTagCtrl::ARTagCtrl(std::string _name, std::string _limb) : 
@@ -104,10 +108,11 @@ void ARTagCtrl::ArucoCb(const aruco_msgs::MarkerArray& msg)
     {
         ROS_DEBUG("Processing marker with id %i",msg.markers[i].id);
 
-        if (msg.markers[i].id == getMarkerID())
+        // if (msg.markers[i].id == getMarkerID())
         {
-            _curr_marker_pos = msg.markers[i].pose.position;
-            _curr_marker_ori = msg.markers[i].pose.orientation;
+            i=0;
+            _curr_marker_pos = msg.markers[i].pose.pose.position;
+            _curr_marker_ori = msg.markers[i].pose.pose.orientation;
 
             ROS_DEBUG("Marker is in: %g %g %g", _curr_marker_pos.x,
                                                 _curr_marker_pos.y,
@@ -116,6 +121,17 @@ void ARTagCtrl::ArucoCb(const aruco_msgs::MarkerArray& msg)
             //                                       _curr_marker_ori.y,
             //                                       _curr_marker_ori.z,
             //                                       _curr_marker_ori.w);
+
+            tf::Quaternion _marker_quat;
+            tf::quaternionMsgToTF(_curr_marker_ori, _marker_quat);
+            tf::Matrix3x3 _marker_mat(_marker_quat);
+
+            printf("Marker Orientation\n");
+            for (int j = 0; j < 3; ++j)
+            {
+                printf("%g\t%g\t%g\n", _marker_mat[j][0], _marker_mat[j][1], _marker_mat[j][2]);
+            }
+            printf("\n");
         }
     }
 }
