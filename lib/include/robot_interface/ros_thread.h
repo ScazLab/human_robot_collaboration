@@ -57,12 +57,11 @@ private:
     double force_thres;
 
 protected:
-
     ros::NodeHandle _n;
 
-    geometry_msgs::Pose   _curr_pose;
-    geometry_msgs::Point  _curr_position;
-    geometry_msgs::Wrench _curr_wrench;
+    geometry_msgs::Point        _curr_pos;
+    geometry_msgs::Quaternion   _curr_ori;
+    geometry_msgs::Wrench       _curr_wrench;
 
     void pause();
 
@@ -82,6 +81,16 @@ protected:
      * return     true if end effector has made contact; false otherwise
      */
     bool hasCollided(std::string mode = "loose");
+
+    /*
+     * checks if the arm has completed its intended move by comparing
+     * the requested pose and the current pose
+     *
+     * @param  p     requested pose
+     * @param  mode  string (strict/loose) indicating the desired level of accuracy
+     * @return       true/false if success/failure
+     */
+    bool hasPoseCompleted(geometry_msgs::Pose b, std::string mode = "loose");
 
     /*
      * Uses built in IK solver to find joint angles solution for desired pose

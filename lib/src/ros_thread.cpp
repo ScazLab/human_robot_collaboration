@@ -63,8 +63,8 @@ void ROSThread::WaitForInternalThreadToExit()
 void ROSThread::endpointCb(const baxter_core_msgs::EndpointState& msg) 
 {
     ROS_DEBUG("endpointCb");
-    _curr_pose     = msg.pose;
-    _curr_position = _curr_pose.position;
+    _curr_pos      = msg.pose.position;
+    _curr_ori      = msg.pose.orientation;
     _curr_wrench   = msg.wrench;
 
     filterForces();
@@ -128,7 +128,7 @@ bool ROSThread::goToPose(double px, double py, double pz,
         ros::spinOnce();
         ros::Rate(100).sleep();
 
-        if(hasPoseCompleted(_curr_pose, req_pose_stamped.pose, mode)) 
+        if(hasPoseCompleted(req_pose_stamped.pose, mode))
         {
             break;
         }
@@ -201,6 +201,28 @@ bool ROSThread::hasCollided(string mode)
        _curr_range >= _curr_min_range &&
        _curr_range <= threshold) return true;
     else return false;
+}
+
+bool ROSThread::hasPoseCompleted(Pose p, string mode)
+{
+    if(mode == "strict")
+    {
+        if(!equalXDP(_curr_pos.x, p.position.x, 3)) return false;
+        if(!equalXDP(_curr_pos.y, p.position.y, 3)) return false;
+    }
+    else if(mode == "loose")
+    {
+        if(!equalXDP(_curr_pos.x, p.position.x, 2)) return false;
+        if(!equalXDP(_curr_pos.y, p.position.y, 2)) return false;
+    }
+
+    if(!withinXHundredth(_curr_pos.z, p.position.z, 1))     return false;
+    if(!withinXHundredth(_curr_ori.x, p.orientation.x, 2))  return false;
+    if(!withinXHundredth(_curr_ori.y, p.orientation.y, 2))  return false;
+    if(!withinXHundredth(_curr_ori.z, p.orientation.z, 2))  return false;
+    if(!withinXHundredth(_curr_ori.w, p.orientation.w, 2))  return false;
+
+    return true;
 }
 
 void ROSThread::setJointNames(JointCommand& joint_cmd)

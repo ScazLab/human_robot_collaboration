@@ -22,33 +22,6 @@ using namespace geometry_msgs;
 /*                               Utils                                    */
 /**************************************************************************/
 
-bool hasPoseCompleted(Pose a, Pose b, string mode)
-{
-    // cout << "Current pose: " << a << endl;
-    // cout << "Desired pose: " << b << endl;
-
-    bool result = true;
-
-    if(mode == "strict")
-    {
-        if(!equalXDP(a.position.x, b.position.x, 3)) {result = false;} 
-        if(!equalXDP(a.position.y, b.position.y, 3)) {result = false;} 
-    }
-    else if(mode == "loose")
-    {
-        if(!equalXDP(a.position.x, b.position.x, 2)) {result = false;} 
-        if(!equalXDP(a.position.y, b.position.y, 2)) {result = false;} 
-    }
-
-    if(!withinXHundredth(a.position.z, b.position.z, 1))       {result = false;}    
-    if(!withinXHundredth(a.orientation.x, b.orientation.x, 2)) {result = false;}  
-    if(!withinXHundredth(a.orientation.y, b.orientation.y, 2)) {result = false;}  
-    if(!withinXHundredth(a.orientation.z, b.orientation.z, 2)) {result = false;}  
-    if(!withinXHundredth(a.orientation.w, b.orientation.w, 2)) {result = false;}
-
-    return result; 
-}
-
 bool withinXHundredth(float x, float y, float z)
 {
     float diff = abs(x - y);

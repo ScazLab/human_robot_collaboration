@@ -34,29 +34,17 @@
 #define ACTION_HOLD         "hold"
 #define ACTION_HAND_OVER    "hand_over"
 
-#define HORIZONTAL_ORIENTATION_LEFT_ARM       -0.0155113251266, 0.703354199922, -0.102825501874, 0.703192139041
-#define VERTICAL_ORIENTATION_LEFT_ARM          0.712801568376, -0.700942136419, -0.0127158080742, -0.0207931175453
+#define HORIZONTAL_ORIENTATION_LEFT_ARM        0.0, 0.70, 0.10, 0.70
+#define VERTICAL_ORIENTATION_LEFT_ARM          0.0,  1.0,  0.0,  0.0
 
 #define HORIZONTAL_ORIENTATION_RIGHT_ARM_OLD  -0.175730746765, 0.67317042445, 0.1902242414, 0.692657940308
 #define HORIZONTAL_ORIENTATION_RIGHT_ARM      -0.589631754695, 0.239895010244, -0.298576525167, 0.711081455625
 
-#define VERTICAL_ORIENTATION_RIGHT_ARM        -0.14007673309, 0.989696832226, -0.0103020489473, 0.0277949080985
+#define VERTICAL_ORIENTATION_RIGHT_ARM        0.0, 1.0, 0.0, 0.0
 
 #define POOL_POSITION_LEFT_ARM  -0.05,  0.85, 0.30
 #define HOME_POSITION_LEFT_ARM   0.65,  0.45
 #define HOME_POSITION_RIGHT_ARM  0.65, -0.25
-
-/*
- * checks if the arm has completed its intended move by comparing
- * the requested pose and the current pose
- * 
- * @param      requested pose and current pose, and a string (strict/loose)
- *            indicating the desired level of checking accuracy 
- *             
- * return     true if the parameters of the current pose is equal to the 
- *            requested pose; false otherwise 
- */
-bool hasPoseCompleted(geometry_msgs::Pose a, geometry_msgs::Pose b, std::string mode);
 
 /*
  * checks if two numbers rounded up to 2 decimal points are within 0.0z (z is specified no.) to each other 
