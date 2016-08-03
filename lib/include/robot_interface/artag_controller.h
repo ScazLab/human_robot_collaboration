@@ -56,8 +56,8 @@ public:
     void setAction(std::string _action) { action = _action; };
     void setMarkerID(int _id) { marker_id = _id; };
 
-    std::string getAction   { return action; };
-    int         getMarkerID { return marker_id; };
+    std::string getAction()   { return action; };
+    int         getMarkerID() { return marker_id; };
 
     ~ARTagController();
 };
