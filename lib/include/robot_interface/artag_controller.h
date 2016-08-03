@@ -33,6 +33,8 @@ private:
 
     void recoverFromError();
 
+    bool hoverAbovePool();
+
     bool hoverAboveTable(double height);
 
     bool moveObjectTowardHuman();

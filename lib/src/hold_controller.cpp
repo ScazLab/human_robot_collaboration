@@ -53,7 +53,7 @@ void HoldController::recoverFromError()
 bool HoldController::holdObject()
 {
     if (!goHoldPose(0.24))              return false;
-    ros::Duration(2.0).sleep();
+    ros::Duration(1.0).sleep();
     if (!waitForForceInteraction())     return false;
     if (!gripObject())                  return false;
     ros::Duration(2.0).sleep();
@@ -73,7 +73,7 @@ bool HoldController::goHoldPose(double height)
 
 bool HoldController::hoverAboveTable(double height)
 {
-    return ROSThread::goToPose(HOME_POSITION_RIGHT_ARM,
+    return ROSThread::goToPose(HOME_POSITION_RIGHT_ARM, height,
                                VERTICAL_ORIENTATION_RIGHT_ARM);
 }
 

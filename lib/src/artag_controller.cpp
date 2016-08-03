@@ -58,24 +58,12 @@ void ARTagController::InternalThreadEntry()
     return;
 }
 
-void ARTagController::recoverFromError()
-{
-    releaseObject();
-    goHome();
-    setState(ERROR);
-}
-
-bool ARTagController::goHome()
-{
-    return hoverAboveTable(POS_LOW);
-}
-
 bool ARTagController::pickObject()
 {
-    if (!hoverAboveTable(POS_HIGH)) return false;
-    ros::Duration(1.0).sleep();
+    if (!hoverAbovePool())          return false;
+    ros::Duration(0.5).sleep();
     if (!pickARTag())               return false;
-    if (!hoverAboveTable(POS_LOW)) return false;
+    if (!hoverAboveTable(POS_LOW))  return false;
 
     return true;
 }
@@ -83,7 +71,7 @@ bool ARTagController::pickObject()
 bool ARTagController::passObject()
 {
     if (!moveObjectTowardHuman())       return false;
-    ros::Duration(2.0).sleep();
+    ros::Duration(1.0).sleep();
     if (!waitForForceInteraction())     return false;
     if (!releaseObject())               return false;
     if (!goHome())                      return false;
@@ -108,24 +96,9 @@ void ARTagController::ARCallback(const aruco_msgs::MarkerArray& msg)
     }
 }
 
-void ARTagController::clearMarkerPose()
-{
-    _curr_marker_pose.position.x = 100;
-}
-
-bool ARTagController::hoverAboveTable(double height)
-{
-    return ROSThread::goToPose(0.60, 0.45, height, VERTICAL_ORIENTATION_LEFT_ARM);
-}
-
-bool ARTagController::moveObjectTowardHuman()
-{
-    return ROSThread::goToPose(0.80, 0.26, 0.32, HORIZONTAL_ORIENTATION_LEFT_ARM);
-}
-
 bool ARTagController::pickARTag()
 {
-    ROS_DEBUG("Start Picking up tag..");
+    ROS_INFO("Start Picking up tag..");
     ros::Time start_time = ros::Time::now();
 
     if (get_curr_range() == 0 || get_curr_min_range() == 0 || get_curr_max_range() == 0)
@@ -137,7 +110,7 @@ bool ARTagController::pickARTag()
     int cnt=0;
     while (_curr_marker_pose.position.x == 100)
     {
-        ROS_DEBUG("No callback from ARuco, or object with ID %i not found.", marker_id);
+        ROS_WARN("No callback from ARuco, or object with ID %i not found.", marker_id);
         ++cnt;
 
         if (cnt == 10)
@@ -151,6 +124,7 @@ bool ARTagController::pickARTag()
     }
 
     int ik_failures = 0;
+    double z_start  = _curr_pose.position.z;
     while(ros::ok())
     {
         ros::Time now_time = ros::Time::now();
@@ -158,7 +132,7 @@ bool ARTagController::pickARTag()
 
         double x = _curr_marker_pose.position.x;
         double y = _curr_marker_pose.position.y;
-        double z = POS_HIGH - PICK_UP_SPEED * new_elapsed_time;
+        double z = z_start - PICK_UP_SPEED * new_elapsed_time;
 
         ROS_DEBUG("Time %g Going to: %g %g %g", new_elapsed_time, x, y, z);
 
@@ -220,3 +194,37 @@ bool ARTagController::goToPose(double px, double py, double pz,
 
     return true;
 }
+
+
+void ARTagController::recoverFromError()
+{
+    releaseObject();
+    goHome();
+    setState(ERROR);
+}
+
+bool ARTagController::goHome()
+{
+    return hoverAboveTable(POS_LOW);
+}
+
+void ARTagController::clearMarkerPose()
+{
+    _curr_marker_pose.position.x = 100;
+}
+
+bool ARTagController::hoverAbovePool()
+{
+    return ROSThread::goToPose(POOL_POSITION_LEFT_ARM, VERTICAL_ORIENTATION_LEFT_ARM);
+}
+
+bool ARTagController::hoverAboveTable(double height)
+{
+    return ROSThread::goToPose(HOME_POSITION_LEFT_ARM, height, VERTICAL_ORIENTATION_LEFT_ARM);
+}
+
+bool ARTagController::moveObjectTowardHuman()
+{
+    return ROSThread::goToPose(0.80, 0.26, 0.32, HORIZONTAL_ORIENTATION_LEFT_ARM);
+}
+

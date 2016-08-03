@@ -20,7 +20,7 @@
 #define SUBSCRIBER_BUFFER 3
 
 #define POS_HIGH        0.400
-#define POS_LOW         0.150
+#define POS_LOW         0.200
 #define PICK_UP_SPEED   0.1
 
 #define FORCE_THRES     2.0  // [N]
@@ -40,7 +40,9 @@
 
 #define VERTICAL_ORIENTATION_RIGHT_ARM        -0.14007673309, 0.989696832226, -0.0103020489473, 0.0277949080985
 
-#define HOME_POSITION_RIGHT_ARM 0.65, -0.25, 0.20
+#define POOL_POSITION_LEFT_ARM  -0.05,  0.85, 0.20
+#define HOME_POSITION_LEFT_ARM   0.65,  0.45
+#define HOME_POSITION_RIGHT_ARM  0.65, -0.25
 
 /*
  * checks if the arm has completed its intended move by comparing
