@@ -59,7 +59,7 @@ bool HoldController::holdObject()
     ros::Duration(2.0).sleep();
     if (!waitForForceInteraction(30.0)) return false;
     if (!releaseObject())               return false;
-    ros::Duration(2.0).sleep();
+    ros::Duration(1.0).sleep();
     if (!goHome())                      return false;
 
     return true;
