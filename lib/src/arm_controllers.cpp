@@ -881,10 +881,10 @@ void PutDownToken::hoverAboveBoard()
 }
 
 /**************************************************************************/
-/*                            ArmController                               */
+/*                            TTTController                               */
 /**************************************************************************/
 
-ArmController::ArmController(string limb): _limb(limb)
+TTTController::TTTController(string limb): _limb(limb)
 {
     _rest_class = new MoveToRest(_limb);
     _pick_class = new PickUpToken(_limb);
@@ -892,7 +892,7 @@ ArmController::ArmController(string limb): _limb(limb)
     _put_class  = new PutDownToken(_limb);
 }
 
-ArmController::~ArmController()
+TTTController::~TTTController()
 {
     delete _rest_class;
     delete _pick_class;
@@ -900,13 +900,13 @@ ArmController::~ArmController()
     delete _put_class;
 }
 
-int ArmController::getState()
+int TTTController::getState()
 {
     float len_time = 0;
     int state = 0;
 
     // find class with the most recent state change
-    // and set ArmController's new state to that
+    // and set TTTController's new state to that
     // class' state
     if(_rest_class->getState().time > len_time) 
     {
@@ -935,13 +935,13 @@ int ArmController::getState()
     return state;
 }
 
-void ArmController::moveToRest() {_rest_class->startInternalThread();}
+void TTTController::moveToRest() {_rest_class->startInternalThread();}
 
-void ArmController::pickUpToken() {_pick_class->startInternalThread();}
+void TTTController::pickUpToken() {_pick_class->startInternalThread();}
 
-void ArmController::scanBoard() {_scan_class->startInternalThread();}
+void TTTController::scanBoard() {_scan_class->startInternalThread();}
 
-void ArmController::putDownToken(int cell) 
+void TTTController::putDownToken(int cell) 
 {
     _put_class->setOffsets(_scan_class->getOffsets());
     _put_class->setCell(cell);

@@ -276,7 +276,7 @@ class PutDownToken : public ROSThreadImage, public Gripper
         void hoverAboveBoard();
 };
 
-class ArmController
+class TTTController
 {
     private:
         std::string _limb;
@@ -286,8 +286,8 @@ class ArmController
         PutDownToken * _put_class; 
 
     public:
-        ArmController(std::string limb);
-        ~ArmController();
+        TTTController(std::string limb);
+        ~TTTController();
 
         /*
          * get most recent state change
