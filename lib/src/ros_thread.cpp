@@ -32,7 +32,14 @@ ROSThread::ROSThread(string limb): _n("~"), _limb(limb), _state(START,0), spinne
     _filt_force.push_back(0.0);
     _filt_force.push_back(0.0);
 
-    _n.param<double>("force_threshold", force_thres, FORCE_THRES);
+    if (getLimb()=="left")
+    {
+        _n.param<double>("force_threshold_left",  force_thres, FORCE_THRES_L);
+    }
+    else if (getLimb()=="right")
+    {
+        _n.param<double>("force_threshold_right", force_thres, FORCE_THRES_R);
+    }
 
     ROS_INFO("[%s] Force Threshold : %g", getLimb().c_str(), force_thres);
 
