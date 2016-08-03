@@ -124,9 +124,7 @@ include_directories(lib/include
 add_subdirectory(lib)
 
 ## Declare a C++ executable
-add_executable(action_provider src/actionProvider.h 
-                               src/actionProvider.cpp
-                               src/action_provider.cpp)
+add_executable(action_provider src/action_provider.cpp)
 
 ## Add cmake target dependencies of the executable
 ## same as for the library above
