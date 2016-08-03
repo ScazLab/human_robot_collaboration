@@ -1,41 +1,40 @@
-#include "robot_interface/hold_controller.h"
+#include "robot_interface/hold_ctrl.h"
 
 using namespace std;
 
-HoldController::HoldController(std::string limb) : ROSThread(limb),
-                                                   Gripper(limb)
+HoldCtrl::HoldCtrl(std::string _name, std::string _limb) : 
+                                    ArmCtrl(_name,_limb)
 {
 
 }
 
-HoldController::~HoldController() {}
-
-void HoldController::InternalThreadEntry()
+void HoldCtrl::InternalThreadEntry()
 {
-    int s = int(getState());
+    int    s = int(getState());
+    string a =     getAction();
 
     setState(WORKING);
-
-    if (action == ACTION_HOME)
+    
+    if (a == ACTION_HOME)
     {
         if (goHome())   setState(START);
         else            setState(ERROR);
     }
-    else if (action == ACTION_RELEASE)
+    else if (a == ACTION_RELEASE)
     {
         if (releaseObject())   setState(START);
         else                   setState(ERROR);
     }
-    else if (action == ACTION_HOLD && (s == START ||
-                                       s == ERROR ||
-                                       s == DONE  ))
+    else if (a == ACTION_HOLD && (s == START ||
+                                  s == ERROR ||
+                                  s == DONE  ))
     {
         if (holdObject())   setState(DONE);
         else                recoverFromError();
     }
     else
     {
-        ROS_ERROR("Invalid State %i", s);
+        ROS_ERROR("[%s] Invalid State %i", getLimb().c_str(), s);
         setState(ERROR);
     }
 
@@ -43,14 +42,7 @@ void HoldController::InternalThreadEntry()
     return;
 }
 
-void HoldController::recoverFromError()
-{
-    releaseObject();
-    goHome();
-    setState(ERROR);
-}
-
-bool HoldController::holdObject()
+bool HoldCtrl::holdObject()
 {
     if (!goHoldPose(0.24))              return false;
     ros::Duration(1.0).sleep();
@@ -65,19 +57,13 @@ bool HoldController::holdObject()
     return true;
 }
 
-bool HoldController::goHoldPose(double height)
+bool HoldCtrl::goHoldPose(double height)
 {
     return ROSThread::goToPose(0.80, -0.4, height,
                                HORIZONTAL_ORIENTATION_RIGHT_ARM);
 }
 
-bool HoldController::hoverAboveTable(double height)
+HoldCtrl::~HoldCtrl()
 {
-    return ROSThread::goToPose(HOME_POSITION_RIGHT_ARM, height,
-                               VERTICAL_ORIENTATION_RIGHT_ARM);
-}
 
-bool HoldController::goHome()
-{
-    return HoldController::hoverAboveTable(POS_LOW);
 }

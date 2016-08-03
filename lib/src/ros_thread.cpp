@@ -34,7 +34,7 @@ ROSThread::ROSThread(string limb): _n("~"), _limb(limb), _state(START,0), spinne
 
     _n.param<double>("force_threshold", force_thres, FORCE_THRES);
 
-    ROS_INFO("Force Threshold : %g",force_thres);
+    ROS_INFO("[%s] Force Threshold : %g", getLimb().c_str(), force_thres);
 
     spinner.start();
 }
@@ -215,7 +215,7 @@ bool ROSThread::detectForceInteraction()
 
     if (f_x > force_thres || f_y > force_thres || f_z > force_thres)
     {
-        ROS_INFO("Interaction: %g %g %g", f_x, f_y, f_z);
+        ROS_INFO("[%s] Interaction: %g %g %g", getLimb().c_str(), f_x, f_y, f_z);
         return true;
     }
     else

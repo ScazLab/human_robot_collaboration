@@ -5,8 +5,11 @@ using namespace std;
 ArmCtrl::ArmCtrl(string _name, string _limb) : ROSThread(_limb), Gripper(_limb),
                                                name(_name), action("")
 {
-    service = _n.advertiseService("/"+name+"/action_service_"+_limb,
-                                   &ArmCtrl::serviceCb, this);
+    std::string service_name = "/"+name+"/action_service_"+_limb;
+    service = _n.advertiseService(service_name, &ArmCtrl::serviceCb, this);
+
+    ROS_INFO("[%s] Created service server with name : %s", getLimb().c_str(),
+                                                        service_name.c_str());
 }
 
 bool ArmCtrl::serviceCb(baxter_collaboration::DoAction::Request  &req,
@@ -15,12 +18,13 @@ bool ArmCtrl::serviceCb(baxter_collaboration::DoAction::Request  &req,
     string action = req.action;
     int    ID     = req.object;
 
-    ROS_INFO("Service request received. Action: %s object: %i", action.c_str(), ID);
+    ROS_INFO("[%s] Service request received. Action: %s object: %i", getLimb().c_str(), action.c_str(), ID);
 
     res.success = false;
 
-    setState(WORKING);
     setAction(action);
+    setMarkerID(ID);
+
     startInternalThread();
     ros::Duration(1.0).sleep();
 
@@ -30,6 +34,7 @@ bool ArmCtrl::serviceCb(baxter_collaboration::DoAction::Request  &req,
            int(getState()) != PICK_UP   )
     {
         ros::spinOnce();
+        ros::Rate(100).sleep();
     }
 
     if ( int(getState()) == START   ||
@@ -39,8 +44,27 @@ bool ArmCtrl::serviceCb(baxter_collaboration::DoAction::Request  &req,
         res.success = true;
     }
 
-    ROS_INFO("Service reply with success: %s\n", res.success?"true":"false");
+    ROS_INFO("[%s] Service reply with success: %s\n", getLimb().c_str(), res.success?"true":"false");
     return true;
+}
+
+bool ArmCtrl::hoverAboveTable(double height)
+{
+    if (getLimb() == "right")
+    {
+        return ROSThread::goToPose(HOME_POSITION_RIGHT_ARM, height,
+                                   VERTICAL_ORIENTATION_RIGHT_ARM);
+    }
+    else if (getLimb() == "left")
+    {
+        return ROSThread::goToPose(HOME_POSITION_LEFT_ARM, height,
+                                   VERTICAL_ORIENTATION_LEFT_ARM);
+    }
+}
+
+bool ArmCtrl::goHome()
+{
+    return hoverAboveTable(POS_LOW);
 }
 
 void ArmCtrl::recoverFromError()

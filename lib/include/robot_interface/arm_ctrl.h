@@ -10,18 +10,19 @@ class ArmCtrl : public ROSThread, public Gripper
 {
 private:
     std::string name;
-
     std::string action;
-    int marker_id;
+    int         marker_id;
 
     ros::ServiceServer service;
 
-    virtual void recoverFromError();
-
-    virtual bool goHome() = 0;
+    bool hoverAboveTable(double height);
 
 protected:
     virtual void InternalThreadEntry() = 0;
+
+    void recoverFromError();
+
+    bool goHome();
 
 public:
     ArmCtrl(std::string _name, std::string _limb);

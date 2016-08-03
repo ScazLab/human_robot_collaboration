@@ -8,7 +8,7 @@ actionProvider::actionProvider(std::string _name) : name(_name)
                                   &actionProvider::serviceCallback, this);
 
     left_ctrl  = new ARTagController("left");
-    right_ctrl = new HoldController("right");
+    right_ctrl = new HoldCtrl(_name,"right");
 
     // Move both arms to home
     left_ctrl -> setAction(ACTION_HOME);
