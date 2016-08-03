@@ -8,7 +8,7 @@ ARTagController::ARTagController(std::string limb) : ROSThread(limb), Gripper(li
     setState(START);
 
     _aruco_sub = _n.subscribe("/aruco_marker_publisher/markers",
-                               SUBSCRIBER_BUFFER, &ARTagController::ARCallback, this);
+                               SUBSCRIBER_BUFFER, &ARTagController::ArucoCb, this);
 
     elapsed_time = 0;
 
@@ -79,7 +79,7 @@ bool ARTagController::passObject()
     return true;
 }
 
-void ARTagController::ARCallback(const aruco_msgs::MarkerArray& msg) 
+void ARTagController::ArucoCb(const aruco_msgs::MarkerArray& msg) 
 {
     for (int i = 0; i < msg.markers.size(); ++i)
     {

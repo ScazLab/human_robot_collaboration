@@ -21,10 +21,12 @@ ROSThread::ROSThread(string limb): _limb(limb), _state(START,0), spinner(4),
                                    ir_ok(false)
 {
     _joint_cmd_pub = _n.advertise<JointCommand>("/robot/limb/" + _limb + "/joint_command", 1);   
+    
     _endpt_sub     = _n.subscribe("/robot/limb/" + _limb + "/endpoint_state",
-                                    SUBSCRIBER_BUFFER, &ROSThread::endpointCallback, this);
+                                    SUBSCRIBER_BUFFER, &ROSThread::endpointCb, this);
     _ir_sub        = _n.subscribe("/robot/range/" + _limb + "_hand_range/state",
-                                    SUBSCRIBER_BUFFER, &ROSThread::IRCallback, this);
+                                    SUBSCRIBER_BUFFER, &ROSThread::IRCb, this);
+    
     _ik_client     = _n.serviceClient<SolvePositionIK>("/ExternalTools/" + _limb + 
                                                        "/PositionKinematicsNode/IKService");
 
@@ -53,9 +55,9 @@ void ROSThread::WaitForInternalThreadToExit()
     (void) pthread_join(_thread, NULL);
 }
 
-void ROSThread::endpointCallback(const baxter_core_msgs::EndpointState& msg) 
+void ROSThread::endpointCb(const baxter_core_msgs::EndpointState& msg) 
 {
-    ROS_DEBUG("endpointCallback");
+    ROS_DEBUG("endpointCb");
     _curr_pose     = msg.pose;
     _curr_position = _curr_pose.position;
     _curr_wrench   = msg.wrench;
@@ -63,9 +65,9 @@ void ROSThread::endpointCallback(const baxter_core_msgs::EndpointState& msg)
     filterForces();
 }
 
-void ROSThread::IRCallback(const sensor_msgs::RangeConstPtr& msg) 
+void ROSThread::IRCb(const sensor_msgs::RangeConstPtr& msg) 
 {
-    ROS_DEBUG("IRCallback");
+    ROS_DEBUG("IRCb");
     _curr_range = msg->range; 
     _curr_max_range = msg->max_range; 
     _curr_min_range = msg->min_range;
@@ -279,15 +281,15 @@ void * ROSThread::InternalThreadEntryFunc(void * This)
 ROSThreadImage::ROSThreadImage(string limb): _img_trp(_n), ROSThread(limb)
 {
     _img_sub = _img_trp.subscribe("/cameras/left_hand_camera/image", SUBSCRIBER_BUFFER,
-                                                  &ROSThreadImage::imageCallback, this);
+                                                  &ROSThreadImage::imageCb, this);
     pthread_mutex_init(&_mutex_img, NULL);
 }
 
 ROSThreadImage::~ROSThreadImage() {}
 
-void ROSThreadImage::imageCallback(const sensor_msgs::ImageConstPtr& msg)
+void ROSThreadImage::imageCb(const sensor_msgs::ImageConstPtr& msg)
 {
-    ROS_DEBUG("imageCallback");
+    ROS_DEBUG("imageCb");
     cv_bridge::CvImageConstPtr cv_ptr;
 
     try

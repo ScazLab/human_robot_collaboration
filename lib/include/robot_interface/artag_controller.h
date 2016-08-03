@@ -29,7 +29,7 @@ private:
     bool goToPose(double px, double py, double pz,
                   double ox, double oy, double oz, double ow);
 
-    void ARCallback(const aruco_msgs::MarkerArray& msg);
+    void ArucoCb(const aruco_msgs::MarkerArray& msg);
 
     void recoverFromError();
 

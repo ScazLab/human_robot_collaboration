@@ -40,16 +40,18 @@ private:
 
     ros::AsyncSpinner spinner;
 
-    ros::Subscriber _endpt_sub;
-    ros::Subscriber _ir_sub;
     ros::ServiceClient _ik_client;
 
     ros::Publisher  _joint_cmd_pub;
 
-    std::vector<double> _filt_force;
-
+    // IR Sensor stuff
+    ros::Subscriber _ir_sub;
     bool  ir_ok;
     float _curr_range, _curr_max_range, _curr_min_range;
+
+    // End-Effector stuff
+    ros::Subscriber _endpt_sub;
+    std::vector<double> _filt_force;
 
 protected:
 
@@ -134,7 +136,7 @@ protected:
      * @param      N/A
      * @return     N/A
      */
-    void endpointCallback(const baxter_core_msgs::EndpointState& msg);
+    void endpointCb(const baxter_core_msgs::EndpointState& msg);
 
     /*
      * Infrared sensor callback function that sets the current range to the range received
@@ -143,7 +145,7 @@ protected:
      * @param      The message
      * @return     N/A
      */
-    void IRCallback(const sensor_msgs::RangeConstPtr& msg);
+    void IRCb(const sensor_msgs::RangeConstPtr& msg);
 
     /*
      * Filters the forces with a very simple low pass filter
@@ -223,7 +225,7 @@ public:
      * @param      The image
      * @return     N/A
      */
-    void imageCallback(const sensor_msgs::ImageConstPtr& msg);
+    void imageCb(const sensor_msgs::ImageConstPtr& msg);
 };
 
 #endif
