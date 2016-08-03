@@ -19,6 +19,7 @@
 #include <geometry_msgs/PoseStamped.h>
 #include <geometry_msgs/Point.h>
 #include <sensor_msgs/Range.h>
+#include <std_msgs/Empty.h>
 
 #include "utils.h"
 
@@ -43,6 +44,7 @@ private:
     ros::ServiceClient _ik_client;
 
     ros::Publisher  _joint_cmd_pub;
+    ros::Publisher  _coll_av_pub;
 
     // IR Sensor stuff
     ros::Subscriber _ir_sub;
@@ -167,7 +169,16 @@ protected:
      * 
      * @param _cmd The desired joint configuration
      */
-    void publish(baxter_core_msgs::JointCommand _cmd);
+    void publish_joint_cmd(baxter_core_msgs::JointCommand _cmd);
+
+    /**
+     * @brief Suppresses the collision avoidance for this arm
+     * @details Suppresses the collision avoidance. It needs to be called with 
+     *          a rate of at least 5Hz
+     * 
+     * @param _cmd An empty message to be sent
+     */
+    void suppress_collision_avoidance();
 
 public:
     ROSThread(std::string limb);

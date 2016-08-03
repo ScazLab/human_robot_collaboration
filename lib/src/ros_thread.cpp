@@ -4,6 +4,7 @@ using namespace std;
 using namespace baxter_core_msgs;
 using namespace geometry_msgs;
 using namespace sensor_msgs;
+using namespace std_msgs;
 using namespace cv;
 
 /**************************************************************************/
@@ -12,7 +13,8 @@ using namespace cv;
 ROSThread::ROSThread(string limb): _n("~"), _limb(limb), _state(START,0), spinner(4),
                                    ir_ok(false)
 {
-    _joint_cmd_pub = _n.advertise<JointCommand>("/robot/limb/" + _limb + "/joint_command", 1);   
+    _joint_cmd_pub = _n.advertise<JointCommand>("/robot/limb/" + _limb + "/joint_command", 1);
+    _coll_av_pub   = _n.advertise<Empty>("/robot/limb/" + _limb + "/suppress_collision_avoidance", 1);
     
     _endpt_sub     = _n.subscribe("/robot/limb/" + _limb + "/endpoint_state",
                                     SUBSCRIBER_BUFFER, &ROSThread::endpointCb, this);
@@ -257,9 +259,15 @@ void ROSThread::setState(int state)
     _state.time = (ros::Time::now() - _init_time).toSec();
 }
 
-void ROSThread::publish(baxter_core_msgs::JointCommand _cmd)
+void ROSThread::publish_joint_cmd(baxter_core_msgs::JointCommand _cmd)
 {
     _joint_cmd_pub.publish(_cmd);
+}
+
+void ROSThread::suppress_collision_avoidance()
+{
+    std_msgs::Empty empty_cmd;
+    _coll_av_pub.publish(empty_cmd);
 }
 
 // for syncing mutex locks (crash/errors occur if not used)

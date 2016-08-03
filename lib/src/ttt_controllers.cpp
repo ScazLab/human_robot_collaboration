@@ -57,7 +57,7 @@ void MoveToRest::InternalThreadEntry()
         joint_cmd.command[5] = getLimb() == "left" ? -1.4684031092033123  : -1.469170099597255 ;
         joint_cmd.command[6] = getLimb() == "left" ? 0.1257864246066039   : -0.011504855909140603;
 
-        publish(joint_cmd);
+        publish_joint_cmd(joint_cmd);
 
         ros::spinOnce();
         ros::Rate(100).sleep();
@@ -167,7 +167,7 @@ void PickUpToken::gripToken()
             joint_cmd.command[i] = joint_angles[i];
         }
 
-        publish(joint_cmd);
+        publish_joint_cmd(joint_cmd);
 
         ros::spinOnce();
         ros::Rate(100).sleep();
@@ -537,7 +537,7 @@ void ScanBoard::setDepth(float *dist)
             joint_cmd.command[i] = joint_angles[i];
         }
 
-        publish(joint_cmd);
+        publish_joint_cmd(joint_cmd);
         ros::spinOnce();
         ros::Rate(100).sleep();
      

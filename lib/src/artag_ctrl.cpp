@@ -188,7 +188,7 @@ bool ARTagCtrl::goToPose(double px, double py, double pz,
         joint_cmd.command[i] = joint_angles[i];
     }
 
-    publish(joint_cmd);
+    publish_joint_cmd(joint_cmd);
 
     return true;
 }
