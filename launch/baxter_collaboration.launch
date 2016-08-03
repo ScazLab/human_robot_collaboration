@@ -8,7 +8,9 @@
     <param name="action_provider/force_threshold_left"  value="$(arg forceThresholdL)"/>
     <param name="action_provider/force_threshold_right" value="$(arg forceThresholdR)"/>
 
-    <node pkg="baxter_collaboration" type="action_provider" name="action_provider" output="screen">
-    </node>
+    <node pkg="baxter_collaboration" type="action_provider" name="action_provider" output="screen"/>
+
+    <node pkg="baxter_collaboration" type="remote_control_node" name="l_srv" output="screen" args="left" />
+    <node pkg="baxter_collaboration" type="remote_control_node" name="r_srv" output="screen" args="right" />
 
 </launch>
