@@ -27,11 +27,12 @@
 #define FORCE_THRES_L   2.0  // [N]
 #define FORCE_ALPHA     0.3
 
-#define ACTION_HOME    "home"
-#define ACTION_GET     "get"
-#define ACTION_RELEASE "release"
-#define ACTION_PASS    "pass"
-#define ACTION_HOLD    "hold"
+#define ACTION_HOME         "home"
+#define ACTION_GET          "get"
+#define ACTION_RELEASE      "release"
+#define ACTION_PASS         "pass"
+#define ACTION_HOLD         "hold"
+#define ACTION_HAND_OVER    "hand_over"
 
 #define HORIZONTAL_ORIENTATION_LEFT_ARM       -0.0155113251266, 0.703354199922, -0.102825501874, 0.703192139041
 #define VERTICAL_ORIENTATION_LEFT_ARM          0.712801568376, -0.700942136419, -0.0127158080742, -0.0207931175453

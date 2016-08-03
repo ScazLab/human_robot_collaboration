@@ -38,6 +38,8 @@ private:
 
     bool passObject();
 
+    bool handOver();
+
 protected:
     void InternalThreadEntry();
 

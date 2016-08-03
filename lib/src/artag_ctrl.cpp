@@ -45,6 +45,13 @@ void ARTagCtrl::InternalThreadEntry()
         if(passObject())   setState(DONE);
         else               recoverFromError();
     }
+    else if (a == ACTION_HAND_OVER && (s == START ||
+                                       s == ERROR ||
+                                       s == DONE  ))
+    {
+        if (handOver())    setState(DONE);
+        else               recoverFromError();
+    }
     else
     {
         ROS_ERROR("Invalid State %i", s);
@@ -53,6 +60,17 @@ void ARTagCtrl::InternalThreadEntry()
 
     pthread_exit(NULL);
     return;
+}
+
+bool ARTagCtrl::handOver()
+{
+    if (!goHome())                  return false;
+    if (!pickARTag())               return false;
+    if (!hoverAboveTable(POS_LOW))  return false;
+    if (!releaseObject())           return false;
+    if (!goHome())                  return false;
+
+    return true;
 }
 
 bool ARTagCtrl::pickObject()
