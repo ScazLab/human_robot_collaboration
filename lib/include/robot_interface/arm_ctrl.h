@@ -75,8 +75,8 @@ public:
      * @param  res the action response (res.success either true or false)
      * @return     true always :)
      */
-    bool serviceOtherLimbCb(baxter_collaboration::AskFeedback::Request  &req,
-                            baxter_collaboration::AskFeedback::Response &res);
+    virtual bool serviceOtherLimbCb(baxter_collaboration::AskFeedback::Request  &req,
+                                    baxter_collaboration::AskFeedback::Response &res) = 0;
 
     /* Self-explaining "setters" */
     void setName  (std::string _name)   { name      =   _name; };

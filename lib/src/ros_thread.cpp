@@ -275,7 +275,7 @@ bool ROSThread::waitForForceInteraction(double _wait_time, bool disable_coll_av)
 {
     ros::Time _init = ros::Time::now();
 
-    while(ros::ok)
+    while(ros::ok())
     {
         if (disable_coll_av)          suppressCollisionAv();
         if (detectForceInteraction())           return true;

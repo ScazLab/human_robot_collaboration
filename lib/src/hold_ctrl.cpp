@@ -3,7 +3,7 @@
 using namespace std;
 
 HoldCtrl::HoldCtrl(std::string _name, std::string _limb) : 
-                                    ArmCtrl(_name,_limb)
+             ArmCtrl(_name,_limb), hand_over_state("done")
 {
     if (!goHome()) setState(ERROR);
 }
@@ -42,10 +42,12 @@ bool HoldCtrl::doAction(int s, std::string a)
 
 bool HoldCtrl::handOver()
 {
+    hand_over_state = "start";
     if (!prepare4HandOver())                   return false;
-    if (!waitForForceInteraction(120.0,true))  return false;
+    hand_over_state = "ready";
+    if (!waitForOtherArm(120.0, true))         return false;
     if (!gripObject())                         return false;
-    ros::Duration(2.5).sleep();
+    ros::Duration(1.0).sleep();
     if (!goHoldPose(0.24))                     return false;
     ros::Duration(1.0).sleep();
     if (!waitForForceInteraction(180.0))       return false;
@@ -68,6 +70,42 @@ bool HoldCtrl::holdObject()
     ros::Duration(1.0).sleep();
     if (!goHome())                        return false;
 
+    return true;
+}
+
+bool HoldCtrl::waitForOtherArm(double _wait_time, bool disable_coll_av)
+{
+    ros::Time _init = ros::Time::now();
+
+    while(ros::ok())
+    {
+        if (disable_coll_av)      suppressCollisionAv();
+        
+        if (hand_over_state == "gripped")   return true;
+
+        ros::spinOnce();
+        ros::Rate(100).sleep();
+
+        if ((ros::Time::now()-_init).toSec() > _wait_time)
+        {
+            ROS_ERROR("No feedback from other arm has been received in %gs!",_wait_time);
+            return false;
+        }
+    }    
+}
+
+bool HoldCtrl::serviceOtherLimbCb(baxter_collaboration::AskFeedback::Request  &req,
+                                  baxter_collaboration::AskFeedback::Response &res)
+{
+    if (req.ask == "ready")
+    {
+        if (hand_over_state == "start") res.reply = "wait";
+        if (hand_over_state == "ready")
+        {
+            hand_over_state = "gripped";
+            res.reply = "gripped";
+        }
+    }
     return true;
 }
 

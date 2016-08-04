@@ -5,6 +5,7 @@
 #include <tf/transform_datatypes.h>
 
 using namespace std;
+using namespace baxter_collaboration;
 
 ARTagCtrl::ARTagCtrl(std::string _name, std::string _limb) : 
                      ArmCtrl(_name,_limb), aruco_ok(false)
@@ -63,14 +64,12 @@ bool ARTagCtrl::doAction(int s, std::string a)
 
 bool ARTagCtrl::handOver()
 {
-    if (!hoverAboveTable(Z_HIGH))   return false;
-    ros::Duration(0.1).sleep();
-    if (!pickARTag())               return false;
-    if (!hoverAboveTable(Z_LOW))    return false;
+    if (!pickObject())              return false;
 
     ROSThread::goToPose(0.65, 0.075, Z_LOW-0.02, VERTICAL_ORI_L,
                                                 "loose", true);
-    ros::Duration(0.2).sleep();
+    if (!waitForOtherArm())         return false;
+    ros::Duration(0.4).sleep();
     if (!releaseObject())           return false;
     if (!goHome())                  return false;
 
@@ -96,6 +95,47 @@ bool ARTagCtrl::passObject()
     if (!releaseObject())               return false;
     if (!goHome())                      return false;
 
+    return true;
+}
+
+bool ARTagCtrl::waitForOtherArm(double _wait_time, bool disable_coll_av)
+{
+    ros::Time _init = ros::Time::now();
+
+    string other_limb = getLimb() == "right" ? "left" : "right";
+    ros::ServiceClient _c;
+    string service_name = "/"+getName()+"/service_"+other_limb+"_to_"+getLimb();
+    _c = _n.serviceClient<AskFeedback>(service_name);
+
+    AskFeedback srv;
+    srv.request.ask = "ready";
+
+    while(ros::ok())
+    {
+        if (disable_coll_av)      suppressCollisionAv();
+        if (!_c.call(srv)) break;
+
+        if (srv.response.reply == "gripped")
+        {
+            return true;
+        }
+
+        ros::spinOnce();
+        ros::Rate(100).sleep();
+
+        if ((ros::Time::now()-_init).toSec() > _wait_time)
+        {
+            ROS_ERROR("No feedback from other arm has been received in %gs!",_wait_time);
+            return false;
+        }        
+    }
+
+    return false;
+}
+
+bool ARTagCtrl::serviceOtherLimbCb(baxter_collaboration::AskFeedback::Request  &req,
+                                   baxter_collaboration::AskFeedback::Response &res)
+{
     return true;
 }
 
