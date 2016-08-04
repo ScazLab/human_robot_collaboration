@@ -63,12 +63,16 @@ bool ARTagCtrl::doAction(int s, std::string a)
 
 bool ARTagCtrl::handOver()
 {
-    if (!hoverAboveTable(Z_HIGH)) return false;
+    if (!hoverAboveTable(Z_HIGH))   return false;
+    ros::Duration(0.1).sleep();
     if (!pickARTag())               return false;
-    if (!hoverAboveTable(Z_LOW))  return false;
-    // if (!passObject())              return false;
-    // if (!releaseObject())           return false;
-    // if (!goHome())                  return false;
+    if (!hoverAboveTable(Z_LOW))    return false;
+
+    ROSThread::goToPose(0.65, 0.075, Z_LOW-0.02, VERTICAL_ORI_L,
+                                                "loose", true);
+    ros::Duration(0.2).sleep();
+    if (!releaseObject())           return false;
+    if (!goHome())                  return false;
 
     return true;
 }
@@ -134,14 +138,19 @@ bool ARTagCtrl::pickARTag()
 
     if (!waitForARucoData()) return false;
 
+    geometry_msgs::Quaternion q;
     if (getAction() == ACTION_HAND_OVER)
     {
         // If we have to hand_over, let's pre-orient the end effector such that
         // further movements are easier
-        geometry_msgs::Quaternion q = computeHOorientation();
+        q = computeHOorientation();
 
-        ROS_INFO("Going to: %g %g %g", getPos().x, getPos().y, getPos().z);
-        ROSThread::goToPose(getPos().x,getPos().y,getPos().z,q.x,q.y,q.z,q.w,"loose");
+        ROS_DEBUG("Going to: %g %g %g", _curr_marker_pos.x, _curr_marker_pos.y, getPos().z);
+        if (!ROSThread::goToPose(_curr_marker_pos.x, _curr_marker_pos.y, getPos().z,
+                                                            q.x,q.y,q.z,q.w,"loose"))
+        {
+            return false;
+        }
     }
     
     ros::Time start_time = ros::Time::now();
@@ -157,14 +166,13 @@ bool ARTagCtrl::pickARTag()
         double y = _curr_marker_pos.y;
         double z = z_start - PICK_UP_SPEED * new_elap_time;
 
-        ROS_INFO("Time %g Going to: %g %g %g", new_elap_time, x, y, z);
+        ROS_DEBUG("Time %g Going to: %g %g %g", new_elap_time, x, y, z);
 
-        geometry_msgs::Quaternion q;
         bool res=false;
 
         if (getAction() == ACTION_HAND_OVER)
         {
-            q   = computeHOorientation();
+            // q   = computeHOorientation();
             res = ARTagCtrl::goToPose(x,y,z,q.x,q.y,q.z,q.w);
         }
         else
