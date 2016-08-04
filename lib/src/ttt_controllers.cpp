@@ -117,9 +117,9 @@ void PickUpToken::InternalThreadEntry()
         if(!_curr_img_empty) break;
     }
 
-    hoverAboveTokens(POS_HIGH);
+    hoverAboveTokens(Z_HIGH);
     gripToken();
-    hoverAboveTokens(POS_LOW);
+    hoverAboveTokens(Z_LOW);
 
     setState(PICK_UP);
     pthread_exit(NULL);  
@@ -488,7 +488,7 @@ void ScanBoard::InternalThreadEntry()
     }
 
     scan();
-    hoverAboveTokens(POS_HIGH);
+    hoverAboveTokens(Z_HIGH);
 
     setState(SCANNED);
     pthread_exit(NULL);
@@ -860,7 +860,7 @@ void PutDownToken::InternalThreadEntry()
     ros::Duration(0.8).sleep();
     releaseObject();
     hoverAboveBoard();
-    hoverAboveTokens(POS_HIGH);
+    hoverAboveTokens(Z_HIGH);
 
     setState(PUT_DOWN);
     pthread_exit(NULL);  

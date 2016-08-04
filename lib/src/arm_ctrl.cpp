@@ -91,7 +91,7 @@ bool ArmCtrl::hoverAboveTable(double height)
 
 bool ArmCtrl::goHome()
 {
-    return hoverAboveTable(POS_LOW);
+    return hoverAboveTable(Z_LOW);
 }
 
 void ArmCtrl::recoverFromError()

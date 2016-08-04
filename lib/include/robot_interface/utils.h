@@ -19,14 +19,6 @@
 
 #define SUBSCRIBER_BUFFER 3
 
-#define POS_HIGH        0.400
-#define POS_LOW         0.200
-#define PICK_UP_SPEED   0.1
-
-#define FORCE_THRES_R   2.0  // [N]
-#define FORCE_THRES_L   2.0  // [N]
-#define FORCE_ALPHA     0.3
-
 #define ACTION_HOME         "home"
 #define ACTION_GET          "get"
 #define ACTION_RELEASE      "release"
@@ -34,17 +26,26 @@
 #define ACTION_HOLD         "hold"
 #define ACTION_HAND_OVER    "hand_over"
 
-#define HORIZONTAL_ORI_L        0.0, 0.70, 0.10, 0.70
-#define VERTICAL_ORI_L          0.0,  1.0,  0.0,  0.0
+#define Z_HIGH        0.400
+#define Z_LOW         0.200
+#define PICK_UP_SPEED   0.1
 
-#define HORIZONTAL_ORI_R_OLD  -0.175730746765, 0.67317042445, 0.1902242414, 0.692657940308
-#define HORIZONTAL_ORI_R      -0.589631754695, 0.239895010244, -0.298576525167, 0.711081455625
+#define FORCE_THRES_R   2.0  // [N]
+#define FORCE_THRES_L   2.0  // [N]
+#define FORCE_ALPHA     0.3
+
+#define HORIZONTAL_ORI_L      0.0, 0.70, 0.10, 0.70
+#define VERTICAL_ORI_L        0.0,  1.0,  0.0,  0.0
+
+#define HORIZONTAL_ORI_R     -0.589631754695, 0.239895010244, -0.298576525167, 0.711081455625
+#define HANDOVER_ORI_R       -0.589631754695, 0.239895010244, -0.298576525167, 0.711081455625
+
 
 #define VERTICAL_ORI_R        0.0, 1.0, 0.0, 0.0
 
 #define POOL_POS_L  -0.05,  0.85, 0.30
 #define HOME_POS_L   0.65,  0.45
-#define HOME_POS_R  0.65, -0.25
+#define HOME_POS_R   0.65, -0.25
 
 /*
  * checks if two numbers rounded up to 2 decimal points are within 0.0z (z is specified no.) to each other 

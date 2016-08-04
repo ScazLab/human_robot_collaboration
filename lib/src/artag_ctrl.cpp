@@ -63,11 +63,11 @@ bool ARTagCtrl::doAction(int s, std::string a)
 
 bool ARTagCtrl::handOver()
 {
-    if (!hoverAboveTable(POS_HIGH)) return false;
+    if (!hoverAboveTable(Z_HIGH)) return false;
     if (!pickARTag())               return false;
-    if (!hoverAboveTable(POS_LOW))  return false;
+    if (!hoverAboveTable(Z_LOW))  return false;
     // if (!passObject())              return false;
-    if (!releaseObject())           return false;
+    // if (!releaseObject())           return false;
     // if (!goHome())                  return false;
 
     return true;
@@ -79,7 +79,7 @@ bool ARTagCtrl::pickObject()
     ros::Duration(0.1).sleep();
     if (!pickARTag())               return false;
     if (!hoverAbovePool())          return false;
-    if (!hoverAboveTable(POS_LOW))  return false;
+    if (!hoverAboveTable(Z_LOW))  return false;
 
     return true;
 }
@@ -136,12 +136,11 @@ bool ARTagCtrl::pickARTag()
 
     if (getAction() == ACTION_HAND_OVER)
     {
-        // If we have to hand_over, let's pre-orient the end effector such that further 
-        // movements are easier
+        // If we have to hand_over, let's pre-orient the end effector such that
+        // further movements are easier
         geometry_msgs::Quaternion q = computeHOorientation();
 
         ROS_INFO("Going to: %g %g %g", getPos().x, getPos().y, getPos().z);
-
         ROSThread::goToPose(getPos().x,getPos().y,getPos().z,q.x,q.y,q.z,q.w,"loose");
     }
     
