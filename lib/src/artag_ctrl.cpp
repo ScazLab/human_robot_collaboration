@@ -14,8 +14,6 @@ ARTagCtrl::ARTagCtrl(std::string _name, std::string _limb) :
 
     elap_time = 0;
 
-    _curr_marker_pos.x = 100;
-
     if (!goHome()) setState(ERROR);
 }
 
