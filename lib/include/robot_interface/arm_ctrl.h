@@ -5,6 +5,7 @@
 #include "robot_interface/gripper.h"
 
 #include "baxter_collaboration/DoAction.h"
+#include "baxter_collaboration/AskFeedback.h"
 
 class ArmCtrl : public ROSThread, public Gripper
 {
@@ -15,6 +16,7 @@ private:
     int         marker_id;
 
     ros::ServiceServer service;
+    ros::ServiceServer service_other_limb;
 
 protected:
     /**
@@ -66,6 +68,15 @@ public:
      */
     bool serviceCb(baxter_collaboration::DoAction::Request  &req,
                    baxter_collaboration::DoAction::Response &res);
+
+    /**
+     * Callback for the service that lets the two limbs interact
+     * @param  req the action request
+     * @param  res the action response (res.success either true or false)
+     * @return     true always :)
+     */
+    bool serviceOtherLimbCb(baxter_collaboration::AskFeedback::Request  &req,
+                            baxter_collaboration::AskFeedback::Response &res);
 
     /* Self-explaining "setters" */
     void setName  (std::string _name)   { name      =   _name; };

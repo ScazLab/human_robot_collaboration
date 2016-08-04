@@ -5,11 +5,21 @@ using namespace std;
 ArmCtrl::ArmCtrl(string _name, string _limb) : ROSThread(_limb), Gripper(_limb),
                                                marker_id(-1), name(_name), action("")
 {
+    std::string other_limb = getLimb() == "right" ? "left" : "right";
+
     std::string service_name = "/"+name+"/service_"+_limb;
     service = _n.advertiseService(service_name, &ArmCtrl::serviceCb, this);
-
     ROS_INFO("[%s] Created service server with name : %s", getLimb().c_str(),
                                                         service_name.c_str());
+
+    service_name = "/"+name+"/service_"+_limb+"_to_"+other_limb;
+    service_other_limb = _n.advertiseService(service_name, &ArmCtrl::serviceOtherLimbCb,this);
+    ROS_INFO("[%s] Created service server with name : %s", getLimb().c_str(),
+                                                        service_name.c_str());
+
+    ros::ServiceClient client_other_limb;
+    service_name = "/"+name+"/service_"+other_limb+"_to_"+_limb;
+    client_other_limb = _n.serviceClient<baxter_collaboration::AskFeedback>(service_name);
 }
 
 void ArmCtrl::InternalThreadEntry()
@@ -34,6 +44,12 @@ void ArmCtrl::InternalThreadEntry()
 
     pthread_exit(NULL);
     return;
+}
+
+bool ArmCtrl::serviceOtherLimbCb(baxter_collaboration::AskFeedback::Request  &req,
+                                 baxter_collaboration::AskFeedback::Response &res)
+{
+    return true;
 }
 
 bool ArmCtrl::serviceCb(baxter_collaboration::DoAction::Request  &req,
