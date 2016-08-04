@@ -17,11 +17,20 @@ private:
     ros::ServiceServer service;
 
 protected:
-    /*
-     * This function is still virtual in this class because it will be
-     * implemented in its children
+    /**
+     * Provides basic functionalities for the object, such as a goHome and releaseObject.
+     * For deeper, class-specific specialization, please modify doAction() instead.
      */
-    virtual void InternalThreadEntry() = 0;
+    void InternalThreadEntry();
+
+    /**
+     * This function implements the action. It is child-specific, and for this reason
+     * it is virtual.
+     * @param  s the state of the system before starting the action
+     * @param  a the action to do
+     * @return   true/false if success/failure
+     */
+    virtual bool doAction(int s, std::string a) = 0;
 
     /**
      * Recovers from errors during execution. It provides a basic interface,

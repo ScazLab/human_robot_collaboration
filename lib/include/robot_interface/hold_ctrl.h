@@ -10,9 +10,12 @@ private:
 
     bool holdObject();
 
-protected:
+    bool handOver();
 
-    void InternalThreadEntry();
+    bool prepare4HandOver();
+
+protected:
+    bool doAction(int s, std::string a);
 
 public:
     HoldCtrl(std::string _name, std::string _limb);

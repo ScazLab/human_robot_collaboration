@@ -5,11 +5,35 @@ using namespace std;
 ArmCtrl::ArmCtrl(string _name, string _limb) : ROSThread(_limb), Gripper(_limb),
                                                marker_id(-1), name(_name), action("")
 {
-    std::string service_name = "/"+name+"/action_service_"+_limb;
+    std::string service_name = "/"+name+"/service_"+_limb;
     service = _n.advertiseService(service_name, &ArmCtrl::serviceCb, this);
 
     ROS_INFO("[%s] Created service server with name : %s", getLimb().c_str(),
                                                         service_name.c_str());
+}
+
+void ArmCtrl::InternalThreadEntry()
+{
+    std::string a =     getAction();
+    int         s = int(getState());
+
+    setState(WORKING);
+
+    if (a == ACTION_HOME)
+    {
+        if (goHome())   setState(START);
+    }
+    else if (a == ACTION_RELEASE)
+    {
+        if (releaseObject())   setState(START);
+    }
+    else
+    {
+        if (!doAction(s, a))   setState(ERROR);
+    }
+
+    pthread_exit(NULL);
+    return;
 }
 
 bool ArmCtrl::serviceCb(baxter_collaboration::DoAction::Request  &req,
@@ -55,19 +79,19 @@ bool ArmCtrl::hoverAboveTable(double height)
 {
     if (getLimb() == "right")
     {
-        return ROSThread::goToPose(HOME_POSITION_RIGHT_ARM, height,
-                                   VERTICAL_ORIENTATION_RIGHT_ARM);
+        return ROSThread::goToPose(HOME_POS_R, height,
+                                   VERTICAL_ORI_R);
     }
     else if (getLimb() == "left")
     {
-        return ROSThread::goToPose(HOME_POSITION_LEFT_ARM, height,
-                                   VERTICAL_ORIENTATION_LEFT_ARM);
+        return ROSThread::goToPose(HOME_POS_L, height,
+                                   VERTICAL_ORI_L);
     }
 }
 
 bool ArmCtrl::goHome()
 {
-    return hoverAboveTable(POS_LOW);
+    return hoverAboveTable(Z_LOW);
 }
 
 void ArmCtrl::recoverFromError()

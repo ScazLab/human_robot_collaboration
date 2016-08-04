@@ -8,9 +8,10 @@
 class ARTagCtrl : public ArmCtrl
 {
 private:
-    double elapsed_time;
+    double elap_time;
 
     ros::Subscriber _aruco_sub;
+    bool              aruco_ok;
     geometry_msgs::Point        _curr_marker_pos;
     geometry_msgs::Quaternion   _curr_marker_ori;
 
@@ -27,7 +28,9 @@ private:
     bool goToPose(double px, double py, double pz,
                   double ox, double oy, double oz, double ow);
 
-    void ArucoCb(const aruco_msgs::MarkerArray& msg);
+    void ARucoCb(const aruco_msgs::MarkerArray& msg);
+
+    bool waitForARucoData();
 
     bool hoverAbovePool();
 
@@ -41,8 +44,21 @@ private:
 
     bool handOver();
 
+    /**
+     * Computes the end-effector orientation needed to pick the object up with a constant
+     * orientation. Needed by the hand-over action since it requires the object to be picked
+     * up consistently.
+     * @return the desired end-effector orientation, expressed in quaternion form
+     */
+    geometry_msgs::Quaternion computeHOorientation();
+
+    /*
+     * Check availability of the aruco data
+    */
+    bool is_aruco_ok() { return aruco_ok; };
+
 protected:
-    void InternalThreadEntry();
+    bool doAction(int s, std::string a);
 
 public:
     ARTagCtrl(std::string _name, std::string _limb);

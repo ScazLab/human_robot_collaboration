@@ -1,5 +1,7 @@
 #include "robot_interface/ros_thread.h"
 
+#include <tf/transform_datatypes.h>
+
 using namespace std;
 using namespace baxter_core_msgs;
 using namespace geometry_msgs;
@@ -67,6 +69,17 @@ void ROSThread::endpointCb(const baxter_core_msgs::EndpointState& msg)
     _curr_ori      = msg.pose.orientation;
     _curr_wrench   = msg.wrench;
 
+    tf::Quaternion _marker_quat;
+    tf::quaternionMsgToTF(_curr_ori, _marker_quat);
+    tf::Matrix3x3 _marker_mat(_marker_quat);
+
+    // printf("Endpoint Orientation\n");
+    // for (int j = 0; j < 3; ++j)
+    // {
+    //     printf("%g\t%g\t%g\n", _marker_mat[j][0], _marker_mat[j][1], _marker_mat[j][2]);
+    // }
+    // printf("\n");
+
     filterForces();
 }
 
@@ -92,12 +105,12 @@ void ROSThread::filterForces()
 
 void ROSThread::hoverAboveTokens(double height)
 {
-    goToPose(0.540, 0.570, height, VERTICAL_ORIENTATION_LEFT_ARM);
+    goToPose(0.540, 0.570, height, VERTICAL_ORI_L);
 }
 
 bool ROSThread::goToPose(double px, double py, double pz,
                          double ox, double oy, double oz, double ow,
-                         std::string mode)
+                         std::string mode, bool disable_coll_av)
 {
     PoseStamped req_pose_stamped;
     req_pose_stamped.header.frame_id = "base";
@@ -111,6 +124,8 @@ bool ROSThread::goToPose(double px, double py, double pz,
 
     while(ros::ok)
     {
+        if (disable_coll_av)    suppressCollisionAv();
+
         JointCommand joint_cmd;
         joint_cmd.mode = JointCommand::POSITION_MODE;
 
@@ -125,13 +140,14 @@ bool ROSThread::goToPose(double px, double py, double pz,
         // ROS_INFO("Publishing joint commands.. %g",
         //           ros::Time::now().toSec()-_init_time.toSec());
         _joint_cmd_pub.publish(joint_cmd);
-        ros::spinOnce();
-        ros::Rate(100).sleep();
 
         if(hasPoseCompleted(req_pose_stamped.pose, mode))
         {
             break;
         }
+
+        ros::spinOnce();
+        ros::Rate(100).sleep();
     }
 
     return true;
@@ -192,14 +208,14 @@ bool ROSThread::getJointAngles(geometry_msgs::PoseStamped& pose_stamped,
 
 bool ROSThread::hasCollided(string mode)
 {
-    float threshold;
+    float thres;
     
-    if     (mode == "strict") threshold = 0.050;
-    else if(mode ==  "loose") threshold = 0.067;
+    if     (mode == "strict") thres = 0.050;
+    else if(mode ==  "loose") thres = 0.067;
     
     if(_curr_range <= _curr_max_range &&
        _curr_range >= _curr_min_range &&
-       _curr_range <= threshold) return true;
+       _curr_range <= thres) return true;
     else return false;
 }
 
@@ -212,8 +228,8 @@ bool ROSThread::hasPoseCompleted(Pose p, string mode)
     }
     else if(mode == "loose")
     {
-        if(!equalXDP(_curr_pos.x, p.position.x, 2)) return false;
-        if(!equalXDP(_curr_pos.y, p.position.y, 2)) return false;
+        if(!equalXDP(_curr_pos.x, p.position.x, 1.5)) return false;
+        if(!equalXDP(_curr_pos.y, p.position.y, 1.5)) return false;
     }
 
     if(!withinXHundredth(_curr_pos.z, p.position.z, 1))     return false;
@@ -255,13 +271,14 @@ bool ROSThread::detectForceInteraction()
     }
 }
 
-bool ROSThread::waitForForceInteraction(double _wait_time)
+bool ROSThread::waitForForceInteraction(double _wait_time, bool disable_coll_av)
 {
     ros::Time _init = ros::Time::now();
 
     while(ros::ok)
     {
-        if (detectForceInteraction()) return true;
+        if (disable_coll_av)          suppressCollisionAv();
+        if (detectForceInteraction())           return true;
 
         ros::spinOnce();
         ros::Rate(100).sleep();
@@ -286,18 +303,10 @@ void ROSThread::publish_joint_cmd(baxter_core_msgs::JointCommand _cmd)
     _joint_cmd_pub.publish(_cmd);
 }
 
-void ROSThread::suppress_collision_avoidance()
+void ROSThread::suppressCollisionAv()
 {
     std_msgs::Empty empty_cmd;
     _coll_av_pub.publish(empty_cmd);
-}
-
-// for syncing mutex locks (crash/errors occur if not used)
-// pause() changes timing of execution of thread locks, but unclear
-// why crash occurs w/o it and needs to be investigated
-void ROSThread::pause()
-{
-    ros::Duration(0.001).sleep();
 }
 
 // Private

@@ -28,10 +28,13 @@ void MoveToRest::InternalThreadEntry()
     // wait for endpoint callback
     while(ros::ok())
     {
-        if(!(_curr_pos.x == 0 && _curr_pos.y == 0 && _curr_pos.z == 0))
+        if(!(getPos().x == 0 && getPos().y == 0 && getPos().z == 0))
         {       
             break;
         }
+
+        ros::spinOnce();
+        ros::Rate(100).sleep();
     }
 
     PoseStamped req_pose_stamped;
@@ -114,9 +117,9 @@ void PickUpToken::InternalThreadEntry()
         if(!_curr_img_empty) break;
     }
 
-    hoverAboveTokens(POS_HIGH);
+    hoverAboveTokens(Z_HIGH);
     gripToken();
-    hoverAboveTokens(POS_LOW);
+    hoverAboveTokens(Z_LOW);
 
     setState(PICK_UP);
     pthread_exit(NULL);  
@@ -152,7 +155,7 @@ void PickUpToken::gripToken()
         prev_offset.x = prev_offset.x + 0.07 * offset.x; 
         prev_offset.y = prev_offset.y + 0.07 * offset.y;
 
-        setOrientation(req_pose_stamped.pose, VERTICAL_ORIENTATION_LEFT_ARM);
+        setOrientation(req_pose_stamped.pose, VERTICAL_ORI_L);
 
         vector<double> joint_angles;
         getJointAngles(req_pose_stamped,joint_angles);
@@ -172,7 +175,7 @@ void PickUpToken::gripToken()
         ros::spinOnce();
         ros::Rate(100).sleep();
         
-        // if(_curr_pos.z < -0.05) break;
+        // if(getPos().z < -0.05) break;
 
         if(hasCollided("strict")) 
         {
@@ -485,7 +488,7 @@ void ScanBoard::InternalThreadEntry()
     }
 
     scan();
-    hoverAboveTokens(POS_HIGH);
+    hoverAboveTokens(Z_HIGH);
 
     setState(SCANNED);
     pthread_exit(NULL);
@@ -507,7 +510,7 @@ void ScanBoard::scan()
 
 void ScanBoard::setDepth(float *dist)
 {
-    geometry_msgs::Point init_pos = _curr_pos;
+    geometry_msgs::Point init_pos = getPos();
 
     ros::Time start_time = ros::Time::now();                
 
@@ -548,7 +551,7 @@ void ScanBoard::setDepth(float *dist)
     }
 
     // offset to account for height difference between IR camera and tip of vacuum gripper
-    *dist = init_pos.z - _curr_pos.z + 0.04;
+    *dist = init_pos.z - getPos().z + 0.04;
 }
 
 void ScanBoard::processImage(string mode, float dist)
@@ -791,10 +794,10 @@ bool ScanBoard::offsetsReachable()
         PoseStamped req_pose_stamped;
         req_pose_stamped.header.frame_id = "base";
         setPosition(req_pose_stamped.pose, 
-                    _curr_pos.x + _offsets[i].x,
-                    _curr_pos.y + _offsets[i].y,
-                    _curr_pos.z - _offsets[i].z);
-        setOrientation(req_pose_stamped.pose, VERTICAL_ORIENTATION_LEFT_ARM);
+                    getPos().x + _offsets[i].x,
+                    getPos().y + _offsets[i].y,
+                    getPos().z - _offsets[i].z);
+        setOrientation(req_pose_stamped.pose, VERTICAL_ORI_L);
 
         vector<double> joint_angles;
         getJointAngles(req_pose_stamped,joint_angles);
@@ -832,7 +835,7 @@ bool ScanBoard::pointReachable(cv::Point centroid, float dist)
                 0.575 + offset.x,
                 0.100 + offset.y,
                 0.445 - offset.z);
-    setOrientation(pose_stamped.pose, VERTICAL_ORIENTATION_LEFT_ARM);
+    setOrientation(pose_stamped.pose, VERTICAL_ORI_L);
 
     vector<double> joint_angles;
     return getJointAngles(pose_stamped,joint_angles) ? false : true;
@@ -857,7 +860,7 @@ void PutDownToken::InternalThreadEntry()
     ros::Duration(0.8).sleep();
     releaseObject();
     hoverAboveBoard();
-    hoverAboveTokens(POS_HIGH);
+    hoverAboveTokens(Z_HIGH);
 
     setState(PUT_DOWN);
     pthread_exit(NULL);  
@@ -869,7 +872,7 @@ void PutDownToken::hoverAboveCell()
     goToPose(0.575 + _offsets[_cell - 1].x,
              0.100 + _offsets[_cell - 1].y, 
              0.445 - _offsets[_cell - 1].z,
-             VERTICAL_ORIENTATION_LEFT_ARM);
+             VERTICAL_ORI_L);
 }
 
 void PutDownToken::hoverAboveBoard()
@@ -877,7 +880,7 @@ void PutDownToken::hoverAboveBoard()
     goToPose(0.575 + _offsets[4].x,
              0.100 + _offsets[4].y, 
              0.445 - _offsets[4].z,
-             VERTICAL_ORIENTATION_LEFT_ARM);
+             VERTICAL_ORI_L);
 }
 
 /**************************************************************************/
