@@ -16,10 +16,6 @@ ArmCtrl::ArmCtrl(string _name, string _limb) : ROSThread(_limb), Gripper(_limb),
     service_other_limb = _n.advertiseService(service_name, &ArmCtrl::serviceOtherLimbCb,this);
     ROS_INFO("[%s] Created service server with name : %s", getLimb().c_str(),
                                                         service_name.c_str());
-
-    ros::ServiceClient client_other_limb;
-    service_name = "/"+name+"/service_"+other_limb+"_to_"+_limb;
-    client_other_limb = _n.serviceClient<baxter_collaboration::AskFeedback>(service_name);
 }
 
 void ArmCtrl::InternalThreadEntry()
