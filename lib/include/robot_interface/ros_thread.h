@@ -33,8 +33,8 @@ class ROSThread
 {
 private:
     ros::Time _init_time;
-    State _state;
-    std::string _limb;
+    State         _state;
+    std::string    _limb;
 
     pthread_t _thread;
     static void * InternalThreadEntryFunc(void * This);
@@ -44,26 +44,26 @@ private:
     ros::ServiceClient _ik_client;
 
     ros::Publisher  _joint_cmd_pub;
-    ros::Publisher  _coll_av_pub;
+    ros::Publisher    _coll_av_pub;
 
-    // IR Sensor stuff
+    // IR Sensor
     ros::Subscriber _ir_sub;
-    bool  ir_ok;
-    float _curr_range, _curr_max_range, _curr_min_range;
+    bool              ir_ok;
+    float       _curr_range;
+    float   _curr_min_range;
+    float   _curr_max_range;
 
-    // End-Effector stuff
-    ros::Subscriber _endpt_sub;
-    std::vector<double> _filt_force;
-    double force_thres;
-
-protected:
-    ros::NodeHandle _n;
+    // End-Effector
+    ros::Subscriber            _endpt_sub;
+    std::vector<double>       _filt_force;
+    double                    force_thres;
 
     geometry_msgs::Point        _curr_pos;
     geometry_msgs::Quaternion   _curr_ori;
-    geometry_msgs::Wrench       _curr_wrench;
+    geometry_msgs::Wrench    _curr_wrench;
 
-    void pause();
+protected:
+    ros::NodeHandle _n;
 
     /*
      * Function that will be spun out as a thread
@@ -129,9 +129,9 @@ protected:
      * Waits for a force interaction to occur.
      * 
      * @return true when the force interaction occurred
-     * @return false if no force interaction occurred after 10s
+     * @return false if no force interaction occurred after 20s
      */
-    bool waitForForceInteraction(double _wait_time = 10.0);
+    bool waitForForceInteraction(double _wait_time = 20.0);
 
     /*
      * Prevents any following code from being executed before thread is exited
@@ -211,6 +211,10 @@ public:
      */
     State       getState() { return _state; };
     std::string getLimb()  { return  _limb; };
+
+    geometry_msgs::Point        getPos()    { return    _curr_pos; };
+    geometry_msgs::Quaternion   getOri()    { return    _curr_ori; };
+    geometry_msgs::Wrench       getWrench() { return _curr_wrench; };
 
     /*
      * Check availability of the various subscribers

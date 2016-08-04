@@ -164,7 +164,7 @@ bool ARTagCtrl::pickARTag()
     // return true;
     
     start_time = ros::Time::now();
-    double z_start  = _curr_pos.z;
+    double z_start  = getPos().z;
 
     int ik_failures = 0;
     int l=0;
@@ -292,12 +292,12 @@ void ARTagCtrl::clearMarkerPose()
 
 bool ARTagCtrl::hoverAbovePool()
 {
-    return ROSThread::goToPose(POOL_POSITION_LEFT_ARM, VERTICAL_ORIENTATION_LEFT_ARM);
+    return ROSThread::goToPose(POOL_POS_L, VERTICAL_ORI_L);
 }
 
 bool ARTagCtrl::moveObjectTowardHuman()
 {
-    return ROSThread::goToPose(0.80, 0.26, 0.32, HORIZONTAL_ORIENTATION_LEFT_ARM);
+    return ROSThread::goToPose(0.80, 0.26, 0.32, HORIZONTAL_ORI_L);
 }
 
 ARTagCtrl::~ARTagCtrl()

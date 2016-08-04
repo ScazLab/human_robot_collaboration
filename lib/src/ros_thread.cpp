@@ -105,7 +105,7 @@ void ROSThread::filterForces()
 
 void ROSThread::hoverAboveTokens(double height)
 {
-    goToPose(0.540, 0.570, height, VERTICAL_ORIENTATION_LEFT_ARM);
+    goToPose(0.540, 0.570, height, VERTICAL_ORI_L);
 }
 
 bool ROSThread::goToPose(double px, double py, double pz,
@@ -303,14 +303,6 @@ void ROSThread::suppress_collision_avoidance()
 {
     std_msgs::Empty empty_cmd;
     _coll_av_pub.publish(empty_cmd);
-}
-
-// for syncing mutex locks (crash/errors occur if not used)
-// pause() changes timing of execution of thread locks, but unclear
-// why crash occurs w/o it and needs to be investigated
-void ROSThread::pause()
-{
-    ros::Duration(0.001).sleep();
 }
 
 // Private
