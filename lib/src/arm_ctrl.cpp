@@ -5,7 +5,7 @@ using namespace std;
 ArmCtrl::ArmCtrl(string _name, string _limb) : ROSThread(_limb), Gripper(_limb),
                                                marker_id(-1), name(_name), action("")
 {
-    std::string service_name = "/"+name+"/action_service_"+_limb;
+    std::string service_name = "/"+name+"/service_"+_limb;
     service = _n.advertiseService(service_name, &ArmCtrl::serviceCb, this);
 
     ROS_INFO("[%s] Created service server with name : %s", getLimb().c_str(),
@@ -29,7 +29,7 @@ void ArmCtrl::InternalThreadEntry()
     }
     else
     {
-        if (!doAction(s, a))     setState(ERROR);
+        if (!doAction(s, a))   setState(ERROR);
     }
 
     pthread_exit(NULL);

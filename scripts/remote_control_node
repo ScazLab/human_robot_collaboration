@@ -13,10 +13,10 @@ if len(sys.argv) > 1:
 
 if   limb ==  'left':
     PORT    = 5000
-    SERVICE = '/action_provider/action_service_left'
+    SERVICE = '/action_provider/service_left'
 elif limb == 'right':
     PORT    = 6000
-    SERVICE = '/action_provider/action_service_right'
+    SERVICE = '/action_provider/service_right'
 
 OBJECT_IDS = {
     'left_leg': 17,
