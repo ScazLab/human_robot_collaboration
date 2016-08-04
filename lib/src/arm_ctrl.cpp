@@ -55,13 +55,13 @@ bool ArmCtrl::hoverAboveTable(double height)
 {
     if (getLimb() == "right")
     {
-        return ROSThread::goToPose(HOME_POSITION_RIGHT_ARM, height,
-                                   VERTICAL_ORIENTATION_RIGHT_ARM);
+        return ROSThread::goToPose(HOME_POS_R, height,
+                                   VERTICAL_ORI_R);
     }
     else if (getLimb() == "left")
     {
-        return ROSThread::goToPose(HOME_POSITION_LEFT_ARM, height,
-                                   VERTICAL_ORIENTATION_LEFT_ARM);
+        return ROSThread::goToPose(HOME_POS_L, height,
+                                   VERTICAL_ORI_L);
     }
 }
 

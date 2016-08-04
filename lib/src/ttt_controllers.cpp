@@ -32,6 +32,9 @@ void MoveToRest::InternalThreadEntry()
         {       
             break;
         }
+
+        ros::spinOnce();
+        ros::Rate(100).sleep();
     }
 
     PoseStamped req_pose_stamped;
@@ -152,7 +155,7 @@ void PickUpToken::gripToken()
         prev_offset.x = prev_offset.x + 0.07 * offset.x; 
         prev_offset.y = prev_offset.y + 0.07 * offset.y;
 
-        setOrientation(req_pose_stamped.pose, VERTICAL_ORIENTATION_LEFT_ARM);
+        setOrientation(req_pose_stamped.pose, VERTICAL_ORI_L);
 
         vector<double> joint_angles;
         getJointAngles(req_pose_stamped,joint_angles);
@@ -794,7 +797,7 @@ bool ScanBoard::offsetsReachable()
                     getPos().x + _offsets[i].x,
                     getPos().y + _offsets[i].y,
                     getPos().z - _offsets[i].z);
-        setOrientation(req_pose_stamped.pose, VERTICAL_ORIENTATION_LEFT_ARM);
+        setOrientation(req_pose_stamped.pose, VERTICAL_ORI_L);
 
         vector<double> joint_angles;
         getJointAngles(req_pose_stamped,joint_angles);
@@ -832,7 +835,7 @@ bool ScanBoard::pointReachable(cv::Point centroid, float dist)
                 0.575 + offset.x,
                 0.100 + offset.y,
                 0.445 - offset.z);
-    setOrientation(pose_stamped.pose, VERTICAL_ORIENTATION_LEFT_ARM);
+    setOrientation(pose_stamped.pose, VERTICAL_ORI_L);
 
     vector<double> joint_angles;
     return getJointAngles(pose_stamped,joint_angles) ? false : true;
@@ -869,7 +872,7 @@ void PutDownToken::hoverAboveCell()
     goToPose(0.575 + _offsets[_cell - 1].x,
              0.100 + _offsets[_cell - 1].y, 
              0.445 - _offsets[_cell - 1].z,
-             VERTICAL_ORIENTATION_LEFT_ARM);
+             VERTICAL_ORI_L);
 }
 
 void PutDownToken::hoverAboveBoard()
@@ -877,7 +880,7 @@ void PutDownToken::hoverAboveBoard()
     goToPose(0.575 + _offsets[4].x,
              0.100 + _offsets[4].y, 
              0.445 - _offsets[4].z,
-             VERTICAL_ORIENTATION_LEFT_ARM);
+             VERTICAL_ORI_L);
 }
 
 /**************************************************************************/

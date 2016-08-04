@@ -54,9 +54,9 @@ private:
     float   _curr_max_range;
 
     // End-Effector
-    ros::Subscriber      _endpt_sub;
-    std::vector<double> _filt_force;
-    double              force_thres;
+    ros::Subscriber            _endpt_sub;
+    std::vector<double>       _filt_force;
+    double                    force_thres;
 
     geometry_msgs::Point        _curr_pos;
     geometry_msgs::Quaternion   _curr_ori;
@@ -64,8 +64,6 @@ private:
 
 protected:
     ros::NodeHandle _n;
-
-    void pause();
 
     /*
      * Function that will be spun out as a thread
@@ -131,9 +129,9 @@ protected:
      * Waits for a force interaction to occur.
      * 
      * @return true when the force interaction occurred
-     * @return false if no force interaction occurred after 10s
+     * @return false if no force interaction occurred after 20s
      */
-    bool waitForForceInteraction(double _wait_time = 10.0);
+    bool waitForForceInteraction(double _wait_time = 20.0);
 
     /*
      * Prevents any following code from being executed before thread is exited
@@ -213,7 +211,7 @@ public:
      */
     State       getState() { return _state; };
     std::string getLimb()  { return  _limb; };
-    
+
     geometry_msgs::Point        getPos()    { return    _curr_pos; };
     geometry_msgs::Quaternion   getOri()    { return    _curr_ori; };
     geometry_msgs::Wrench       getWrench() { return _curr_wrench; };
