@@ -11,8 +11,8 @@ HoldCtrl::HoldCtrl(std::string _name, std::string _limb) :
 bool HoldCtrl::doAction(int s, std::string a)
 {
     if (a == ACTION_HOLD && (s == START ||
-                                  s == ERROR ||
-                                  s == DONE  ))
+                             s == ERROR ||
+                             s == DONE  ))
     {
         if (holdObject())
         {
@@ -21,12 +21,38 @@ bool HoldCtrl::doAction(int s, std::string a)
         }   
         else recoverFromError();
     }
+    else if (a == ACTION_HAND_OVER && (s == START ||
+                                       s == ERROR ||
+                                       s == DONE  ))
+    {
+        if (handOver())
+        {
+            setState(DONE);
+            return true;
+        }
+        else recoverFromError();
+    }
     else
     {
         ROS_ERROR("[%s] Invalid State %i", getLimb().c_str(), s);
     }
 
     return false;
+}
+
+bool HoldCtrl::handOver()
+{
+    if (!prepare4HandOver())              return false;
+    if (!waitForForceInteraction(120.0))  return false;
+    if (!gripObject())                    return false;
+    if (!goHoldPose(0.24))                return false;
+    ros::Duration(1.0).sleep();
+    if (!waitForForceInteraction(180.0))  return false;
+    if (!releaseObject())                 return false;
+    ros::Duration(1.0).sleep();
+    if (!goHome())                        return false;
+
+    return true;
 }
 
 bool HoldCtrl::holdObject()
@@ -39,15 +65,21 @@ bool HoldCtrl::holdObject()
     if (!waitForForceInteraction(180.0))  return false;
     if (!releaseObject())                 return false;
     ros::Duration(1.0).sleep();
-    if (!goHome())                         return false;
+    if (!goHome())                        return false;
 
     return true;
+}
+
+bool HoldCtrl::prepare4HandOver()
+{
+    return ROSThread::goToPose(0.65, 0.0, Z_LOW,
+                                  HANDOVER_ORI_R);
 }
 
 bool HoldCtrl::goHoldPose(double height)
 {
     return ROSThread::goToPose(0.80, -0.4, height,
-                               HORIZONTAL_ORI_R);
+                                HORIZONTAL_ORI_R);
 }
 
 HoldCtrl::~HoldCtrl()

@@ -10,6 +10,10 @@ private:
 
     bool holdObject();
 
+    bool handOver();
+
+    bool prepare4HandOver();
+
 protected:
     bool doAction(int s, std::string a);
 
