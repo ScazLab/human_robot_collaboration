@@ -217,7 +217,7 @@ public:
     geometry_msgs::Wrench       getWrench() { return _curr_wrench; };
 
     /*
-     * Check availability of the various subscribers
+     * Check availability of the infrared data
     */
     bool    is_ir_ok() { return ir_ok; };
 };

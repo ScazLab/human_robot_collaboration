@@ -7,12 +7,12 @@
 using namespace std;
 
 ARTagCtrl::ARTagCtrl(std::string _name, std::string _limb) : 
-                                      ArmCtrl(_name,_limb)
+                     ArmCtrl(_name,_limb), aruco_ok(false)
 {
     _aruco_sub = _n.subscribe("/aruco_marker_publisher/markers",
-                               SUBSCRIBER_BUFFER, &ARTagCtrl::ArucoCb, this);
+                               SUBSCRIBER_BUFFER, &ARTagCtrl::ARucoCb, this);
 
-    elapsed_time = 0;
+    elap_time = 0;
 
     _curr_marker_pos.x = 100;
 
@@ -97,7 +97,7 @@ bool ARTagCtrl::passObject()
     return true;
 }
 
-void ARTagCtrl::ArucoCb(const aruco_msgs::MarkerArray& msg) 
+void ARTagCtrl::ARucoCb(const aruco_msgs::MarkerArray& msg) 
 {
     for (int i = 0; i < msg.markers.size(); ++i)
     {
@@ -115,6 +115,11 @@ void ARTagCtrl::ArucoCb(const aruco_msgs::MarkerArray& msg)
             //                                       _curr_marker_ori.y,
             //                                       _curr_marker_ori.z,
             //                                       _curr_marker_ori.w);
+
+            if (!aruco_ok)
+            {
+                aruco_ok = true;
+            }
         }
     }
 }
@@ -122,7 +127,6 @@ void ARTagCtrl::ArucoCb(const aruco_msgs::MarkerArray& msg)
 bool ARTagCtrl::pickARTag()
 {
     ROS_INFO("[%s] Start Picking up tag..", getLimb().c_str());
-    ros::Time start_time = ros::Time::now();
 
     if (!is_ir_ok())
     {
@@ -130,21 +134,7 @@ bool ARTagCtrl::pickARTag()
         return false;
     }
 
-    int cnt=0;
-    while (_curr_marker_pos.x == 100)
-    {
-        ROS_WARN("No callback from ARuco, or object with ID %i not found.", getMarkerID());
-        ++cnt;
-
-        if (cnt == 10)
-        {
-            ROS_ERROR("No object with ID %i found. Stopping.", getMarkerID());
-            return false;
-        }
-
-        ros::spinOnce();
-        ros::Rate(10).sleep();
-    }
+    if (!waitForARucoData()) return false;
 
     double xx = getPos().x;
     double yy = getPos().y;
@@ -158,32 +148,31 @@ bool ARTagCtrl::pickARTag()
 
     // return true;
     
-    start_time = ros::Time::now();
-    double z_start  = getPos().z;
+    ros::Time start_time = ros::Time::now();
+    double z_start       =       getPos().z;
+    int ik_failures      =                0;
 
-    int ik_failures = 0;
-    int l=0;
     while(ros::ok())
     {
         ros::Time now_time = ros::Time::now();
-        double new_elapsed_time = (now_time - start_time).toSec();
+        double new_elap_time = (now_time - start_time).toSec();
 
         double x = _curr_marker_pos.x;
         double y = _curr_marker_pos.y;
-        double z = z_start - PICK_UP_SPEED * new_elapsed_time;
+        double z = z_start - PICK_UP_SPEED * new_elap_time;
 
-        ROS_INFO("Time %g Going to: %g %g %g", new_elapsed_time, x, y, z);
+        ROS_INFO("Time %g Going to: %g %g %g", new_elap_time, x, y, z);
 
-        geometry_msgs::Quaternion _q_msg = computeRotation();
+        geometry_msgs::Quaternion _q_msg = computeHOorientation();
 
         if (ARTagCtrl::goToPose(x,y,z,q.x,q.y,q.z,q.w) == true)
         {
             ik_failures = 0;
-            if (new_elapsed_time - elapsed_time > 0.02)
+            if (new_elap_time - elap_time > 0.02)
             {
-                ROS_WARN("\t\t\t\t\t\tTime elapsed: %g", new_elapsed_time - elapsed_time);
+                ROS_WARN("\t\t\t\t\tTime elapsed: %g", new_elap_time - elap_time);
             }
-            elapsed_time = new_elapsed_time;
+            elap_time = new_elap_time;
 
             if(hasCollided("strict")) 
             {
@@ -279,9 +268,29 @@ bool ARTagCtrl::goToPose(double px, double py, double pz,
     return true;
 }
 
+bool ARTagCtrl::waitForARucoData()
+{
+    int cnt=0;
+    while (!aruco_ok)
+    {
+        ROS_WARN("No callback from ARuco, or object with ID %i not found.", getMarkerID());
+        ++cnt;
+
+        if (cnt == 10)
+        {
+            ROS_ERROR("No object with ID %i found. Stopping.", getMarkerID());
+            return false;
+        }
+
+        ros::spinOnce();
+        ros::Rate(10).sleep();
+    }
+    return true;
+}
+
 void ARTagCtrl::clearMarkerPose()
 {
-    _curr_marker_pos.x = 100;
+    aruco_ok = false;
 }
 
 bool ARTagCtrl::hoverAbovePool()
