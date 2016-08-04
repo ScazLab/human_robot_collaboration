@@ -73,12 +73,12 @@ void ROSThread::endpointCb(const baxter_core_msgs::EndpointState& msg)
     tf::quaternionMsgToTF(_curr_ori, _marker_quat);
     tf::Matrix3x3 _marker_mat(_marker_quat);
 
-    printf("Endpoint Orientation\n");
-    for (int j = 0; j < 3; ++j)
-    {
-        printf("%g\t%g\t%g\n", _marker_mat[j][0], _marker_mat[j][1], _marker_mat[j][2]);
-    }
-    printf("\n");
+    // printf("Endpoint Orientation\n");
+    // for (int j = 0; j < 3; ++j)
+    // {
+    //     printf("%g\t%g\t%g\n", _marker_mat[j][0], _marker_mat[j][1], _marker_mat[j][2]);
+    // }
+    // printf("\n");
 
     filterForces();
 }

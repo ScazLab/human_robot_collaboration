@@ -56,7 +56,7 @@ void ARTagCtrl::InternalThreadEntry()
                                        s == DONE  ))
     {
         if (handOver())    setState(DONE);
-        else               recoverFromError();
+        // else               recoverFromError();
     }
     else
     {
@@ -73,8 +73,8 @@ bool ARTagCtrl::handOver()
     if (!hoverAboveTable(POS_HIGH)) return false;
     if (!pickARTag())               return false;
     if (!hoverAboveTable(POS_LOW))  return false;
-    if (!passObject())              return false;
-    // if (!releaseObject())           return false;
+    // if (!passObject())              return false;
+    if (!releaseObject())           return false;
     // if (!goHome())                  return false;
 
     return true;
@@ -108,9 +108,8 @@ void ARTagCtrl::ArucoCb(const aruco_msgs::MarkerArray& msg)
     {
         ROS_DEBUG("Processing marker with id %i",msg.markers[i].id);
 
-        // if (msg.markers[i].id == getMarkerID())
+        if (msg.markers[i].id == getMarkerID())
         {
-            i=0;
             _curr_marker_pos = msg.markers[i].pose.pose.position;
             _curr_marker_ori = msg.markers[i].pose.pose.orientation;
 
@@ -121,17 +120,6 @@ void ARTagCtrl::ArucoCb(const aruco_msgs::MarkerArray& msg)
             //                                       _curr_marker_ori.y,
             //                                       _curr_marker_ori.z,
             //                                       _curr_marker_ori.w);
-
-            tf::Quaternion _marker_quat;
-            tf::quaternionMsgToTF(_curr_marker_ori, _marker_quat);
-            tf::Matrix3x3 _marker_mat(_marker_quat);
-
-            printf("Marker Orientation\n");
-            for (int j = 0; j < 3; ++j)
-            {
-                printf("%g\t%g\t%g\n", _marker_mat[j][0], _marker_mat[j][1], _marker_mat[j][2]);
-            }
-            printf("\n");
         }
     }
 }
@@ -163,9 +151,23 @@ bool ARTagCtrl::pickARTag()
         ros::Rate(10).sleep();
     }
 
+    double xx = _curr_pos.x;
+    double yy = _curr_pos.y;
+    double zz = _curr_pos.z;
+
+    geometry_msgs::Quaternion q = computeRotation();
+
+    ROS_INFO("Going to: %g %g %g", xx, yy, zz);
+
+    ROSThread::goToPose(xx,yy,zz,q.x,q.y,q.z,q.w,"loose");
+
+    // return true;
+    
+    start_time = ros::Time::now();
     double z_start  = _curr_pos.z;
 
     int ik_failures = 0;
+    int l=0;
     while(ros::ok())
     {
         ros::Time now_time = ros::Time::now();
@@ -175,9 +177,11 @@ bool ARTagCtrl::pickARTag()
         double y = _curr_marker_pos.y;
         double z = z_start - PICK_UP_SPEED * new_elapsed_time;
 
-        ROS_DEBUG("Time %g Going to: %g %g %g", new_elapsed_time, x, y, z);
+        ROS_INFO("Time %g Going to: %g %g %g", new_elapsed_time, x, y, z);
 
-        if (ARTagCtrl::goToPose(x,y,z,VERTICAL_ORIENTATION_LEFT_ARM) == true)
+        geometry_msgs::Quaternion _q_msg = computeRotation();
+
+        if (ARTagCtrl::goToPose(x,y,z,q.x,q.y,q.z,q.w) == true)
         {
             ik_failures = 0;
             if (new_elapsed_time - elapsed_time > 0.02)
@@ -188,7 +192,7 @@ bool ARTagCtrl::pickARTag()
 
             if(hasCollided("strict")) 
             {
-                ROS_INFO("Collision!");
+                ROS_DEBUG("Collision!");
                 break;
             }
 
@@ -206,7 +210,52 @@ bool ARTagCtrl::pickARTag()
         }
     }
     
+    ROS_INFO("Picking up tag..");
     return gripObject();
+}
+
+geometry_msgs::Quaternion ARTagCtrl::computeRotation()
+{
+        tf::Quaternion _markerQ;
+        tf::quaternionMsgToTF(_curr_marker_ori, _markerQ);
+        tf::Matrix3x3 _markerR(_markerQ);
+
+        printf("Marker Orientation\n");
+        for (int j = 0; j < 3; ++j)
+        {
+            printf("%g\t%g\t%g\n", _markerR[j][0], _markerR[j][1], _markerR[j][2]);
+        }
+
+        tf::Matrix3x3 _objR;
+        _objR.setIdentity();
+        _objR[0][0] =  1;  _objR[0][1] =  0;   _objR[0][2] =  0;
+        _objR[1][0] =  0;  _objR[1][1] =  0;   _objR[1][2] = -1;
+        _objR[2][0] =  0;  _objR[2][1] =  1;   _objR[2][2] =  0;
+
+        // printf("Rotation\n");
+        // for (int j = 0; j < 3; ++j)
+        // {
+        //     printf("%g\t%g\t%g\n", _objR[j][0], _objR[j][1], _objR[j][2]);
+        // }
+
+        _objR = _markerR * _objR;
+        tf::Quaternion _objQ;
+        _objR.getRotation(_objQ);
+
+        geometry_msgs::Quaternion _objQmsg;
+        tf::quaternionTFToMsg(_objQ,_objQmsg);
+
+        //                                         _objR[0][2] =  0;
+        //                                         _objR[1][2] =  0;
+        // _objR[2][0] =  0;  _objR[2][1] =  0;    _objR[2][2] = -1;
+
+        printf("Desired Orientation\n");
+        for (int j = 0; j < 3; ++j)
+        {
+            printf("%g\t%g\t%g\n", _objR[j][0], _objR[j][1], _objR[j][2]);
+        }
+
+        return _objQmsg;
 }
 
 bool ARTagCtrl::goToPose(double px, double py, double pz,

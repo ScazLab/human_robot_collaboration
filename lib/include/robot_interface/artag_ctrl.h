@@ -41,6 +41,8 @@ private:
 
     bool handOver();
 
+    geometry_msgs::Quaternion computeRotation();
+
 protected:
     void InternalThreadEntry();
 
