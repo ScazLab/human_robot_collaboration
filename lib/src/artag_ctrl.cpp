@@ -154,9 +154,9 @@ bool ARTagCtrl::pickARTag()
         ros::Rate(10).sleep();
     }
 
-    double xx = _curr_pos.x;
-    double yy = _curr_pos.y;
-    double zz = _curr_pos.z;
+    double xx = getPos().x;
+    double yy = getPos().y;
+    double zz = getPos().z;
 
     geometry_msgs::Quaternion q = computeRotation();
 
