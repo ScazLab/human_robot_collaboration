@@ -18,8 +18,8 @@ private:
 
 protected:
     /*
-     * Provides basic functionalities for the object, such as a goHome and releaseObject
-     * functionality. For further class-specific specialization, please modify doAction.
+     * Provides basic functionalities for the object, such as a goHome and releaseObject.
+     * For deeper, class-specific specialization, please modify doAction() instead.
      */
     void InternalThreadEntry();
 

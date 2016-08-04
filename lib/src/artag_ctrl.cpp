@@ -134,17 +134,16 @@ bool ARTagCtrl::pickARTag()
 
     if (!waitForARucoData()) return false;
 
-    double xx = getPos().x;
-    double yy = getPos().y;
-    double zz = getPos().z;
+    if (getAction() == ACTION_HAND_OVER)
+    {
+        // If we have to hand_over, let's pre-orient the end effector such that further 
+        // movements are easier
+        geometry_msgs::Quaternion q = computeHOorientation();
 
-    geometry_msgs::Quaternion q = computeHOorientation();
+        ROS_INFO("Going to: %g %g %g", getPos().x, getPos().y, getPos().z);
 
-    ROS_INFO("Going to: %g %g %g", xx, yy, zz);
-
-    ROSThread::goToPose(xx,yy,zz,q.x,q.y,q.z,q.w,"loose");
-
-    // return true;
+        ROSThread::goToPose(getPos().x,getPos().y,getPos().z,q.x,q.y,q.z,q.w,"loose");
+    }
     
     ros::Time start_time = ros::Time::now();
     double z_start       =       getPos().z;
@@ -161,9 +160,20 @@ bool ARTagCtrl::pickARTag()
 
         ROS_INFO("Time %g Going to: %g %g %g", new_elap_time, x, y, z);
 
-        geometry_msgs::Quaternion _q_msg = computeHOorientation();
+        geometry_msgs::Quaternion q;
+        bool res=false;
 
-        if (ARTagCtrl::goToPose(x,y,z,q.x,q.y,q.z,q.w) == true)
+        if (getAction() == ACTION_HAND_OVER)
+        {
+            q   = computeHOorientation();
+            res = ARTagCtrl::goToPose(x,y,z,q.x,q.y,q.z,q.w);
+        }
+        else
+        {
+            res = ARTagCtrl::goToPose(x,y,z,VERTICAL_ORI_L);
+        }
+
+        if (res == true)
         {
             ik_failures = 0;
             if (new_elap_time - elap_time > 0.02)
