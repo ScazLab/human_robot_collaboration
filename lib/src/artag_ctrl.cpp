@@ -163,7 +163,7 @@ bool ARTagCtrl::pickARTag()
         ros::Rate(10).sleep();
     }
 
-    double z_start  = _curr_pos.z;
+    double z_start  = getPos().z;
 
     int ik_failures = 0;
     while(ros::ok())

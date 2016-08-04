@@ -28,7 +28,7 @@ void MoveToRest::InternalThreadEntry()
     // wait for endpoint callback
     while(ros::ok())
     {
-        if(!(_curr_pos.x == 0 && _curr_pos.y == 0 && _curr_pos.z == 0))
+        if(!(getPos().x == 0 && getPos().y == 0 && getPos().z == 0))
         {       
             break;
         }
@@ -172,7 +172,7 @@ void PickUpToken::gripToken()
         ros::spinOnce();
         ros::Rate(100).sleep();
         
-        // if(_curr_pos.z < -0.05) break;
+        // if(getPos().z < -0.05) break;
 
         if(hasCollided("strict")) 
         {
@@ -507,7 +507,7 @@ void ScanBoard::scan()
 
 void ScanBoard::setDepth(float *dist)
 {
-    geometry_msgs::Point init_pos = _curr_pos;
+    geometry_msgs::Point init_pos = getPos();
 
     ros::Time start_time = ros::Time::now();                
 
@@ -548,7 +548,7 @@ void ScanBoard::setDepth(float *dist)
     }
 
     // offset to account for height difference between IR camera and tip of vacuum gripper
-    *dist = init_pos.z - _curr_pos.z + 0.04;
+    *dist = init_pos.z - getPos().z + 0.04;
 }
 
 void ScanBoard::processImage(string mode, float dist)
@@ -791,9 +791,9 @@ bool ScanBoard::offsetsReachable()
         PoseStamped req_pose_stamped;
         req_pose_stamped.header.frame_id = "base";
         setPosition(req_pose_stamped.pose, 
-                    _curr_pos.x + _offsets[i].x,
-                    _curr_pos.y + _offsets[i].y,
-                    _curr_pos.z - _offsets[i].z);
+                    getPos().x + _offsets[i].x,
+                    getPos().y + _offsets[i].y,
+                    getPos().z - _offsets[i].z);
         setOrientation(req_pose_stamped.pose, VERTICAL_ORIENTATION_LEFT_ARM);
 
         vector<double> joint_angles;
