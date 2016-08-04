@@ -109,7 +109,8 @@ protected:
      * @return true/false if success/failure
      */
     bool goToPose(double px, double py, double pz,
-                  double ox, double oy, double oz, double ow, std::string mode="loose");
+                  double ox, double oy, double oz, double ow,
+                  std::string mode="loose", bool disable_coll_av = false);
 
     /*
      * Sets the joint names of a JointCommand
@@ -131,7 +132,7 @@ protected:
      * @return true when the force interaction occurred
      * @return false if no force interaction occurred after 20s
      */
-    bool waitForForceInteraction(double _wait_time = 20.0);
+    bool waitForForceInteraction(double _wait_time = 20.0, bool disable_coll_av = false);
 
     /*
      * Prevents any following code from being executed before thread is exited
@@ -187,7 +188,7 @@ protected:
      * 
      * @param _cmd An empty message to be sent
      */
-    void suppress_collision_avoidance();
+    void suppressCollisionAv();
 
 public:
     ROSThread(std::string limb);
