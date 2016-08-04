@@ -44,7 +44,7 @@ private:
     geometry_msgs::Quaternion computeRotation();
 
 protected:
-    void InternalThreadEntry();
+    bool doAction(int s, std::string a);
 
 public:
     ARTagCtrl(std::string _name, std::string _limb);

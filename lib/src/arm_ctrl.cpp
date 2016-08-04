@@ -12,6 +12,30 @@ ArmCtrl::ArmCtrl(string _name, string _limb) : ROSThread(_limb), Gripper(_limb),
                                                         service_name.c_str());
 }
 
+void ArmCtrl::InternalThreadEntry()
+{
+    std::string a =     getAction();
+    int         s = int(getState());
+
+    setState(WORKING);
+
+    if (a == ACTION_HOME)
+    {
+        if (goHome())   setState(START);
+    }
+    else if (a == ACTION_RELEASE)
+    {
+        if (releaseObject())   setState(START);
+    }
+    else
+    {
+        if (!doAction(s, a))     setState(ERROR);
+    }
+
+    pthread_exit(NULL);
+    return;
+}
+
 bool ArmCtrl::serviceCb(baxter_collaboration::DoAction::Request  &req,
                         baxter_collaboration::DoAction::Response &res)
 {

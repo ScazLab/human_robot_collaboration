@@ -11,8 +11,7 @@ private:
     bool holdObject();
 
 protected:
-
-    void InternalThreadEntry();
+    bool doAction(int s, std::string a);
 
 public:
     HoldCtrl(std::string _name, std::string _limb);

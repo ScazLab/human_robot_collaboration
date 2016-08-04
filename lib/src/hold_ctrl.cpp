@@ -8,41 +8,25 @@ HoldCtrl::HoldCtrl(std::string _name, std::string _limb) :
     if (!goHome()) setState(ERROR);
 }
 
-void HoldCtrl::InternalThreadEntry()
+bool HoldCtrl::doAction(int s, std::string a)
 {
-    int    s = int(getState());
-    string a =     getAction();
-
-    setState(WORKING);
-
-    if (a == ACTION_HOME)
-    {
-        if (goHome())   setState(START);
-    }
-    else if (a == ACTION_RELEASE)
-    {
-        if (releaseObject())   setState(START);
-    }
-    else if (a == ACTION_HOLD && (s == START ||
+    if (a == ACTION_HOLD && (s == START ||
                                   s == ERROR ||
                                   s == DONE  ))
     {
-        if (holdObject())   setState(DONE);
-        else                recoverFromError();
+        if (holdObject())
+        {
+            setState(DONE);
+            return true;
+        }   
+        else recoverFromError();
     }
     else
     {
         ROS_ERROR("[%s] Invalid State %i", getLimb().c_str(), s);
     }
 
-    // If state is still working it means that the action failed
-    if (getState() == WORKING)
-    {
-        setState(ERROR);
-    }
-
-    pthread_exit(NULL);
-    return;
+    return false;
 }
 
 bool HoldCtrl::holdObject()

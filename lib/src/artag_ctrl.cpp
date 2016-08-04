@@ -20,55 +20,47 @@ ARTagCtrl::ARTagCtrl(std::string _name, std::string _limb) :
 }
 
 // Protected
-void ARTagCtrl::InternalThreadEntry()
+bool ARTagCtrl::doAction(int s, std::string a)
 {
     clearMarkerPose();
 
-    int    s = int(getState());
-    string a =     getAction();
-
-    setState(WORKING);
-
-    if (a == ACTION_HOME)
+    if (a == ACTION_GET && (s == START ||
+                            s == ERROR ||
+                            s == DONE  ))
     {
-        if (goHome())   setState(START);
-    }
-    else if (a == ACTION_RELEASE)
-    {
-        if (releaseObject())   setState(START);
-    }
-    else if (a == ACTION_GET && (s == START ||
-                                 s == ERROR ||
-                                 s == DONE  ))
-    {
-        if (pickObject())   setState(PICK_UP);
-        else                recoverFromError();
+        if (pickObject())
+        {
+            setState(PICK_UP);
+            return true;
+        }
+        else recoverFromError();
     }
     else if (a == ACTION_PASS && s == PICK_UP)
     {
-        if(passObject())   setState(DONE);
-        else               recoverFromError();
+        if(passObject())
+        {
+            setState(DONE);
+            return true;
+        }
+        else recoverFromError();
     }
     else if (a == ACTION_HAND_OVER && (s == START ||
                                        s == ERROR ||
                                        s == DONE  ))
     {
-        if (handOver())    setState(DONE);
-        // else               recoverFromError();
+        if (handOver())
+        {
+            setState(DONE);
+            return true;
+        }
+        else recoverFromError();
     }
     else
     {
         ROS_ERROR("[%s] Invalid State %i", getLimb().c_str(), s);
     }
 
-    // If state is still working it means that the action failed
-    if (getState() == WORKING)
-    {
-        setState(ERROR);
-    }
-
-    pthread_exit(NULL);
-    return;
+    return false;
 }
 
 bool ARTagCtrl::handOver()
