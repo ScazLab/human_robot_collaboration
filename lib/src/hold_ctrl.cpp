@@ -18,12 +18,10 @@ void HoldCtrl::InternalThreadEntry()
     if (a == ACTION_HOME)
     {
         if (goHome())   setState(START);
-        else            setState(ERROR);
     }
     else if (a == ACTION_RELEASE)
     {
         if (releaseObject())   setState(START);
-        else                   setState(ERROR);
     }
     else if (a == ACTION_HOLD && (s == START ||
                                   s == ERROR ||
@@ -35,6 +33,11 @@ void HoldCtrl::InternalThreadEntry()
     else
     {
         ROS_ERROR("[%s] Invalid State %i", getLimb().c_str(), s);
+    }
+
+    // If state is still working it means that the action failed
+    if (getState() == WORKING)
+    {
         setState(ERROR);
     }
 

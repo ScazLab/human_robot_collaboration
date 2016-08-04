@@ -74,7 +74,6 @@ void ArmCtrl::recoverFromError()
 {
     releaseObject();
     goHome();
-    setState(ERROR);
 }
 
 ArmCtrl::~ArmCtrl()
