@@ -194,7 +194,7 @@ bool ARTagCtrl::pickARTag()
 }
 
 bool ARTagCtrl::goToPose(double px, double py, double pz,
-                               double ox, double oy, double oz, double ow)
+                         double ox, double oy, double oz, double ow)
 {
     geometry_msgs::PoseStamped req_pose_stamped;
     req_pose_stamped.header.frame_id = "base";
