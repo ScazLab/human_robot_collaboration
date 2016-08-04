@@ -47,7 +47,7 @@ class RemoteControlNode:
         rospy.wait_for_service(SERVICE)
         self.service = rospy.ServiceProxy(SERVICE, DoAction)
         with Server(port=self.rc_port, callback=self._remote_msg_cb) as rc:
-	    rospy.loginfo("Started remote controle server for %s arm.", limb)
+	    rospy.loginfo("Started remote control server for %s arm.", limb)
             rc.run()
 
     def _remote_msg_cb(self, message):
