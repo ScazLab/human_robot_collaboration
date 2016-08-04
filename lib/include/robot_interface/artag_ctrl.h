@@ -41,7 +41,13 @@ private:
 
     bool handOver();
 
-    geometry_msgs::Quaternion computeRotation();
+    /**
+     * Computes the end-effector orientation needed to pick the object up with a constant
+     * orientation. Needed by the hand-over action since it requires the object to be picked
+     * up consistently.
+     * @return the desired end-effector orientation, expressed in quaternion form
+     */
+    geometry_msgs::Quaternion computeHOorientation();
 
 protected:
     bool doAction(int s, std::string a);

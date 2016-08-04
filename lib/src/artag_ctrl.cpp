@@ -150,7 +150,7 @@ bool ARTagCtrl::pickARTag()
     double yy = getPos().y;
     double zz = getPos().z;
 
-    geometry_msgs::Quaternion q = computeRotation();
+    geometry_msgs::Quaternion q = computeHOorientation();
 
     ROS_INFO("Going to: %g %g %g", xx, yy, zz);
 
@@ -209,48 +209,47 @@ bool ARTagCtrl::pickARTag()
     return gripObject();
 }
 
-geometry_msgs::Quaternion ARTagCtrl::computeRotation()
+geometry_msgs::Quaternion ARTagCtrl::computeHOorientation()
 {
-        tf::Quaternion _markerQ;
-        tf::quaternionMsgToTF(_curr_marker_ori, _markerQ);
-        tf::Matrix3x3 _markerR(_markerQ);
+    // Get the rotation matrix for the marker, as retrieved from ARuco
+    tf::Quaternion mrk_q;
+    tf::quaternionMsgToTF(_curr_marker_ori, mrk_q);
+    tf::Matrix3x3 mrk_rot(mrk_q);
 
-        printf("Marker Orientation\n");
-        for (int j = 0; j < 3; ++j)
-        {
-            printf("%g\t%g\t%g\n", _markerR[j][0], _markerR[j][1], _markerR[j][2]);
-        }
+    // printf("Marker Orientation\n");
+    // for (int j = 0; j < 3; ++j)
+    // {
+    //     printf("%g\t%g\t%g\n", mrk_rot[j][0], mrk_rot[j][1], mrk_rot[j][2]);
+    // }
 
-        tf::Matrix3x3 _objR;
-        _objR.setIdentity();
-        _objR[0][0] =  1;  _objR[0][1] =  0;   _objR[0][2] =  0;
-        _objR[1][0] =  0;  _objR[1][1] =  0;   _objR[1][2] = -1;
-        _objR[2][0] =  0;  _objR[2][1] =  1;   _objR[2][2] =  0;
+    // Compute the transform matrix between the marker's orientation 
+    // and the end-effector's orientation
+    tf::Matrix3x3 mrk2ee;
+    mrk2ee[0][0] =  1;  mrk2ee[0][1] =  0;   mrk2ee[0][2] =  0;
+    mrk2ee[1][0] =  0;  mrk2ee[1][1] =  0;   mrk2ee[1][2] = -1;
+    mrk2ee[2][0] =  0;  mrk2ee[2][1] =  1;   mrk2ee[2][2] =  0;
 
-        // printf("Rotation\n");
-        // for (int j = 0; j < 3; ++j)
-        // {
-        //     printf("%g\t%g\t%g\n", _objR[j][0], _objR[j][1], _objR[j][2]);
-        // }
+    // printf("Rotation\n");
+    // for (int j = 0; j < 3; ++j)
+    // {
+    //     printf("%g\t%g\t%g\n", mrk2ee[j][0], mrk2ee[j][1], mrk2ee[j][2]);
+    // }
 
-        _objR = _markerR * _objR;
-        tf::Quaternion _objQ;
-        _objR.getRotation(_objQ);
+    // Compute the final end-effector orientation, and convert it to a msg
+    mrk2ee = mrk_rot * mrk2ee;
+    
+    tf::Quaternion ee_q;
+    mrk2ee.getRotation(ee_q);
+    geometry_msgs::Quaternion ee_q_msg;
+    tf::quaternionTFToMsg(ee_q,ee_q_msg);
 
-        geometry_msgs::Quaternion _objQmsg;
-        tf::quaternionTFToMsg(_objQ,_objQmsg);
+    // printf("Desired Orientation\n");
+    // for (int j = 0; j < 3; ++j)
+    // {
+    //     printf("%g\t%g\t%g\n", mrk2ee[j][0], mrk2ee[j][1], mrk2ee[j][2]);
+    // }
 
-        //                                         _objR[0][2] =  0;
-        //                                         _objR[1][2] =  0;
-        // _objR[2][0] =  0;  _objR[2][1] =  0;    _objR[2][2] = -1;
-
-        printf("Desired Orientation\n");
-        for (int j = 0; j < 3; ++j)
-        {
-            printf("%g\t%g\t%g\n", _objR[j][0], _objR[j][1], _objR[j][2]);
-        }
-
-        return _objQmsg;
+    return ee_q_msg;
 }
 
 bool ARTagCtrl::goToPose(double px, double py, double pz,
