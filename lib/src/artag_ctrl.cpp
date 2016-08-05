@@ -107,8 +107,8 @@ bool ARTagCtrl::passObject()
 
 bool ARTagCtrl::prepare4HandOver()
 {
-    if (!hoverAboveTable(Z_LOW-0.02,"loose",true))  return false;
-    if (!moveArm("right", 0.35, "loose", true))    return false;
+    // if (!hoverAboveTable(Z_LOW-0.02,"loose",true)) return false;
+    if (!moveArm("right", 0.3, "loose", true))     return false;
 
     return true;  
 }
@@ -316,7 +316,7 @@ geometry_msgs::Quaternion ARTagCtrl::computeHOorientation()
 
 bool ARTagCtrl::waitForARucoData()
 {
-    printf("I-m here\n");
+    ROS_INFO("Waiting for ARuco data..");
     int cnt=0;
     while (!aruco_ok)
     {

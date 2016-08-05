@@ -111,7 +111,7 @@ bool HoldCtrl::serviceOtherLimbCb(baxter_collaboration::AskFeedback::Request  &r
 
 bool HoldCtrl::prepare4HandOver()
 {
-    return goToPose(0.65, 0.1, Z_LOW, HANDOVER_ORI_R);
+    return goToPose(0.65, 0.15, Z_LOW+0.02, HANDOVER_ORI_R);
 }
 
 bool HoldCtrl::goHoldPose(double height)
