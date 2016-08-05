@@ -90,7 +90,8 @@ protected:
      * @param  mode  string (strict/loose) indicating the desired level of accuracy
      * @return       true/false if success/failure
      */
-    bool hasPoseCompleted(geometry_msgs::Pose b, std::string mode = "loose");
+    bool hasPoseCompleted(double px, double py, double pz,
+                          double ox, double oy, double oz, double ow, std::string mode = "loose");
 
     /*
      * Uses built in IK solver to find joint angles solution for desired pose
@@ -101,8 +102,20 @@ protected:
      */
     bool getJointAngles(geometry_msgs::PoseStamped& pose_stamped, std::vector<double>& joint_angles);
 
+
     /*
-     * Moves arm to the requested pose
+     * Moves arm to the requested pose. This differs from ROSThread::goToPose because it 
+     * does not check if the final pose has been reached, but rather it goes in open-loop
+     * unitil a fisical contact with the table is reached
+     * 
+     * @param  requested pose (3D position + 4D quaternion for the orientation)
+     * @return true/false if success/failure
+     */
+    bool goToPoseNoCheck(double px, double py, double pz,
+                         double ox, double oy, double oz, double ow);
+
+    /*
+     * Moves arm to the requested pose , and checks if the pose has been achieved
      * 
      * @param  requested pose (3D position + 4D quaternion for the orientation)
      * @param  mode (either loose or strict, it checks for the final desired position)

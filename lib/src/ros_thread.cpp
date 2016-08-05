@@ -108,9 +108,9 @@ void ROSThread::hoverAboveTokens(double height)
     goToPose(0.540, 0.570, height, VERTICAL_ORI_L);
 }
 
-bool ROSThread::goToPose(double px, double py, double pz,
-                         double ox, double oy, double oz, double ow,
-                         std::string mode, bool disable_coll_av)
+
+bool ROSThread::goToPoseNoCheck(double px, double py, double pz,
+                                double ox, double oy, double oz, double ow)
 {
     PoseStamped req_pose_stamped;
     req_pose_stamped.header.frame_id = "base";
@@ -122,26 +122,32 @@ bool ROSThread::goToPose(double px, double py, double pz,
     vector<double> joint_angles;
     if (!getJointAngles(req_pose_stamped,joint_angles)) return false;
 
+    JointCommand joint_cmd;
+    joint_cmd.mode = JointCommand::POSITION_MODE;
+    
+    setJointNames(joint_cmd);
+
+    for(int i = 0; i < joint_angles.size(); i++)
+    {
+        joint_cmd.command.push_back(joint_angles[i]);
+    }
+
+    publish_joint_cmd(joint_cmd);
+
+    return true;
+}
+
+bool ROSThread::goToPose(double px, double py, double pz,
+                         double ox, double oy, double oz, double ow,
+                         std::string mode, bool disable_coll_av)
+{
     while(ros::ok)
     {
         if (disable_coll_av)    suppressCollisionAv();
 
-        JointCommand joint_cmd;
-        joint_cmd.mode = JointCommand::POSITION_MODE;
+        if (!goToPoseNoCheck(px, py, pz, ox, oy, oz, ow))   return false;
 
-        // joint_cmd.names
-        setJointNames(joint_cmd);
-        joint_cmd.command.resize(7);
-        // joint_cmd.angles
-        for(int i = 0; i < joint_angles.size(); i++) {
-            joint_cmd.command[i] = joint_angles[i];
-        }
-
-        // ROS_INFO("Publishing joint commands.. %g",
-        //           ros::Time::now().toSec()-_init_time.toSec());
-        _joint_cmd_pub.publish(joint_cmd);
-
-        if(hasPoseCompleted(req_pose_stamped.pose, mode))
+        if(hasPoseCompleted(px, py, pz, ox, oy, oz, ow, mode))
         {
             break;
         }
@@ -219,24 +225,26 @@ bool ROSThread::hasCollided(string mode)
     else return false;
 }
 
-bool ROSThread::hasPoseCompleted(Pose p, string mode)
+bool ROSThread::hasPoseCompleted(double px, double py, double pz,
+                                 double ox, double oy, double oz, double ow, string mode)
 {
     if(mode == "strict")
     {
-        if(!equalXDP(_curr_pos.x, p.position.x, 3)) return false;
-        if(!equalXDP(_curr_pos.y, p.position.y, 3)) return false;
+        if(!equalXDP(_curr_pos.x, px, 2.5)) return false;
+        if(!equalXDP(_curr_pos.y, py, 2.5)) return false;
+        if(!equalXDP(_curr_pos.z, pz, 2.5)) return false;
     }
     else if(mode == "loose")
     {
-        if(!equalXDP(_curr_pos.x, p.position.x, 1.5)) return false;
-        if(!equalXDP(_curr_pos.y, p.position.y, 1.5)) return false;
+        if(!equalXDP(_curr_pos.x, px, 1.5)) return false;
+        if(!equalXDP(_curr_pos.y, py, 1.5)) return false;
+        if(!equalXDP(_curr_pos.z, pz, 1.5)) return false;
     }
 
-    if(!withinXHundredth(_curr_pos.z, p.position.z, 1))     return false;
-    if(!withinXHundredth(_curr_ori.x, p.orientation.x, 2))  return false;
-    if(!withinXHundredth(_curr_ori.y, p.orientation.y, 2))  return false;
-    if(!withinXHundredth(_curr_ori.z, p.orientation.z, 2))  return false;
-    if(!withinXHundredth(_curr_ori.w, p.orientation.w, 2))  return false;
+    if(!withinXHundredth(_curr_ori.x, ox, 2))  return false;
+    if(!withinXHundredth(_curr_ori.y, oy, 2))  return false;
+    if(!withinXHundredth(_curr_ori.z, oz, 2))  return false;
+    if(!withinXHundredth(_curr_ori.w, ow, 2))  return false;
 
     return true;
 }

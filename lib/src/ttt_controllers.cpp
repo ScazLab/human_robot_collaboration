@@ -37,12 +37,6 @@ void MoveToRest::InternalThreadEntry()
         ros::Rate(100).sleep();
     }
 
-    PoseStamped req_pose_stamped;
-    
-    req_pose_stamped.header.frame_id = "base";
-    setPosition(   req_pose_stamped.pose, 0.292391, getLimb() == "left" ? 0.611039 : -0.611039, 0.181133);
-    setOrientation(req_pose_stamped.pose, 0.028927, 0.686745, 0.00352694, 0.726314);
-
     while(ros::ok())
     {
         JointCommand joint_cmd;
@@ -65,7 +59,8 @@ void MoveToRest::InternalThreadEntry()
         ros::spinOnce();
         ros::Rate(100).sleep();
  
-        if(hasPoseCompleted(req_pose_stamped.pose, "loose"))
+        if(hasPoseCompleted(0.292391, getLimb()=="left"?0.611039:-0.611039, 0.181133,
+                            0.028927, 0.686745, 0.00352694, 0.726314, "loose"))
         {
             break;
         }
