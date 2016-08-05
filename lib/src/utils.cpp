@@ -29,11 +29,9 @@ bool withinXHundredth(float x, float y, float z)
     return diffTwoDP <= (0.01 * z) ? true : false;
 }
 
-bool equalXDP(float x, float y, float z)
+bool withinThres(float x, float y, float t)
 {
-    float xTwoDP = roundf(x * pow(10, z)) / pow(10, z);
-    float yTwoDP = roundf(y * pow(10, z)) / pow(10, z);
-    return xTwoDP == yTwoDP ? true : false;    
+    return abs(x-y)<t?true:false;
 }
 
 void setPosition(Pose& pose, float x, float y, float z)
