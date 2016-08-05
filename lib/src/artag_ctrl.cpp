@@ -8,7 +8,7 @@ using namespace std;
 using namespace baxter_collaboration;
 
 ARTagCtrl::ARTagCtrl(std::string _name, std::string _limb) : 
-                     ArmCtrl(_name,_limb), aruco_ok(false)
+                     ArmCtrl(_name,_limb), aruco_ok(false), marker_found(false)
 {
     _aruco_sub = _n.subscribe("/aruco_marker_publisher/markers",
                                SUBSCRIBER_BUFFER, &ARTagCtrl::ARucoCb, this);
@@ -98,8 +98,8 @@ bool ARTagCtrl::passObject()
 
 bool ARTagCtrl::prepare4HandOver()
 {
-    if (!hoverAboveTable(Z_LOW,"strict",true))                             return false;
-    if (!goToPose(0.65, 0.08, Z_LOW-0.02, VERTICAL_ORI_L, "strict", true)) return false;  
+    if (!hoverAboveTable(Z_LOW,"loose",true))                              return false;
+    if (!goToPose(0.65, 0.085, Z_LOW-0.01, VERTICAL_ORI_L, "loose", true)) return false;  
 
     return true;  
 }
@@ -109,6 +109,9 @@ bool ARTagCtrl::waitForOtherArm(double _wait_time, bool disable_coll_av)
     ros::Time _init = ros::Time::now();
 
     string other_limb = getLimb() == "right" ? "left" : "right";
+
+    ROS_INFO("[%s] Waiting for %s arm", getLimb().c_str(), other_limb.c_str());
+ 
     ros::ServiceClient _c;
     string service_name = "/"+getName()+"/service_"+other_limb+"_to_"+getLimb();
     _c = _n.serviceClient<AskFeedback>(service_name);
@@ -125,6 +128,8 @@ bool ARTagCtrl::waitForOtherArm(double _wait_time, bool disable_coll_av)
         {
             return true;
         }
+
+        ROS_DEBUG("[%s] Received: %s ", getLimb().c_str(), srv.response.reply.c_str());
 
         ros::spinOnce();
         ros::Rate(100).sleep();
@@ -143,7 +148,7 @@ void ARTagCtrl::ARucoCb(const aruco_msgs::MarkerArray& msg)
 {
     for (int i = 0; i < msg.markers.size(); ++i)
     {
-        ROS_DEBUG("Processing marker with id %i",msg.markers[i].id);
+        // ROS_DEBUG("Processing marker with id %i",msg.markers[i].id);
 
         if (msg.markers[i].id == getMarkerID())
         {
@@ -158,11 +163,16 @@ void ARTagCtrl::ARucoCb(const aruco_msgs::MarkerArray& msg)
             //                                       _curr_marker_ori.z,
             //                                       _curr_marker_ori.w);
 
-            if (!aruco_ok)
+            if (!marker_found)
             {
-                aruco_ok = true;
+                marker_found = true;
             }
         }
+    }
+
+    if (!aruco_ok)
+    {
+        aruco_ok = true;
     }
 }
 
@@ -298,32 +308,51 @@ geometry_msgs::Quaternion ARTagCtrl::computeHOorientation()
 
 bool ARTagCtrl::waitForARucoData()
 {
+    printf("I-m here\n");
     int cnt=0;
     while (!aruco_ok)
     {
-        ROS_WARN("No callback from ARuco, or object with ID %i not found.", getMarkerID());
+        ROS_WARN("No callback from ARuco. Is ARuco running?");
         ++cnt;
 
         if (cnt == 10)
         {
-            ROS_ERROR("No object with ID %i found. Stopping.", getMarkerID());
+            ROS_ERROR("No callback from ARuco! Stopping.");
             return false;
         }
 
         ros::spinOnce();
         ros::Rate(10).sleep();
     }
+
+    cnt=0;
+    while (!marker_found)
+    {
+        ROS_WARN("Object with ID %i not found. Is the object there?", getMarkerID());
+        ++cnt;
+
+        if (cnt == 10)
+        {
+            ROS_ERROR("Object with ID %i not found! Stopping.", getMarkerID());
+            return false;
+        }
+
+        ros::spinOnce();
+        ros::Rate(10).sleep();
+    }
+
     return true;
 }
 
 void ARTagCtrl::clearMarkerPose()
 {
-    aruco_ok = false;
+    aruco_ok     = false;
+    marker_found = false;
 }
 
 bool ARTagCtrl::hoverAbovePool()
 {
-    return goToPose(POOL_POS_L, VERTICAL_ORI_L);
+    return goToPose(POOL_POS_L, POOL_ORI_L);
 }
 
 bool ARTagCtrl::moveObjectTowardHuman()

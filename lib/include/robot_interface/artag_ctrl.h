@@ -12,6 +12,7 @@ private:
 
     ros::Subscriber _aruco_sub;
     bool              aruco_ok;
+    bool          marker_found;
     geometry_msgs::Point        _curr_marker_pos;
     geometry_msgs::Quaternion   _curr_marker_ori;
 
