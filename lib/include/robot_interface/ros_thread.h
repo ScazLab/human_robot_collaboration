@@ -100,8 +100,9 @@ protected:
      * @param     array of joint angles solution
      * @return    true/false if success/failure
      */
-    bool getJointAngles(geometry_msgs::PoseStamped& pose_stamped, std::vector<double>& joint_angles);
-
+    bool callIKService(double px, double py, double pz,
+                       double ox, double oy, double oz, double ow,
+                       std::vector<double>& joint_angles);
 
     /*
      * Moves arm to the requested pose. This differs from ROSThread::goToPose because it 
@@ -113,6 +114,8 @@ protected:
      */
     bool goToPoseNoCheck(double px, double py, double pz,
                          double ox, double oy, double oz, double ow);
+
+    bool goToPoseNoCheck(std::vector<double> joint_angles);
 
     /*
      * Moves arm to the requested pose , and checks if the pose has been achieved
