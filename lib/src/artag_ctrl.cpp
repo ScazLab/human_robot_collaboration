@@ -79,7 +79,7 @@ bool ARTagCtrl::handOver()
     if (!waitForOtherArm())         return false;
     ros::Duration(1.0).sleep();
     if (!releaseObject())           return false;
-    if (!hoverAboveTableStrict())   return false;
+    if (!goHome())                  return false;
 
     return true;
 }
@@ -90,7 +90,7 @@ bool ARTagCtrl::pickObject()
     ros::Duration(0.1).sleep();
     if (!pickARTag())               return false;
     if (!moveArm("up", 0.4))        return false;
-    if (!hoverAboveTableStrict())   return false;
+    if (!goHome())                  return false;
 
     return true;
 }
@@ -101,7 +101,7 @@ bool ARTagCtrl::passObject()
     ros::Duration(1.0).sleep();
     if (!waitForForceInteraction())     return false;
     if (!releaseObject())               return false;
-    if (!hoverAboveTableStrict())       return false;
+    if (!goHome())                      return false;
 
     return true;
 }
@@ -322,10 +322,8 @@ bool ARTagCtrl::hoverAboveTableStrict(bool disable_coll_av)
 
         JointCommand joint_cmd;
         joint_cmd.mode = JointCommand::POSITION_MODE;
-
-        // joint_cmd.names
         setJointNames(joint_cmd);
-        // joint_cmd.angles
+
         joint_cmd.command.push_back( 0.19673303604630432);  //'left_s0'
         joint_cmd.command.push_back(-0.870150601928001);    //'left_s1'
         joint_cmd.command.push_back(-1.0530778108833365);   //'left_e0'

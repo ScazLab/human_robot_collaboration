@@ -18,6 +18,8 @@ private:
 
     bool waitForOtherArm(double _wait_time = 60.0, bool disable_coll_av = false);
 
+    bool hoverAboveTableStrict(bool disable_coll_av = false);
+
 protected:
     bool doAction(int s, std::string a);
 

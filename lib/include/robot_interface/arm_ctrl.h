@@ -48,6 +48,8 @@ protected:
     bool hoverAboveTable(double height, std::string mode="loose",
                                     bool disable_coll_av = false);
 
+
+    virtual bool hoverAboveTableStrict(bool disable_coll_av = false) = 0;
     /**
      * Goes to the home position
      * @return        true/false if success/failure

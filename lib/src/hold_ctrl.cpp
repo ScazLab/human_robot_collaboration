@@ -1,6 +1,7 @@
 #include "robot_interface/hold_ctrl.h"
 
 using namespace std;
+using namespace baxter_core_msgs;
 
 HoldCtrl::HoldCtrl(std::string _name, std::string _limb) : 
              ArmCtrl(_name,_limb), hand_over_state("done")
@@ -92,6 +93,36 @@ bool HoldCtrl::waitForOtherArm(double _wait_time, bool disable_coll_av)
             return false;
         }
     }    
+}
+
+bool HoldCtrl::hoverAboveTableStrict(bool disable_coll_av)
+{
+    while(ros::ok())
+    {
+        if (disable_coll_av)    suppressCollisionAv();
+
+        JointCommand joint_cmd;
+        joint_cmd.mode = JointCommand::POSITION_MODE;
+        setJointNames(joint_cmd);
+
+        joint_cmd.command.push_back( 0.07171360183364309);  //'right_s0'
+        joint_cmd.command.push_back(-1.0009224640952326);   //'right_s1'
+        joint_cmd.command.push_back( 1.1083011192472114);   //'right_e0'
+        joint_cmd.command.push_back( 1.5520050621430674);   //'right_e1'
+        joint_cmd.command.push_back(-0.5234709438658974);   //'right_w0'
+        joint_cmd.command.push_back( 1.3468351317633933);   //'right_w1'
+        joint_cmd.command.push_back( 0.4463884092746554);   //'right_w2'
+
+        publish_joint_cmd(joint_cmd);
+
+        ros::spinOnce();
+        ros::Rate(100).sleep();
+ 
+        if(hasPoseCompleted(HOME_POS_L, Z_LOW, VERTICAL_ORI_L))
+        {
+            return true;
+        }
+    }
 }
 
 bool HoldCtrl::serviceOtherLimbCb(baxter_collaboration::AskFeedback::Request  &req,

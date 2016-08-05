@@ -224,7 +224,7 @@ bool ArmCtrl::hoverAboveTable(double height, string mode, bool disable_coll_av)
 
 bool ArmCtrl::goHome()
 {
-    return hoverAboveTable(Z_LOW);
+    return hoverAboveTableStrict();
 }
 
 void ArmCtrl::recoverFromError()
