@@ -39,6 +39,11 @@ void ArmCtrl::InternalThreadEntry()
         if (!doAction(s, a))   setState(ERROR);
     }
 
+    if (getState()==WORKING)
+    {
+        setState(ERROR);
+    }
+
     pthread_exit(NULL);
     return;
 }
@@ -93,9 +98,111 @@ bool ArmCtrl::serviceCb(baxter_collaboration::DoAction::Request  &req,
 
 bool ArmCtrl::moveArm(string dir, double dist, string mode, bool disable_coll_av)
 {
-    Point      pos = getPos();
+    Point start = getPos();
+    Point final = getPos();
+
     Quaternion ori = getOri();
 
+    if      (dir == "backward") final.x -= dist;
+    else if (dir == "forward")  final.x += dist;
+    else if (dir == "right")    final.y -= dist;
+    else if (dir == "left")     final.y += dist;
+    else if (dir == "down")     final.z -= dist;
+    else if (dir == "up")       final.z += dist;
+    else                               return false;
+
+    ros::Time t_start = ros::Time::now();
+
+    bool finish = false;
+
+    while(ros::ok())
+    {
+        if (disable_coll_av)    suppressCollisionAv();
+
+        double t_elap = (ros::Time::now() - t_start).toSec();
+
+        double px = start.x;
+        double py = start.y;
+        double pz = start.z;
+
+        if (!finish)
+        {
+            if (dir == "backward" | dir == "forward")
+            {
+                int sgn = dir=="backward"?-1:+1;
+                px = px + sgn * PICK_UP_SPEED * t_elap;
+
+                if (dir == "backward")
+                {
+                    if (px < final.x) finish = true;
+                }
+                else if (dir == "forward")
+                {
+                    if (px > final.x) finish = true;
+                }
+            }
+            if (dir == "right" | dir == "left")
+            {
+                int sgn = dir=="right"?-1:+1;
+                py = py + sgn * PICK_UP_SPEED * t_elap;
+
+                if (dir == "right")
+                {
+                    if (py < final.y) finish = true;
+                }
+                else if (dir == "left")
+                {
+                    if (py > final.y) finish = true;
+                }
+            }
+            if (dir == "down" | dir == "up")
+            {
+                int sgn = dir=="down"?-1:+1;
+                pz = pz + sgn * PICK_UP_SPEED * t_elap;
+
+                if (dir == "down")
+                {
+                    if (px < final.z) finish = true;
+                }
+                else if (dir == "up")
+                {
+                    if (px > final.z) finish = true;
+                }
+            }
+        }
+        else
+        {
+            px = final.x;
+            py = final.y;
+            pz = final.z;
+        }
+
+        double ox = ori.x;
+        double oy = ori.y;
+        double oz = ori.z;
+        double ow = ori.w;
+
+        vector<double> joint_angles;
+        if (!callIKService(px, py, pz, ox, oy, oz, ow, joint_angles)) return false;
+
+        if (!goToPoseNoCheck(joint_angles))   return false;
+
+        if(mode == "strict")
+        {
+            if(withinThres(getPos().x, final.x, 0.001) && 
+               withinThres(getPos().y, final.y, 0.001) &&
+               withinThres(getPos().z, final.z, 0.001)) break;
+        }
+        else if(mode == "loose")
+        {
+            if(withinThres(getPos().x, final.x, 0.01) && 
+               withinThres(getPos().y, final.y, 0.01) &&
+               withinThres(getPos().z, final.z, 0.01)) break;
+        }
+
+        ros::spinOnce();
+        ros::Rate(100).sleep();
+    }
 
     return true;
 }

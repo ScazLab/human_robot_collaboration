@@ -16,6 +16,14 @@ ARTagCtrl::ARTagCtrl(std::string _name, std::string _limb) :
     elap_time = 0;
 
     if (!goHome()) setState(ERROR);
+
+    // moveArm("up",0.2,"strict");
+    // moveArm("down",0.2,"strict");
+    // moveArm("right",0.2,"strict");
+    // moveArm("left",0.2,"strict");
+    // moveArm("forward",0.1,"strict");
+    // moveArm("backward",0.2,"strict");
+    // moveArm("forward",0.1,"strict");
 }
 
 // Protected
@@ -66,6 +74,7 @@ bool ARTagCtrl::handOver()
 {
     if (!pickObject())              return false;
     if (!prepare4HandOver())        return false;
+    ros::Duration(0.2).sleep();
     if (!waitForOtherArm())         return false;
     ros::Duration(1.0).sleep();
     if (!releaseObject())           return false;
@@ -79,7 +88,7 @@ bool ARTagCtrl::pickObject()
     if (!hoverAbovePool())          return false;
     ros::Duration(0.1).sleep();
     if (!pickARTag())               return false;
-    if (!hoverAbovePool())          return false;
+    if (!moveArm("up", 0.4))        return false;
     if (!hoverAboveTable(Z_LOW))    return false;
 
     return true;
@@ -98,8 +107,8 @@ bool ARTagCtrl::passObject()
 
 bool ARTagCtrl::prepare4HandOver()
 {
-    if (!hoverAboveTable(Z_LOW,"loose",true))                              return false;
-    if (!goToPose(0.65, 0.085, Z_LOW-0.01, VERTICAL_ORI_L, "loose", true)) return false;  
+    if (!hoverAboveTable(Z_LOW-0.02,"loose",true))  return false;
+    if (!moveArm("right", 0.35, "loose", true))    return false;
 
     return true;  
 }
@@ -205,12 +214,11 @@ bool ARTagCtrl::pickARTag()
     
     ros::Time start_time = ros::Time::now();
     double z_start       =       getPos().z;
-    int ik_failures      =                0;
+    int cnt_ik_fail      =                0;
 
     while(ros::ok())
     {
-        ros::Time now_time = ros::Time::now();
-        double new_elap_time = (now_time - start_time).toSec();
+        double new_elap_time = (ros::Time::now() - start_time).toSec();
 
         double x = _curr_marker_pos.x;
         double y = _curr_marker_pos.y;
@@ -227,12 +235,12 @@ bool ARTagCtrl::pickARTag()
         }
         else
         {
-            res = goToPoseNoCheck(x,y,z,VERTICAL_ORI_L);
+            res = goToPoseNoCheck(x,y,z,POOL_ORI_L);
         }
 
         if (res == true)
         {
-            ik_failures = 0;
+            cnt_ik_fail = 0;
             if (new_elap_time - elap_time > 0.02)
             {
                 ROS_WARN("\t\t\t\t\tTime elapsed: %g", new_elap_time - elap_time);
@@ -250,10 +258,10 @@ bool ARTagCtrl::pickARTag()
         }
         else
         {
-            ik_failures++;
+            cnt_ik_fail++;
         }
 
-        if (ik_failures == 20)
+        if (cnt_ik_fail == 20)
         {
             return false;
         }

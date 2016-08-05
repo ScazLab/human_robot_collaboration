@@ -142,7 +142,7 @@ bool ROSThread::goToPose(double px, double py, double pz,
     vector<double> joint_angles;
     if (!callIKService(px, py, pz, ox, oy, oz, ow, joint_angles)) return false;
 
-    while(ros::ok)
+    while(ros::ok())
     {
         if (disable_coll_av)    suppressCollisionAv();
 
@@ -237,7 +237,7 @@ bool ROSThread::hasCollided(string mode)
 bool ROSThread::hasPoseCompleted(double px, double py, double pz,
                                  double ox, double oy, double oz, double ow, string mode)
 {
-    ROS_INFO("[%s] Checking for position.. mode is %s", getLimb().c_str(), mode.c_str());
+    ROS_DEBUG("[%s] Checking for position.. mode is %s", getLimb().c_str(), mode.c_str());
     if(mode == "strict")
     {
         if(!withinThres(_curr_pos.x, px, 0.001)) return false;
@@ -251,7 +251,7 @@ bool ROSThread::hasPoseCompleted(double px, double py, double pz,
         if(!withinThres(_curr_pos.z, pz, 0.01)) return false;
     }
 
-    ROS_INFO("[%s] Checking for orientation..", getLimb().c_str());
+    // ROS_INFO("[%s] Checking for orientation..", getLimb().c_str());
     if(!withinXHundredth(_curr_ori.x, ox, 3))  return false;
     if(!withinXHundredth(_curr_ori.y, oy, 3))  return false;
     if(!withinXHundredth(_curr_ori.z, oz, 3))  return false;
