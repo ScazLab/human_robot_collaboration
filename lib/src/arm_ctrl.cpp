@@ -2,8 +2,6 @@
 
 using namespace std;
 using namespace geometry_msgs;
-using namespace baxter_core_msgs;
-
 
 ArmCtrl::ArmCtrl(string _name, string _limb) : ROSThread(_limb), Gripper(_limb),
                                                marker_id(-1), name(_name), action("")
@@ -218,40 +216,9 @@ bool ArmCtrl::hoverAboveTable(double height, string mode, bool disable_coll_av)
     }
     else if (getLimb() == "left")
     {
-        if (height == Z_HIGH)
-        {
-            return ROSThread::goToPose(HOME_POS_L, height, VERTICAL_ORI_L,
-                                                    mode, disable_coll_av);
-        }
+        return ROSThread::goToPose(HOME_POS_L, height, VERTICAL_ORI_L,
+                                                mode, disable_coll_av);
 
-        while(ros::ok())
-        {
-            if (disable_coll_av)    suppressCollisionAv();
-
-            JointCommand joint_cmd;
-            joint_cmd.mode = JointCommand::POSITION_MODE;
-
-            // joint_cmd.names
-            setJointNames(joint_cmd);
-            // joint_cmd.angles
-            joint_cmd.command.push_back( 0.19673303604630432);      //'left_s0'
-            joint_cmd.command.push_back(-0.870150601928001);        //'left_s1'
-            joint_cmd.command.push_back(-1.0530778108833365);       //'left_e0'
-            joint_cmd.command.push_back( 1.5577574900976376);       //'left_e1'
-            joint_cmd.command.push_back( 0.6515583396543295);       //'left_w0'
-            joint_cmd.command.push_back( 1.2463593901568986);       //'left_w1'
-            joint_cmd.command.push_back(-0.1787087617886507);       //'left_w2'
-
-            publish_joint_cmd(joint_cmd);
-
-            ros::spinOnce();
-            ros::Rate(100).sleep();
-     
-            if(hasPoseCompleted(HOME_POS_L, Z_LOW, VERTICAL_ORI_L))
-            {
-                return true;
-            }
-        }
     }
 }
 

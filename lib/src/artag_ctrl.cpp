@@ -6,6 +6,7 @@
 
 using namespace std;
 using namespace baxter_collaboration;
+using namespace baxter_core_msgs;
 
 ARTagCtrl::ARTagCtrl(std::string _name, std::string _limb) : 
                      ArmCtrl(_name,_limb), aruco_ok(false), marker_found(false)
@@ -78,7 +79,7 @@ bool ARTagCtrl::handOver()
     if (!waitForOtherArm())         return false;
     ros::Duration(1.0).sleep();
     if (!releaseObject())           return false;
-    if (!goHome())                  return false;
+    if (!hoverAboveTableStrict())   return false;
 
     return true;
 }
@@ -89,7 +90,7 @@ bool ARTagCtrl::pickObject()
     ros::Duration(0.1).sleep();
     if (!pickARTag())               return false;
     if (!moveArm("up", 0.4))        return false;
-    if (!hoverAboveTable(Z_LOW))    return false;
+    if (!hoverAboveTableStrict())   return false;
 
     return true;
 }
@@ -100,14 +101,13 @@ bool ARTagCtrl::passObject()
     ros::Duration(1.0).sleep();
     if (!waitForForceInteraction())     return false;
     if (!releaseObject())               return false;
-    if (!goHome())                      return false;
+    if (!hoverAboveTableStrict())       return false;
 
     return true;
 }
 
 bool ARTagCtrl::prepare4HandOver()
 {
-    // if (!hoverAboveTable(Z_LOW-0.02,"loose",true)) return false;
     if (!moveArm("right", 0.3, "loose", true))     return false;
 
     return true;  
@@ -312,6 +312,38 @@ geometry_msgs::Quaternion ARTagCtrl::computeHOorientation()
     // }
 
     return ee_q_msg;
+}
+
+bool ARTagCtrl::hoverAboveTableStrict(bool disable_coll_av)
+{
+    while(ros::ok())
+    {
+        if (disable_coll_av)    suppressCollisionAv();
+
+        JointCommand joint_cmd;
+        joint_cmd.mode = JointCommand::POSITION_MODE;
+
+        // joint_cmd.names
+        setJointNames(joint_cmd);
+        // joint_cmd.angles
+        joint_cmd.command.push_back( 0.19673303604630432);  //'left_s0'
+        joint_cmd.command.push_back(-0.870150601928001);    //'left_s1'
+        joint_cmd.command.push_back(-1.0530778108833365);   //'left_e0'
+        joint_cmd.command.push_back( 1.5577574900976376);   //'left_e1'
+        joint_cmd.command.push_back( 0.6515583396543295);   //'left_w0'
+        joint_cmd.command.push_back( 1.2463593901568986);   //'left_w1'
+        joint_cmd.command.push_back(-0.1787087617886507);   //'left_w2'
+
+        publish_joint_cmd(joint_cmd);
+
+        ros::spinOnce();
+        ros::Rate(100).sleep();
+ 
+        if(hasPoseCompleted(HOME_POS_L, Z_LOW, VERTICAL_ORI_L))
+        {
+            return true;
+        }
+    }
 }
 
 bool ARTagCtrl::waitForARucoData()

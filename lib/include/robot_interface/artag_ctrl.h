@@ -38,6 +38,8 @@ private:
 
     bool waitForOtherArm(double _wait_time = 60.0, bool disable_coll_av = false);
 
+    bool hoverAboveTableStrict(bool disable_coll_av = false);
+
     /**
      * Computes the end-effector orientation needed to pick the object up with a constant
      * orientation. Needed by the hand-over action since it requires the object to be picked
