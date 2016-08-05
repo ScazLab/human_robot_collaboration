@@ -65,11 +65,9 @@ bool ARTagCtrl::doAction(int s, std::string a)
 bool ARTagCtrl::handOver()
 {
     if (!pickObject())              return false;
-
-    ROSThread::goToPose(0.65, 0.075, Z_LOW-0.02, VERTICAL_ORI_L,
-                                                "loose", true);
+    if (!prepare4HandOver())        return false;
     if (!waitForOtherArm())         return false;
-    ros::Duration(0.4).sleep();
+    ros::Duration(1.0).sleep();
     if (!releaseObject())           return false;
     if (!goHome())                  return false;
 
@@ -82,7 +80,7 @@ bool ARTagCtrl::pickObject()
     ros::Duration(0.1).sleep();
     if (!pickARTag())               return false;
     if (!hoverAbovePool())          return false;
-    if (!hoverAboveTable(Z_LOW))  return false;
+    if (!hoverAboveTable(Z_LOW))    return false;
 
     return true;
 }
@@ -96,6 +94,14 @@ bool ARTagCtrl::passObject()
     if (!goHome())                      return false;
 
     return true;
+}
+
+bool ARTagCtrl::prepare4HandOver()
+{
+    if (!hoverAboveTable(Z_LOW,"strict",true))                             return false;
+    if (!goToPose(0.65, 0.08, Z_LOW-0.02, VERTICAL_ORI_L, "strict", true)) return false;  
+
+    return true;  
 }
 
 bool ARTagCtrl::waitForOtherArm(double _wait_time, bool disable_coll_av)
@@ -131,12 +137,6 @@ bool ARTagCtrl::waitForOtherArm(double _wait_time, bool disable_coll_av)
     }
 
     return false;
-}
-
-bool ARTagCtrl::serviceOtherLimbCb(baxter_collaboration::AskFeedback::Request  &req,
-                                   baxter_collaboration::AskFeedback::Response &res)
-{
-    return true;
 }
 
 void ARTagCtrl::ARucoCb(const aruco_msgs::MarkerArray& msg) 
@@ -186,7 +186,7 @@ bool ARTagCtrl::pickARTag()
         q = computeHOorientation();
 
         ROS_DEBUG("Going to: %g %g %g", _curr_marker_pos.x, _curr_marker_pos.y, getPos().z);
-        if (!ROSThread::goToPose(_curr_marker_pos.x, _curr_marker_pos.y, getPos().z,
+        if (!goToPose(_curr_marker_pos.x, _curr_marker_pos.y, getPos().z,
                                                             q.x,q.y,q.z,q.w,"loose"))
         {
             return false;
@@ -213,11 +213,11 @@ bool ARTagCtrl::pickARTag()
         if (getAction() == ACTION_HAND_OVER)
         {
             // q   = computeHOorientation();
-            res = ARTagCtrl::goToPose(x,y,z,q.x,q.y,q.z,q.w);
+            res = goToPoseNoCheck(x,y,z,q.x,q.y,q.z,q.w);
         }
         else
         {
-            res = ARTagCtrl::goToPose(x,y,z,VERTICAL_ORI_L);
+            res = goToPoseNoCheck(x,y,z,VERTICAL_ORI_L);
         }
 
         if (res == true)
@@ -296,33 +296,6 @@ geometry_msgs::Quaternion ARTagCtrl::computeHOorientation()
     return ee_q_msg;
 }
 
-bool ARTagCtrl::goToPose(double px, double py, double pz,
-                         double ox, double oy, double oz, double ow)
-{
-    geometry_msgs::PoseStamped req_pose_stamped;
-    req_pose_stamped.header.frame_id = "base";
-    req_pose_stamped.header.stamp    = ros::Time::now();
-
-    setPosition(   req_pose_stamped.pose, px, py, pz);
-    setOrientation(req_pose_stamped.pose, ox, oy, oz, ow);
-
-    vector<double> joint_angles;
-    if (!getJointAngles(req_pose_stamped,joint_angles)) return false;
-
-    baxter_core_msgs::JointCommand joint_cmd;
-    joint_cmd.mode = baxter_core_msgs::JointCommand::POSITION_MODE;
-    joint_cmd.command.resize(7);
-    setJointNames(joint_cmd);
-
-    for(int i = 0; i < 7; i++) {
-        joint_cmd.command[i] = joint_angles[i];
-    }
-
-    publish_joint_cmd(joint_cmd);
-
-    return true;
-}
-
 bool ARTagCtrl::waitForARucoData()
 {
     int cnt=0;
@@ -350,12 +323,12 @@ void ARTagCtrl::clearMarkerPose()
 
 bool ARTagCtrl::hoverAbovePool()
 {
-    return ROSThread::goToPose(POOL_POS_L, VERTICAL_ORI_L);
+    return goToPose(POOL_POS_L, VERTICAL_ORI_L);
 }
 
 bool ARTagCtrl::moveObjectTowardHuman()
 {
-    return ROSThread::goToPose(0.80, 0.26, 0.32, HORIZONTAL_ORI_L);
+    return goToPose(0.80, 0.26, 0.32, HORIZONTAL_ORI_L);
 }
 
 ARTagCtrl::~ARTagCtrl()
