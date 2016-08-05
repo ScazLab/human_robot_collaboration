@@ -45,13 +45,26 @@ protected:
      * @param  height the z-axis value of the end-effector position
      * @return        true/false if success/failure
      */
-    bool hoverAboveTable(double height);
+    bool hoverAboveTable(double height, std::string mode="loose",
+                                    bool disable_coll_av = false);
 
     /**
      * Goes to the home position
      * @return        true/false if success/failure
      */
     bool goHome();
+
+    /**
+     * Moves arm in a direction requested by the user, relative to the curent
+     * end-effector position
+     * 
+     * @param dir  the direction of motion (left right up down forward backward)
+     * @param dist the distance from the end-effector starting point
+     * 
+     * @return true/false if success/failure
+     */
+    bool moveArm(std::string dir, double dist, std::string mode="loose",
+                                           bool disable_coll_av = false);
 
 public:
     // CONSTRUCTOR
@@ -76,7 +89,7 @@ public:
      * @return     true always :)
      */
     virtual bool serviceOtherLimbCb(baxter_collaboration::AskFeedback::Request  &req,
-                                    baxter_collaboration::AskFeedback::Response &res) = 0;
+                                    baxter_collaboration::AskFeedback::Response &res);
 
     /* Self-explaining "setters" */
     void setName  (std::string _name)   { name      =   _name; };

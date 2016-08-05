@@ -45,6 +45,8 @@ void ArmCtrl::InternalThreadEntry()
 bool ArmCtrl::serviceOtherLimbCb(baxter_collaboration::AskFeedback::Request  &req,
                                  baxter_collaboration::AskFeedback::Response &res)
 {
+    res.success = false;
+    res.reply   = "not implemented";
     return true;
 }
 
@@ -87,17 +89,22 @@ bool ArmCtrl::serviceCb(baxter_collaboration::DoAction::Request  &req,
     return true;
 }
 
-bool ArmCtrl::hoverAboveTable(double height)
+bool ArmCtrl::moveArm(string dir, double dist, string mode, bool disable_coll_av)
+{
+    return true;
+}
+
+bool ArmCtrl::hoverAboveTable(double height, string mode, bool disable_coll_av)
 {
     if (getLimb() == "right")
     {
-        return ROSThread::goToPose(HOME_POS_R, height,
-                                   VERTICAL_ORI_R);
+        return ROSThread::goToPose(HOME_POS_R, height, VERTICAL_ORI_R,
+                                                mode, disable_coll_av);
     }
     else if (getLimb() == "left")
     {
-        return ROSThread::goToPose(HOME_POS_L, height,
-                                   VERTICAL_ORI_L);
+        return ROSThread::goToPose(HOME_POS_L, height, VERTICAL_ORI_L,
+                                                mode, disable_coll_av);
     }
 }
 
