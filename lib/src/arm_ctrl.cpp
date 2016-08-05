@@ -1,6 +1,7 @@
 #include "robot_interface/arm_ctrl.h"
 
 using namespace std;
+using namespace geometry_msgs;
 
 ArmCtrl::ArmCtrl(string _name, string _limb) : ROSThread(_limb), Gripper(_limb),
                                                marker_id(-1), name(_name), action("")
@@ -59,7 +60,8 @@ bool ArmCtrl::serviceCb(baxter_collaboration::DoAction::Request  &req,
     ROS_INFO("[%s] Service request received. Action: %s object: %i",
                                                   getLimb().c_str(),
                                                 action.c_str(), ID);
-
+    // res.success = true;
+    // return true;
     res.success = false;
 
     setAction(action);
@@ -91,6 +93,10 @@ bool ArmCtrl::serviceCb(baxter_collaboration::DoAction::Request  &req,
 
 bool ArmCtrl::moveArm(string dir, double dist, string mode, bool disable_coll_av)
 {
+    Point      pos = getPos();
+    Quaternion ori = getOri();
+
+
     return true;
 }
 

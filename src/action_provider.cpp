@@ -14,7 +14,7 @@ int main(int argc, char ** argv)
     HoldCtrl  right_ctrl("action_provider","right");
 
     printf("\n");
-    ROS_INFO("READY! Waiting for a service message..\n");
+    ROS_INFO("READY! Waiting for service messages..\n");
 
     ros::spin();
     return 0;
