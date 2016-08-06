@@ -5,9 +5,11 @@
 #include <tf/transform_datatypes.h>
 
 using namespace std;
+using namespace baxter_collaboration;
+using namespace baxter_core_msgs;
 
 ARTagCtrl::ARTagCtrl(std::string _name, std::string _limb) : 
-                     ArmCtrl(_name,_limb), aruco_ok(false)
+                     ArmCtrl(_name,_limb), aruco_ok(false), marker_found(false)
 {
     _aruco_sub = _n.subscribe("/aruco_marker_publisher/markers",
                                SUBSCRIBER_BUFFER, &ARTagCtrl::ARucoCb, this);
@@ -15,6 +17,14 @@ ARTagCtrl::ARTagCtrl(std::string _name, std::string _limb) :
     elap_time = 0;
 
     if (!goHome()) setState(ERROR);
+
+    // moveArm("up",0.2,"strict");
+    // moveArm("down",0.2,"strict");
+    // moveArm("right",0.2,"strict");
+    // moveArm("left",0.2,"strict");
+    // moveArm("forward",0.1,"strict");
+    // moveArm("backward",0.2,"strict");
+    // moveArm("forward",0.1,"strict");
 }
 
 // Protected
@@ -63,15 +73,13 @@ bool ARTagCtrl::doAction(int s, std::string a)
 
 bool ARTagCtrl::handOver()
 {
-    if (!hoverAboveTable(Z_HIGH))   return false;
-    ros::Duration(0.1).sleep();
-    if (!pickARTag())               return false;
-    if (!hoverAboveTable(Z_LOW))    return false;
-
-    ROSThread::goToPose(0.65, 0.075, Z_LOW-0.02, VERTICAL_ORI_L,
-                                                "loose", true);
+    if (!pickObject())              return false;
+    if (!prepare4HandOver())        return false;
     ros::Duration(0.2).sleep();
+    if (!waitForOtherArm())         return false;
+    ros::Duration(0.8).sleep();
     if (!releaseObject())           return false;
+    if (!moveArm("up", 0.05))       return false;
     if (!goHome())                  return false;
 
     return true;
@@ -82,8 +90,8 @@ bool ARTagCtrl::pickObject()
     if (!hoverAbovePool())          return false;
     ros::Duration(0.1).sleep();
     if (!pickARTag())               return false;
-    if (!hoverAbovePool())          return false;
-    if (!hoverAboveTable(Z_LOW))  return false;
+    if (!moveArm("up", 0.3))        return false;
+    if (!goHome())                  return false;
 
     return true;
 }
@@ -99,11 +107,58 @@ bool ARTagCtrl::passObject()
     return true;
 }
 
+bool ARTagCtrl::prepare4HandOver()
+{
+    if (!moveArm("right", 0.3, "loose", true))     return false;
+
+    return true;  
+}
+
+bool ARTagCtrl::waitForOtherArm(double _wait_time, bool disable_coll_av)
+{
+    ros::Time _init = ros::Time::now();
+
+    string other_limb = getLimb() == "right" ? "left" : "right";
+
+    ROS_INFO("[%s] Waiting for %s arm", getLimb().c_str(), other_limb.c_str());
+ 
+    ros::ServiceClient _c;
+    string service_name = "/"+getName()+"/service_"+other_limb+"_to_"+getLimb();
+    _c = _n.serviceClient<AskFeedback>(service_name);
+
+    AskFeedback srv;
+    srv.request.ask = "ready";
+
+    while(ros::ok())
+    {
+        if (disable_coll_av)      suppressCollisionAv();
+        if (!_c.call(srv)) break;
+
+        if (srv.response.reply == "gripped")
+        {
+            return true;
+        }
+
+        ROS_DEBUG("[%s] Received: %s ", getLimb().c_str(), srv.response.reply.c_str());
+
+        ros::spinOnce();
+        ros::Rate(100).sleep();
+
+        if ((ros::Time::now()-_init).toSec() > _wait_time)
+        {
+            ROS_ERROR("No feedback from other arm has been received in %gs!",_wait_time);
+            return false;
+        }        
+    }
+
+    return false;
+}
+
 void ARTagCtrl::ARucoCb(const aruco_msgs::MarkerArray& msg) 
 {
     for (int i = 0; i < msg.markers.size(); ++i)
     {
-        ROS_DEBUG("Processing marker with id %i",msg.markers[i].id);
+        // ROS_DEBUG("Processing marker with id %i",msg.markers[i].id);
 
         if (msg.markers[i].id == getMarkerID())
         {
@@ -118,11 +173,16 @@ void ARTagCtrl::ARucoCb(const aruco_msgs::MarkerArray& msg)
             //                                       _curr_marker_ori.z,
             //                                       _curr_marker_ori.w);
 
-            if (!aruco_ok)
+            if (!marker_found)
             {
-                aruco_ok = true;
+                marker_found = true;
             }
         }
+    }
+
+    if (!aruco_ok)
+    {
+        aruco_ok = true;
     }
 }
 
@@ -146,7 +206,7 @@ bool ARTagCtrl::pickARTag()
         q = computeHOorientation();
 
         ROS_DEBUG("Going to: %g %g %g", _curr_marker_pos.x, _curr_marker_pos.y, getPos().z);
-        if (!ROSThread::goToPose(_curr_marker_pos.x, _curr_marker_pos.y, getPos().z,
+        if (!goToPose(_curr_marker_pos.x, _curr_marker_pos.y, getPos().z,
                                                             q.x,q.y,q.z,q.w,"loose"))
         {
             return false;
@@ -155,12 +215,11 @@ bool ARTagCtrl::pickARTag()
     
     ros::Time start_time = ros::Time::now();
     double z_start       =       getPos().z;
-    int ik_failures      =                0;
+    int cnt_ik_fail      =                0;
 
     while(ros::ok())
     {
-        ros::Time now_time = ros::Time::now();
-        double new_elap_time = (now_time - start_time).toSec();
+        double new_elap_time = (ros::Time::now() - start_time).toSec();
 
         double x = _curr_marker_pos.x;
         double y = _curr_marker_pos.y;
@@ -173,16 +232,16 @@ bool ARTagCtrl::pickARTag()
         if (getAction() == ACTION_HAND_OVER)
         {
             // q   = computeHOorientation();
-            res = ARTagCtrl::goToPose(x,y,z,q.x,q.y,q.z,q.w);
+            res = goToPoseNoCheck(x,y,z,q.x,q.y,q.z,q.w);
         }
         else
         {
-            res = ARTagCtrl::goToPose(x,y,z,VERTICAL_ORI_L);
+            res = goToPoseNoCheck(x,y,z,POOL_ORI_L);
         }
 
         if (res == true)
         {
-            ik_failures = 0;
+            cnt_ik_fail = 0;
             if (new_elap_time - elap_time > 0.02)
             {
                 ROS_WARN("\t\t\t\t\tTime elapsed: %g", new_elap_time - elap_time);
@@ -200,10 +259,10 @@ bool ARTagCtrl::pickARTag()
         }
         else
         {
-            ik_failures++;
+            cnt_ik_fail++;
         }
 
-        if (ik_failures == 20)
+        if (cnt_ik_fail == 20)
         {
             return false;
         }
@@ -256,66 +315,88 @@ geometry_msgs::Quaternion ARTagCtrl::computeHOorientation()
     return ee_q_msg;
 }
 
-bool ARTagCtrl::goToPose(double px, double py, double pz,
-                         double ox, double oy, double oz, double ow)
+bool ARTagCtrl::hoverAboveTableStrict(bool disable_coll_av)
 {
-    geometry_msgs::PoseStamped req_pose_stamped;
-    req_pose_stamped.header.frame_id = "base";
-    req_pose_stamped.header.stamp    = ros::Time::now();
+    while(ros::ok())
+    {
+        if (disable_coll_av)    suppressCollisionAv();
 
-    setPosition(   req_pose_stamped.pose, px, py, pz);
-    setOrientation(req_pose_stamped.pose, ox, oy, oz, ow);
+        JointCommand joint_cmd;
+        joint_cmd.mode = JointCommand::POSITION_MODE;
+        setJointNames(joint_cmd);
 
-    vector<double> joint_angles;
-    if (!getJointAngles(req_pose_stamped,joint_angles)) return false;
+        joint_cmd.command.push_back( 0.19673303604630432);  //'left_s0'
+        joint_cmd.command.push_back(-0.870150601928001);    //'left_s1'
+        joint_cmd.command.push_back(-1.0530778108833365);   //'left_e0'
+        joint_cmd.command.push_back( 1.5577574900976376);   //'left_e1'
+        joint_cmd.command.push_back( 0.6515583396543295);   //'left_w0'
+        joint_cmd.command.push_back( 1.2463593901568986);   //'left_w1'
+        joint_cmd.command.push_back(-0.1787087617886507);   //'left_w2'
 
-    baxter_core_msgs::JointCommand joint_cmd;
-    joint_cmd.mode = baxter_core_msgs::JointCommand::POSITION_MODE;
-    joint_cmd.command.resize(7);
-    setJointNames(joint_cmd);
+        publish_joint_cmd(joint_cmd);
 
-    for(int i = 0; i < 7; i++) {
-        joint_cmd.command[i] = joint_angles[i];
+        ros::spinOnce();
+        ros::Rate(100).sleep();
+ 
+        if(hasPoseCompleted(HOME_POS_L, Z_LOW, VERTICAL_ORI_L))
+        {
+            return true;
+        }
     }
-
-    publish_joint_cmd(joint_cmd);
-
-    return true;
 }
 
 bool ARTagCtrl::waitForARucoData()
 {
+    ROS_INFO("Waiting for ARuco data..");
     int cnt=0;
     while (!aruco_ok)
     {
-        ROS_WARN("No callback from ARuco, or object with ID %i not found.", getMarkerID());
+        ROS_WARN("No callback from ARuco. Is ARuco running?");
         ++cnt;
 
         if (cnt == 10)
         {
-            ROS_ERROR("No object with ID %i found. Stopping.", getMarkerID());
+            ROS_ERROR("No callback from ARuco! Stopping.");
             return false;
         }
 
         ros::spinOnce();
         ros::Rate(10).sleep();
     }
+
+    cnt=0;
+    while (!marker_found)
+    {
+        ROS_WARN("Object with ID %i not found. Is the object there?", getMarkerID());
+        ++cnt;
+
+        if (cnt == 10)
+        {
+            ROS_ERROR("Object with ID %i not found! Stopping.", getMarkerID());
+            return false;
+        }
+
+        ros::spinOnce();
+        ros::Rate(10).sleep();
+    }
+
     return true;
 }
 
 void ARTagCtrl::clearMarkerPose()
 {
-    aruco_ok = false;
+    aruco_ok     = false;
+    marker_found = false;
 }
 
 bool ARTagCtrl::hoverAbovePool()
 {
-    return ROSThread::goToPose(POOL_POS_L, VERTICAL_ORI_L);
+    return goToPose(POOL_POS_L, POOL_ORI_L);
 }
 
 bool ARTagCtrl::moveObjectTowardHuman()
 {
-    return ROSThread::goToPose(0.80, 0.26, 0.32, HORIZONTAL_ORI_L);
+    return goToPose(0.80, 0.26, 0.32, HORIZONTAL_ORI_L);
 }
 
 ARTagCtrl::~ARTagCtrl()

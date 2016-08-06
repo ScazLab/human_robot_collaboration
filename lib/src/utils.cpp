@@ -29,11 +29,9 @@ bool withinXHundredth(float x, float y, float z)
     return diffTwoDP <= (0.01 * z) ? true : false;
 }
 
-bool equalXDP(float x, float y, float z)
+bool withinThres(float x, float y, float t)
 {
-    float xTwoDP = roundf(x * pow(10, z)) / pow(10, z);
-    float yTwoDP = roundf(y * pow(10, z)) / pow(10, z);
-    return xTwoDP == yTwoDP ? true : false;    
+    return abs(x-y)<t?true:false;
 }
 
 void setPosition(Pose& pose, float x, float y, float z)
@@ -56,4 +54,26 @@ string intToString( const int a )
     stringstream ss;
     ss << a;
     return ss.str();
+}
+
+/**************************************************************************/
+/*                               Utils                                    */
+/**************************************************************************/
+
+State::operator int ()
+{
+    return state;
+}
+
+State::operator std::string()
+{
+    if      ( state == WORKING  ) return "WORKING";
+    else if ( state == ERROR    ) return "ERROR";
+    else if ( state == START    ) return "START";
+    else if ( state == REST     ) return "REST"; 
+    else if ( state == SCANNED  ) return "SCANNED"; 
+    else if ( state == PICK_UP  ) return "PICK_UP"; 
+    else if ( state == PUT_DOWN ) return "PUT_DOWN"; 
+    else if ( state == DONE     ) return "DONE";
+    else                          return "NONE";
 }

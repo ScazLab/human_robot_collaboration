@@ -5,16 +5,19 @@
 #include "robot_interface/gripper.h"
 
 #include "baxter_collaboration/DoAction.h"
+#include "baxter_collaboration/AskFeedback.h"
 
 class ArmCtrl : public ROSThread, public Gripper
 {
 private:
     std::string      name;
+    std::string sub_state;
     
     std::string    action;
     int         marker_id;
 
     ros::ServiceServer service;
+    ros::ServiceServer service_other_limb;
 
 protected:
     /**
@@ -43,13 +46,28 @@ protected:
      * @param  height the z-axis value of the end-effector position
      * @return        true/false if success/failure
      */
-    bool hoverAboveTable(double height);
+    bool hoverAboveTable(double height, std::string mode="loose",
+                                    bool disable_coll_av = false);
 
+
+    virtual bool hoverAboveTableStrict(bool disable_coll_av = false) = 0;
     /**
      * Goes to the home position
      * @return        true/false if success/failure
      */
     bool goHome();
+
+    /**
+     * Moves arm in a direction requested by the user, relative to the curent
+     * end-effector position
+     * 
+     * @param dir  the direction of motion (left right up down forward backward)
+     * @param dist the distance from the end-effector starting point
+     * 
+     * @return true/false if success/failure
+     */
+    bool moveArm(std::string dir, double dist, std::string mode="loose",
+                                           bool disable_coll_av = false);
 
 public:
     // CONSTRUCTOR
@@ -67,13 +85,24 @@ public:
     bool serviceCb(baxter_collaboration::DoAction::Request  &req,
                    baxter_collaboration::DoAction::Response &res);
 
+    /**
+     * Callback for the service that lets the two limbs interact
+     * @param  req the action request
+     * @param  res the action response (res.success either true or false)
+     * @return     true always :)
+     */
+    virtual bool serviceOtherLimbCb(baxter_collaboration::AskFeedback::Request  &req,
+                                    baxter_collaboration::AskFeedback::Response &res);
+
     /* Self-explaining "setters" */
-    void setName  (std::string _name)   { name      =   _name; };
-    void setAction(std::string _action) { action    = _action; };
-    void setMarkerID(int _id)           { marker_id =     _id; };
+    void setName  (std::string _name)    { name      =   _name; };
+    void setSubState(std::string _state) { sub_state =  _state; };
+    void setAction(std::string _action)  { action    = _action; };
+    void setMarkerID(int _id)            { marker_id =     _id; };
 
     /* Self-explaining "getters" */
     std::string getName()     { return      name; };
+    std::string getSubState() { return sub_state; };
     std::string getAction()   { return    action; };
     int         getMarkerID() { return marker_id; };
 };

@@ -42,7 +42,9 @@
 
 #define VERTICAL_ORI_R        0.0, 1.0, 0.0, 0.0
 
-#define POOL_POS_L  -0.05,  0.85, 0.30
+#define POOL_POS_L  -0.05, 0.85, 0.30
+#define POOL_ORI_L   -0.7,  0.7,  0.0, 0.0
+
 #define HOME_POS_L   0.65,  0.45
 #define HOME_POS_R   0.65, -0.25
 
@@ -57,13 +59,13 @@
 bool withinXHundredth(float x, float y, float z);
 
 /*
- * checks if two decimal numbers are equal to each other up to z of decimal points
  * 
- * @param      two floats x and y, and a float z specifying the desired accuracy
+ * 
+ * @param  
  *             
- * return     true if they are equal up to z decimal points; false otherwise
+ * @return  true/false if success/failure
  */
-bool equalXDP(float x, float y, float z);
+bool withinThres(float x, float y, float t);
 
 /*
  * sets the position of a pose
@@ -98,10 +100,9 @@ struct State {
 
     State(int _s, float _t) : state(_s), time(_t) { };
 
-    operator int ()
-    {
-        return state;
-    }
+    operator int ();
+
+    operator std::string();
 };
 
 

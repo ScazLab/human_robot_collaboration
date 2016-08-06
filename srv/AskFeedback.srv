@@ -1,0 +1,4 @@
+string ask
+---
+bool   success
+string reply

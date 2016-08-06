@@ -108,40 +108,47 @@ void ROSThread::hoverAboveTokens(double height)
     goToPose(0.540, 0.570, height, VERTICAL_ORI_L);
 }
 
+
+bool ROSThread::goToPoseNoCheck(double px, double py, double pz,
+                                double ox, double oy, double oz, double ow)
+{
+    vector<double> joint_angles;
+    if (!callIKService(px, py, pz, ox, oy, oz, ow, joint_angles)) return false;
+
+    return goToPoseNoCheck(joint_angles);
+}
+
+bool ROSThread::goToPoseNoCheck(vector<double> joint_angles)
+{
+    JointCommand joint_cmd;
+    joint_cmd.mode = JointCommand::POSITION_MODE;
+    
+    setJointNames(joint_cmd);
+
+    for(int i = 0; i < joint_angles.size(); i++)
+    {
+        joint_cmd.command.push_back(joint_angles[i]);
+    }
+
+    publish_joint_cmd(joint_cmd);
+
+    return true;
+}
+
 bool ROSThread::goToPose(double px, double py, double pz,
                          double ox, double oy, double oz, double ow,
                          std::string mode, bool disable_coll_av)
 {
-    PoseStamped req_pose_stamped;
-    req_pose_stamped.header.frame_id = "base";
-    req_pose_stamped.header.stamp    = ros::Time::now();
-
-    setPosition(   req_pose_stamped.pose, px, py, pz);
-    setOrientation(req_pose_stamped.pose, ox, oy, oz, ow);
-
     vector<double> joint_angles;
-    if (!getJointAngles(req_pose_stamped,joint_angles)) return false;
+    if (!callIKService(px, py, pz, ox, oy, oz, ow, joint_angles)) return false;
 
-    while(ros::ok)
+    while(ros::ok())
     {
         if (disable_coll_av)    suppressCollisionAv();
 
-        JointCommand joint_cmd;
-        joint_cmd.mode = JointCommand::POSITION_MODE;
+        if (!goToPoseNoCheck(joint_angles))   return false;
 
-        // joint_cmd.names
-        setJointNames(joint_cmd);
-        joint_cmd.command.resize(7);
-        // joint_cmd.angles
-        for(int i = 0; i < joint_angles.size(); i++) {
-            joint_cmd.command[i] = joint_angles[i];
-        }
-
-        // ROS_INFO("Publishing joint commands.. %g",
-        //           ros::Time::now().toSec()-_init_time.toSec());
-        _joint_cmd_pub.publish(joint_cmd);
-
-        if(hasPoseCompleted(req_pose_stamped.pose, mode))
+        if(hasPoseCompleted(px, py, pz, ox, oy, oz, ow, mode))
         {
             break;
         }
@@ -153,21 +160,29 @@ bool ROSThread::goToPose(double px, double py, double pz,
     return true;
 }
 
-bool ROSThread::getJointAngles(geometry_msgs::PoseStamped& pose_stamped,
-                                      std::vector<double>& joint_angles)
+bool ROSThread::callIKService(double px, double py, double pz,
+                              double ox, double oy, double oz, double ow,
+                              std::vector<double>& joint_angles)
 {
+    PoseStamped pose_stamp;
+    pose_stamp.header.frame_id = "base";
+    pose_stamp.header.stamp    = ros::Time::now();
+
+    setPosition(   pose_stamp.pose, px, py, pz);
+    setOrientation(pose_stamp.pose, ox, oy, oz, ow);
+
     joint_angles.clear();
     bool got_solution = false;
     ros::Time start = ros::Time::now();
-    float thresh_z = pose_stamped.pose.position.z + 0.120;
+    float thresh_z = pose_stamp.pose.position.z + 0.120;
 
     while(!got_solution)
     {
         SolvePositionIK ik_srv;
-        //ik_srv.request.seed_mode=2;         // i.e. SEED_CURRENT
+        //ik_srv.request.seed_mode=2;       // i.e. SEED_CURRENT
         ik_srv.request.seed_mode=0;         // i.e. SEED_AUTO
-        pose_stamped.header.stamp=ros::Time::now();
-        ik_srv.request.pose_stamp.push_back(pose_stamped);
+        pose_stamp.header.stamp=ros::Time::now();
+        ik_srv.request.pose_stamp.push_back(pose_stamp);
         
         if(_ik_client.call(ik_srv))
         {
@@ -183,22 +198,22 @@ bool ROSThread::getJointAngles(geometry_msgs::PoseStamped& pose_stamped,
                 // if position cannot be reached, try a position with the same x-y coordinates
                 // but higher z (useful when placing tokens)
                 ROS_DEBUG("[%s] IK solution not valid: %g %g %g", getLimb().c_str(),
-                                                       pose_stamped.pose.position.x,
-                                                       pose_stamped.pose.position.y,
-                                                       pose_stamped.pose.position.z);
-                pose_stamped.pose.position.z += 0.004;
+                                                       pose_stamp.pose.position.x,
+                                                       pose_stamp.pose.position.y,
+                                                       pose_stamp.pose.position.z);
+                pose_stamp.pose.position.z += 0.004;
             } 
         }
 
         // if no solution is found within 200 milliseconds or no solution within the acceptable
         // z-coordinate threshold is found, then no solution exists and exit oufof loop
-        if((ros::Time::now() - start).toSec() > 0.2 || pose_stamped.pose.position.z > thresh_z) 
+        if((ros::Time::now() - start).toSec() > 0.2 || pose_stamp.pose.position.z > thresh_z) 
         {
             ROS_WARN("[%s] Did not find a suitable IK solution! Final Position %g %g %g",
                                                                        getLimb().c_str(),
-                                                            pose_stamped.pose.position.x,
-                                                            pose_stamped.pose.position.y,
-                                                            pose_stamped.pose.position.z);
+                                                            pose_stamp.pose.position.x,
+                                                            pose_stamp.pose.position.y,
+                                                            pose_stamp.pose.position.z);
             return false;
         }
     }
@@ -219,24 +234,28 @@ bool ROSThread::hasCollided(string mode)
     else return false;
 }
 
-bool ROSThread::hasPoseCompleted(Pose p, string mode)
+bool ROSThread::hasPoseCompleted(double px, double py, double pz,
+                                 double ox, double oy, double oz, double ow, string mode)
 {
+    ROS_DEBUG("[%s] Checking for position.. mode is %s", getLimb().c_str(), mode.c_str());
     if(mode == "strict")
     {
-        if(!equalXDP(_curr_pos.x, p.position.x, 3)) return false;
-        if(!equalXDP(_curr_pos.y, p.position.y, 3)) return false;
+        if(!withinThres(_curr_pos.x, px, 0.001)) return false;
+        if(!withinThres(_curr_pos.y, py, 0.001)) return false;
+        if(!withinThres(_curr_pos.z, pz, 0.001)) return false;
     }
     else if(mode == "loose")
     {
-        if(!equalXDP(_curr_pos.x, p.position.x, 1.5)) return false;
-        if(!equalXDP(_curr_pos.y, p.position.y, 1.5)) return false;
+        if(!withinThres(_curr_pos.x, px, 0.01)) return false;
+        if(!withinThres(_curr_pos.y, py, 0.01)) return false;
+        if(!withinThres(_curr_pos.z, pz, 0.01)) return false;
     }
 
-    if(!withinXHundredth(_curr_pos.z, p.position.z, 1))     return false;
-    if(!withinXHundredth(_curr_ori.x, p.orientation.x, 2))  return false;
-    if(!withinXHundredth(_curr_ori.y, p.orientation.y, 2))  return false;
-    if(!withinXHundredth(_curr_ori.z, p.orientation.z, 2))  return false;
-    if(!withinXHundredth(_curr_ori.w, p.orientation.w, 2))  return false;
+    // ROS_INFO("[%s] Checking for orientation..", getLimb().c_str());
+    if(!withinXHundredth(_curr_ori.x, ox, 3))  return false;
+    if(!withinXHundredth(_curr_ori.y, oy, 3))  return false;
+    if(!withinXHundredth(_curr_ori.z, oz, 3))  return false;
+    if(!withinXHundredth(_curr_ori.w, ow, 3))  return false;
 
     return true;
 }
@@ -275,7 +294,7 @@ bool ROSThread::waitForForceInteraction(double _wait_time, bool disable_coll_av)
 {
     ros::Time _init = ros::Time::now();
 
-    while(ros::ok)
+    while(ros::ok())
     {
         if (disable_coll_av)          suppressCollisionAv();
         if (detectForceInteraction())           return true;

@@ -12,21 +12,11 @@ private:
 
     ros::Subscriber _aruco_sub;
     bool              aruco_ok;
+    bool          marker_found;
     geometry_msgs::Point        _curr_marker_pos;
     geometry_msgs::Quaternion   _curr_marker_ori;
 
     void clearMarkerPose();
-
-    /*
-     * Moves arm to the requested pose. This differs from ROSThread::goToPose because it 
-     * does not check if the final pose has been reached, but rather it goes in open-loop
-     * unitil a fisical contact with the table is reached
-     * 
-     * @param  requested pose (3D position + 4D quaternion for the orientation)
-     * @return true/false if success/failure
-     */
-    bool goToPose(double px, double py, double pz,
-                  double ox, double oy, double oz, double ow);
 
     void ARucoCb(const aruco_msgs::MarkerArray& msg);
 
@@ -42,7 +32,13 @@ private:
 
     bool passObject();
 
+    bool prepare4HandOver();
+
     bool handOver();
+
+    bool waitForOtherArm(double _wait_time = 60.0, bool disable_coll_av = false);
+
+    bool hoverAboveTableStrict(bool disable_coll_av = false);
 
     /**
      * Computes the end-effector orientation needed to pick the object up with a constant

@@ -37,12 +37,6 @@ void MoveToRest::InternalThreadEntry()
         ros::Rate(100).sleep();
     }
 
-    PoseStamped req_pose_stamped;
-    
-    req_pose_stamped.header.frame_id = "base";
-    setPosition(   req_pose_stamped.pose, 0.292391, getLimb() == "left" ? 0.611039 : -0.611039, 0.181133);
-    setOrientation(req_pose_stamped.pose, 0.028927, 0.686745, 0.00352694, 0.726314);
-
     while(ros::ok())
     {
         JointCommand joint_cmd;
@@ -65,7 +59,8 @@ void MoveToRest::InternalThreadEntry()
         ros::spinOnce();
         ros::Rate(100).sleep();
  
-        if(hasPoseCompleted(req_pose_stamped.pose, "loose"))
+        if(hasPoseCompleted(0.292391, getLimb()=="left"?0.611039:-0.611039, 0.181133,
+                            0.028927, 0.686745, 0.00352694, 0.726314, "loose"))
         {
             break;
         }
@@ -135,7 +130,6 @@ void PickUpToken::gripToken()
     // (prevent gripper from colliding with play surface)
     checkForToken(offset);
 
-    PoseStamped req_pose_stamped;
     ros::Time start_time = ros::Time::now();                
     cv::Point2d prev_offset(0.540, 0.540);
 
@@ -144,21 +138,16 @@ void PickUpToken::gripToken()
         processImage(offset);
         ros::Time now_time = ros::Time::now();
 
-        req_pose_stamped.header.frame_id = "base";
-
         // move incrementally towards token
-        setPosition(req_pose_stamped.pose, 
-                    prev_offset.x + 0.07 * offset.x,
-                    prev_offset.y + 0.07 * offset.y,
-                    0.375 + /*(-0.05)*/ -0.08 * (now_time - start_time).toSec());
+        double px = prev_offset.x + 0.07 * offset.x;
+        double py = prev_offset.y + 0.07 * offset.y;
+        double pz = 0.375 + /*(-0.05)*/ -0.08 * (now_time - start_time).toSec();
 
         prev_offset.x = prev_offset.x + 0.07 * offset.x; 
         prev_offset.y = prev_offset.y + 0.07 * offset.y;
 
-        setOrientation(req_pose_stamped.pose, VERTICAL_ORI_L);
-
         vector<double> joint_angles;
-        getJointAngles(req_pose_stamped,joint_angles);
+        callIKService(px,py,pz,VERTICAL_ORI_L,joint_angles);
 
         JointCommand joint_cmd;
         joint_cmd.mode = JointCommand::POSITION_MODE;
@@ -517,18 +506,17 @@ void ScanBoard::setDepth(float *dist)
     // move downwards until collision with surface
     while(ros::ok())
     {
-        PoseStamped req_pose_stamped;
-        req_pose_stamped.header.frame_id = "base";
+        double px = init_pos.x;
+        double py = init_pos.y;
+        double pz = init_pos.z + (-0.07) * (ros::Time::now() - start_time).toSec();
 
-        setPosition(req_pose_stamped.pose, 
-                    init_pos.x,
-                    init_pos.y,
-                    init_pos.z + (-0.07) * (ros::Time::now() - start_time).toSec());
-
-        setOrientation(req_pose_stamped.pose, 0.99962, -0.02741, 0, 0);
+        double ox =  0.99962;
+        double oy = -0.02741;
+        double oz =      0.0;
+        double ow =      0.0;
 
         vector<double> joint_angles;
-        getJointAngles(req_pose_stamped,joint_angles);
+        callIKService(px,py,pz,ox,oy,oz,ow,joint_angles);
 
         JointCommand joint_cmd;
         joint_cmd.mode = JointCommand::POSITION_MODE;
@@ -791,16 +779,12 @@ bool ScanBoard::offsetsReachable()
 {
     for(int i = 0; i < 9; i++)
     {
-        PoseStamped req_pose_stamped;
-        req_pose_stamped.header.frame_id = "base";
-        setPosition(req_pose_stamped.pose, 
-                    getPos().x + _offsets[i].x,
-                    getPos().y + _offsets[i].y,
-                    getPos().z - _offsets[i].z);
-        setOrientation(req_pose_stamped.pose, VERTICAL_ORI_L);
+        double px = getPos().x + _offsets[i].x;
+        double py = getPos().y + _offsets[i].y;
+        double pz = getPos().z - _offsets[i].z;
 
         vector<double> joint_angles;
-        getJointAngles(req_pose_stamped,joint_angles);
+        callIKService(px,py,pz,VERTICAL_ORI_L,joint_angles);
         
         // if IK solver returns a joint angles solution with all zeros, 
         // then no solution was found
@@ -829,16 +813,12 @@ bool ScanBoard::pointReachable(cv::Point centroid, float dist)
     offset.y = (centroid.x - center.x) * 0.0025 * dist;
     offset.z = dist - 0.085;
 
-    PoseStamped pose_stamped;
-    pose_stamped.header.frame_id = "base";
-    setPosition(pose_stamped.pose, 
-                0.575 + offset.x,
-                0.100 + offset.y,
-                0.445 - offset.z);
-    setOrientation(pose_stamped.pose, VERTICAL_ORI_L);
+    double px = 0.575 + offset.x;
+    double py = 0.100 + offset.y;
+    double pz = 0.445 - offset.z;
 
     vector<double> joint_angles;
-    return getJointAngles(pose_stamped,joint_angles) ? false : true;
+    return callIKService(px,py,pz,VERTICAL_ORI_L,joint_angles);
 }
 
 /**************************************************************************/
