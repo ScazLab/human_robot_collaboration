@@ -48,7 +48,7 @@ bool HoldCtrl::handOver()
     hand_over_state = "ready";
     if (!waitForOtherArm(120.0, true))         return false;
     if (!gripObject())                         return false;
-    ros::Duration(1.0).sleep();
+    ros::Duration(1.2).sleep();
     if (!goHoldPose(0.24))                     return false;
     ros::Duration(1.0).sleep();
     if (!waitForForceInteraction(180.0))       return false;
@@ -118,7 +118,7 @@ bool HoldCtrl::hoverAboveTableStrict(bool disable_coll_av)
         ros::spinOnce();
         ros::Rate(100).sleep();
  
-        if(hasPoseCompleted(HOME_POS_L, Z_LOW, VERTICAL_ORI_L))
+        if(hasPoseCompleted(HOME_POS_R, Z_LOW, VERTICAL_ORI_R))
         {
             return true;
         }

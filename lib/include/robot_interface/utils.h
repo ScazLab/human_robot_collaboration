@@ -100,10 +100,9 @@ struct State {
 
     State(int _s, float _t) : state(_s), time(_t) { };
 
-    operator int ()
-    {
-        return state;
-    }
+    operator int ();
+
+    operator std::string();
 };
 
 

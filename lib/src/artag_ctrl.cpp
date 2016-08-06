@@ -77,8 +77,9 @@ bool ARTagCtrl::handOver()
     if (!prepare4HandOver())        return false;
     ros::Duration(0.2).sleep();
     if (!waitForOtherArm())         return false;
-    ros::Duration(1.0).sleep();
+    ros::Duration(0.8).sleep();
     if (!releaseObject())           return false;
+    if (!moveArm("up", 0.05))       return false;
     if (!goHome())                  return false;
 
     return true;
@@ -89,7 +90,7 @@ bool ARTagCtrl::pickObject()
     if (!hoverAbovePool())          return false;
     ros::Duration(0.1).sleep();
     if (!pickARTag())               return false;
-    if (!moveArm("up", 0.4))        return false;
+    if (!moveArm("up", 0.3))        return false;
     if (!goHome())                  return false;
 
     return true;

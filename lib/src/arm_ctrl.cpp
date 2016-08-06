@@ -44,6 +44,12 @@ void ArmCtrl::InternalThreadEntry()
         setState(ERROR);
     }
 
+    if (getState()==ERROR)
+    {
+        ROS_ERROR("[%s] Action %s not successful! State %s %s", getLimb().c_str(), a.c_str(),
+                                          string(getState()).c_str(), getSubState().c_str());
+    }
+
     pthread_exit(NULL);
     return;
 }
