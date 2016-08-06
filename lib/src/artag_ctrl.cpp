@@ -80,7 +80,7 @@ bool ARTagCtrl::handOver()
     ros::Duration(0.8).sleep();
     if (!releaseObject())           return false;
     if (!moveArm("up", 0.05))       return false;
-    if (!goHome())                  return false;
+    if (!hoverAboveTableStrict())                  return false;
 
     return true;
 }
@@ -91,7 +91,7 @@ bool ARTagCtrl::pickObject()
     ros::Duration(0.1).sleep();
     if (!pickARTag())               return false;
     if (!moveArm("up", 0.3))        return false;
-    if (!goHome())                  return false;
+    if (!hoverAboveTableStrict())                  return false;
 
     return true;
 }
@@ -102,7 +102,7 @@ bool ARTagCtrl::passObject()
     ros::Duration(1.0).sleep();
     if (!waitForForceInteraction())     return false;
     if (!releaseObject())               return false;
-    if (!goHome())                      return false;
+    if (!hoverAboveTableStrict())                      return false;
 
     return true;
 }

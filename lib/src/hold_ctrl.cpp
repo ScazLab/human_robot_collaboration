@@ -54,7 +54,7 @@ bool HoldCtrl::handOver()
     if (!waitForForceInteraction(180.0))       return false;
     if (!releaseObject())                      return false;
     ros::Duration(1.0).sleep();
-    if (!goHome())                             return false;
+    if (!hoverAboveTableStrict())                             return false;
 
     return true;
 }
@@ -69,7 +69,7 @@ bool HoldCtrl::holdObject()
     if (!waitForForceInteraction(180.0))  return false;
     if (!releaseObject())                 return false;
     ros::Duration(1.0).sleep();
-    if (!goHome())                        return false;
+    if (!hoverAboveTableStrict())                        return false;
 
     return true;
 }

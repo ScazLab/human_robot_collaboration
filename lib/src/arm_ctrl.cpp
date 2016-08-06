@@ -168,11 +168,11 @@ bool ArmCtrl::moveArm(string dir, double dist, string mode, bool disable_coll_av
 
                 if (dir == "down")
                 {
-                    if (px < final.z) finish = true;
+                    if (pz < final.z) finish = true;
                 }
                 else if (dir == "up")
                 {
-                    if (px > final.z) finish = true;
+                    if (pz > final.z) finish = true;
                 }
             }
         }
@@ -230,7 +230,9 @@ bool ArmCtrl::hoverAboveTable(double height, string mode, bool disable_coll_av)
 
 bool ArmCtrl::goHome()
 {
-    return hoverAboveTableStrict();
+    bool res = hoverAboveTableStrict();
+    releaseObject();
+    return res;
 }
 
 void ArmCtrl::recoverFromError()
