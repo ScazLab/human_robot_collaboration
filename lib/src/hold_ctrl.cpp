@@ -97,6 +97,7 @@ bool HoldCtrl::waitForOtherArm(double _wait_time, bool disable_coll_av)
 
 bool HoldCtrl::hoverAboveTableStrict(bool disable_coll_av)
 {
+    ROS_INFO("[%s] Hovering above table strict..", getLimb().c_str());
     while(ros::ok())
     {
         if (disable_coll_av)    suppressCollisionAv();
@@ -123,6 +124,7 @@ bool HoldCtrl::hoverAboveTableStrict(bool disable_coll_av)
             return true;
         }
     }
+    ROS_INFO("[%s] Done", getLimb().c_str());
 }
 
 bool HoldCtrl::serviceOtherLimbCb(baxter_collaboration::AskFeedback::Request  &req,
@@ -142,7 +144,7 @@ bool HoldCtrl::serviceOtherLimbCb(baxter_collaboration::AskFeedback::Request  &r
 
 bool HoldCtrl::prepare4HandOver()
 {
-    return goToPose(0.65, 0.15, Z_LOW+0.02, HANDOVER_ORI_R);
+    return goToPose(0.61, 0.15, Z_LOW+0.02, HANDOVER_ORI_R);
 }
 
 bool HoldCtrl::goHoldPose(double height)

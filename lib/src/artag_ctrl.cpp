@@ -109,7 +109,7 @@ bool ARTagCtrl::passObject()
 
 bool ARTagCtrl::prepare4HandOver()
 {
-    if (!moveArm("right", 0.3, "loose", true))     return false;
+    if (!moveArm("right", 0.32, "loose", true))     return false;
 
     return true;  
 }
@@ -207,10 +207,13 @@ bool ARTagCtrl::pickARTag()
 
         ROS_DEBUG("Going to: %g %g %g", _curr_marker_pos.x, _curr_marker_pos.y, getPos().z);
         if (!goToPose(_curr_marker_pos.x, _curr_marker_pos.y, getPos().z,
-                                                            q.x,q.y,q.z,q.w,"loose"))
+                                                q.x,q.y,q.z,q.w,"loose"))
         {
             return false;
         }
+
+        clearMarkerPose();
+        if (!waitForARucoData()) return false;
     }
     
     ros::Time start_time = ros::Time::now();
@@ -268,8 +271,11 @@ bool ARTagCtrl::pickARTag()
         }
     }
     
-    ROS_INFO("Picking up tag..");
-    return gripObject();
+    ROS_INFO("[%s] Picking up tag..", getLimb().c_str());
+    bool res = gripObject();
+    ROS_INFO("[%s] Tag picked up!", getLimb().c_str());
+
+    return res;
 }
 
 geometry_msgs::Quaternion ARTagCtrl::computeHOorientation()
@@ -317,6 +323,7 @@ geometry_msgs::Quaternion ARTagCtrl::computeHOorientation()
 
 bool ARTagCtrl::hoverAboveTableStrict(bool disable_coll_av)
 {
+    ROS_INFO("[%s] Hovering above table strict..", getLimb().c_str());
     while(ros::ok())
     {
         if (disable_coll_av)    suppressCollisionAv();
@@ -343,6 +350,7 @@ bool ARTagCtrl::hoverAboveTableStrict(bool disable_coll_av)
             return true;
         }
     }
+    ROS_INFO("[%s] Done", getLimb().c_str());
 }
 
 bool ARTagCtrl::waitForARucoData()
@@ -391,11 +399,13 @@ void ARTagCtrl::clearMarkerPose()
 
 bool ARTagCtrl::hoverAbovePool()
 {
+    ROS_INFO("[%s] Hovering above pool..", getLimb().c_str());
     return goToPose(POOL_POS_L, POOL_ORI_L);
 }
 
 bool ARTagCtrl::moveObjectTowardHuman()
 {
+    ROS_INFO("[%s] Moving object toward human..", getLimb().c_str());
     return goToPose(0.80, 0.26, 0.32, HORIZONTAL_ORI_L);
 }
 
