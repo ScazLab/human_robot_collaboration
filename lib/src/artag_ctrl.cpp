@@ -199,22 +199,33 @@ bool ARTagCtrl::pickARTag()
     if (!waitForARucoData()) return false;
 
     geometry_msgs::Quaternion q;
+
+    double x = _curr_marker_pos.x;
+    double y = _curr_marker_pos.y + 0.04;
+    double z =         getPos().z;
+
+    ROS_DEBUG("Going to: %g %g %g", x, y, z);
     if (getAction() == ACTION_HAND_OVER)
     {
         // If we have to hand_over, let's pre-orient the end effector such that
         // further movements are easier
         q = computeHOorientation();
-
-        ROS_DEBUG("Going to: %g %g %g", _curr_marker_pos.x, _curr_marker_pos.y, getPos().z);
-        if (!goToPose(_curr_marker_pos.x, _curr_marker_pos.y, getPos().z,
-                                                q.x,q.y,q.z,q.w,"loose"))
+        
+        if (!goToPose(x, y, z, q.x,q.y,q.z,q.w,"loose"))
         {
             return false;
         }
-
-        clearMarkerPose();
-        if (!waitForARucoData()) return false;
     }
+    else
+    {
+        if (!goToPose(x, y, z, POOL_ORI_L,"loose"))
+        {
+            return false;
+        }
+    }
+
+    clearMarkerPose();
+    if (!waitForARucoData()) return false;
     
     ros::Time start_time = ros::Time::now();
     double z_start       =       getPos().z;
