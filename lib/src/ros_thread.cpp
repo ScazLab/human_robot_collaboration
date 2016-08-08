@@ -22,6 +22,8 @@ ROSThread::ROSThread(string limb): _n("~"), _limb(limb), _state(START,0), spinne
                                     SUBSCRIBER_BUFFER, &ROSThread::endpointCb, this);
     _ir_sub        = _n.subscribe("/robot/range/" + _limb + "_hand_range/state",
                                     SUBSCRIBER_BUFFER, &ROSThread::IRCb, this);
+    _cuff_sub      = _n.subscribe("/robot/digital_io/" + _limb + "_lower_button/state",
+                                    SUBSCRIBER_BUFFER, &ROSThread::cuffOKCb, this);
     
     _ik_client     = _n.serviceClient<SolvePositionIK>("/ExternalTools/" + _limb + 
                                                        "/PositionKinematicsNode/IKService");
@@ -57,9 +59,23 @@ bool ROSThread::startInternalThread()
     return (pthread_create(&_thread, NULL, InternalThreadEntryFunc, this) == 0);
 }
 
-void ROSThread::WaitForInternalThreadToExit()
+void ROSThread::waitForInternalThreadToExit()
 {
     (void) pthread_join(_thread, NULL);
+}
+
+bool ROSThread::killInternalThread()
+{
+    return (pthread_cancel(_thread) == 0);
+}
+
+void ROSThread::cuffOKCb(const baxter_core_msgs::DigitalIOState& msg)
+{
+    if (msg.state == baxter_core_msgs::DigitalIOState::PRESSED)
+    {
+        killInternalThread();
+        setState(KILLED);
+    }
 }
 
 void ROSThread::endpointCb(const baxter_core_msgs::EndpointState& msg) 
@@ -252,10 +268,10 @@ bool ROSThread::hasPoseCompleted(double px, double py, double pz,
     }
 
     // ROS_INFO("[%s] Checking for orientation..", getLimb().c_str());
-    if(!withinXHundredth(_curr_ori.x, ox, 3))  return false;
-    if(!withinXHundredth(_curr_ori.y, oy, 3))  return false;
-    if(!withinXHundredth(_curr_ori.z, oz, 3))  return false;
-    if(!withinXHundredth(_curr_ori.w, ow, 3))  return false;
+    if(!withinXHundredth(_curr_ori.x, ox, 2.5))  return false;
+    if(!withinXHundredth(_curr_ori.y, oy, 2.5))  return false;
+    if(!withinXHundredth(_curr_ori.z, oz, 2.5))  return false;
+    if(!withinXHundredth(_curr_ori.w, ow, 2.5))  return false;
 
     return true;
 }

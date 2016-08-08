@@ -13,6 +13,7 @@
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/highgui/highgui.hpp>
 
+#include <baxter_core_msgs/DigitalIOState.h>
 #include <baxter_core_msgs/EndpointState.h>
 #include <baxter_core_msgs/SolvePositionIK.h>
 #include <baxter_core_msgs/JointCommand.h>
@@ -45,6 +46,9 @@ private:
 
     ros::Publisher  _joint_cmd_pub;
     ros::Publisher    _coll_av_pub;
+
+    // Cuff OK Button (the circular one)
+    ros::Subscriber _cuff_sub;
 
     // IR Sensor
     ros::Subscriber _ir_sub;
@@ -152,11 +156,9 @@ protected:
 
     /*
      * Prevents any following code from being executed before thread is exited
-     * 
-     * @param      N/A
-     * @return     true if thread was successfully launched; false otherwise
+     * @return true/false if success/failure (not in the POSIX way)
      */      
-    void WaitForInternalThreadToExit();
+    void waitForInternalThreadToExit();
 
     /*
      * Callback function that sets the current pose to the pose received from 
@@ -166,6 +168,14 @@ protected:
      * @return     N/A
      */
     void endpointCb(const baxter_core_msgs::EndpointState& msg);
+
+    /*
+     * Callback function for the CUFF OK button
+     * 
+     * @param      N/A
+     * @return     N/A
+     */
+    void cuffOKCb(const baxter_core_msgs::DigitalIOState& msg);
 
     /*
      * Infrared sensor callback function that sets the current range to the range received
@@ -222,6 +232,12 @@ public:
      * Self-explaining "setters"
      */   
     void setState(int state);
+
+    /**
+     * Kills the internal thread
+     * @return true/false if success/failure (not in the POSIX way)
+     */
+    bool killInternalThread();
 
     /*
      * Self-explaining "getters"

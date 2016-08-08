@@ -1,4 +1,5 @@
 #include "robot_interface/arm_ctrl.h"
+#include <pthread.h>
 
 using namespace std;
 using namespace geometry_msgs;
@@ -21,6 +22,7 @@ ArmCtrl::ArmCtrl(string _name, string _limb) : ROSThread(_limb), Gripper(_limb),
 
 void ArmCtrl::InternalThreadEntry()
 {
+    pthread_setcanceltype(PTHREAD_CANCEL_ASYNCHRONOUS,NULL);
     std::string a =     getAction();
     int         s = int(getState());
 
@@ -86,6 +88,12 @@ bool ArmCtrl::serviceCb(baxter_collaboration::DoAction::Request  &req,
            int(getState()) != DONE    &&
            int(getState()) != PICK_UP   )
     {
+        if (getState()==KILLED)
+        {
+            goHome();
+            setState(ERROR);
+        }
+
         ros::spinOnce();
         ros::Rate(100).sleep();
     }
@@ -243,5 +251,5 @@ void ArmCtrl::recoverFromError()
 
 ArmCtrl::~ArmCtrl()
 {
-
+    killInternalThread();
 }

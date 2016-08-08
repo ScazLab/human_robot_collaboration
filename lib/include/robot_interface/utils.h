@@ -8,7 +8,8 @@
 
 #include <geometry_msgs/Pose.h>
 
-#define WORKING  -2
+#define WORKING  -3
+#define KILLED   -2
 #define ERROR    -1
 #define START     0
 #define REST      1
