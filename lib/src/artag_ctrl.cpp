@@ -34,7 +34,8 @@ bool ARTagCtrl::doAction(int s, std::string a)
 
     if (a == ACTION_GET && (s == START ||
                             s == ERROR ||
-                            s == DONE  ))
+                            s == DONE  ||
+                            s == KILLED ))
     {
         if (pickObject())
         {
@@ -54,7 +55,8 @@ bool ARTagCtrl::doAction(int s, std::string a)
     }
     else if (a == ACTION_HAND_OVER && (s == START ||
                                        s == ERROR ||
-                                       s == DONE  ))
+                                       s == DONE  ||
+                                       s == KILLED ))
     {
         if (handOver())
         {
@@ -135,7 +137,7 @@ bool ARTagCtrl::waitForOtherArm(double _wait_time, bool disable_coll_av)
         if (disable_coll_av)      suppressCollisionAv();
         if (!_c.call(srv)) break;
 
-        ROS_DEBUG("[%s] Received: %s ", getLimb().c_str(), srv.response.reply.c_str())
+        ROS_DEBUG("[%s] Received: %s ", getLimb().c_str(), srv.response.reply.c_str());
 
         if (srv.response.reply == "gripped")
         {
@@ -364,7 +366,7 @@ bool ARTagCtrl::hoverAboveTableStrict(bool disable_coll_av)
 
 bool ARTagCtrl::waitForARucoData()
 {
-    ROS_INFO("Waiting for ARuco data..");
+    ROS_INFO("[%s] Waiting for ARuco data..", getLimb().c_str());
     int cnt=0;
     while (!aruco_ok)
     {

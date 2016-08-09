@@ -13,7 +13,8 @@ bool HoldCtrl::doAction(int s, std::string a)
 {
     if (a == ACTION_HOLD && (s == START ||
                              s == ERROR ||
-                             s == DONE  ))
+                             s == DONE  ||
+                             s == KILLED ))
     {
         if (holdObject())
         {
@@ -24,7 +25,8 @@ bool HoldCtrl::doAction(int s, std::string a)
     }
     else if (a == ACTION_HAND_OVER && (s == START ||
                                        s == ERROR ||
-                                       s == DONE  ))
+                                       s == DONE  ||
+                                       s == KILLED ))
     {
         if (handOver())
         {
