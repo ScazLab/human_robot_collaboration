@@ -166,7 +166,7 @@ bool ROSThread::goToPose(double px, double py, double pz,
     vector<double> joint_angles;
     if (!callIKService(px, py, pz, ox, oy, oz, ow, joint_angles)) return false;
 
-    while(ros::ok())
+    while(ROSThread::ok())
     {
         if (disable_coll_av)    suppressCollisionAv();
 
@@ -174,14 +174,14 @@ bool ROSThread::goToPose(double px, double py, double pz,
 
         if(hasPoseCompleted(px, py, pz, ox, oy, oz, ow, mode))
         {
-            break;
+            return true;
         }
 
         ros::spinOnce();
         ros::Rate(100).sleep();
     }
 
-    return true;
+    return false;
 }
 
 bool ROSThread::callIKService(double px, double py, double pz,
@@ -318,7 +318,7 @@ bool ROSThread::waitForForceInteraction(double _wait_time, bool disable_coll_av)
 {
     ros::Time _init = ros::Time::now();
 
-    while(ros::ok())
+    while(ROSThread::ok())
     {
         if (disable_coll_av)          suppressCollisionAv();
         if (detectForceInteraction())           return true;
@@ -332,6 +332,8 @@ bool ROSThread::waitForForceInteraction(double _wait_time, bool disable_coll_av)
             return false;
         }
     }
+
+    return false;
 }
 
 void ROSThread::setState(int state)

@@ -134,7 +134,7 @@ bool ArmCtrl::moveArm(string dir, double dist, string mode, bool disable_coll_av
 
     bool finish = false;
 
-    while(ros::ok())
+    while(ROSThread::ok())
     {
         if (disable_coll_av)    suppressCollisionAv();
 
@@ -210,20 +210,20 @@ bool ArmCtrl::moveArm(string dir, double dist, string mode, bool disable_coll_av
         {
             if(withinThres(getPos().x, final.x, 0.001) && 
                withinThres(getPos().y, final.y, 0.001) &&
-               withinThres(getPos().z, final.z, 0.001)) break;
+               withinThres(getPos().z, final.z, 0.001)) return true;
         }
         else if(mode == "loose")
         {
             if(withinThres(getPos().x, final.x, 0.01) && 
                withinThres(getPos().y, final.y, 0.01) &&
-               withinThres(getPos().z, final.z, 0.01)) break;
+               withinThres(getPos().z, final.z, 0.01)) return true;
         }
 
         ros::spinOnce();
         ros::Rate(100).sleep();
     }
 
-    return true;
+    return false;
 }
 
 bool ArmCtrl::hoverAboveTable(double height, string mode, bool disable_coll_av)

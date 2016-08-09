@@ -80,7 +80,7 @@ bool ARTagCtrl::handOver()
     ros::Duration(0.8).sleep();
     if (!releaseObject())           return false;
     if (!moveArm("up", 0.05))       return false;
-    if (!hoverAboveTableStrict())                  return false;
+    if (!hoverAboveTableStrict())   return false;
 
     return true;
 }
@@ -90,8 +90,9 @@ bool ARTagCtrl::pickObject()
     if (!hoverAbovePool())          return false;
     ros::Duration(0.1).sleep();
     if (!pickARTag())               return false;
+    if (!gripObject())              return false;
     if (!moveArm("up", 0.3))        return false;
-    if (!hoverAboveTableStrict())                  return false;
+    if (!hoverAboveTableStrict())   return false;
 
     return true;
 }
@@ -102,7 +103,7 @@ bool ARTagCtrl::passObject()
     ros::Duration(1.0).sleep();
     if (!waitForForceInteraction())     return false;
     if (!releaseObject())               return false;
-    if (!hoverAboveTableStrict())                      return false;
+    if (!hoverAboveTableStrict())       return false;
 
     return true;
 }
@@ -129,17 +130,17 @@ bool ARTagCtrl::waitForOtherArm(double _wait_time, bool disable_coll_av)
     AskFeedback srv;
     srv.request.ask = "ready";
 
-    while(ros::ok())
+    while(ROSThread::ok())
     {
         if (disable_coll_av)      suppressCollisionAv();
         if (!_c.call(srv)) break;
+
+        ROS_DEBUG("[%s] Received: %s ", getLimb().c_str(), srv.response.reply.c_str())
 
         if (srv.response.reply == "gripped")
         {
             return true;
         }
-
-        ROS_DEBUG("[%s] Received: %s ", getLimb().c_str(), srv.response.reply.c_str());
 
         ros::spinOnce();
         ros::Rate(100).sleep();
@@ -231,7 +232,7 @@ bool ARTagCtrl::pickARTag()
     double z_start       =       getPos().z;
     int cnt_ik_fail      =                0;
 
-    while(ros::ok())
+    while(ROSThread::ok())
     {
         double new_elap_time = (ros::Time::now() - start_time).toSec();
 
@@ -265,7 +266,7 @@ bool ARTagCtrl::pickARTag()
             if(hasCollided("strict")) 
             {
                 ROS_DEBUG("Collision!");
-                break;
+                return true;
             }
 
             ros::spinOnce();
@@ -281,12 +282,8 @@ bool ARTagCtrl::pickARTag()
             return false;
         }
     }
-    
-    ROS_INFO("[%s] Picking up tag..", getLimb().c_str());
-    bool res = gripObject();
-    ROS_INFO("[%s] Tag picked up!", getLimb().c_str());
 
-    return res;
+    return false;
 }
 
 geometry_msgs::Quaternion ARTagCtrl::computeHOorientation()
@@ -335,7 +332,7 @@ geometry_msgs::Quaternion ARTagCtrl::computeHOorientation()
 bool ARTagCtrl::hoverAboveTableStrict(bool disable_coll_av)
 {
     ROS_INFO("[%s] Hovering above table strict..", getLimb().c_str());
-    while(ros::ok())
+    while(ROSThread::ok())
     {
         if (disable_coll_av)    suppressCollisionAv();
 
@@ -362,6 +359,7 @@ bool ARTagCtrl::hoverAboveTableStrict(bool disable_coll_av)
         }
     }
     ROS_INFO("[%s] Done", getLimb().c_str());
+    return false;
 }
 
 bool ARTagCtrl::waitForARucoData()
