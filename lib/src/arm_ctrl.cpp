@@ -82,14 +82,14 @@ bool ArmCtrl::serviceCb(baxter_collaboration::DoAction::Request  &req,
     startInternalThread();
     ros::Duration(0.5).sleep();
 
-    while( int(getState()) != START   &&
-           int(getState()) != ERROR   &&
-           int(getState()) != DONE    &&
-           int(getState()) != PICK_UP   )
+    while( ros::ok() && ( int(getState()) != START   &&
+                          int(getState()) != ERROR   &&
+                          int(getState()) != DONE    &&
+                          int(getState()) != PICK_UP   ))
     {
-        if (!ros::ok())
+        if (ros::isShuttingDown())
         {
-            setState(ERROR);
+            killInternalThread();
             break;
         }
 
