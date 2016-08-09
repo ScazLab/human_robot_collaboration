@@ -75,5 +75,6 @@ State::operator std::string()
     else if ( state == PICK_UP  ) return "PICK_UP"; 
     else if ( state == PUT_DOWN ) return "PUT_DOWN"; 
     else if ( state == DONE     ) return "DONE";
+    else if ( state == KILLED   ) return "KILLED";
     else                          return "NONE";
 }

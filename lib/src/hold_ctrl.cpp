@@ -6,6 +6,7 @@ using namespace baxter_core_msgs;
 HoldCtrl::HoldCtrl(std::string _name, std::string _limb) : 
              ArmCtrl(_name,_limb), hand_over_state("done")
 {
+    setState(START);
     if (!goHome()) setState(ERROR);
 }
 
@@ -101,7 +102,7 @@ bool HoldCtrl::waitForOtherArm(double _wait_time, bool disable_coll_av)
 bool HoldCtrl::hoverAboveTableStrict(bool disable_coll_av)
 {
     ROS_INFO("[%s] Hovering above table strict..", getLimb().c_str());
-    while(ROSThread::ok())
+    while(ros::ok())
     {
         if (disable_coll_av)    suppressCollisionAv();
 

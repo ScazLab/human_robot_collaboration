@@ -33,9 +33,9 @@
 class ROSThread
 {
 private:
-    ros::Time _init_time;
-    State         _state;
     std::string    _limb;
+    State         _state;
+    ros::Time _init_time;
 
     pthread_t _thread;
     static void * InternalThreadEntryFunc(void * This);
@@ -46,9 +46,6 @@ private:
 
     ros::Publisher  _joint_cmd_pub;
     ros::Publisher    _coll_av_pub;
-
-    // Cuff OK Button (the circular one)
-    ros::Subscriber _cuff_sub;
 
     // IR Sensor
     ros::Subscriber _ir_sub;
@@ -68,6 +65,9 @@ private:
 
 protected:
     ros::NodeHandle _n;
+
+    // Cuff OK Button (the circular one)
+    ros::Subscriber _cuff_sub;
 
     /*
      * Function that will be spun out as a thread
@@ -226,6 +226,7 @@ protected:
 
 public:
     ROSThread(std::string limb);
+    
     virtual ~ROSThread();
 
     /*
@@ -236,16 +237,16 @@ public:
      */        
     bool startInternalThread();
 
-    /*
-     * Self-explaining "setters"
-     */   
-    void setState(int state);
-
     /**
      * Kills the internal thread
      * @return true/false if success/failure (not in the POSIX way)
      */
     bool killInternalThread();
+
+    /*
+     * Self-explaining "setters"
+     */   
+    void setState(int state);
 
     /*
      * Self-explaining "getters"

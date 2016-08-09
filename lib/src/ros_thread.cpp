@@ -12,8 +12,8 @@ using namespace cv;
 /**************************************************************************/
 /*                            ROSThread                                   */
 /**************************************************************************/
-ROSThread::ROSThread(string limb): _n("~"), _limb(limb), _state(START,0), spinner(4),
-                                   ir_ok(false)
+ROSThread::ROSThread(string limb): _n("~"), _limb(limb), _state(START,0),
+                                   spinner(4), ir_ok(false)
 {
     _joint_cmd_pub = _n.advertise<JointCommand>("/robot/limb/" + _limb + "/joint_command", 1);
     _coll_av_pub   = _n.advertise<Empty>("/robot/limb/" + _limb + "/suppress_collision_avoidance", 1);
@@ -73,7 +73,6 @@ void ROSThread::cuffOKCb(const baxter_core_msgs::DigitalIOState& msg)
 {
     if (msg.state == baxter_core_msgs::DigitalIOState::PRESSED)
     {
-        // killInternalThread();
         setState(KILLED);
     }
 }
@@ -367,8 +366,8 @@ void * ROSThread::InternalThreadEntryFunc(void * This)
 
 ROSThreadImage::ROSThreadImage(string limb): _img_trp(_n), ROSThread(limb)
 {
-    _img_sub = _img_trp.subscribe("/cameras/left_hand_camera/image", SUBSCRIBER_BUFFER,
-                                                  &ROSThreadImage::imageCb, this);
+    _img_sub = _img_trp.subscribe("/cameras/"+getLimb()+"_hand_camera/image",
+                           SUBSCRIBER_BUFFER, &ROSThreadImage::imageCb, this);
     pthread_mutex_init(&_mutex_img, NULL);
 }
 

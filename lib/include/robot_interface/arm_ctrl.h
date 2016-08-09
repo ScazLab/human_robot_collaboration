@@ -6,6 +6,7 @@
 
 #include "baxter_collaboration/DoAction.h"
 #include "baxter_collaboration/AskFeedback.h"
+#include "baxter_collaboration/ArmState.h"
 
 class ArmCtrl : public ROSThread, public Gripper
 {
@@ -18,6 +19,8 @@ private:
 
     ros::ServiceServer service;
     ros::ServiceServer service_other_limb;
+
+    ros::Publisher     state_pub;
 
 protected:
     /**
@@ -77,6 +80,8 @@ public:
     // DESTRUCTOR
     ~ArmCtrl();
 
+    void cuffOKCb(const baxter_core_msgs::DigitalIOState& msg);
+
     /**
      * Callback for the service that requests actions
      * @param  req the action request
@@ -95,17 +100,22 @@ public:
     virtual bool serviceOtherLimbCb(baxter_collaboration::AskFeedback::Request  &req,
                                     baxter_collaboration::AskFeedback::Response &res);
 
+    void publishState();
+
     /* Self-explaining "setters" */
-    void setName  (std::string _name)    { name      =   _name; };
+    void setName(std::string _name)      { name      =   _name; };
     void setSubState(std::string _state) { sub_state =  _state; };
-    void setAction(std::string _action)  { action    = _action; };
     void setMarkerID(int _id)            { marker_id =     _id; };
+    void setAction(std::string _action);
+
+    void setState(int _state);
 
     /* Self-explaining "getters" */
     std::string getName()     { return      name; };
     std::string getSubState() { return sub_state; };
     std::string getAction()   { return    action; };
     int         getMarkerID() { return marker_id; };
+    std::string getObjName();
 };
 
 #endif

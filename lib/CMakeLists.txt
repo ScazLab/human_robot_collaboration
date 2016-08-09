@@ -29,7 +29,8 @@ add_library(robot_interface include/robot_interface/utils.h
 ## Add cmake target dependencies of the library
 ## as an example, code may need to be generated before libraries
 ## either from message generation or dynamic reconfigure
-add_dependencies(robot_interface    ${catkin_EXPORTED_TARGETS})
+add_dependencies(robot_interface    baxter_collaboration_generate_messages_cpp
+                                    ${catkin_EXPORTED_TARGETS})
 
 ## Specify libraries to link a library or executable target against
 target_link_libraries(robot_interface  ${OpenCV_LIBS}

@@ -279,11 +279,10 @@ class PutDownToken : public ROSThreadImage, public Gripper
 class TTTController
 {
     private:
-        std::string _limb;
-        MoveToRest * _rest_class;
-        PickUpToken * _pick_class;
-        ScanBoard * _scan_class;
-        PutDownToken * _put_class; 
+        MoveToRest   *_rest_class;
+        PickUpToken  *_pick_class;
+        ScanBoard    *_scan_class;
+        PutDownToken  *_put_class; 
 
     public:
         TTTController(std::string limb);

@@ -5,19 +5,24 @@ using namespace std;
 using namespace geometry_msgs;
 
 ArmCtrl::ArmCtrl(string _name, string _limb) : ROSThread(_limb), Gripper(_limb),
-                                               marker_id(-1), name(_name), action("")
+                                               name(_name), marker_id(-1), action("")
 {
+    _cuff_sub      = _n.subscribe("/robot/digital_io/" + _limb + "_lower_button/state",
+                                    SUBSCRIBER_BUFFER, &ArmCtrl::cuffOKCb, this);
+
+    std::string topic = "/"+getName()+"/state_"+_limb;
+    state_pub = _n.advertise<baxter_collaboration::ArmState>(topic,1);
+    ROS_INFO("[%s] Created state publisher with name : %s", getLimb().c_str(), topic.c_str());
+
     std::string other_limb = getLimb() == "right" ? "left" : "right";
 
-    std::string service_name = "/"+name+"/service_"+_limb;
-    service = _n.advertiseService(service_name, &ArmCtrl::serviceCb, this);
-    ROS_INFO("[%s] Created service server with name : %s", getLimb().c_str(),
-                                                        service_name.c_str());
+    topic = "/"+getName()+"/service_"+_limb;
+    service = _n.advertiseService(topic, &ArmCtrl::serviceCb, this);
+    ROS_INFO("[%s] Created service server with name : %s", getLimb().c_str(), topic.c_str());
 
-    service_name = "/"+name+"/service_"+_limb+"_to_"+other_limb;
-    service_other_limb = _n.advertiseService(service_name, &ArmCtrl::serviceOtherLimbCb,this);
-    ROS_INFO("[%s] Created service server with name : %s", getLimb().c_str(),
-                                                        service_name.c_str());
+    topic = "/"+getName()+"/service_"+_limb+"_to_"+other_limb;
+    service_other_limb = _n.advertiseService(topic, &ArmCtrl::serviceOtherLimbCb,this);
+    ROS_INFO("[%s] Created service server with name : %s", getLimb().c_str(), topic.c_str());
 }
 
 void ArmCtrl::InternalThreadEntry()
@@ -54,6 +59,14 @@ void ArmCtrl::InternalThreadEntry()
 
     pthread_exit(NULL);
     return;
+}
+
+void ArmCtrl::cuffOKCb(const baxter_core_msgs::DigitalIOState& msg)
+{
+    if (msg.state == baxter_core_msgs::DigitalIOState::PRESSED)
+    {
+        setState(KILLED);
+    }
 }
 
 bool ArmCtrl::serviceOtherLimbCb(baxter_collaboration::AskFeedback::Request  &req,
@@ -96,7 +109,6 @@ bool ArmCtrl::serviceCb(baxter_collaboration::DoAction::Request  &req,
         if (getState()==KILLED)
         {
             goHome();
-            setState(ERROR);
         }
 
         ros::spinOnce();
@@ -252,6 +264,38 @@ void ArmCtrl::recoverFromError()
 {
     releaseObject();
     goHome();
+}
+
+void ArmCtrl::setState(int _state)
+{
+    ROSThread::setState(_state);
+    publishState();
+}
+
+void ArmCtrl::setAction(string _action)
+{ 
+    action = _action;
+    publishState();
+}
+
+void ArmCtrl::publishState()
+{
+    baxter_collaboration::ArmState msg;
+
+    msg.state  = string(getState());
+    msg.action = getAction();
+    msg.object = getObjName();
+
+    state_pub.publish(msg);
+}
+
+string ArmCtrl::getObjName()
+{
+    if      (marker_id == 17) return "left_leg";
+    else if (marker_id == 21) return "top";
+    else if (marker_id == 24) return "central_frame";
+    else if (marker_id == 26) return "right_leg";
+    else return "";
 }
 
 ArmCtrl::~ArmCtrl()

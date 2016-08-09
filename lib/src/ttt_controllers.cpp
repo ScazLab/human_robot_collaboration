@@ -867,12 +867,12 @@ void PutDownToken::hoverAboveBoard()
 /*                            TTTController                               */
 /**************************************************************************/
 
-TTTController::TTTController(string limb): _limb(limb)
+TTTController::TTTController(string limb)
 {
-    _rest_class = new MoveToRest(_limb);
-    _pick_class = new PickUpToken(_limb);
-    _scan_class = new ScanBoard(_limb);
-    _put_class  = new PutDownToken(_limb);
+    _rest_class =   new MoveToRest(limb);
+    _pick_class =  new PickUpToken(limb);
+    _scan_class =    new ScanBoard(limb);
+    _put_class  = new PutDownToken(limb);
 }
 
 TTTController::~TTTController()

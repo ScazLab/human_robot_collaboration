@@ -14,6 +14,7 @@ ARTagCtrl::ARTagCtrl(std::string _name, std::string _limb) :
 
     elap_time = 0;
 
+    setState(START);
     if (!goHome()) setState(ERROR);
 
     // moveArm("up",0.2,"strict");
@@ -37,12 +38,12 @@ bool ARTagCtrl::doAction(int s, std::string a)
     {
         if (pickObject())
         {
-            setState(PICK_UP);
+            setState(DONE);
             return true;
         }
         else recoverFromError();
     }
-    else if (a == ACTION_PASS && s == PICK_UP)
+    else if (a == ACTION_PASS && s == DONE)
     {
         if(passObject())
         {
@@ -332,7 +333,7 @@ geometry_msgs::Quaternion ARTagCtrl::computeHOorientation()
 bool ARTagCtrl::hoverAboveTableStrict(bool disable_coll_av)
 {
     ROS_INFO("[%s] Hovering above table strict..", getLimb().c_str());
-    while(ROSThread::ok())
+    while(ros::ok())
     {
         if (disable_coll_av)    suppressCollisionAv();
 
@@ -355,10 +356,10 @@ bool ARTagCtrl::hoverAboveTableStrict(bool disable_coll_av)
  
         if(hasPoseCompleted(HOME_POS_L, Z_LOW, VERTICAL_ORI_L))
         {
+            ROS_INFO("[%s] Done", getLimb().c_str());
             return true;
         }
     }
-    ROS_INFO("[%s] Done", getLimb().c_str());
     return false;
 }
 
