@@ -70,9 +70,8 @@ bool ArmCtrl::serviceCb(baxter_collaboration::DoAction::Request  &req,
     string action = req.action;
     int    ID     = req.object;
 
-    ROS_INFO("[%s] Service request received. Action: %s object: %i",
-                                                  getLimb().c_str(),
-                                                action.c_str(), ID);
+    ROS_INFO("[%s] Service request received. Action: %s object: %i", getLimb().c_str(),
+                                                                   action.c_str(), ID);
     // res.success = true;
     // return true;
     res.success = false;
@@ -88,6 +87,12 @@ bool ArmCtrl::serviceCb(baxter_collaboration::DoAction::Request  &req,
            int(getState()) != DONE    &&
            int(getState()) != PICK_UP   )
     {
+        if (!ros::ok())
+        {
+            setState(ERROR);
+            break;
+        }
+
         if (getState()==KILLED)
         {
             goHome();
