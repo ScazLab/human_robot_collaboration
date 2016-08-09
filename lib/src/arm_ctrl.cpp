@@ -89,8 +89,8 @@ bool ArmCtrl::serviceCb(baxter_collaboration::DoAction::Request  &req,
     {
         if (ros::isShuttingDown())
         {
-            killInternalThread();
-            break;
+            setState(KILLED);
+            return true;
         }
 
         if (getState()==KILLED)

@@ -78,10 +78,12 @@ void ROSThread::cuffOKCb(const baxter_core_msgs::DigitalIOState& msg)
     }
 }
 
-bool ROSThread::ctrl_ok()
+bool ROSThread::ok()
 {
     bool res = ros::ok();
     res = res && getState() != KILLED;
+
+    return res;
 }
 
 void ROSThread::endpointCb(const baxter_core_msgs::EndpointState& msg) 

@@ -78,8 +78,9 @@ protected:
      * Checks for if the system is ok. To be called inside every thread execution,
      * in order to make it exit gracefully if there is any problem.
      * It also checks for the ROS state.
+     * @return true if everything is okay, false otherwise
      */
-    bool ctrl_ok();
+    bool ok();
 
     /*
      * checks if end effector has made contact with a token by checking if 

@@ -54,7 +54,7 @@ bool HoldCtrl::handOver()
     if (!waitForForceInteraction(180.0))       return false;
     if (!releaseObject())                      return false;
     ros::Duration(1.0).sleep();
-    if (!hoverAboveTableStrict())                             return false;
+    if (!hoverAboveTableStrict())              return false;
 
     return true;
 }
@@ -69,7 +69,7 @@ bool HoldCtrl::holdObject()
     if (!waitForForceInteraction(180.0))  return false;
     if (!releaseObject())                 return false;
     ros::Duration(1.0).sleep();
-    if (!hoverAboveTableStrict())                        return false;
+    if (!hoverAboveTableStrict())         return false;
 
     return true;
 }
@@ -78,7 +78,7 @@ bool HoldCtrl::waitForOtherArm(double _wait_time, bool disable_coll_av)
 {
     ros::Time _init = ros::Time::now();
 
-    while(ros::ok())
+    while(ROSThread::ok())
     {
         if (disable_coll_av)      suppressCollisionAv();
         
@@ -92,13 +92,14 @@ bool HoldCtrl::waitForOtherArm(double _wait_time, bool disable_coll_av)
             ROS_ERROR("No feedback from other arm has been received in %gs!",_wait_time);
             return false;
         }
-    }    
+    }
+    return false;
 }
 
 bool HoldCtrl::hoverAboveTableStrict(bool disable_coll_av)
 {
     ROS_INFO("[%s] Hovering above table strict..", getLimb().c_str());
-    while(ros::ok())
+    while(ROSThread::ok())
     {
         if (disable_coll_av)    suppressCollisionAv();
 
