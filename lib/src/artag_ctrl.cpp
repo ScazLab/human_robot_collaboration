@@ -1,7 +1,5 @@
 #include "robot_interface/artag_ctrl.h"
 
-#include <iostream>
-
 #include <tf/transform_datatypes.h>
 
 using namespace std;
