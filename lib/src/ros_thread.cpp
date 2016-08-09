@@ -73,9 +73,15 @@ void ROSThread::cuffOKCb(const baxter_core_msgs::DigitalIOState& msg)
 {
     if (msg.state == baxter_core_msgs::DigitalIOState::PRESSED)
     {
-        killInternalThread();
+        // killInternalThread();
         setState(KILLED);
     }
+}
+
+bool ROSThread::ctrl_ok()
+{
+    bool res = ros::ok();
+    res = res && getState() != KILLED;
 }
 
 void ROSThread::endpointCb(const baxter_core_msgs::EndpointState& msg) 

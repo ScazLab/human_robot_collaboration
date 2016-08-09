@@ -75,6 +75,13 @@ protected:
     virtual void InternalThreadEntry() = 0;
 
     /*
+     * Checks for if the system is ok. To be called inside every thread execution,
+     * in order to make it exit gracefully if there is any problem.
+     * It also checks for the ROS state.
+     */
+    bool ctrl_ok();
+
+    /*
      * checks if end effector has made contact with a token by checking if 
      * the range of the infrared sensor has fallen below the threshold value
      * 
