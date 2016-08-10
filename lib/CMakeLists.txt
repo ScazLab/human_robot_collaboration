@@ -15,7 +15,6 @@ add_library(robot_interface include/robot_interface/utils.h
                             include/robot_interface/ros_thread.h
                             include/robot_interface/robot_interface.h
                             include/robot_interface/gripper.h
-                            include/robot_interface/ttt_controllers.h
                             include/robot_interface/arm_ctrl.h
                             include/robot_interface/artag_ctrl.h
                             include/robot_interface/hold_ctrl.h  
@@ -23,7 +22,6 @@ add_library(robot_interface include/robot_interface/utils.h
                             src/ros_thread.cpp
                             src/robot_interface.cpp
                             src/gripper.cpp
-                            src/ttt_controllers.cpp
                             src/arm_ctrl.cpp
                             src/artag_ctrl.cpp
                             src/hold_ctrl.cpp)
