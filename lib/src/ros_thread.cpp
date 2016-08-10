@@ -38,20 +38,20 @@ bool Thread::killInternalThread()
 Thread::~Thread() { }
 
 /**************************************************************************/
-/*                            ROSThread                                   */
+/*                         RobotInterface                                 */
 /**************************************************************************/
-ROSThread::ROSThread(string limb): _n("~"), _limb(limb), _state(START,0),
+RobotInterface::RobotInterface(string limb): _n("~"), _limb(limb), _state(START,0),
                                    spinner(4), ir_ok(false)
 {
     _joint_cmd_pub = _n.advertise<JointCommand>("/robot/limb/" + _limb + "/joint_command", 1);
     _coll_av_pub   = _n.advertise<Empty>("/robot/limb/" + _limb + "/suppress_collision_avoidance", 1);
     
     _endpt_sub     = _n.subscribe("/robot/limb/" + _limb + "/endpoint_state",
-                                    SUBSCRIBER_BUFFER, &ROSThread::endpointCb, this);
+                                    SUBSCRIBER_BUFFER, &RobotInterface::endpointCb, this);
     _ir_sub        = _n.subscribe("/robot/range/" + _limb + "_hand_range/state",
-                                    SUBSCRIBER_BUFFER, &ROSThread::IRCb, this);
+                                    SUBSCRIBER_BUFFER, &RobotInterface::IRCb, this);
     _cuff_sub      = _n.subscribe("/robot/digital_io/" + _limb + "_lower_button/state",
-                                    SUBSCRIBER_BUFFER, &ROSThread::cuffOKCb, this);
+                                    SUBSCRIBER_BUFFER, &RobotInterface::cuffOKCb, this);
     
     _ik_client     = _n.serviceClient<SolvePositionIK>("/ExternalTools/" + _limb + 
                                                        "/PositionKinematicsNode/IKService");
@@ -80,9 +80,9 @@ ROSThread::ROSThread(string limb): _n("~"), _limb(limb), _state(START,0),
     spinner.start();
 }
 
-ROSThread::~ROSThread() { }
+RobotInterface::~RobotInterface() { }
 
-void ROSThread::cuffOKCb(const baxter_core_msgs::DigitalIOState& msg)
+void RobotInterface::cuffOKCb(const baxter_core_msgs::DigitalIOState& msg)
 {
     if (msg.state == baxter_core_msgs::DigitalIOState::PRESSED)
     {
@@ -90,7 +90,7 @@ void ROSThread::cuffOKCb(const baxter_core_msgs::DigitalIOState& msg)
     }
 }
 
-bool ROSThread::ok()
+bool RobotInterface::ok()
 {
     bool res = ros::ok();
     res = res && getState() != KILLED;
@@ -98,7 +98,7 @@ bool ROSThread::ok()
     return res;
 }
 
-void ROSThread::endpointCb(const baxter_core_msgs::EndpointState& msg) 
+void RobotInterface::endpointCb(const baxter_core_msgs::EndpointState& msg) 
 {
     ROS_DEBUG("endpointCb");
     _curr_pos      = msg.pose.position;
@@ -119,7 +119,7 @@ void ROSThread::endpointCb(const baxter_core_msgs::EndpointState& msg)
     filterForces();
 }
 
-void ROSThread::IRCb(const sensor_msgs::RangeConstPtr& msg) 
+void RobotInterface::IRCb(const sensor_msgs::RangeConstPtr& msg) 
 {
     ROS_DEBUG("IRCb");
     _curr_range = msg->range; 
@@ -132,20 +132,20 @@ void ROSThread::IRCb(const sensor_msgs::RangeConstPtr& msg)
     }
 }
 
-void ROSThread::filterForces()
+void RobotInterface::filterForces()
 {
     _filt_force[0] = (1 - FORCE_ALPHA) * _filt_force[0] + FORCE_ALPHA * _curr_wrench.force.x;
     _filt_force[1] = (1 - FORCE_ALPHA) * _filt_force[1] + FORCE_ALPHA * _curr_wrench.force.y;
     _filt_force[2] = (1 - FORCE_ALPHA) * _filt_force[2] + FORCE_ALPHA * _curr_wrench.force.z;
 }
 
-void ROSThread::hoverAboveTokens(double height)
+void RobotInterface::hoverAboveTokens(double height)
 {
     goToPose(0.540, 0.570, height, VERTICAL_ORI_L);
 }
 
 
-bool ROSThread::goToPoseNoCheck(double px, double py, double pz,
+bool RobotInterface::goToPoseNoCheck(double px, double py, double pz,
                                 double ox, double oy, double oz, double ow)
 {
     vector<double> joint_angles;
@@ -154,7 +154,7 @@ bool ROSThread::goToPoseNoCheck(double px, double py, double pz,
     return goToPoseNoCheck(joint_angles);
 }
 
-bool ROSThread::goToPoseNoCheck(vector<double> joint_angles)
+bool RobotInterface::goToPoseNoCheck(vector<double> joint_angles)
 {
     JointCommand joint_cmd;
     joint_cmd.mode = JointCommand::POSITION_MODE;
@@ -171,14 +171,14 @@ bool ROSThread::goToPoseNoCheck(vector<double> joint_angles)
     return true;
 }
 
-bool ROSThread::goToPose(double px, double py, double pz,
+bool RobotInterface::goToPose(double px, double py, double pz,
                          double ox, double oy, double oz, double ow,
                          std::string mode, bool disable_coll_av)
 {
     vector<double> joint_angles;
     if (!callIKService(px, py, pz, ox, oy, oz, ow, joint_angles)) return false;
 
-    while(ROSThread::ok())
+    while(RobotInterface::ok())
     {
         if (disable_coll_av)    suppressCollisionAv();
 
@@ -196,7 +196,7 @@ bool ROSThread::goToPose(double px, double py, double pz,
     return false;
 }
 
-bool ROSThread::callIKService(double px, double py, double pz,
+bool RobotInterface::callIKService(double px, double py, double pz,
                               double ox, double oy, double oz, double ow,
                               std::vector<double>& joint_angles)
 {
@@ -257,7 +257,7 @@ bool ROSThread::callIKService(double px, double py, double pz,
     return false;
 }
 
-bool ROSThread::hasCollided(string mode)
+bool RobotInterface::hasCollided(string mode)
 {
     float thres;
     
@@ -270,7 +270,7 @@ bool ROSThread::hasCollided(string mode)
     else return false;
 }
 
-bool ROSThread::hasPoseCompleted(double px, double py, double pz,
+bool RobotInterface::hasPoseCompleted(double px, double py, double pz,
                                  double ox, double oy, double oz, double ow, string mode)
 {
     ROS_DEBUG("[%s] Checking for position.. mode is %s", getLimb().c_str(), mode.c_str());
@@ -296,7 +296,7 @@ bool ROSThread::hasPoseCompleted(double px, double py, double pz,
     return true;
 }
 
-void ROSThread::setJointNames(JointCommand& joint_cmd)
+void RobotInterface::setJointNames(JointCommand& joint_cmd)
 {
     joint_cmd.names.push_back(_limb + "_s0");
     joint_cmd.names.push_back(_limb + "_s1");
@@ -307,7 +307,7 @@ void ROSThread::setJointNames(JointCommand& joint_cmd)
     joint_cmd.names.push_back(_limb + "_w2");
 }
 
-bool ROSThread::detectForceInteraction()
+bool RobotInterface::detectForceInteraction()
 {
     double f_x = abs(_curr_wrench.force.x - _filt_force[0]);
     double f_y = abs(_curr_wrench.force.y - _filt_force[1]);
@@ -326,11 +326,11 @@ bool ROSThread::detectForceInteraction()
     }
 }
 
-bool ROSThread::waitForForceInteraction(double _wait_time, bool disable_coll_av)
+bool RobotInterface::waitForForceInteraction(double _wait_time, bool disable_coll_av)
 {
     ros::Time _init = ros::Time::now();
 
-    while(ROSThread::ok())
+    while(RobotInterface::ok())
     {
         if (disable_coll_av)          suppressCollisionAv();
         if (detectForceInteraction())           return true;
@@ -348,19 +348,19 @@ bool ROSThread::waitForForceInteraction(double _wait_time, bool disable_coll_av)
     return false;
 }
 
-void ROSThread::setState(int state)
+void RobotInterface::setState(int state)
 {
     _state.state = state;
     // store the time elapsed between object initialization and state change
     _state.time = (ros::Time::now() - _init_time).toSec();
 }
 
-void ROSThread::publish_joint_cmd(baxter_core_msgs::JointCommand _cmd)
+void RobotInterface::publish_joint_cmd(baxter_core_msgs::JointCommand _cmd)
 {
     _joint_cmd_pub.publish(_cmd);
 }
 
-void ROSThread::suppressCollisionAv()
+void RobotInterface::suppressCollisionAv()
 {
     std_msgs::Empty empty_cmd;
     _coll_av_pub.publish(empty_cmd);
@@ -370,7 +370,7 @@ void ROSThread::suppressCollisionAv()
 /*                          ROSThreadImage                                */
 /**************************************************************************/
 
-ROSThreadImage::ROSThreadImage(string limb): _img_trp(_n), ROSThread(limb)
+ROSThreadImage::ROSThreadImage(string limb): _img_trp(_n), RobotInterface(limb)
 {
     _img_sub = _img_trp.subscribe("/cameras/"+getLimb()+"_hand_camera/image",
                            SUBSCRIBER_BUFFER, &ROSThreadImage::imageCb, this);

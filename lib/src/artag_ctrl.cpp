@@ -131,7 +131,7 @@ bool ARTagCtrl::waitForOtherArm(double _wait_time, bool disable_coll_av)
     AskFeedback srv;
     srv.request.ask = "ready";
 
-    while(ROSThread::ok())
+    while(RobotInterface::ok())
     {
         if (disable_coll_av)      suppressCollisionAv();
         if (!_c.call(srv)) break;
@@ -233,7 +233,7 @@ bool ARTagCtrl::pickARTag()
     double z_start       =       getPos().z;
     int cnt_ik_fail      =                0;
 
-    while(ROSThread::ok())
+    while(RobotInterface::ok())
     {
         double new_elap_time = (ros::Time::now() - start_time).toSec();
 

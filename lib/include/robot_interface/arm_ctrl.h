@@ -8,7 +8,7 @@
 #include "baxter_collaboration/AskFeedback.h"
 #include "baxter_collaboration/ArmState.h"
 
-class ArmCtrl : public ROSThread, public Gripper
+class ArmCtrl : public RobotInterface, public Gripper
 {
 private:
     std::string      name;

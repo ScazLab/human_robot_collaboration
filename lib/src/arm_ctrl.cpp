@@ -4,7 +4,7 @@
 using namespace std;
 using namespace geometry_msgs;
 
-ArmCtrl::ArmCtrl(string _name, string _limb) : ROSThread(_limb), Gripper(_limb),
+ArmCtrl::ArmCtrl(string _name, string _limb) : RobotInterface(_limb), Gripper(_limb),
                                                name(_name), marker_id(-1), action("")
 {
     _cuff_sub      = _n.subscribe("/robot/digital_io/" + _limb + "_lower_button/state",
@@ -146,7 +146,7 @@ bool ArmCtrl::moveArm(string dir, double dist, string mode, bool disable_coll_av
 
     bool finish = false;
 
-    while(ROSThread::ok())
+    while(RobotInterface::ok())
     {
         if (disable_coll_av)    suppressCollisionAv();
 
@@ -242,12 +242,12 @@ bool ArmCtrl::hoverAboveTable(double height, string mode, bool disable_coll_av)
 {
     if (getLimb() == "right")
     {
-        return ROSThread::goToPose(HOME_POS_R, height, VERTICAL_ORI_R,
+        return RobotInterface::goToPose(HOME_POS_R, height, VERTICAL_ORI_R,
                                                 mode, disable_coll_av);
     }
     else if (getLimb() == "left")
     {
-        return ROSThread::goToPose(HOME_POS_L, height, VERTICAL_ORI_L,
+        return RobotInterface::goToPose(HOME_POS_L, height, VERTICAL_ORI_L,
                                                 mode, disable_coll_av);
 
     }
@@ -268,7 +268,7 @@ void ArmCtrl::recoverFromError()
 
 void ArmCtrl::setState(int _state)
 {
-    ROSThread::setState(_state);
+    RobotInterface::setState(_state);
     publishState();
 }
 

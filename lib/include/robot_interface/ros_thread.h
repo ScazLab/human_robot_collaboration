@@ -79,7 +79,7 @@ public:
  * @details This class initializes overhead ROS features: subscriber/publishers,
  *          services, callback functions etc.
  */
-class ROSThread : public Thread
+class RobotInterface : public Thread
 {
 private:
     std::string    _limb;
@@ -163,7 +163,7 @@ protected:
                        std::vector<double>& joint_angles);
 
     /*
-     * Moves arm to the requested pose. This differs from ROSThread::goToPose because it 
+     * Moves arm to the requested pose. This differs from RobotInterface::goToPose because it 
      * does not check if the final pose has been reached, but rather it goes in open-loop
      * unitil a fisical contact with the table is reached
      * 
@@ -265,9 +265,9 @@ protected:
     void suppressCollisionAv();
 
 public:
-    ROSThread(std::string limb);
+    RobotInterface(std::string limb);
     
-    virtual ~ROSThread();
+    virtual ~RobotInterface();
 
     /*
      * Self-explaining "setters"
@@ -292,10 +292,10 @@ public:
 
 /**
  * @brief A ROS Thread with an image callbck
- * @details This class inherits from ROSThread, but it adds also an image callback
+ * @details This class inherits from RobotInterface, but it adds also an image callback
  *          to be overwritten by its children. Useful to to visual processing.
  */
-class ROSThreadImage : public ROSThread
+class ROSThreadImage : public RobotInterface
 {
 private:
     image_transport::ImageTransport _img_trp;

@@ -81,7 +81,7 @@ bool HoldCtrl::waitForOtherArm(double _wait_time, bool disable_coll_av)
 {
     ros::Time _init = ros::Time::now();
 
-    while(ROSThread::ok())
+    while(RobotInterface::ok())
     {
         if (disable_coll_av)      suppressCollisionAv();
         
