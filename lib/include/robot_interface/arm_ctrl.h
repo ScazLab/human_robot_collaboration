@@ -8,6 +8,11 @@
 #include "baxter_collaboration/AskFeedback.h"
 #include "baxter_collaboration/ArmState.h"
 
+#define HAND_OVER_START  "handover_start"
+#define HAND_OVER_READY  "handover_ready"
+#define HAND_OVER_DONE   "handover_done"
+#define HAND_OVER_WAIT   "handover_wait"
+
 class ArmCtrl : public RobotInterface, public Gripper
 {
 private:

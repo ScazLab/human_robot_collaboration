@@ -5,7 +5,7 @@ using namespace std;
 using namespace geometry_msgs;
 
 ArmCtrl::ArmCtrl(string _name, string _limb) : RobotInterface(_limb), Gripper(_limb),
-                                               name(_name), marker_id(-1), action("")
+                                               name(_name), marker_id(-1), action(""), sub_state("")
 {
     _cuff_sub      = _n.subscribe("/robot/digital_io/" + _limb + "_lower_button/state",
                                     SUBSCRIBER_BUFFER, &ArmCtrl::cuffOKCb, this);

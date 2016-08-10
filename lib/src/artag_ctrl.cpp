@@ -82,6 +82,7 @@ bool ARTagCtrl::handOver()
     if (!releaseObject())           return false;
     if (!moveArm("up", 0.05))       return false;
     if (!hoverAboveTableStrict())   return false;
+    setSubState("");
 
     return true;
 }
@@ -129,7 +130,7 @@ bool ARTagCtrl::waitForOtherArm(double _wait_time, bool disable_coll_av)
     _c = _n.serviceClient<AskFeedback>(service_name);
 
     AskFeedback srv;
-    srv.request.ask = "ready";
+    srv.request.ask = HAND_OVER_READY;
 
     while(RobotInterface::ok())
     {
@@ -138,7 +139,7 @@ bool ARTagCtrl::waitForOtherArm(double _wait_time, bool disable_coll_av)
 
         ROS_DEBUG("[%s] Received: %s ", getLimb().c_str(), srv.response.reply.c_str());
 
-        if (srv.response.reply == "gripped")
+        if (srv.response.reply == HAND_OVER_DONE)
         {
             return true;
         }
@@ -148,7 +149,8 @@ bool ARTagCtrl::waitForOtherArm(double _wait_time, bool disable_coll_av)
 
         if ((ros::Time::now()-_init).toSec() > _wait_time)
         {
-            ROS_ERROR("No feedback from other arm has been received in %gs!",_wait_time);
+            ROS_ERROR("[%s] No feedback from other arm has been received in %gs!",
+                                                    getLimb().c_str(), _wait_time);
             return false;
         }        
     }

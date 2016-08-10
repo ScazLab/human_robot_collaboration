@@ -4,7 +4,7 @@ using namespace std;
 using namespace baxter_core_msgs;
 
 HoldCtrl::HoldCtrl(std::string _name, std::string _limb) : 
-             ArmCtrl(_name,_limb), hand_over_state("done")
+             ArmCtrl(_name,_limb)
 {
     setState(START);
     if (!goHome()) setState(ERROR);
@@ -46,9 +46,9 @@ bool HoldCtrl::doAction(int s, std::string a)
 
 bool HoldCtrl::handOver()
 {
-    hand_over_state = "start";
+    setSubState(HAND_OVER_START);
     if (!prepare4HandOver())                   return false;
-    hand_over_state = "ready";
+    setSubState(HAND_OVER_READY);
     if (!waitForOtherArm(120.0, true))         return false;
     if (!gripObject())                         return false;
     ros::Duration(1.2).sleep();
@@ -58,6 +58,7 @@ bool HoldCtrl::handOver()
     if (!releaseObject())                      return false;
     ros::Duration(1.0).sleep();
     if (!hoverAboveTableStrict())              return false;
+    setSubState("");
 
     return true;
 }
@@ -85,14 +86,15 @@ bool HoldCtrl::waitForOtherArm(double _wait_time, bool disable_coll_av)
     {
         if (disable_coll_av)      suppressCollisionAv();
         
-        if (hand_over_state == "gripped")   return true;
+        if (getSubState() == HAND_OVER_DONE)   return true;
 
         ros::spinOnce();
         ros::Rate(100).sleep();
 
         if ((ros::Time::now()-_init).toSec() > _wait_time)
         {
-            ROS_ERROR("No feedback from other arm has been received in %gs!",_wait_time);
+            ROS_ERROR("[%s] No feedback from other arm has been received in %gs!",
+                                                    getLimb().c_str(), _wait_time);
             return false;
         }
     }
@@ -134,13 +136,15 @@ bool HoldCtrl::hoverAboveTableStrict(bool disable_coll_av)
 bool HoldCtrl::serviceOtherLimbCb(baxter_collaboration::AskFeedback::Request  &req,
                                   baxter_collaboration::AskFeedback::Response &res)
 {
-    if (req.ask == "ready")
+    res.success = false;
+    if (req.ask == HAND_OVER_READY)
     {
-        if (hand_over_state == "start") res.reply = "wait";
-        if (hand_over_state == "ready")
+        res.success = false;
+        if (getSubState() == HAND_OVER_START) res.reply = HAND_OVER_WAIT;
+        if (getSubState() == HAND_OVER_READY)
         {
-            hand_over_state = "gripped";
-            res.reply = "gripped";
+            setSubState(HAND_OVER_DONE);
+            res.reply = getSubState();
         }
     }
     return true;

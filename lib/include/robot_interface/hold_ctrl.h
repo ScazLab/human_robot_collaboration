@@ -6,7 +6,6 @@
 class HoldCtrl : public ArmCtrl
 {
 private:
-    std::string hand_over_state;
 
     bool goHoldPose(double height);
 
