@@ -14,17 +14,17 @@
 class Gripper
 {
 private:
-    std::string _limb; // It identifies the vacuum gripper we are using: left or right
+    std::string _limb; // Limb of the gripper: left or right
 
-    bool first_run;    // Flag to calibrate grippers at startup if they are not calibrated
+    bool first_run;    // Flag to calibrate the gripper at startup if needed
 
     ros::NodeHandle _nh;            // ROS node handle
-    ros::Subscriber _sub_state;     // subscriber to receive the messages related to the state of the vacuum gripper
-    ros::Publisher  _pub_command;   // publisher for gripping by sucking
+    ros::Subscriber _sub_state;     // Subscriber to receive the state of the gripper
+    ros::Publisher  _pub_command;   // Publisher for requesting actions to the gripper
 
     pthread_mutex_t _mutex;
-    // It is updated every time a new message with information about the gripper state arrives
-    baxter_core_msgs::EndEffectorState _state; 
+
+    baxter_core_msgs::EndEffectorState _state;  // State of the gripper
 
     // Callback that handles the gripper state messages. 
     void gripperStateCb(const baxter_core_msgs::EndEffectorStateConstPtr& msg); 
@@ -36,19 +36,18 @@ private:
     void calibrate();
 
     /**
-     * @brief Gets the ID of the gripper
-     * @details Gets the ID of the gripper
+     * Gets the ID of the gripper
      * @return The ID of the gripper
      */
     int get_id();
 
     /**
-     * It makes the vacuum gripper suck so, in case it is in contact with an object, it will grip it.
+     * Closes the gripper
      **/
     void suck();
 
     /**
-     * It makes the vacuum gripper blow air so, in case it has an object graspped, it will release it.
+     * Opens the gripper
      **/
     void blow();
 
@@ -67,13 +66,13 @@ public:
 
     /**
      * Returns a value indicating if the vacuum gripper is enable, so it can be operated.
-     * @return True if it is enabled, false otherwise.
+     * @return True if enabled, false otherwise.
      **/
     bool is_enabled();
 
     /**
-     * Returns a value indicating that the calibration has completed, so it will operate properly.
-     * @return True if calibration is done, false otherwise.
+     * Indicating if the gripper is calibrated.
+     * @return True/false if calibrated or not.
      **/
     bool is_calibrated();
 
@@ -97,7 +96,7 @@ public:
 
     /**
      * Returns a value indicating if the gripper has something attached.
-     * @return True if it is grippring an object, false otherwise.
+     * @return True if it is gripping an object, false otherwise.
      **/
     bool is_gripping();
 
