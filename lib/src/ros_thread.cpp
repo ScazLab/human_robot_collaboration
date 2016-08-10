@@ -10,6 +10,34 @@ using namespace std_msgs;
 using namespace cv;
 
 /**************************************************************************/
+/*                             Thread                                     */
+/**************************************************************************/
+Thread::Thread() { }
+
+void * Thread::InternalThreadEntryFunc(void * This)
+{
+    ((Thread *)This)->InternalThreadEntry(); 
+    return NULL;
+}
+
+bool Thread::startInternalThread()
+{
+    return (pthread_create(&_thread, NULL, InternalThreadEntryFunc, this) == 0);
+}
+
+void Thread::waitForInternalThreadToExit()
+{
+    (void) pthread_join(_thread, NULL);
+}
+
+bool Thread::killInternalThread()
+{
+    return (pthread_cancel(_thread) == 0);
+}
+
+Thread::~Thread() { }
+
+/**************************************************************************/
 /*                            ROSThread                                   */
 /**************************************************************************/
 ROSThread::ROSThread(string limb): _n("~"), _limb(limb), _state(START,0),
@@ -53,21 +81,6 @@ ROSThread::ROSThread(string limb): _n("~"), _limb(limb), _state(START,0),
 }
 
 ROSThread::~ROSThread() { }
-
-bool ROSThread::startInternalThread()
-{
-    return (pthread_create(&_thread, NULL, InternalThreadEntryFunc, this) == 0);
-}
-
-void ROSThread::waitForInternalThreadToExit()
-{
-    (void) pthread_join(_thread, NULL);
-}
-
-bool ROSThread::killInternalThread()
-{
-    return (pthread_cancel(_thread) == 0);
-}
 
 void ROSThread::cuffOKCb(const baxter_core_msgs::DigitalIOState& msg)
 {
@@ -351,13 +364,6 @@ void ROSThread::suppressCollisionAv()
 {
     std_msgs::Empty empty_cmd;
     _coll_av_pub.publish(empty_cmd);
-}
-
-// Private
-void * ROSThread::InternalThreadEntryFunc(void * This)
-{
-    ((ROSThread *)This)->InternalThreadEntry(); 
-    return NULL;
 }
 
 /**************************************************************************/

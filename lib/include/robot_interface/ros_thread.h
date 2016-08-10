@@ -25,20 +25,66 @@
 #include "utils.h"
 
 /**
- * @brief A ROS Thread class
+ * @brief A Thread class
  * @details This class initializes overhead functions necessary to start a thread
- *          from within a class, and overhead ROS features: subscriber/publishers,
+ *          from within a class
+ */
+class Thread
+{
+private:
+    pthread_t _thread;
+    static void * InternalThreadEntryFunc(void * This);
+
+protected:
+    /*
+     * Function that will be spun out as a thread
+     */
+    virtual void InternalThreadEntry() = 0;
+
+    /*
+     * Prevents any following code from being executed before thread is exited
+     * @return true/false if success/failure (not in the POSIX way)
+     */      
+    void waitForInternalThreadToExit();
+
+public:
+    /*
+     * Constructor
+    */
+    Thread();
+
+    /*
+     * Starts thread that executes the internal thread entry function
+     * 
+     * @param      N/A
+     * @return     true if thread was successfully launched; false otherwise
+     */        
+    bool startInternalThread();
+
+    /**
+     * Kills the internal thread
+     * @return true/false if success/failure (not in the POSIX way)
+     */
+    bool killInternalThread();
+
+    /*
+     * Destructor
+    */
+    virtual ~Thread();
+    
+};
+
+/**
+ * @brief A ROS Thread class
+ * @details This class initializes overhead ROS features: subscriber/publishers,
  *          services, callback functions etc.
  */
-class ROSThread
+class ROSThread : public Thread
 {
 private:
     std::string    _limb;
     State         _state;
     ros::Time _init_time;
-
-    pthread_t _thread;
-    static void * InternalThreadEntryFunc(void * This);
 
     ros::AsyncSpinner spinner;
 
@@ -64,15 +110,15 @@ private:
     geometry_msgs::Wrench    _curr_wrench;
 
 protected:
-    ros::NodeHandle _n;
-
-    // Cuff OK Button (the circular one)
-    ros::Subscriber _cuff_sub;
-
     /*
      * Function that will be spun out as a thread
      */
     virtual void InternalThreadEntry() = 0;
+
+    ros::NodeHandle _n;
+
+    // Cuff OK Button (the circular one)
+    ros::Subscriber _cuff_sub;
 
     /*
      * Checks for if the system is ok. To be called inside every thread execution,
@@ -163,12 +209,6 @@ protected:
     bool waitForForceInteraction(double _wait_time = 20.0, bool disable_coll_av = false);
 
     /*
-     * Prevents any following code from being executed before thread is exited
-     * @return true/false if success/failure (not in the POSIX way)
-     */      
-    void waitForInternalThreadToExit();
-
-    /*
      * Callback function that sets the current pose to the pose received from 
      * the endpoint state topic
      * 
@@ -228,20 +268,6 @@ public:
     ROSThread(std::string limb);
     
     virtual ~ROSThread();
-
-    /*
-     * Starts thread that executes the internal thread entry function
-     * 
-     * @param      N/A
-     * @return     true if thread was successfully launched; false otherwise
-     */        
-    bool startInternalThread();
-
-    /**
-     * Kills the internal thread
-     * @return true/false if success/failure (not in the POSIX way)
-     */
-    bool killInternalThread();
 
     /*
      * Self-explaining "setters"
