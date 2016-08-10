@@ -253,9 +253,9 @@ private:
     image_transport::Subscriber     _img_sub;
 
 protected:
-    cv::Mat       _curr_img;
-    cv::Size _curr_img_size;
-    bool         _img_empty;
+    cv::Mat  _curr_img;
+    cv::Size _img_size;
+    bool    _img_empty;
 
     pthread_mutex_t _mutex_img;
 

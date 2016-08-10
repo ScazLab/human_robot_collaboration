@@ -207,16 +207,18 @@ class ScanBoard : public ROSThreadImage
         void setOffsets(int board_area, Contours contours, float dist,
                         cv::Mat *output, std::vector<cv::Point> *centroids);
 
-        /*
+        /**
          * calculates the perimeter of the area representing all points reachable to the Baxter arm
          * 
-         * @param      board contours, distance between starting position and play surface, coordinates of all 
-         *            4 board corners. input vector containing cell centroids, input vector representing 
-         *            distance between center of corner cell and corner of corner cell
-         * return     N/A
+         * @param contours       board contours
+         * @param dist           distance between starting position and play surface
+         * @param board_corners  coordinates of all 4 board corners
+         * @param c              input vector containing cell centroids
+         * @param cell_to_corner vector representing distance between center of corner cell
+         *                       and corner of corner cell
          */
         void setZone(Contours contours, float dist, std::vector<cv::Point> board_corners,
-                     std::vector<cv::Point> *centroids, std::vector<cv::Point> * cell_to_corner);
+                     std::vector<cv::Point> c, std::vector<cv::Point> * cell_to_corner);
        
         /*
          * checks if Baxter's arm has a joint angles solution for all the calculated cell offsets
@@ -242,8 +244,8 @@ class PutDownToken : public ROSThreadImage, public Gripper
         PutDownToken(std::string limb);     
         ~PutDownToken();
 
-        void setCell(int cell);
-        void setOffsets(std::vector<geometry_msgs::Point> offsets);
+        void setCell(int cell) {_cell = cell;};
+        void setOffsets(std::vector<geometry_msgs::Point> offsets) {_offsets = offsets;};
 
     protected:
 

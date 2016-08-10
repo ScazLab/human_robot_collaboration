@@ -367,9 +367,9 @@ void ROSThreadImage::imageCb(const sensor_msgs::ImageConstPtr& msg)
     }
 
     pthread_mutex_lock(&_mutex_img);
-    _curr_img = cv_ptr->image.clone();
-    _curr_img_size =  _curr_img.size();
-    _img_empty     = _curr_img.empty();
+    _curr_img  = cv_ptr->image.clone();
+    _img_size  =      _curr_img.size();
+    _img_empty =     _curr_img.empty();
     pthread_mutex_unlock(&_mutex_img);   
 }
 

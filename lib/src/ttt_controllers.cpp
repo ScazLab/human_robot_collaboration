@@ -247,7 +247,7 @@ void PickUpToken::isolateBlack(Mat &output)
 
 void PickUpToken::isolateBoard(Mat input, Mat &output, int &board_y)
 {
-    output = Mat::zeros(_curr_img_size, CV_8UC1);
+    output = Mat::zeros(_img_size, CV_8UC1);
 
     vector<cv::Vec4i> hierarchy; // captures contours within contours 
     Contours contours;
@@ -275,7 +275,7 @@ void PickUpToken::isolateBoard(Mat input, Mat &output, int &board_y)
         }
     }
 
-    output = Mat::zeros(_curr_img_size, CV_8UC1);
+    output = Mat::zeros(_img_size, CV_8UC1);
 
     // contour w/ 2nd largest area is most likely the inner board
     vector<cv::Point> contour = contours[next_largest_index];
@@ -285,7 +285,7 @@ void PickUpToken::isolateBoard(Mat input, Mat &output, int &board_y)
     // find the lowest y-coordinate of the board; to be used as a cutoff point above which
     // all contours are ignored (e.g token contours that are above low_y are already placed
     // on the board and should not be picked up)
-    int low_y = _curr_img_size.height;
+    int low_y = _img_size.height;
     int x_min = (contours[0])[0].x;
     int x_max = 0;    
 
@@ -304,10 +304,10 @@ void PickUpToken::isolateBoard(Mat input, Mat &output, int &board_y)
     }
     else 
     {
-        board_y = _curr_img_size.height;
+        board_y = _img_size.height;
     }
 
-    line(output, cv::Point(0, board_y), cv::Point(_curr_img_size.width, board_y), cv::Scalar(130,256,256), 5);
+    line(output, cv::Point(0, board_y), cv::Point(_img_size.width, board_y), cv::Scalar(130,256,256), 5);
 }
 
 void PickUpToken::isolateToken(Mat input, int board_y, Mat &output, Contours &contours)
@@ -387,18 +387,18 @@ void PickUpToken::isolateToken(Mat input, int board_y, Mat &output, Contours &co
         }
     }
 
-    output = Mat::zeros(_curr_img_size, CV_8UC1);
+    output = Mat::zeros(_img_size, CV_8UC1);
     for(int i = 0; i < (contours).size(); i++)
     {
         drawContours(output, contours, i, Scalar(255,255,255), CV_FILLED);
     }
 
-    line(output, cv::Point(0, board_y), cv::Point(_curr_img_size.width, board_y), cv::Scalar(130,256,256));
+    line(output, cv::Point(0, board_y), cv::Point(_img_size.width, board_y), cv::Scalar(130,256,256));
 }              
 
 void PickUpToken::setOffset(Contours contours, cv::Point2d &offset, Mat &output)
 {
-    output = Mat::zeros(_curr_img_size, CV_8UC1);
+    output = Mat::zeros(_img_size, CV_8UC1);
 
     // when hand camera is blind due to being too close to token, go straight down;
     if(contours.size() < 2)
@@ -435,12 +435,13 @@ void PickUpToken::setOffset(Contours contours, cv::Point2d &offset, Mat &output)
         double y_mid = y_min + ((y_max - y_min) / 2);
         circle(output, cv::Point(x_mid, y_mid), 3, Scalar(0, 0, 0), CV_FILLED);
 
-        circle(output, cv::Point(_curr_img_size.width / 2, _curr_img_size.height / 2), 3, Scalar(180, 40, 40), CV_FILLED);
+        circle(output, cv::Point(_img_size.width / 2, _img_size.height / 2), 3, Scalar(180, 40, 40), CV_FILLED);
 
         double token_area = (x_max - x_min) * (y_max - y_min);
 
-        (offset).x = (/*4.7807*/ 5 / token_area) * (x_mid - (_curr_img_size.width / 2)); 
-        (offset).y = (/*4.7807*/ 5 / token_area) * ((_curr_img_size.height / 2) - y_mid) - 0.0075; /*distance between gripper center and camera center*/         
+        (offset).x = (/*4.7807*/ 5 / token_area) * (x_mid - (_img_size.width / 2));
+        // distance between gripper center and camera center
+        (offset).y = (/*4.7807*/ 5 / token_area) * ((_img_size.height / 2) - y_mid) - 0.0075; 
     }
 }
 
@@ -582,10 +583,14 @@ void ScanBoard::processImage(string mode, float dist)
                 {
                     Mat zone = _curr_img.clone();
 
-                    line(zone, centroids[0] + cell_to_corner[0], centroids[2] + cell_to_corner[1], cv::Scalar(0,0,255), 1);
-                    line(zone, centroids[2] + cell_to_corner[1], centroids[8] + cell_to_corner[3], cv::Scalar(0,0,255), 1);
-                    line(zone, centroids[0] + cell_to_corner[0], centroids[6] + cell_to_corner[2], cv::Scalar(0,0,255), 1);
-                    line(zone, centroids[6] + cell_to_corner[2], centroids[8] + cell_to_corner[3], cv::Scalar(0,0,255), 1);
+                    line(zone, centroids[0] + cell_to_corner[0],
+                               centroids[2] + cell_to_corner[1], cv::Scalar(0,0,255), 1);
+                    line(zone, centroids[2] + cell_to_corner[1],
+                               centroids[8] + cell_to_corner[3], cv::Scalar(0,0,255), 1);
+                    line(zone, centroids[0] + cell_to_corner[0],
+                               centroids[6] + cell_to_corner[2], cv::Scalar(0,0,255), 1);
+                    line(zone, centroids[6] + cell_to_corner[2],
+                               centroids[8] + cell_to_corner[3], cv::Scalar(0,0,255), 1);
 
                     if((ros::Time::now() - start).toSec() > interval)
                     {
@@ -624,9 +629,10 @@ void ScanBoard::isolateBlack(Mat * output)
     threshold(gray, *output, 55, 255, cv::THRESH_BINARY);
 }
 
-void ScanBoard::isolateBoard(Contours * contours, int * board_area, vector<cv::Point> * board_corners, Mat input, Mat * output)
+void ScanBoard::isolateBoard(Contours * contours, int * board_area,
+                             vector<cv::Point> * board_corners, Mat input, Mat * output)
 {
-    *output = Mat::zeros(_curr_img_size, CV_8UC1);
+    *output = Mat::zeros(_img_size, CV_8UC1);
 
     vector<cv::Vec4i> hierarchy; // captures contours within contours 
 
@@ -719,7 +725,7 @@ bool ScanBoard::descendingX(vector<cv::Point> i, vector<cv::Point> j)
 
 void ScanBoard::setOffsets(int board_area, Contours contours, float dist, Mat *output, vector<cv::Point> *centroids)
 {
-    cv::Point center(_curr_img_size.width / 2, _curr_img_size.height / 2);
+    cv::Point center(_img_size.width / 2, _img_size.height / 2);
 
     circle(*output, center, 3, Scalar(180,40,40), CV_FILLED);
     cv::putText(*output, "Center", center, cv::FONT_HERSHEY_PLAIN, 0.9, cv::Scalar(180,40,40));
@@ -749,30 +755,31 @@ void ScanBoard::setOffsets(int board_area, Contours contours, float dist, Mat *o
     }
 }
 
-void ScanBoard::setZone(Contours contours, float dist, vector<cv::Point> board_corners, vector<cv::Point> * centroids, vector<cv::Point> * cell_to_corner)
+void ScanBoard::setZone(Contours contours, float dist, vector<cv::Point> board_corners,
+                        vector<cv::Point> c, vector<cv::Point> * cell_to_corner)
 {
     (*cell_to_corner).resize(4);
 
     // calculate offset between the center of corner cells and the corners of the board
-    (*cell_to_corner)[0] = cv::Point(board_corners[0].x - (*centroids)[0].x, board_corners[0].y - (*centroids)[0].y);
-    (*cell_to_corner)[1] = cv::Point(board_corners[1].x - (*centroids)[2].x, board_corners[1].y - (*centroids)[2].y);
-    (*cell_to_corner)[2] = cv::Point(board_corners[2].x - (*centroids)[6].x, board_corners[2].y - (*centroids)[6].y);
-    (*cell_to_corner)[3] = cv::Point(board_corners[3].x - (*centroids)[8].x, board_corners[3].y - (*centroids)[8].y);
+    (*cell_to_corner)[0] = cv::Point(board_corners[0].x - c[0].x, board_corners[0].y - c[0].y);
+    (*cell_to_corner)[1] = cv::Point(board_corners[1].x - c[2].x, board_corners[1].y - c[2].y);
+    (*cell_to_corner)[2] = cv::Point(board_corners[2].x - c[6].x, board_corners[2].y - c[6].y);
+    (*cell_to_corner)[3] = cv::Point(board_corners[3].x - c[8].x, board_corners[3].y - c[8].y);
 
     // if the centroid of a corner cell is reachable, 
     // iterate and check if a location 10 pixels further from arm is still reachable
     // to establish a boundary of how far Baxter's arm can reach
-    while(pointReachable((*centroids)[0], dist)) {(*centroids)[0].x += 10.0;}
-    while(pointReachable((*centroids)[2], dist)) {(*centroids)[2].x -= 10.0;}
-    while(pointReachable((*centroids)[6], dist)) {(*centroids)[6].x += 10.0;}
-    while(pointReachable((*centroids)[8], dist)) {(*centroids)[8].x -= 10.0;}
+    while(pointReachable(c[0], dist)) {c[0].x += 10.0;}
+    while(pointReachable(c[2], dist)) {c[2].x -= 10.0;}
+    while(pointReachable(c[6], dist)) {c[6].x += 10.0;}
+    while(pointReachable(c[8], dist)) {c[8].x -= 10.0;}
 
     // if the centroid of a corner cell is unreachable, 
     // iterate and check if a location 10 pixels closer is reachable
-    while(!pointReachable((*centroids)[0], dist)) {(*centroids)[0].x -= 5.0;}
-    while(!pointReachable((*centroids)[2], dist)) {(*centroids)[2].x += 5.0;}
-    while(!pointReachable((*centroids)[6], dist)) {(*centroids)[6].x -= 5.0;}
-    while(!pointReachable((*centroids)[8], dist)) {(*centroids)[8].x += 5.0;}
+    while(!pointReachable(c[0], dist)) {c[0].x -= 5.0;}
+    while(!pointReachable(c[2], dist)) {c[2].x += 5.0;}
+    while(!pointReachable(c[6], dist)) {c[6].x -= 5.0;}
+    while(!pointReachable(c[8], dist)) {c[8].x += 5.0;}
 }
 
 bool ScanBoard::offsetsReachable()
@@ -805,7 +812,7 @@ bool ScanBoard::offsetsReachable()
 bool ScanBoard::pointReachable(cv::Point centroid, float dist)
 {
     // convert image location into real world pose coordinates
-    cv::Point center(_curr_img_size.width / 2, _curr_img_size.height / 2);
+    cv::Point center(_img_size.width / 2, _img_size.height / 2);
 
     geometry_msgs::Point offset;
 
@@ -826,11 +833,15 @@ bool ScanBoard::pointReachable(cv::Point centroid, float dist)
 /**************************************************************************/
 
 // Public
-PutDownToken::PutDownToken(string limb): ROSThreadImage(limb), Gripper(limb) {}        
-PutDownToken::~PutDownToken() {}
+PutDownToken::PutDownToken(string limb): ROSThreadImage(limb), Gripper(limb)
+{
 
-void PutDownToken::setCell(int cell) {_cell = cell;}
-void PutDownToken::setOffsets(vector<geometry_msgs::Point> offsets) {_offsets = offsets;}
+}
+
+PutDownToken::~PutDownToken()
+{
+
+}
 
 // Protected
 void PutDownToken::InternalThreadEntry()
