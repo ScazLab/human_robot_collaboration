@@ -1,4 +1,4 @@
-#include "robot_interface/thread.h"
+#include "robot_interface/ros_thread.h"
 
 #include <tf/transform_datatypes.h>
 
@@ -10,29 +10,29 @@ using namespace std_msgs;
 using namespace cv;
 
 /**************************************************************************/
-/*                             Thread                                     */
+/*                             ROSThread                                  */
 /**************************************************************************/
-Thread::Thread() { }
+ROSThread::ROSThread() { }
 
-void * Thread::InternalThreadEntryFunc(void * This)
+void * ROSThread::InternalThreadEntryFunc(void * This)
 {
-    ((Thread *)This)->InternalThreadEntry(); 
+    ((ROSThread *)This)->InternalThreadEntry(); 
     return NULL;
 }
 
-bool Thread::startInternalThread()
+bool ROSThread::startInternalThread()
 {
     return (pthread_create(&_thread, NULL, InternalThreadEntryFunc, this) == 0);
 }
 
-void Thread::waitForInternalThreadToExit()
+void ROSThread::waitForInternalThreadToExit()
 {
     (void) pthread_join(_thread, NULL);
 }
 
-bool Thread::killInternalThread()
+bool ROSThread::killInternalThread()
 {
     return (pthread_cancel(_thread) == 0);
 }
 
-Thread::~Thread() { }
+ROSThread::~ROSThread() { }

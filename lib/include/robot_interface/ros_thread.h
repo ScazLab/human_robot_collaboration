@@ -1,5 +1,5 @@
-#ifndef __THREAD_H__
-#define __THREAD_H__
+#ifndef __ROS_THREAD_H__
+#define __ROS_THREAD_H__
 
 #include <iostream>
 #include <cmath>
@@ -29,7 +29,7 @@
  * @details This class initializes overhead functions necessary to start a thread
  *          from within a class
  */
-class Thread
+class ROSThread
 {
 private:
     pthread_t _thread;
@@ -51,7 +51,7 @@ public:
     /*
      * Constructor
     */
-    Thread();
+    ROSThread();
 
     /*
      * Starts thread that executes the internal thread entry function
@@ -70,7 +70,7 @@ public:
     /*
      * Destructor
     */
-    virtual ~Thread();
+    virtual ~ROSThread();
     
 };
 

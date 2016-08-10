@@ -23,14 +23,14 @@
 #include <std_msgs/Empty.h>
 
 #include "utils.h"
-#include "robot_interface/thread.h"
+#include "robot_interface/ros_thread.h"
 
 /**
  * @brief A ROS Thread class
  * @details This class initializes overhead ROS features: subscriber/publishers,
  *          services, callback functions etc.
  */
-class RobotInterface : public Thread
+class RobotInterface : public ROSThread
 {
 private:
     std::string    _limb;

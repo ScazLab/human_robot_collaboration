@@ -109,7 +109,7 @@ void PickUpToken::InternalThreadEntry()
     // wait for image callback
     while(ros::ok())
     {
-        if(!_curr_img_empty) break;
+        if(!_img_empty) break;
     }
 
     hoverAboveTokens(Z_HIGH);
@@ -470,7 +470,7 @@ void ScanBoard::InternalThreadEntry()
     // wait for image callback
     while(ros::ok())
     {
-        if(!_curr_img_empty) break;
+        if(!_img_empty) break;
 
         ros::spinOnce();
         ros::Rate(100).sleep();

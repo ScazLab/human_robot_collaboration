@@ -12,7 +12,7 @@ include_directories(${PROJECT_SOURCE_DIR}/include)
 
 ## Declare a C++ library
 add_library(robot_interface include/robot_interface/utils.h
-                            include/robot_interface/thread.h
+                            include/robot_interface/ros_thread.h
                             include/robot_interface/robot_interface.h
                             include/robot_interface/gripper.h
                             include/robot_interface/ttt_controllers.h
@@ -20,7 +20,7 @@ add_library(robot_interface include/robot_interface/utils.h
                             include/robot_interface/artag_ctrl.h
                             include/robot_interface/hold_ctrl.h  
                             src/utils.cpp
-                            src/thread.cpp
+                            src/ros_thread.cpp
                             src/robot_interface.cpp
                             src/gripper.cpp
                             src/ttt_controllers.cpp
