@@ -1,7 +1,7 @@
 #ifndef __TTT_CONTROLLERS_H__
 #define __TTT_CONTROLLERS_H__
 
-#include "robot_interface/ros_thread.h"
+#include "robot_interface/robot_interface.h"
 #include "robot_interface/gripper.h"
 
 class MoveToRest : public ROSThreadImage

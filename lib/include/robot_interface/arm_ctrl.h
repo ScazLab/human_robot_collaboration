@@ -1,7 +1,7 @@
 #ifndef __ARM_CONTROLLER_H__
 #define __ARM_CONTROLLER_H__
 
-#include "robot_interface/ros_thread.h"
+#include "robot_interface/robot_interface.h"
 #include "robot_interface/gripper.h"
 
 #include "baxter_collaboration/DoAction.h"

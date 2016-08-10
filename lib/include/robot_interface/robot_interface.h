@@ -1,5 +1,5 @@
-#ifndef __ROS_THREAD_H__
-#define __ROS_THREAD_H__
+#ifndef __ROBOT_INTERFACE_H__
+#define __ROBOT_INTERFACE_H__
 
 #include <iostream>
 #include <cmath>
@@ -23,56 +23,7 @@
 #include <std_msgs/Empty.h>
 
 #include "utils.h"
-
-/**
- * @brief A Thread class
- * @details This class initializes overhead functions necessary to start a thread
- *          from within a class
- */
-class Thread
-{
-private:
-    pthread_t _thread;
-    static void * InternalThreadEntryFunc(void * This);
-
-protected:
-    /*
-     * Function that will be spun out as a thread
-     */
-    virtual void InternalThreadEntry() = 0;
-
-    /*
-     * Prevents any following code from being executed before thread is exited
-     * @return true/false if success/failure (not in the POSIX way)
-     */      
-    void waitForInternalThreadToExit();
-
-public:
-    /*
-     * Constructor
-    */
-    Thread();
-
-    /*
-     * Starts thread that executes the internal thread entry function
-     * 
-     * @param      N/A
-     * @return     true if thread was successfully launched; false otherwise
-     */        
-    bool startInternalThread();
-
-    /**
-     * Kills the internal thread
-     * @return true/false if success/failure (not in the POSIX way)
-     */
-    bool killInternalThread();
-
-    /*
-     * Destructor
-    */
-    virtual ~Thread();
-    
-};
+#include "robot_interface/thread.h"
 
 /**
  * @brief A ROS Thread class
@@ -299,12 +250,12 @@ class ROSThreadImage : public RobotInterface
 {
 private:
     image_transport::ImageTransport _img_trp;
-    image_transport::Subscriber _img_sub;
+    image_transport::Subscriber     _img_sub;
 
 protected:
-    cv::Mat _curr_img;
+    cv::Mat       _curr_img;
     cv::Size _curr_img_size;
-    bool _curr_img_empty;
+    bool         _img_empty;
 
     pthread_mutex_t _mutex_img;
 

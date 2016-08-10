@@ -291,10 +291,10 @@ void ArmCtrl::publishState()
 
 string ArmCtrl::getObjName()
 {
-    if      (marker_id == 17) return "left_leg";
+    if      (marker_id == 17) return "left leg";
     else if (marker_id == 21) return "top";
-    else if (marker_id == 24) return "central_frame";
-    else if (marker_id == 26) return "right_leg";
+    else if (marker_id == 24) return "central frame";
+    else if (marker_id == 26) return "right leg";
     else return "";
 }
 

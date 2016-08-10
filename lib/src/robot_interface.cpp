@@ -1,4 +1,4 @@
-#include "robot_interface/ros_thread.h"
+#include "robot_interface/robot_interface.h"
 
 #include <tf/transform_datatypes.h>
 
@@ -8,34 +8,6 @@ using namespace geometry_msgs;
 using namespace sensor_msgs;
 using namespace std_msgs;
 using namespace cv;
-
-/**************************************************************************/
-/*                             Thread                                     */
-/**************************************************************************/
-Thread::Thread() { }
-
-void * Thread::InternalThreadEntryFunc(void * This)
-{
-    ((Thread *)This)->InternalThreadEntry(); 
-    return NULL;
-}
-
-bool Thread::startInternalThread()
-{
-    return (pthread_create(&_thread, NULL, InternalThreadEntryFunc, this) == 0);
-}
-
-void Thread::waitForInternalThreadToExit()
-{
-    (void) pthread_join(_thread, NULL);
-}
-
-bool Thread::killInternalThread()
-{
-    return (pthread_cancel(_thread) == 0);
-}
-
-Thread::~Thread() { }
 
 /**************************************************************************/
 /*                         RobotInterface                                 */
@@ -396,8 +368,8 @@ void ROSThreadImage::imageCb(const sensor_msgs::ImageConstPtr& msg)
 
     pthread_mutex_lock(&_mutex_img);
     _curr_img = cv_ptr->image.clone();
-    _curr_img_size = _curr_img.size();
-    _curr_img_empty = _curr_img.empty();
+    _curr_img_size =  _curr_img.size();
+    _img_empty     = _curr_img.empty();
     pthread_mutex_unlock(&_mutex_img);   
 }
 
