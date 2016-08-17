@@ -18,7 +18,7 @@ class ArmCtrl : public RobotInterface, public Gripper
 private:
     std::string      name;
     std::string sub_state;
-    
+
     std::string    action;
     int         marker_id;
 
@@ -50,7 +50,7 @@ protected:
     void recoverFromError();
 
     /**
-     * Hovers above table at a specific x-y position. 
+     * Hovers above table at a specific x-y position.
      * @param  height the z-axis value of the end-effector position
      * @return        true/false if success/failure
      */
@@ -59,7 +59,7 @@ protected:
 
 
     virtual bool hoverAboveTableStrict(bool disable_coll_av = false) = 0;
-    
+
     /**
      * Goes to the home position
      * @return        true/false if success/failure
@@ -67,12 +67,12 @@ protected:
     bool goHome();
 
     /**
-     * Moves arm in a direction requested by the user, relative to the curent
+     * Moves arm in a direction requested by the user, relative to the current
      * end-effector position
-     * 
+     *
      * @param dir  the direction of motion (left right up down forward backward)
      * @param dist the distance from the end-effector starting point
-     * 
+     *
      * @return true/false if success/failure
      */
     bool moveArm(std::string dir, double dist, std::string mode="loose",
