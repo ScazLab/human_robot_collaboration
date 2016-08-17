@@ -82,14 +82,14 @@ bool HoldCtrl::waitForOtherArm(double _wait_time, bool disable_coll_av)
 {
     ros::Time _init = ros::Time::now();
 
+    ros::Rate r(100);
     while(RobotInterface::ok())
     {
         if (disable_coll_av)      suppressCollisionAv();
         
         if (getSubState() == HAND_OVER_DONE)   return true;
 
-        ros::spinOnce();
-        ros::Rate(100).sleep();
+        r.sleep();
 
         if ((ros::Time::now()-_init).toSec() > _wait_time)
         {
@@ -104,6 +104,8 @@ bool HoldCtrl::waitForOtherArm(double _wait_time, bool disable_coll_av)
 bool HoldCtrl::hoverAboveTableStrict(bool disable_coll_av)
 {
     ROS_INFO("[%s] Hovering above table strict..", getLimb().c_str());
+
+    ros::Rate r(100);
     while(ros::ok())
     {
         if (disable_coll_av)    suppressCollisionAv();
@@ -122,8 +124,7 @@ bool HoldCtrl::hoverAboveTableStrict(bool disable_coll_av)
 
         publish_joint_cmd(joint_cmd);
 
-        ros::spinOnce();
-        ros::Rate(100).sleep();
+        r.sleep();
  
         if(hasPoseCompleted(HOME_POS_R, Z_LOW, VERTICAL_ORI_R))
         {

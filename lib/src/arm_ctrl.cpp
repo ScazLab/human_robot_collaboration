@@ -65,6 +65,7 @@ void ArmCtrl::cuffOKCb(const baxter_core_msgs::DigitalIOState& msg)
 {
     if (msg.state == baxter_core_msgs::DigitalIOState::PRESSED)
     {
+        ROS_INFO("[%s] Action Killed!",getLimb().c_str());
         setState(KILLED);
     }
 }
@@ -95,6 +96,7 @@ bool ArmCtrl::serviceCb(baxter_collaboration::DoAction::Request  &req,
     startInternalThread();
     ros::Duration(0.5).sleep();
 
+    ros::Rate r(100);
     while( ros::ok() && ( int(getState()) != START   &&
                           int(getState()) != ERROR   &&
                           int(getState()) != DONE    &&
@@ -111,8 +113,7 @@ bool ArmCtrl::serviceCb(baxter_collaboration::DoAction::Request  &req,
             goHome();
         }
 
-        ros::spinOnce();
-        ros::Rate(100).sleep();
+        r.sleep();
     }
 
     if ( int(getState()) == START   ||
@@ -146,6 +147,7 @@ bool ArmCtrl::moveArm(string dir, double dist, string mode, bool disable_coll_av
 
     bool finish = false;
 
+    ros::Rate r(100);
     while(RobotInterface::ok())
     {
         if (disable_coll_av)    suppressCollisionAv();
@@ -220,19 +222,18 @@ bool ArmCtrl::moveArm(string dir, double dist, string mode, bool disable_coll_av
 
         if(mode == "strict")
         {
-            if(withinThres(getPos().x, final.x, 0.001) && 
+            if(withinThres(getPos().x, final.x, 0.001) &&
                withinThres(getPos().y, final.y, 0.001) &&
                withinThres(getPos().z, final.z, 0.001)) return true;
         }
         else if(mode == "loose")
         {
-            if(withinThres(getPos().x, final.x, 0.01) && 
+            if(withinThres(getPos().x, final.x, 0.01) &&
                withinThres(getPos().y, final.y, 0.01) &&
                withinThres(getPos().z, final.z, 0.01)) return true;
         }
 
-        ros::spinOnce();
-        ros::Rate(100).sleep();
+        r.sleep();
     }
 
     return false;
@@ -273,7 +274,7 @@ void ArmCtrl::setState(int _state)
 }
 
 void ArmCtrl::setAction(string _action)
-{ 
+{
     action = _action;
     publishState();
 }

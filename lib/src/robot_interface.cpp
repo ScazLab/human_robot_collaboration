@@ -17,15 +17,15 @@ RobotInterface::RobotInterface(string limb): _n("~"), _limb(limb), _state(START,
 {
     _joint_cmd_pub = _n.advertise<JointCommand>("/robot/limb/" + _limb + "/joint_command", 1);
     _coll_av_pub   = _n.advertise<Empty>("/robot/limb/" + _limb + "/suppress_collision_avoidance", 1);
-    
+
     _endpt_sub     = _n.subscribe("/robot/limb/" + _limb + "/endpoint_state",
                                     SUBSCRIBER_BUFFER, &RobotInterface::endpointCb, this);
     _ir_sub        = _n.subscribe("/robot/range/" + _limb + "_hand_range/state",
                                     SUBSCRIBER_BUFFER, &RobotInterface::IRCb, this);
     _cuff_sub      = _n.subscribe("/robot/digital_io/" + _limb + "_lower_button/state",
                                     SUBSCRIBER_BUFFER, &RobotInterface::cuffOKCb, this);
-    
-    _ik_client     = _n.serviceClient<SolvePositionIK>("/ExternalTools/" + _limb + 
+
+    _ik_client     = _n.serviceClient<SolvePositionIK>("/ExternalTools/" + _limb +
                                                        "/PositionKinematicsNode/IKService");
 
     _init_time = ros::Time::now();
@@ -70,7 +70,7 @@ bool RobotInterface::ok()
     return res;
 }
 
-void RobotInterface::endpointCb(const baxter_core_msgs::EndpointState& msg) 
+void RobotInterface::endpointCb(const baxter_core_msgs::EndpointState& msg)
 {
     ROS_DEBUG("endpointCb");
     _curr_pos      = msg.pose.position;
@@ -91,11 +91,11 @@ void RobotInterface::endpointCb(const baxter_core_msgs::EndpointState& msg)
     filterForces();
 }
 
-void RobotInterface::IRCb(const sensor_msgs::RangeConstPtr& msg) 
+void RobotInterface::IRCb(const sensor_msgs::RangeConstPtr& msg)
 {
     ROS_DEBUG("IRCb");
-    _curr_range = msg->range; 
-    _curr_max_range = msg->max_range; 
+    _curr_range = msg->range;
+    _curr_max_range = msg->max_range;
     _curr_min_range = msg->min_range;
 
     if (!ir_ok)
@@ -116,9 +116,8 @@ void RobotInterface::hoverAboveTokens(double height)
     goToPose(0.540, 0.570, height, VERTICAL_ORI_L);
 }
 
-
 bool RobotInterface::goToPoseNoCheck(double px, double py, double pz,
-                                double ox, double oy, double oz, double ow)
+                                     double ox, double oy, double oz, double ow)
 {
     vector<double> joint_angles;
     if (!callIKService(px, py, pz, ox, oy, oz, ow, joint_angles)) return false;
@@ -130,7 +129,7 @@ bool RobotInterface::goToPoseNoCheck(vector<double> joint_angles)
 {
     JointCommand joint_cmd;
     joint_cmd.mode = JointCommand::POSITION_MODE;
-    
+
     setJointNames(joint_cmd);
 
     for(int i = 0; i < joint_angles.size(); i++)
@@ -150,6 +149,7 @@ bool RobotInterface::goToPose(double px, double py, double pz,
     vector<double> joint_angles;
     if (!callIKService(px, py, pz, ox, oy, oz, ow, joint_angles)) return false;
 
+    ros::Rate r(100);
     while(RobotInterface::ok())
     {
         if (disable_coll_av)    suppressCollisionAv();
@@ -161,16 +161,15 @@ bool RobotInterface::goToPose(double px, double py, double pz,
             return true;
         }
 
-        ros::spinOnce();
-        ros::Rate(100).sleep();
+        r.sleep();
     }
 
     return false;
 }
 
 bool RobotInterface::callIKService(double px, double py, double pz,
-                              double ox, double oy, double oz, double ow,
-                              std::vector<double>& joint_angles)
+                                   double ox, double oy, double oz, double ow,
+                                   std::vector<double>& joint_angles)
 {
     PoseStamped pose_stamp;
     pose_stamp.header.frame_id = "base";
@@ -191,9 +190,17 @@ bool RobotInterface::callIKService(double px, double py, double pz,
         ik_srv.request.seed_mode=0;         // i.e. SEED_AUTO
         pose_stamp.header.stamp=ros::Time::now();
         ik_srv.request.pose_stamp.push_back(pose_stamp);
-        
+
+        int cnt = 0;
+        ros::Time tn = ros::Time::now();
         if(_ik_client.call(ik_srv))
         {
+            double te  = ros::Time::now().toSec()-tn.toSec();;
+            if (te>0.010)
+            {
+                ROS_ERROR("\t\t\tTime elapsed in callIKService: %g cnt %i",te,cnt);
+            }
+            cnt++;
             got_solution = ik_srv.response.isValid[0];
 
             if (got_solution)
@@ -210,18 +217,18 @@ bool RobotInterface::callIKService(double px, double py, double pz,
                                                        pose_stamp.pose.position.y,
                                                        pose_stamp.pose.position.z);
                 pose_stamp.pose.position.z += 0.004;
-            } 
+            }
         }
 
         // if no solution is found within 200 milliseconds or no solution within the acceptable
         // z-coordinate threshold is found, then no solution exists and exit oufof loop
-        if((ros::Time::now() - start).toSec() > 0.2 || pose_stamp.pose.position.z > thresh_z) 
+        if((ros::Time::now() - start).toSec() > 0.1 || pose_stamp.pose.position.z > thresh_z)
         {
             ROS_WARN("[%s] Did not find a suitable IK solution! Final Position %g %g %g",
                                                                        getLimb().c_str(),
-                                                            pose_stamp.pose.position.x,
-                                                            pose_stamp.pose.position.y,
-                                                            pose_stamp.pose.position.z);
+                                                              pose_stamp.pose.position.x,
+                                                              pose_stamp.pose.position.y,
+                                                              pose_stamp.pose.position.z);
             return false;
         }
     }
@@ -232,10 +239,10 @@ bool RobotInterface::callIKService(double px, double py, double pz,
 bool RobotInterface::hasCollided(string mode)
 {
     float thres;
-    
+
     if     (mode == "strict") thres = 0.050;
     else if(mode ==  "loose") thres = 0.067;
-    
+
     if(_curr_range <= _curr_max_range &&
        _curr_range >= _curr_min_range &&
        _curr_range <= thres) return true;
@@ -243,7 +250,7 @@ bool RobotInterface::hasCollided(string mode)
 }
 
 bool RobotInterface::hasPoseCompleted(double px, double py, double pz,
-                                 double ox, double oy, double oz, double ow, string mode)
+                                      double ox, double oy, double oz, double ow, string mode)
 {
     ROS_DEBUG("[%s] Checking for position.. mode is %s", getLimb().c_str(), mode.c_str());
     if(mode == "strict")
@@ -302,13 +309,13 @@ bool RobotInterface::waitForForceInteraction(double _wait_time, bool disable_col
 {
     ros::Time _init = ros::Time::now();
 
+    ros::Rate r(100);
     while(RobotInterface::ok())
     {
         if (disable_coll_av)          suppressCollisionAv();
         if (detectForceInteraction())           return true;
 
-        ros::spinOnce();
-        ros::Rate(100).sleep();
+        r.sleep();
 
         if ((ros::Time::now()-_init).toSec() > _wait_time)
         {
@@ -370,6 +377,6 @@ void ROSThreadImage::imageCb(const sensor_msgs::ImageConstPtr& msg)
     _curr_img  = cv_ptr->image.clone();
     _img_size  =      _curr_img.size();
     _img_empty =     _curr_img.empty();
-    pthread_mutex_unlock(&_mutex_img);   
+    pthread_mutex_unlock(&_mutex_img);
 }
 

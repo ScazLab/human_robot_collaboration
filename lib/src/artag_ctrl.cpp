@@ -6,7 +6,7 @@ using namespace std;
 using namespace baxter_collaboration;
 using namespace baxter_core_msgs;
 
-ARTagCtrl::ARTagCtrl(std::string _name, std::string _limb) : 
+ARTagCtrl::ARTagCtrl(std::string _name, std::string _limb) :
                      ArmCtrl(_name,_limb), aruco_ok(false), marker_found(false)
 {
     _aruco_sub = _n.subscribe("/aruco_marker_publisher/markers",
@@ -112,9 +112,7 @@ bool ARTagCtrl::passObject()
 
 bool ARTagCtrl::prepare4HandOver()
 {
-    if (!moveArm("right", 0.32, "loose", true))     return false;
-
-    return true;  
+    return moveArm("right", 0.32, "loose", true);
 }
 
 bool ARTagCtrl::waitForOtherArm(double _wait_time, bool disable_coll_av)
@@ -124,7 +122,7 @@ bool ARTagCtrl::waitForOtherArm(double _wait_time, bool disable_coll_av)
     string other_limb = getLimb() == "right" ? "left" : "right";
 
     ROS_INFO("[%s] Waiting for %s arm", getLimb().c_str(), other_limb.c_str());
- 
+
     ros::ServiceClient _c;
     string service_name = "/"+getName()+"/service_"+other_limb+"_to_"+getLimb();
     _c = _n.serviceClient<AskFeedback>(service_name);
@@ -132,6 +130,7 @@ bool ARTagCtrl::waitForOtherArm(double _wait_time, bool disable_coll_av)
     AskFeedback srv;
     srv.request.ask = HAND_OVER_READY;
 
+    ros::Rate r(100);
     while(RobotInterface::ok())
     {
         if (disable_coll_av)      suppressCollisionAv();
@@ -144,21 +143,20 @@ bool ARTagCtrl::waitForOtherArm(double _wait_time, bool disable_coll_av)
             return true;
         }
 
-        ros::spinOnce();
-        ros::Rate(100).sleep();
+        r.sleep();
 
         if ((ros::Time::now()-_init).toSec() > _wait_time)
         {
             ROS_ERROR("[%s] No feedback from other arm has been received in %gs!",
                                                     getLimb().c_str(), _wait_time);
             return false;
-        }        
+        }
     }
 
     return false;
 }
 
-void ARTagCtrl::ARucoCb(const aruco_msgs::MarkerArray& msg) 
+void ARTagCtrl::ARucoCb(const aruco_msgs::MarkerArray& msg)
 {
     for (int i = 0; i < msg.markers.size(); ++i)
     {
@@ -214,7 +212,7 @@ bool ARTagCtrl::pickARTag()
         // If we have to hand_over, let's pre-orient the end effector such that
         // further movements are easier
         q = computeHOorientation();
-        
+
         if (!goToPose(x, y, z, q.x,q.y,q.z,q.w,"loose"))
         {
             return false;
@@ -228,13 +226,13 @@ bool ARTagCtrl::pickARTag()
         }
     }
 
-    clearMarkerPose();
     if (!waitForARucoData()) return false;
-    
+
     ros::Time start_time = ros::Time::now();
     double z_start       =       getPos().z;
     int cnt_ik_fail      =                0;
 
+    ros::Rate r(100);
     while(RobotInterface::ok())
     {
         double new_elap_time = (ros::Time::now() - start_time).toSec();
@@ -266,21 +264,20 @@ bool ARTagCtrl::pickARTag()
             }
             elap_time = new_elap_time;
 
-            if(hasCollided("strict")) 
+            if(hasCollided("strict"))
             {
                 ROS_DEBUG("Collision!");
                 return true;
             }
 
-            ros::spinOnce();
-            ros::Rate(100).sleep();
+            r.sleep();
         }
         else
         {
             cnt_ik_fail++;
         }
 
-        if (cnt_ik_fail == 20)
+        if (cnt_ik_fail == 10)
         {
             return false;
         }
@@ -302,7 +299,7 @@ geometry_msgs::Quaternion ARTagCtrl::computeHOorientation()
     //     printf("%g\t%g\t%g\n", mrk_rot[j][0], mrk_rot[j][1], mrk_rot[j][2]);
     // }
 
-    // Compute the transform matrix between the marker's orientation 
+    // Compute the transform matrix between the marker's orientation
     // and the end-effector's orientation
     tf::Matrix3x3 mrk2ee;
     mrk2ee[0][0] =  1;  mrk2ee[0][1] =  0;   mrk2ee[0][2] =  0;
@@ -317,7 +314,7 @@ geometry_msgs::Quaternion ARTagCtrl::computeHOorientation()
 
     // Compute the final end-effector orientation, and convert it to a msg
     mrk2ee = mrk_rot * mrk2ee;
-    
+
     tf::Quaternion ee_q;
     mrk2ee.getRotation(ee_q);
     geometry_msgs::Quaternion ee_q_msg;
@@ -335,6 +332,8 @@ geometry_msgs::Quaternion ARTagCtrl::computeHOorientation()
 bool ARTagCtrl::hoverAboveTableStrict(bool disable_coll_av)
 {
     ROS_INFO("[%s] Hovering above table strict..", getLimb().c_str());
+
+    ros::Rate r(100);
     while(ros::ok())
     {
         if (disable_coll_av)    suppressCollisionAv();
@@ -353,9 +352,8 @@ bool ARTagCtrl::hoverAboveTableStrict(bool disable_coll_av)
 
         publish_joint_cmd(joint_cmd);
 
-        ros::spinOnce();
-        ros::Rate(100).sleep();
- 
+        r.sleep();
+
         if(hasPoseCompleted(HOME_POS_L, Z_LOW, VERTICAL_ORI_L))
         {
             ROS_INFO("[%s] Done", getLimb().c_str());
@@ -367,11 +365,17 @@ bool ARTagCtrl::hoverAboveTableStrict(bool disable_coll_av)
 
 bool ARTagCtrl::waitForARucoData()
 {
+    clearMarkerPose();
     ROS_INFO("[%s] Waiting for ARuco data..", getLimb().c_str());
     int cnt=0;
+
+    ros::Rate r(10);
     while (!aruco_ok)
     {
-        ROS_WARN("No callback from ARuco. Is ARuco running?");
+        if (cnt!=0) // let's skip the first one since it is very likely to occurr
+        {
+            ROS_WARN("No callback from ARuco. Is ARuco running?");
+        }
         ++cnt;
 
         if (cnt == 10)
@@ -380,14 +384,16 @@ bool ARTagCtrl::waitForARucoData()
             return false;
         }
 
-        ros::spinOnce();
-        ros::Rate(10).sleep();
+        r.sleep();
     }
 
     cnt=0;
     while (!marker_found)
     {
-        ROS_WARN("Object with ID %i not found. Is the object there?", getMarkerID());
+        if (cnt!=0) // let's skip the first one since it is very likely to occurr
+        {
+            ROS_WARN("Object with ID %i not found. Is the object there?", getMarkerID());
+        }
         ++cnt;
 
         if (cnt == 10)
@@ -396,8 +402,7 @@ bool ARTagCtrl::waitForARucoData()
             return false;
         }
 
-        ros::spinOnce();
-        ros::Rate(10).sleep();
+        r.sleep();
     }
 
     return true;
