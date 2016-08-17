@@ -19,4 +19,9 @@
         <param name="autosize" value="true" />
     </node> -->
 
+    <!-- <node name="video_recorder" pkg="image_view" type="video_recorder" respawn="false" output="log">
+        <remap from="image" to="/aruco_marker_publisher/result"/>
+        <param name="fps" value="30" />
+    </node> -->
+
 </launch>
