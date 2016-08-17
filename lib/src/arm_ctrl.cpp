@@ -35,11 +35,11 @@ void ArmCtrl::InternalThreadEntry()
 
     if (a == ACTION_HOME)
     {
-        if (goHome())   setState(START);
+        if (goHome())   setState(DONE);
     }
     else if (a == ACTION_RELEASE)
     {
-        if (releaseObject())   setState(START);
+        if (releaseObject())   setState(DONE);
     }
     else
     {
