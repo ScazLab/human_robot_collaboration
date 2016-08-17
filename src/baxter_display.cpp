@@ -73,7 +73,7 @@ public:
 
     void armStateCb(const ArmState& msg, std::string _limb)
     {
-        ROS_INFO("Received callback! Arm %s", _limb.c_str());
+        ROS_DEBUG("Received callback! Arm %s", _limb.c_str());
 
         if      (_limb == "left")
         {

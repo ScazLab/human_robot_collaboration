@@ -14,7 +14,7 @@
     <param name="aruco_marker_publisher/reference_frame"    value="$(arg ref_frame)"/>
     <param name="aruco_marker_publisher/camera_frame"       value="/left_hand_camera"/>
 
-    <node pkg="aruco_ros" type="marker_publisher" name="aruco_marker_publisher" >
+    <node pkg="aruco_ros" type="marker_publisher" name="aruco_marker_publisher" respawn="true">
         <remap from="image" to="/cameras/left_hand_camera/image"/>
         <remap from="camera_info" to="/cameras/left_hand_camera/camera_info"/>
     </node>
