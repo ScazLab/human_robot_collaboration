@@ -39,6 +39,20 @@ var elemPressed = new ROSLIB.Topic({
   messageType : 'std_msgs/String'
 });
 
+// Topic for error passing to the left arm
+var errorPressedL = new ROSLIB.Topic({
+  ros : ros,
+  name : '/robot/digital_io/left_lower_button/state',
+  messageType : 'baxter_core_msgs/DigitalIOState'
+});
+
+// Topic for error passing to the right arm
+var errorPressedR = new ROSLIB.Topic({
+  ros : ros,
+  name : '/robot/digital_io/right_lower_button/state',
+  messageType : 'baxter_core_msgs/DigitalIOState'
+});
+
 // Add a callback for any element on the page
 function callback(e) {
     var e = window.e || e;
@@ -49,11 +63,24 @@ function callback(e) {
         console.log('Pressed '+ e.target.tagName +
                     ' item: ' + e.target.firstChild.nodeValue);
 
-        var message = new ROSLIB.Message({
-          data: e.target.firstChild.nodeValue
-        });
+        if (e.target.firstChild.nodeValue == 'error')
+        {
+          var message = new ROSLIB.Message({
+            state: 1,
+            isInputOnly: true
+          });
 
-        elemPressed.publish(message);
+          errorPressedL.publish(message);
+          errorPressedR.publish(message);
+        }
+        else
+        {
+          var message = new ROSLIB.Message({
+            data: e.target.firstChild.nodeValue
+          });
+
+          elemPressed.publish(message);
+        }
     }
 
     return;
