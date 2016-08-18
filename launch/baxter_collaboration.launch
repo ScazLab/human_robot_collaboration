@@ -11,8 +11,8 @@
     <node pkg="baxter_collaboration" type="baxter_display"  name="baxter_display"  output="screen"/>
     <node pkg="baxter_collaboration" type="action_provider" name="action_provider" output="screen"/>
 
-    <node pkg="baxter_collaboration" type="remote_control_node" name="l_srv" output="screen" args="left" />
-    <node pkg="baxter_collaboration" type="remote_control_node" name="r_srv" output="screen" args="right" />
+    <!-- <node pkg="baxter_collaboration" type="remote_control_node" name="l_srv" output="screen" args="left" />
+    <node pkg="baxter_collaboration" type="remote_control_node" name="r_srv" output="screen" args="right" /> -->
 
     <!-- <node name="image_saver" pkg="image_view" type="image_saver" respawn="false" output="log">
         <remap from="image" to="/robot/xdisplay"/>
