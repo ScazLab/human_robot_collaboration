@@ -11,6 +11,8 @@
     <node pkg="baxter_collaboration" type="baxter_display"  name="baxter_display"  output="screen"/>
     <node pkg="baxter_collaboration" type="action_provider" name="action_provider" output="screen"/>
 
+    <include file="$(find rosbridge_server)/launch/rosbridge_websocket.launch"/>
+
     <!-- <node pkg="baxter_collaboration" type="remote_control_node" name="l_srv" output="screen" args="left" />
     <node pkg="baxter_collaboration" type="remote_control_node" name="r_srv" output="screen" args="right" /> -->
 
