@@ -7,7 +7,11 @@ project(baxter_collaboration)
 find_package(catkin REQUIRED COMPONENTS
              roscpp
              rospy
+             message_generation
+             genmsg
              rosconsole
+             std_msgs
+             baxter_core_msgs
              tf # Even if I'm not explicitly using it, adding tf is the only way
                 # I found to avoid the undefined reference error to ros::init.
                 # See http://goo.gl/GlbKgM
@@ -105,7 +109,7 @@ generate_messages(DEPENDENCIES
 catkin_package(
     INCLUDE_DIRS lib/include
     LIBRARIES robot_interface
-    # CATKIN_DEPENDS 
+    # CATKIN_DEPENDS
     # DEPENDS system_lib
 )
 
@@ -116,7 +120,7 @@ catkin_package(
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
 include_directories(lib/include
-                    ${OpenCV_INCLUDE_DIRS}    
+                    ${OpenCV_INCLUDE_DIRS}
                     ${catkin_INCLUDE_DIRS}
                     ${CMAKE_CURRENT_SOURCE_DIR})
 
