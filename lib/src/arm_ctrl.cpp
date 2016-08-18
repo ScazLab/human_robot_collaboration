@@ -65,7 +65,7 @@ void ArmCtrl::cuffOKCb(const baxter_core_msgs::DigitalIOState& msg)
 {
     if (msg.state == baxter_core_msgs::DigitalIOState::PRESSED)
     {
-        ROS_INFO("[%s] Action Killed!",getLimb().c_str());
+        ROS_DEBUG("[%s] Action Killed!",getLimb().c_str());
         setState(KILLED);
     }
 }
@@ -269,7 +269,19 @@ void ArmCtrl::recoverFromError()
 
 void ArmCtrl::setState(int _state)
 {
+    if (_state == KILLED && getState() != WORKING)
+    {
+        ROS_WARN("[%s] Attempted to kill a non-working controller", getLimb().c_str());
+        return;
+    }
+
     RobotInterface::setState(_state);
+
+    if (_state == DONE)
+    {
+        setAction("");
+        setMarkerID(-1);
+    }
     publishState();
 }
 
