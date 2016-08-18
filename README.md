@@ -22,3 +22,4 @@ Yet another repo for the baxter collaboration task
 ### Misc
 
  * To kill an action from the terminal, you can simulate a button press on the arm's cuff: `rostopic pub --once /robot/digital_io/left_lower_button/state baxter_core_msgs/DigitalIOState "{state: 1, isInputOnly: true}"`
+ * You can also kill an action from the web interface, by pressing the ERROR button. It is basically writing to the same topic and achieving the same behavior
