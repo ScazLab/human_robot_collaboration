@@ -27,6 +27,8 @@ public:
 
     bool perform_ik(baxter_core_msgs::SolvePositionIK::Request &req,
                     baxter_core_msgs::SolvePositionIK::Response &res);
+
+    void computeFwdKin(KDL::JntArray jointpositions);
 };
 
 
