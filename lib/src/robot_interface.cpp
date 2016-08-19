@@ -13,7 +13,7 @@ using namespace cv;
 /*                         RobotInterface                                 */
 /**************************************************************************/
 RobotInterface::RobotInterface(string limb): _n("~"), _limb(limb), _state(START,0),
-                                   spinner(4), ir_ok(false)
+                                             spinner(4), ir_ok(false), ik_solver(limb)
 {
     _joint_cmd_pub = _n.advertise<JointCommand>("/robot/limb/" + _limb + "/joint_command", 1);
     _coll_av_pub   = _n.advertise<Empty>("/robot/limb/" + _limb + "/suppress_collision_avoidance", 1);
@@ -191,9 +191,11 @@ bool RobotInterface::callIKService(double px, double py, double pz,
         pose_stamp.header.stamp=ros::Time::now();
         ik_srv.request.pose_stamp.push_back(pose_stamp);
 
+        ROS_INFO("Requesting %g %g %g",pose_stamp.pose.position.x,pose_stamp.pose.position.y,pose_stamp.pose.position.z);
+
         int cnt = 0;
         ros::Time tn = ros::Time::now();
-        if(_ik_client.call(ik_srv))
+        if(ik_solver.perform_ik(ik_srv.request, ik_srv.response))
         {
             double te  = ros::Time::now().toSec()-tn.toSec();;
             if (te>0.010)
@@ -205,6 +207,7 @@ bool RobotInterface::callIKService(double px, double py, double pz,
 
             if (got_solution)
             {
+                ROS_INFO("Got solution!");
                 joint_angles = ik_srv.response.joints[0].position;
                 return true;
             }
@@ -252,7 +255,8 @@ bool RobotInterface::hasCollided(string mode)
 bool RobotInterface::hasPoseCompleted(double px, double py, double pz,
                                       double ox, double oy, double oz, double ow, string mode)
 {
-    ROS_DEBUG("[%s] Checking for position.. mode is %s", getLimb().c_str(), mode.c_str());
+    ROS_INFO("[%s] Checking for position.. mode is %s", getLimb().c_str(), mode.c_str());
+    ROS_INFO("[%s] CurrPos %g %g %g Requested %g %g %g", getLimb().c_str(),_curr_pos.x,_curr_pos.y,_curr_pos.z,px,py,pz);
     if(mode == "strict")
     {
         if(!withinThres(_curr_pos.x, px, 0.001)) return false;
@@ -266,7 +270,7 @@ bool RobotInterface::hasPoseCompleted(double px, double py, double pz,
         if(!withinThres(_curr_pos.z, pz, 0.01)) return false;
     }
 
-    // ROS_INFO("[%s] Checking for orientation..", getLimb().c_str());
+    ROS_INFO("[%s] Checking for orientation..", getLimb().c_str());
     if(!withinXHundredth(_curr_ori.x, ox, 2.5))  return false;
     if(!withinXHundredth(_curr_ori.y, oy, 2.5))  return false;
     if(!withinXHundredth(_curr_ori.z, oz, 2.5))  return false;

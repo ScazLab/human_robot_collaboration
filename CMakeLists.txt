@@ -17,6 +17,8 @@ find_package(catkin REQUIRED COMPONENTS
                 # See http://goo.gl/GlbKgM
              cv_bridge
              image_transport
+             trac_ik_lib
+             eigen_conversions
              )
 
 find_package(OpenCV 2.4 REQUIRED)
@@ -109,7 +111,7 @@ generate_messages(DEPENDENCIES
 catkin_package(
     INCLUDE_DIRS lib/include
     LIBRARIES robot_interface
-    # CATKIN_DEPENDS
+    CATKIN_DEPENDS trac_ik_lib
     # DEPENDS system_lib
 )
 
@@ -121,6 +123,7 @@ catkin_package(
 ## Your package locations should be listed before other locations
 include_directories(lib/include
                     ${OpenCV_INCLUDE_DIRS}
+                    ${eigen_INCLUDE_DIRS}
                     ${catkin_INCLUDE_DIRS}
                     ${CMAKE_CURRENT_SOURCE_DIR})
 

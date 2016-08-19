@@ -49,7 +49,7 @@
   <depend>aruco_msgs</depend>
   <depend>cv_bridge</depend>
   <depend>image_transport</depend>
-  <!-- <depend>baxter_tictactoe</depend> -->
+  <depend>trac_ik_lib</depend>
 
   <exec_depend>message_runtime</exec_depend>
 
