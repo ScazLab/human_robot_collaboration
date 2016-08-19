@@ -12,17 +12,18 @@ using namespace cv;
 /**************************************************************************/
 /*                             ROSThread                                  */
 /**************************************************************************/
-ROSThread::ROSThread() { }
+ROSThread::ROSThread(): is_started(false) { }
 
 void * ROSThread::InternalThreadEntryFunc(void * This)
 {
-    ((ROSThread *)This)->InternalThreadEntry(); 
+    ((ROSThread *)This)->InternalThreadEntry();
     return NULL;
 }
 
 bool ROSThread::startInternalThread()
 {
-    return (pthread_create(&_thread, NULL, InternalThreadEntryFunc, this) == 0);
+    is_started = pthread_create(&_thread, NULL, InternalThreadEntryFunc, this) == 0;
+    return is_started;
 }
 
 void ROSThread::waitForInternalThreadToExit()
@@ -30,9 +31,16 @@ void ROSThread::waitForInternalThreadToExit()
     (void) pthread_join(_thread, NULL);
 }
 
+void ROSThread::closeInternalThread()
+{
+    pthread_exit(NULL);
+    return;
+}
+
 bool ROSThread::killInternalThread()
 {
-    return (pthread_cancel(_thread) == 0);
+    if (is_started) return pthread_cancel(_thread) == 0;
+    else            return false;
 }
 
 ROSThread::~ROSThread() { }
