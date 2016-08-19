@@ -24,6 +24,7 @@
 
 #include "utils.h"
 #include "robot_interface/ros_thread.h"
+#include "robot_interface/baxter_trac_ik.h"
 
 /**
  * @brief A ROS Thread class
@@ -50,6 +51,8 @@ private:
     float       _curr_range;
     float   _curr_min_range;
     float   _curr_max_range;
+
+    baxterTracIK ik_solver;
 
     // End-Effector
     ros::Subscriber            _endpt_sub;
@@ -80,13 +83,13 @@ protected:
     bool ok();
 
     /*
-     * checks if end effector has made contact with a token by checking if 
+     * checks if end effector has made contact with a token by checking if
      * the range of the infrared sensor has fallen below the threshold value
-     * 
-     * @param      current range values of the IR sensor, and a string 
+     *
+     * @param      current range values of the IR sensor, and a string
      *            (strict/loose) indicating whether to use a high or low
      *            threshold value
-     *             
+     *
      * return     true if end effector has made contact; false otherwise
      */
     bool hasCollided(std::string mode = "loose");
@@ -104,7 +107,7 @@ protected:
 
     /*
      * Uses built in IK solver to find joint angles solution for desired pose
-     * 
+     *
      * @param     requested PoseStamped
      * @param     array of joint angles solution
      * @return    true/false if success/failure
@@ -114,10 +117,10 @@ protected:
                        std::vector<double>& joint_angles);
 
     /*
-     * Moves arm to the requested pose. This differs from RobotInterface::goToPose because it 
+     * Moves arm to the requested pose. This differs from RobotInterface::goToPose because it
      * does not check if the final pose has been reached, but rather it goes in open-loop
      * unitil a fisical contact with the table is reached
-     * 
+     *
      * @param  requested pose (3D position + 4D quaternion for the orientation)
      * @return true/false if success/failure
      */
@@ -128,7 +131,7 @@ protected:
 
     /*
      * Moves arm to the requested pose , and checks if the pose has been achieved
-     * 
+     *
      * @param  requested pose (3D position + 4D quaternion for the orientation)
      * @param  mode (either loose or strict, it checks for the final desired position)
      * @return true/false if success/failure
@@ -139,30 +142,30 @@ protected:
 
     /*
      * Sets the joint names of a JointCommand
-     * 
+     *
      * @param    joint_cmd the joint command
      */
     void setJointNames(baxter_core_msgs::JointCommand& joint_cmd);
 
     /*
      * Detects if the force overcame a set threshold in either one of its three axis
-     * 
+     *
      * @return true/false if the force overcame the threshold
      */
     bool detectForceInteraction();
 
     /*
      * Waits for a force interaction to occur.
-     * 
+     *
      * @return true when the force interaction occurred
      * @return false if no force interaction occurred after 20s
      */
     bool waitForForceInteraction(double _wait_time = 20.0, bool disable_coll_av = false);
 
     /*
-     * Callback function that sets the current pose to the pose received from 
+     * Callback function that sets the current pose to the pose received from
      * the endpoint state topic
-     * 
+     *
      * @param      N/A
      * @return     N/A
      */
@@ -170,7 +173,7 @@ protected:
 
     /*
      * Callback function for the CUFF OK button
-     * 
+     *
      * @param      N/A
      * @return     N/A
      */
@@ -179,7 +182,7 @@ protected:
     /*
      * Infrared sensor callback function that sets the current range to the range received
      * from the left hand range state topic
-     * 
+     *
      * @param      The message
      * @return     N/A
      */
@@ -192,7 +195,7 @@ protected:
 
     /*
      * hover arm above tokens
-     * 
+     *
      * @param      double indicating requested height of arm (z-axis)
      * return     N/A
      */
@@ -201,28 +204,28 @@ protected:
     /**
      * @brief Publishes the desired joint configuration
      * @details Publishes the desired joint configuration in the proper topic
-     * 
+     *
      * @param _cmd The desired joint configuration
      */
     void publish_joint_cmd(baxter_core_msgs::JointCommand _cmd);
 
     /**
      * @brief Suppresses the collision avoidance for this arm
-     * @details Suppresses the collision avoidance. It needs to be called with 
+     * @details Suppresses the collision avoidance. It needs to be called with
      *          a rate of at least 5Hz
-     * 
+     *
      * @param _cmd An empty message to be sent
      */
     void suppressCollisionAv();
 
 public:
     RobotInterface(std::string limb);
-    
+
     virtual ~RobotInterface();
 
     /*
      * Self-explaining "setters"
-     */   
+     */
     void setState(int state);
 
     /*
@@ -264,8 +267,8 @@ public:
     ~ROSThreadImage();
 
     /*
-     * image callback function that displays the image stream from the hand camera 
-     * 
+     * image callback function that displays the image stream from the hand camera
+     *
      * @param      The image
      * @return     N/A
      */

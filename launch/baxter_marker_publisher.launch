@@ -20,6 +20,6 @@
     </node>
 
     <include file="$(find rosbridge_server)/launch/rosbridge_websocket.launch"/>
-    <include file="$(find trac_ik_baxter)/launch/ik_server.launch"/>
+    <!-- <include file="$(find trac_ik_baxter)/launch/ik_server.launch"/> -->
 </launch>
 

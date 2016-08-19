@@ -206,7 +206,7 @@ bool ARTagCtrl::pickARTag()
     double y = _curr_marker_pos.y + 0.04;
     double z =         getPos().z;
 
-    ROS_DEBUG("Going to: %g %g %g", x, y, z);
+    ROS_INFO("Going to: %g %g %g", x, y, z);
     if (getAction() == ACTION_HAND_OVER)
     {
         // If we have to hand_over, let's pre-orient the end effector such that
