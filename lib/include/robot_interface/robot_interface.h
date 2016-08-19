@@ -15,6 +15,7 @@
 
 #include <baxter_core_msgs/DigitalIOState.h>
 #include <baxter_core_msgs/EndpointState.h>
+#include <baxter_core_msgs/CollisionAvoidanceState.h>
 #include <baxter_core_msgs/SolvePositionIK.h>
 #include <baxter_core_msgs/JointCommand.h>
 #include <geometry_msgs/PoseStamped.h>
@@ -62,6 +63,14 @@ private:
     geometry_msgs::Point        _curr_pos;
     geometry_msgs::Quaternion   _curr_ori;
     geometry_msgs::Wrench    _curr_wrench;
+
+    // Joint States
+    ros::Subscriber         _jntstate_sub;
+    sensor_msgs::JointState    _seed_jnts;
+
+    // Collision avoidance State
+    ros::Subscriber _coll_av_sub;
+    bool            is_colliding;
 
 protected:
     /*
@@ -166,18 +175,34 @@ protected:
      * Callback function that sets the current pose to the pose received from
      * the endpoint state topic
      *
-     * @param      N/A
-     * @return     N/A
+     * @param msg the topic message
      */
     void endpointCb(const baxter_core_msgs::EndpointState& msg);
 
     /*
      * Callback function for the CUFF OK button
      *
-     * @param      N/A
-     * @return     N/A
+     * @param msg the topic message
      */
-    void cuffOKCb(const baxter_core_msgs::DigitalIOState& msg);
+    void cuffCb(const baxter_core_msgs::DigitalIOState& msg);
+
+    /**
+     * Callback for the joint states. Used to seed the
+     * inverse kinematics solver
+     *
+     * @param msg the topic message
+     */
+    void jointStatesCb(const sensor_msgs::JointState& msg);
+
+    /**
+     * Callback for the collision avoidance state. Used to detect
+     * if the robot is currently pushed back by the collision avoidance
+     * software which is embedded into the Baxter robot and we don't have
+     * access to.
+     *
+     * @param msg the topic message
+     */
+    void collAvCb(const baxter_core_msgs::CollisionAvoidanceState& msg);
 
     /*
      * Infrared sensor callback function that sets the current range to the range received
