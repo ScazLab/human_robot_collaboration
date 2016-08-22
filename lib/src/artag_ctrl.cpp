@@ -93,7 +93,7 @@ bool ARTagCtrl::pickObject()
     ros::Duration(0.1).sleep();
     if (!pickARTag())               return false;
     if (!gripObject())              return false;
-    if (!moveArm("up", 0.3))        return false;
+    if (!moveArm("up", 0.4))        return false;
     if (!hoverAboveTableStrict())   return false;
 
     return true;
