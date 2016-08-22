@@ -33,6 +33,7 @@ class ROSThread
 {
 private:
     pthread_t _thread;
+    bool   is_started;
     static void * InternalThreadEntryFunc(void * This);
 
 protected:
@@ -44,7 +45,7 @@ protected:
     /*
      * Prevents any following code from being executed before thread is exited
      * @return true/false if success/failure (not in the POSIX way)
-     */      
+     */
     void waitForInternalThreadToExit();
 
 public:
@@ -55,15 +56,22 @@ public:
 
     /*
      * Starts thread that executes the internal thread entry function
-     * 
-     * @param      N/A
-     * @return     true if thread was successfully launched; false otherwise
-     */        
+     *
+     * @return  true/false if success failure (NOT in the POSIX way)
+     */
     bool startInternalThread();
 
     /**
-     * Kills the internal thread
-     * @return true/false if success/failure (not in the POSIX way)
+     * Closes the internal thread gracefully.
+     *
+     * @return  true/false if success failure (NOT in the POSIX way)
+     */
+    void closeInternalThread();
+
+    /**
+     * Kills the internal thread.
+     *
+     * @return true/false if success/failure (NOT in the POSIX way)
      */
     bool killInternalThread();
 
@@ -71,7 +79,7 @@ public:
      * Destructor
     */
     virtual ~ROSThread();
-    
+
 };
 
 #endif

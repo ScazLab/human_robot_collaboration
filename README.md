@@ -3,6 +3,8 @@ Yet another repo for the baxter collaboration task
 
 ## Prerequisites
 
+ * `trac_ik` : at least for the time being, you should use this version of `trac_ik` instead of the one provided in the original repo: https://github.com/ScazLab/trac_ik . It is a fork of [another `trac_ik` fork](https://github.com/baxter-flowers/trac_ik) #forkception
+
 ## Installation
 
 ## Execution

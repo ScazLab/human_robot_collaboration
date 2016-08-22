@@ -57,7 +57,7 @@ void ArmCtrl::InternalThreadEntry()
                                           string(getState()).c_str(), getSubState().c_str());
     }
 
-    pthread_exit(NULL);
+    closeInternalThread();
     return;
 }
 
