@@ -16,9 +16,7 @@
 #include <baxter_core_msgs/DigitalIOState.h>
 #include <baxter_core_msgs/EndpointState.h>
 #include <baxter_core_msgs/CollisionAvoidanceState.h>
-#include <baxter_core_msgs/SolvePositionIK.h>
 #include <baxter_core_msgs/JointCommand.h>
-#include <geometry_msgs/PoseStamped.h>
 #include <geometry_msgs/Point.h>
 #include <sensor_msgs/Range.h>
 #include <std_msgs/Empty.h>
@@ -67,6 +65,9 @@ private:
     // Joint States
     ros::Subscriber         _jntstate_sub;
     sensor_msgs::JointState    _seed_jnts;
+
+    // Mutex to protect joint state variable
+    pthread_mutex_t _mutex_jnts;
 
     // Collision avoidance State
     ros::Subscriber _coll_av_sub;

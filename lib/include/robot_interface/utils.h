@@ -7,6 +7,9 @@
 #include <ros/console.h>
 
 #include <geometry_msgs/Pose.h>
+#include <geometry_msgs/PoseStamped.h>
+
+#include <sensor_msgs/JointState.h>
 
 #define WORKING  -3
 #define KILLED   -2
@@ -96,6 +99,9 @@ void setOrientation(geometry_msgs::Pose& pose, float x, float y, float z, float 
  */
 std::string intToString( const int a );
 
+/**
+ * Struct that handles the state of the RobotInterface Class
+ */
 struct State {
     int state;
     float time;
@@ -107,6 +113,22 @@ struct State {
     operator std::string();
 };
 
+struct IK_call
+{
+    struct IK_req
+    {
+        geometry_msgs::PoseStamped pose_stamp;
+        sensor_msgs::JointState   seed_angles;
+    };
 
+    struct IK_res
+    {
+        sensor_msgs::JointState joints;
+        bool                   isValid;
+    };
+
+    IK_req req;
+    IK_res res;
+};
 
 #endif

@@ -1,7 +1,7 @@
 #include "robot_interface/baxter_trac_ik.h"
 
 baxterTracIK::baxterTracIK(std::string limb) : _limb(limb), _urdf_param("/robot_description"),
-                                               _timeout(0.005), _eps(1e-6), _num_steps(10)
+                                               _timeout(0.005), _eps(1e-6), _num_steps(4)
 {
     // TRACK_IK::Speed: returns very quickly the first solution found
     // TRACK_IK::Distance: runs for the full timeout_in_secs, then returns the solution that minimizes SSE from the seed
@@ -30,7 +30,7 @@ baxterTracIK::baxterTracIK(std::string limb) : _limb(limb), _urdf_param("/robot_
         exit(EXIT_FAILURE);
     }
 
-    double s1l = -1.4;
+    double s1l = -1.35;
     double s1u =  1.0;
     ROS_INFO("[%s] Setting custom joint limits for %s_s1: [%g %g]", _limb.c_str(), _limb.c_str(), s1l, s1u);
     ll.data[1] =  s1l;
@@ -72,8 +72,7 @@ KDL::JntArray baxterTracIK::JointState2JntArray(const sensor_msgs::JointState &j
     return array;
 }
 
-bool baxterTracIK::perform_ik(baxter_core_msgs::SolvePositionIK::Request &req,
-                              baxter_core_msgs::SolvePositionIK::Response &res)
+bool baxterTracIK::perform_ik(IK_call &ik)
 {
     int rc;
     KDL::JntArray result;
@@ -88,48 +87,46 @@ bool baxterTracIK::perform_ik(baxter_core_msgs::SolvePositionIK::Request &req,
         }
     }
 
-    bool seeds_provided = req.seed_angles.size() == req.pose_stamp.size();
+    bool seeds_provided = ik.req.seed_angles.name.size() == _chain.getNrOfSegments();
 
-    for(uint point=0; point<req.pose_stamp.size(); ++point)
+    joint_state.position.clear();
+    KDL::Frame ee_pose(KDL::Rotation::Quaternion(ik.req.pose_stamp.pose.orientation.x,
+                                                 ik.req.pose_stamp.pose.orientation.y,
+                                                 ik.req.pose_stamp.pose.orientation.z,
+                                                 ik.req.pose_stamp.pose.orientation.w),
+                       KDL::Vector(ik.req.pose_stamp.pose.position.x,
+                                   ik.req.pose_stamp.pose.position.y,
+                                   ik.req.pose_stamp.pose.position.z));
+
+    KDL::JntArray seed(_chain.getNrOfJoints());
+
+    if(seeds_provided)   seed = JointState2JntArray(ik.req.seed_angles);
+
+    for(uint num_attempts=0; num_attempts<_num_steps; ++num_attempts)
     {
-        joint_state.position.clear();
-        KDL::Frame end_effector_pose(KDL::Rotation::Quaternion(req.pose_stamp[point].pose.orientation.x,
-                                                               req.pose_stamp[point].pose.orientation.y,
-                                                               req.pose_stamp[point].pose.orientation.z,
-                                                               req.pose_stamp[point].pose.orientation.w),
-                                     KDL::Vector(req.pose_stamp[point].pose.position.x,
-                                                 req.pose_stamp[point].pose.position.y,
-                                                 req.pose_stamp[point].pose.position.z));
-
-        KDL::JntArray seed(_chain.getNrOfJoints());
-
-        if(seeds_provided)   seed = JointState2JntArray(req.seed_angles[point]);
-
-        for(uint num_attempts=0; num_attempts<_num_steps; ++num_attempts)
+        if (num_attempts>0)
         {
-            ROS_DEBUG("Attempt num %i with tolerance %g", num_attempts, _eps);
-
-            _tracik_solver->setEpsilon(_eps);
-            rc = _tracik_solver->CartToJnt(seeds_provided? seed: *(_nominal), end_effector_pose, result);
-
-            // computeFwdKin(result);
-            if(rc>=0) break;
+            ROS_INFO("Attempt num %i with tolerance %g", num_attempts, _eps);
         }
 
-        for(uint j=0; j<_chain.getNrOfJoints(); ++j)
-        {
-            joint_state.position.push_back(result(j));
-        }
+        rc = _tracik_solver->CartToJnt(seeds_provided? seed: *(_nominal), ee_pose, result);
 
-        res.joints.push_back(joint_state);
-        res.isValid.push_back(rc>=0);
+        // computeFwdKin(result);
+        if(rc>=0) break;
     }
+
+    for(uint j=0; j<_chain.getNrOfJoints(); ++j)
+    {
+        joint_state.position.push_back(result(j));
+    }
+
+    ik.res.joints  = joint_state;
+    ik.res.isValid = rc>=0;
 
     return true;
 }
 
 #include <iostream>
-
 #include <kdl/chainfksolver.hpp>
 #include <kdl/chainfksolverpos_recursive.hpp>
 #include <kdl/frames_io.hpp>
