@@ -1,0 +1,90 @@
+#!/usr/bin/env python
+
+from htm.hold_and_release import hold_and_release_pomdp
+
+import rospy
+from std_msgs.msg import String
+from baxter_collaboration.srv import DoAction
+
+
+C_WAIT = 1.
+C_FAILURE = 5.
+C_COMMUNICATION = 2.
+
+SERVICE = '/action_provider/service_left'
+COM_TOPIC = '/web_interface'
+ERR_TOPIC = '/web_interface'
+
+
+class WaitForOneSuscriber:
+    
+    period = .1
+
+    def __init__(self, topic, timeout=10.):
+        self.sub = rospy.Suscriber(COM_TOPIC, String, self.cb)
+        self.listening = False
+        self.timeout = timeout
+
+    def _reset_msg(self):
+        self.last_msg = None
+
+    def cb(self, msg):
+        if listening:
+            self.last_msg = msg.string
+        else:
+            pass
+
+    def wait_for_msg(self):
+        self._reset_msg()
+        self.listening = True
+        start_time = rospy.Time.now()
+        while (self.last_msg is None and
+               rospy.Time.now() < start_time + self.timeout):
+            rospy.sleep(self.period)
+        self.listening = False
+        return self.last_msg
+
+
+p = hold_and_release_pomdp(C_WAIT, C_FAILURE, C_COMMUNICATION)
+pgr = GraphPolicyRunner(p.solve())
+
+
+rospy.init_node("hold_and_release_controller")
+rospy.wait_for_service(SERVICE)
+action_service = rospy.ServiceProxy(SERVICE, DoAction)
+com_sub = WaitForOneSuscriber(COM_TOPIC)
+error_sub = WaitForOneSuscriber(ERR_TOPIC, timeout=5)
+# TODO: filter irrelevant messages
+
+finished = False
+while not finished:
+    a = pgr.get_action()
+    if a == 'wait':
+        rospy.loginfo("Waiting.")
+        rospy.sleep(C_WAIT)
+        obs = 'nothing'
+    elif a == 'physical':
+        result = action_service('release')  # TODO: update to actual action
+        if not result:
+            raise RuntimeError("Action 'release' failed.")
+        error = error_sub.wait_for_msg()
+        if error is not None:
+            result = action_service('recover')  # TODO: update to actual action
+            if not result:
+                raise RuntimeError("Action 'recover' failed.")
+        else:
+            rospy.loginfo('Success!')
+            finished = True
+    elif a == 'communicate':
+        rospy.loginfo("Have you finished?")
+        s = com.wait_for_msg()
+        if s is None:
+            o = 'nothing'
+        elif s == 'yes' :
+            o = 'done'
+        elif s == 'no':
+            o = 'doing'
+        else:
+            raise ValueError('Unknown answer: ' + s)
+    else:
+        raise ValueError('Unknown action: ' + a)
