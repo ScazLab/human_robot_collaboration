@@ -26,10 +26,11 @@
 #define ACTION_PASS         "pass"
 #define ACTION_HOLD         "hold"
 #define ACTION_HAND_OVER    "hand_over"
+#define ACTION_RECOVER      "recover"
 
-#define Z_HIGH        0.400
-#define Z_LOW         0.200
-#define PICK_UP_SPEED   0.1
+#define Z_HIGH         0.400
+#define Z_LOW          0.200
+#define PICK_UP_SPEED  0.120    // [m/s]
 
 #define FORCE_THRES_R   2.0  // [N]
 #define FORCE_THRES_L   2.0  // [N]
@@ -50,47 +51,47 @@
 #define HOME_POS_R   0.65, -0.25
 
 /*
- * checks if two numbers rounded up to 2 decimal points are within 0.0z (z is specified no.) to each other 
- * 
+ * checks if two numbers rounded up to 2 decimal points are within 0.0z (z is specified no.) to each other
+ *
  * @param      two floats x and y specifying the numbers to be checked,
  *            and a float z determining the desired accuracy
- *             
+ *
  * return     true if they are within 0.0z; false otherwise
  */
 bool withinXHundredth(float x, float y, float z);
 
 /*
- * 
- * 
- * @param  
- *             
+ *
+ *
+ * @param
+ *
  * @return  true/false if success/failure
  */
 bool withinThres(float x, float y, float t);
 
 /*
  * sets the position of a pose
- * 
+ *
  * @param      Pose* pose, and three floats indicating the x-y-z coordinates of a position
- *             
+ *
  * return     N/A
  */
 void setPosition(geometry_msgs::Pose& pose, float x, float y, float z);
 
 /*
  * sets the orientation of a pose
- * 
+ *
  * @param      Pose* pose, and three floats indicating the x-y-z-w coordinates of an orientation
- *             
+ *
  * return     N/A
  */
 void setOrientation(geometry_msgs::Pose& pose, float x, float y, float z, float w);
 
 /*
  * converts an integer to a string
- * 
+ *
  * @param      integer to be converted
- *             
+ *
  * return     converted string
  */
 std::string intToString( const int a );
