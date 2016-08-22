@@ -1,36 +1,47 @@
 #!/usr/bin/env python
 
 from htm.hold_and_release import hold_and_release_pomdp
+from htm.lib.pomdp import GraphPolicyRunner
 
 import rospy
 from std_msgs.msg import String
+from baxter_core_msgs.msg import DigitalIOState
 from baxter_collaboration.srv import DoAction
 
 
 C_WAIT = 1.
-C_FAILURE = 5.
-C_COMMUNICATION = 2.
+C_FAILURE = 12.
+C_COMMUNICATION = 3.
 
 SERVICE = '/action_provider/service_left'
 COM_TOPIC = '/web_interface'
-ERR_TOPIC = '/web_interface'
+ERR_TOPIC = '/robot/digital_io/left_lower_button/state'
+
+RELEASE = 'release'
+RECOVER = 'recover'
 
 
 class WaitForOneSuscriber:
-    
+
     period = .1
 
     def __init__(self, topic, timeout=10.):
-        self.sub = rospy.Suscriber(COM_TOPIC, String, self.cb)
+        self._suscribe(topic)
         self.listening = False
         self.timeout = timeout
+
+    def _suscribe(self, topic):
+        raise NotImplemented()
 
     def _reset_msg(self):
         self.last_msg = None
 
+    def _handle_msg(self, msg):
+        raise NotImplemented()
+
     def cb(self, msg):
-        if listening:
-            self.last_msg = msg.string
+        if self.listening:
+            self._handle_msg(msg)
         else:
             pass
 
@@ -39,10 +50,31 @@ class WaitForOneSuscriber:
         self.listening = True
         start_time = rospy.Time.now()
         while (self.last_msg is None and
-               rospy.Time.now() < start_time + self.timeout):
+               rospy.Time.now() < start_time + rospy.Duration(self.timeout)):
             rospy.sleep(self.period)
         self.listening = False
         return self.last_msg
+
+
+class CommunicationSuscriber(WaitForOneSuscriber):
+
+    def _suscribe(self, topic):
+        self.sub = rospy.Subscriber(COM_TOPIC, String, self.cb)
+
+    def _handle_msg(self, msg):
+        self.last_msg = msg.data
+
+
+class ErrorSuscriber(WaitForOneSuscriber):
+
+    def _suscribe(self, topic):
+        self.sub = rospy.Subscriber(ERR_TOPIC, DigitalIOState, self.cb)
+
+    def _handle_msg(self, msg):
+        if msg.state == DigitalIOState.PRESSED:
+            self.last_msg = True
+        else:
+            pass
 
 
 p = hold_and_release_pomdp(C_WAIT, C_FAILURE, C_COMMUNICATION)
@@ -52,8 +84,8 @@ pgr = GraphPolicyRunner(p.solve())
 rospy.init_node("hold_and_release_controller")
 rospy.wait_for_service(SERVICE)
 action_service = rospy.ServiceProxy(SERVICE, DoAction)
-com_sub = WaitForOneSuscriber(COM_TOPIC)
-error_sub = WaitForOneSuscriber(ERR_TOPIC, timeout=5)
+com_sub = CommunicationSuscriber(COM_TOPIC)
+error_sub = ErrorSuscriber(ERR_TOPIC, timeout=5)
 # TODO: filter irrelevant messages
 
 finished = False
@@ -64,27 +96,32 @@ while not finished:
         rospy.sleep(C_WAIT)
         obs = 'nothing'
     elif a == 'physical':
-        result = action_service('release')  # TODO: update to actual action
+        rospy.loginfo("Taking action...")
+        result = action_service(RELEASE, -1)  # TODO: update to actual action
         if not result:
             raise RuntimeError("Action 'release' failed.")
         error = error_sub.wait_for_msg()
         if error is not None:
-            result = action_service('recover')  # TODO: update to actual action
+            rospy.loginfo("Recovering..")
+            result = action_service(RECOVER, -1)  # TODO: update to actual action
             if not result:
                 raise RuntimeError("Action 'recover' failed.")
+            obs = 'doing'
         else:
             rospy.loginfo('Success!')
             finished = True
+            obs = 'done'  # Unused
     elif a == 'communicate':
         rospy.loginfo("Have you finished?")
-        s = com.wait_for_msg()
+        s = com_sub.wait_for_msg()
         if s is None:
-            o = 'nothing'
-        elif s == 'yes' :
-            o = 'done'
+            obs = 'nothing'  # Currently this is not accounted for in the POMDP
+        elif s == 'yes':
+            obs = 'done'
         elif s == 'no':
-            o = 'doing'
+            obs = 'doing'
         else:
             raise ValueError('Unknown answer: ' + s)
     else:
         raise ValueError('Unknown action: ' + a)
+    pgr.step(obs)
