@@ -3,7 +3,8 @@ Yet another repo for the baxter collaboration task
 
 ## Prerequisites
 
- * `trac_ik` : at least for the time being, you should use [this version of `trac_ik` instead of the one provided in the original repo](https://github.com/ScazLab/trac_ik). It is a fork of [another `trac_ik` fork](https://github.com/baxter-flowers/trac_ik). [#forkception](#forkception)
+ * `nlopt`: it should be installed by from the Ubuntu repositories: `sudo apt-get install libnlopt-dev `
+ * `trac_ik` : for the time being, you should use [this version of `trac_ik`](https://bitbucket.org/alecive/trac_ik). It is a fork of [the original `trac_ik`](https://bitbucket.org/traclabs/trac_ik).
 
 ## Installation
 
