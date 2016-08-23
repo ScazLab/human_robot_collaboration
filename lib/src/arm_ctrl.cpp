@@ -277,11 +277,11 @@ void ArmCtrl::setState(int _state)
 
     RobotInterface::setState(_state);
 
-    if (_state == DONE)
-    {
-        setAction("");
-        setMarkerID(-1);
-    }
+    // if (_state == DONE)
+    // {
+    //     setAction("");
+    //     setMarkerID(-1);
+    // }
     publishState();
 }
 

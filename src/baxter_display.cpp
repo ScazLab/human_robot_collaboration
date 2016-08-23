@@ -52,7 +52,7 @@ public:
         l_state.object =     "";
 
         r_state.state  = "START";
-        r_state.action =     ""; 
+        r_state.action =     "";
         r_state.object =     "";
 
         red   = cv::Scalar( 44,  48, 201);  // BGR color code
@@ -78,22 +78,10 @@ public:
         if      (_limb == "left")
         {
             l_state = msg;
-
-            if (l_state.state == "DONE")
-            {
-                l_state.action = "";
-                l_state.object = "";
-            }
         }
         else if (_limb == "right")
         {
             r_state = msg;
-
-            if (r_state.state == "DONE")
-            {
-                r_state.action = "";
-                r_state.object = "";
-            }
         }
 
         displayArmStates();
@@ -195,7 +183,7 @@ int main(int argc, char ** argv)
 
     ros::Duration(0.2).sleep();
     bd.displayArmStates();
-    
+
     ros::spin();
     return 0;
 }
