@@ -57,7 +57,7 @@ protected:
     bool doAction(int s, std::string a);
 
 public:
-    ARTagCtrl(std::string _name, std::string _limb);
+    ARTagCtrl(std::string _name, std::string _limb, bool _no_robot = false);
 
     ~ARTagCtrl();
 };

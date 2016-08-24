@@ -6,8 +6,8 @@ using namespace std;
 using namespace baxter_collaboration;
 using namespace baxter_core_msgs;
 
-ARTagCtrl::ARTagCtrl(std::string _name, std::string _limb) :
-                     ArmCtrl(_name,_limb), aruco_ok(false), marker_found(false)
+ARTagCtrl::ARTagCtrl(std::string _name, std::string _limb, bool _no_robot) :
+                     ArmCtrl(_name,_limb, _no_robot), aruco_ok(false), marker_found(false)
 {
     _aruco_sub = _n.subscribe("/aruco_marker_publisher/markers",
                                SUBSCRIBER_BUFFER, &ARTagCtrl::ARucoCb, this);
@@ -15,6 +15,9 @@ ARTagCtrl::ARTagCtrl(std::string _name, std::string _limb) :
     elap_time = 0;
 
     setState(START);
+
+    if (_no_robot) return;
+
     if (!goHome()) setState(ERROR);
 
     // moveArm("up",0.2,"strict");

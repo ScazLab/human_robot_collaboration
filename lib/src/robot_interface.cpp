@@ -12,9 +12,12 @@ using namespace cv;
 /**************************************************************************/
 /*                         RobotInterface                                 */
 /**************************************************************************/
-RobotInterface::RobotInterface(string limb): _n("~"), _limb(limb), _state(START,0),
-                                             spinner(4), ir_ok(false), ik_solver(limb)
+RobotInterface::RobotInterface(string limb, bool no_robot): _n("~"), _limb(limb), _state(START,0),
+                                                            spinner(4), ir_ok(false), _no_robot(no_robot),
+                                                            ik_solver(limb, no_robot)
 {
+    if (no_robot) return;
+
     _joint_cmd_pub = _n.advertise<JointCommand>("/robot/limb/" + _limb + "/joint_command", 1);
     _coll_av_pub   = _n.advertise<Empty>("/robot/limb/" + _limb + "/suppress_collision_avoidance", 1);
 

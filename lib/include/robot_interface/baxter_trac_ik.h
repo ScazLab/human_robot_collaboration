@@ -20,7 +20,7 @@ private:
     KDL::JntArray *_nominal;
 
 public:
-    baxterTracIK(std::string limb);
+    baxterTracIK(std::string limb, bool no_robot = false);
 
     ~baxterTracIK();
 

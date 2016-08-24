@@ -1,8 +1,10 @@
 #include "robot_interface/baxter_trac_ik.h"
 
-baxterTracIK::baxterTracIK(std::string limb) : _limb(limb), _urdf_param("/robot_description"),
-                                               _timeout(0.005), _eps(1e-6), _num_steps(4)
+baxterTracIK::baxterTracIK(std::string limb, bool no_robot) : _limb(limb), _urdf_param("/robot_description"),
+                                                              _timeout(0.005), _eps(1e-6), _num_steps(4)
 {
+    if (no_robot) return;
+
     // TRACK_IK::Speed: returns very quickly the first solution found
     // TRACK_IK::Distance: runs for the full timeout_in_secs, then returns the solution that minimizes SSE from the seed
     // TRACK_IK::Manip1: runs for full timeout, returns solution that maximizes sqrt(det(J*J^T))

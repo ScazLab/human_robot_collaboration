@@ -37,6 +37,8 @@ private:
     State         _state;       // State of the controller
     ros::Time _init_time;
 
+    bool       _no_robot;       // Flag to know if we're going to use the robot or not
+
     ros::AsyncSpinner spinner;  // AsyncSpinner to handle callbacks
 
     ros::Publisher  _joint_cmd_pub; // Publisher to control the robot in joint space
@@ -243,7 +245,7 @@ protected:
     void suppressCollisionAv();
 
 public:
-    RobotInterface(std::string limb);
+    RobotInterface(std::string limb, bool no_robot = false);
 
     virtual ~RobotInterface();
 
@@ -266,6 +268,11 @@ public:
      * Check availability of the infrared data
     */
     bool    is_ir_ok() { return ir_ok; };
+
+    /*
+     * Checks if the robot has to be used or not
+     */
+    bool is_no_robot() { return _no_robot; };
 };
 
 /**

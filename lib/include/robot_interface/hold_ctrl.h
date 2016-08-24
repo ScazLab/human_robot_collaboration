@@ -23,7 +23,7 @@ protected:
     bool doAction(int s, std::string a);
 
 public:
-    HoldCtrl(std::string _name, std::string _limb);
+    HoldCtrl(std::string _name, std::string _limb, bool _no_robot = false);
 
     /**
      * Callback for the service that lets the two limbs interact

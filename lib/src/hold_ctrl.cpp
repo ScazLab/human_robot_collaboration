@@ -3,10 +3,13 @@
 using namespace std;
 using namespace baxter_core_msgs;
 
-HoldCtrl::HoldCtrl(std::string _name, std::string _limb) : 
-             ArmCtrl(_name,_limb)
+HoldCtrl::HoldCtrl(std::string _name, std::string _limb, bool _no_robot) :
+                   ArmCtrl(_name,_limb, _no_robot)
 {
     setState(START);
+
+    if (_no_robot) return;
+
     if (!goHome()) setState(ERROR);
 }
 
@@ -21,7 +24,7 @@ bool HoldCtrl::doAction(int s, std::string a)
         {
             setState(DONE);
             return true;
-        }   
+        }
         else recoverFromError();
     }
     else if (a == ACTION_HAND_OVER && (s == START ||
@@ -86,7 +89,7 @@ bool HoldCtrl::waitForOtherArm(double _wait_time, bool disable_coll_av)
     while(RobotInterface::ok())
     {
         if (disable_coll_av)      suppressCollisionAv();
-        
+
         if (getSubState() == HAND_OVER_DONE)   return true;
 
         r.sleep();
@@ -125,7 +128,7 @@ bool HoldCtrl::hoverAboveTableStrict(bool disable_coll_av)
         publish_joint_cmd(joint_cmd);
 
         r.sleep();
- 
+
         if(hasPoseCompleted(HOME_POS_R, Z_LOW, VERTICAL_ORI_R))
         {
             return true;

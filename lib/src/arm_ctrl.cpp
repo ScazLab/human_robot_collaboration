@@ -4,8 +4,8 @@
 using namespace std;
 using namespace geometry_msgs;
 
-ArmCtrl::ArmCtrl(string _name, string _limb) : RobotInterface(_limb), Gripper(_limb),
-                                               name(_name), marker_id(-1), action(""), sub_state("")
+ArmCtrl::ArmCtrl(string _name, string _limb, bool no_robot) : RobotInterface(_limb, no_robot), Gripper(_limb),
+                                                              name(_name), marker_id(-1), action(""), sub_state("")
 {
     _cuff_sub      = _n.subscribe("/robot/digital_io/" + _limb + "_lower_button/state",
                                     SUBSCRIBER_BUFFER, &ArmCtrl::cuffOKCb, this);
@@ -86,8 +86,13 @@ bool ArmCtrl::serviceCb(baxter_collaboration::DoAction::Request  &req,
 
     ROS_INFO("[%s] Service request received. Action: %s object: %i", getLimb().c_str(),
                                                                    action.c_str(), ID);
-    // res.success = true;
-    // return true;
+    if (is_no_robot())
+    {
+        ros::Duration(2.0).sleep();
+        res.success = true;
+        return true;
+    }
+
     res.success = false;
 
     setAction(action);

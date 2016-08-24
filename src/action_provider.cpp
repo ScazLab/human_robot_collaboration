@@ -21,15 +21,25 @@ int main(int argc, char ** argv)
 {
     ros::init(argc, argv, "action_provider");
 
-    ARTagCtrl  left_ctrl("action_provider","left");
-    HoldCtrl  right_ctrl("action_provider","right");
+    bool no_robot = false;
+
+    if (argc>1)
+    {
+        if (std::string(argv[1])=="--no_robot")
+        {
+            no_robot = true;
+        }
+    }
+
+    ARTagCtrl  left_ctrl("action_provider","left", no_robot);
+    HoldCtrl  right_ctrl("action_provider","right", no_robot);
 
     printf("\n");
     ROS_INFO("READY! Waiting for service messages..\n");
-    
+
     //Override the default ros sigint handler.
     signal(SIGINT, mySigintHandler);
-  
+
     ros::spin();
     return 0;
 }

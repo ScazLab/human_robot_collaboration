@@ -75,12 +75,12 @@ protected:
      *
      * @return true/false if success/failure
      */
-    bool moveArm(std::string dir, double dist, std::string mode="loose",
+    bool moveArm(std::string dir, double dist, std::string mode = "loose",
                                            bool disable_coll_av = false);
 
 public:
     // CONSTRUCTOR
-    ArmCtrl(std::string _name, std::string _limb);
+    ArmCtrl(std::string _name, std::string _limb, bool no_robot = false);
 
     // DESTRUCTOR
     ~ArmCtrl();
