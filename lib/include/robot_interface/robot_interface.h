@@ -33,16 +33,14 @@
 class RobotInterface : public ROSThread
 {
 private:
-    std::string    _limb;
-    State         _state;
+    std::string    _limb;       // Limb (either left or right)
+    State         _state;       // State of the controller
     ros::Time _init_time;
 
-    ros::AsyncSpinner spinner;
+    ros::AsyncSpinner spinner;  // AsyncSpinner to handle callbacks
 
-    ros::ServiceClient _ik_client;
-
-    ros::Publisher  _joint_cmd_pub;
-    ros::Publisher    _coll_av_pub;
+    ros::Publisher  _joint_cmd_pub; // Publisher to control the robot in joint space
+    ros::Publisher    _coll_av_pub; // Publisher to suppress collision avoidance behavior
 
     // IR Sensor
     ros::Subscriber _ir_sub;

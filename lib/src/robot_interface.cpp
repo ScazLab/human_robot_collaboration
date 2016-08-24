@@ -30,9 +30,6 @@ RobotInterface::RobotInterface(string limb): _n("~"), _limb(limb), _state(START,
     _coll_av_sub   = _n.subscribe("/robot/limb/" + _limb + "/collision_avoidance_state",
                                     SUBSCRIBER_BUFFER, &RobotInterface::collAvCb, this);
 
-    _ik_client     = _n.serviceClient<SolvePositionIK>("/ExternalTools/" + _limb +
-                                                       "/PositionKinematicsNode/IKService");
-
     _init_time = ros::Time::now();
 
     _curr_max_range = 0;
