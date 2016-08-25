@@ -104,13 +104,15 @@ protected:
     bool callAction(const std::string &a);
 
 public:
-    // CONSTRUCTOR
+    /**
+     * Constructor
+     */
     ArmCtrl(std::string _name, std::string _limb, bool no_robot = false);
 
-    // DESTRUCTOR
+    /*
+     * Destructor
+     */
     ~ArmCtrl();
-
-    void cuffOKCb(const baxter_core_msgs::DigitalIOState& msg);
 
     /**
      * Callback for the service that requests actions

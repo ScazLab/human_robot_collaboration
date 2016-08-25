@@ -7,9 +7,6 @@ using namespace geometry_msgs;
 ArmCtrl::ArmCtrl(string _name, string _limb, bool no_robot) : RobotInterface(_limb, no_robot), Gripper(_limb),
                                                               name(_name), marker_id(-1), action(""), sub_state("")
 {
-    _cuff_sub      = _n.subscribe("/robot/digital_io/" + _limb + "_lower_button/state",
-                                    SUBSCRIBER_BUFFER, &ArmCtrl::cuffOKCb, this);
-
     std::string topic = "/"+getName()+"/state_"+_limb;
     state_pub = _n.advertise<baxter_collaboration::ArmState>(topic,1);
     ROS_INFO("[%s] Created state publisher with name : %s", getLimb().c_str(), topic.c_str());
@@ -60,15 +57,6 @@ void ArmCtrl::InternalThreadEntry()
 
     closeInternalThread();
     return;
-}
-
-void ArmCtrl::cuffOKCb(const baxter_core_msgs::DigitalIOState& msg)
-{
-    if (msg.state == baxter_core_msgs::DigitalIOState::PRESSED)
-    {
-        ROS_DEBUG("[%s] Action Killed!",getLimb().c_str());
-        setState(KILLED);
-    }
 }
 
 bool ArmCtrl::serviceOtherLimbCb(baxter_collaboration::AskFeedback::Request  &req,
