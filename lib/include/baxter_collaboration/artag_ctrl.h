@@ -62,10 +62,10 @@ private:
     bool getObject();
 
     /**
-     * [recover_get description]
+     * [recoverRelease description]
      * @return true/false if success/failure
      */
-    bool recover_get();
+    bool recoverRelease();
 
     /**
      * [passObject description]

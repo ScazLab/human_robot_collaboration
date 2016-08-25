@@ -13,12 +13,18 @@ HoldCtrl::HoldCtrl(std::string _name, std::string _limb, bool _no_robot) :
     insertAction(ACTION_HOLD,      static_cast<f_action>(&HoldCtrl::holdObject));
     insertAction(ACTION_HAND_OVER, static_cast<f_action>(&HoldCtrl::handOver));
 
+    // Not implemented actions throw a ROS_ERROR and return always false:
+    insertAction("recover_"+string(ACTION_HOLD),      &HoldCtrl::notImplemented);
+    insertAction("recover_"+string(ACTION_HAND_OVER), &HoldCtrl::notImplemented);
+
     if (!callAction(ACTION_HOME)) setState(ERROR);
 }
 
 bool HoldCtrl::doAction(int s, std::string a)
 {
-    if (a == ACTION_HOLD || a == ACTION_HAND_OVER)
+    if (a == ACTION_HOLD      || a == "recover_"+string(ACTION_HOLD)      ||
+        a == ACTION_HAND_OVER || a == "recover_"+string(ACTION_HAND_OVER) ||
+        a == "recover_"+string(ACTION_RELEASE))
     {
         if (callAction(a))  return true;
         else                recoverFromError();

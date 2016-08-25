@@ -105,6 +105,12 @@ protected:
                                              bool disable_coll_av = false);
 
     /**
+     * Placeholder for an action that has not been implemented (yet)
+     * @return false always
+     */
+    bool notImplemented();
+
+    /**
      * Adds an action to the action database
      * @param  a the action to be removed
      * @param  f a pointer to the action, in the form bool action()

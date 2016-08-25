@@ -4,8 +4,9 @@
 using namespace std;
 using namespace geometry_msgs;
 
-ArmCtrl::ArmCtrl(string _name, string _limb, bool no_robot) : RobotInterface(_limb, no_robot), Gripper(_limb),
-                                                              name(_name), marker_id(-1), action(""), sub_state("")
+ArmCtrl::ArmCtrl(string _name, string _limb, bool no_robot) :
+                 RobotInterface(_limb, no_robot), Gripper(_limb),
+                 name(_name), marker_id(-1), action(""), sub_state("")
 {
     std::string topic = "/"+getName()+"/state_"+_limb;
     state_pub = _n.advertise<baxter_collaboration::ArmState>(topic,1);
@@ -23,6 +24,9 @@ ArmCtrl::ArmCtrl(string _name, string _limb, bool no_robot) : RobotInterface(_li
 
     insertAction(ACTION_HOME,    &ArmCtrl::goHome);
     insertAction(ACTION_RELEASE, &ArmCtrl::releaseObject);
+
+    insertAction("recover_"+string(ACTION_HOME),    &ArmCtrl::notImplemented);
+    insertAction("recover_"+string(ACTION_RELEASE), &ArmCtrl::notImplemented);
 }
 
 void ArmCtrl::InternalThreadEntry()
@@ -234,6 +238,12 @@ bool ArmCtrl::moveArm(string dir, double dist, string mode, bool disable_coll_av
         r.sleep();
     }
 
+    return false;
+}
+
+bool ArmCtrl::notImplemented()
+{
+    ROS_ERROR("[%s] Action not implemented!", getLimb().c_str());
     return false;
 }
 

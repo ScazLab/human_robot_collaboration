@@ -29,7 +29,6 @@
 #define ACTION_PASS         "pass"
 #define ACTION_HOLD         "hold"
 #define ACTION_HAND_OVER    "hand_over"
-#define ACTION_RECOVER      "recover"
 
 #define Z_HIGH         0.400
 #define Z_LOW          0.200
@@ -42,7 +41,7 @@
 #define HORIZONTAL_ORI_L      0.0, 0.70, 0.10, 0.70
 #define VERTICAL_ORI_L        0.0,  1.0,  0.0,  0.0
 
-#define HORIZONTAL_ORI_R     -0.589631754695, 0.239895010244, -0.298576525167, 0.711081455625
+#define HORIZONTAL_ORI_R     -0.590, 0.240, -0.298, 0.711
 #define HANDOVER_ORI_R        0.0, 0.7, 0.7, 0.0
 
 #define VERTICAL_ORI_R        0.0, 1.0, 0.0, 0.0
@@ -54,7 +53,8 @@
 #define HOME_POS_R   0.65, -0.25
 
 /*
- * checks if two numbers rounded up to 2 decimal points are within 0.0z (z is specified no.) to each other
+ * checks if two numbers rounded up to 2 decimal points are within 0.0z
+ * (z is specified no.) to each other
  *
  * @param      two floats x and y specifying the numbers to be checked,
  *            and a float z determining the desired accuracy
@@ -75,7 +75,7 @@ bool withinThres(float x, float y, float t);
 /*
  * sets the position of a pose
  *
- * @param      Pose* pose, and three floats indicating the x-y-z coordinates of a position
+ * @param     pose, and three floats indicating the 3D position
  *
  * return     N/A
  */
@@ -84,7 +84,7 @@ void setPosition(geometry_msgs::Pose& pose, float x, float y, float z);
 /*
  * sets the orientation of a pose
  *
- * @param      Pose* pose, and three floats indicating the x-y-z-w coordinates of an orientation
+ * @param     pose, and four floats indicating the 4D orientation quaternion
  *
  * return     N/A
  */

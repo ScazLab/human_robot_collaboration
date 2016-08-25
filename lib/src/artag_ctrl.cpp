@@ -21,7 +21,16 @@ ARTagCtrl::ARTagCtrl(std::string _name, std::string _limb, bool _no_robot) :
     insertAction(ACTION_GET,       static_cast<f_action>(&ARTagCtrl::getObject));
     insertAction(ACTION_PASS,      static_cast<f_action>(&ARTagCtrl::passObject));
     insertAction(ACTION_HAND_OVER, static_cast<f_action>(&ARTagCtrl::handOver));
-    insertAction(ACTION_RECOVER,   static_cast<f_action>(&ARTagCtrl::recover_get));
+
+    // Let's override the recover_release action:
+    removeAction("recover_"+string(ACTION_RELEASE));
+    insertAction("recover_"+string(ACTION_RELEASE),
+                 static_cast<f_action>(&ARTagCtrl::recoverRelease));
+
+    // Not implemented actions throw a ROS_ERROR and return always false:
+    insertAction("recover_"+string(ACTION_GET),       &ARTagCtrl::notImplemented);
+    insertAction("recover_"+string(ACTION_PASS),      &ARTagCtrl::notImplemented);
+    insertAction("recover_"+string(ACTION_HAND_OVER), &ARTagCtrl::notImplemented);
 
     if (!callAction(ACTION_HOME)) setState(ERROR);
 
@@ -37,8 +46,10 @@ ARTagCtrl::ARTagCtrl(std::string _name, std::string _limb, bool _no_robot) :
 // Protected
 bool ARTagCtrl::doAction(int s, std::string a)
 {
-    if (a == ACTION_GET       || a == ACTION_PASS ||
-        a == ACTION_HAND_OVER || a == ACTION_RECOVER)
+    if (a == ACTION_GET       || a == "recover_"+string(ACTION_GET)       ||
+        a == ACTION_PASS      || a == "recover_"+string(ACTION_PASS)      ||
+        a == ACTION_HAND_OVER || a == "recover_"+string(ACTION_HAND_OVER) ||
+        a == "recover_"+string(ACTION_RELEASE))
     {
         if (callAction(a))  return true;
         else                recoverFromError();
@@ -63,7 +74,7 @@ bool ARTagCtrl::getObject()
     return true;
 }
 
-bool ARTagCtrl::recover_get()
+bool ARTagCtrl::recoverRelease()
 {
     if (getSubState() != ACTION_RELEASE) return false;
     if(!hoverAboveTableStrict())         return false;
