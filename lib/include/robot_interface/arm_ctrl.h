@@ -1,6 +1,8 @@
 #ifndef __ARM_CONTROLLER_H__
 #define __ARM_CONTROLLER_H__
 
+#include <map>
+
 #include "robot_interface/robot_interface.h"
 #include "robot_interface/gripper.h"
 
@@ -21,6 +23,9 @@ private:
 
     std::string    action;
     int         marker_id;
+
+    typedef bool(ArmCtrl::*f_action)();
+    std::map <std::string, f_action> action_db;
 
     ros::ServiceServer service;
     ros::ServiceServer service_other_limb;
@@ -76,7 +81,27 @@ protected:
      * @return true/false if success/failure
      */
     bool moveArm(std::string dir, double dist, std::string mode = "loose",
-                                           bool disable_coll_av = false);
+                                             bool disable_coll_av = false);
+
+    /**
+     * Adds an action to the action database
+     * @param  a the action to be removed
+     * @param  f a pointer to the action, in the form bool action()
+     */
+    void insertAction(const std::string &a, ArmCtrl::f_action f);
+
+    /**
+     * Removes an action from the database
+     * @param a the action to be removed
+     */
+    void removeAction(const std::string &a);
+
+    /**
+     * Calls an action from the action database
+     * @param    a the action to take
+     * @return   true/false if the action called was successful or failed
+     */
+    bool callAction(const std::string &a);
 
 public:
     // CONSTRUCTOR

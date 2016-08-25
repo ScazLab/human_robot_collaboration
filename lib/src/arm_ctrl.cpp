@@ -245,6 +245,22 @@ bool ArmCtrl::moveArm(string dir, double dist, string mode, bool disable_coll_av
     return false;
 }
 
+void ArmCtrl::insertAction(const std::string &a, ArmCtrl::f_action f)
+{
+    action_db.insert( std::make_pair( a, f ));
+}
+
+void ArmCtrl::removeAction(const std::string &a)
+{
+    action_db.erase(a);
+}
+
+bool ArmCtrl::callAction(const std::string &a)
+{
+    f_action act = action_db[a];
+    return (this->*act)();
+}
+
 bool ArmCtrl::hoverAboveTable(double height, string mode, bool disable_coll_av)
 {
     if (getLimb() == "right")
