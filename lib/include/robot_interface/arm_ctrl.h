@@ -31,7 +31,16 @@ private:
 
 protected:
 
+    /**
+     * Pointer to the action prototype function, which does not take any
+     * input argument and returns true/false if success/failure
+     */
     typedef bool(ArmCtrl::*f_action)();
+
+    /**
+     * Action database, which pairs a string key, corresponding to the action name,
+     * with its relative action, which is an f_action
+     */
     std::map <std::string, f_action> action_db;
 
     /**
@@ -41,8 +50,10 @@ protected:
     void InternalThreadEntry();
 
     /**
-     * This function implements the action. It is child-specific, and for this reason
-     * it is virtual.
+     * This function wraps the arm-specific and task-specific actions.
+     * For this reason, it has been implemented as virtual because it depends on
+     * the child class.
+     *
      * @param  s the state of the system before starting the action
      * @param  a the action to do
      * @return   true/false if success/failure
@@ -63,7 +74,16 @@ protected:
     bool hoverAboveTable(double height, std::string mode="loose",
                                     bool disable_coll_av = false);
 
-
+    /**
+     * Hovers above the table with a specific joint configuration. This has
+     * been introduced in order to force the arms to go to the home configuration
+     * in always the same exact way, in order to clean the seed configuration in
+     * case of subsequent inverse kinematics requests.
+     *
+     * @param  disable_coll_av if to disable the collision avoidance while
+     *                         performing the action or not
+     * @return                 true/false if success/failure
+     */
     virtual bool hoverAboveTableStrict(bool disable_coll_av = false) = 0;
 
     /**
