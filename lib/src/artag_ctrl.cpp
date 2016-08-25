@@ -36,14 +36,14 @@ bool ARTagCtrl::doAction(int s, std::string a)
 
     if (a == ACTION_GET)
     {
-        if (pickObject())
+        if (getObject())
         {
             setState(DONE);
             return true;
         }
         else recoverFromError();
     }
-    else if (a == ACTION_PASS && getSubState(ACTION_GET))
+    else if (a == ACTION_PASS && getSubState() == ACTION_GET)
     {
         if(passObject())
         {
@@ -61,6 +61,15 @@ bool ARTagCtrl::doAction(int s, std::string a)
         }
         else recoverFromError();
     }
+    else if (a == ACTION_RECOVER && getSubState() == ACTION_GET)
+    {
+        if (recover_get())
+        {
+            setState(DONE);
+            return true;
+        }
+        else recoverFromError();
+    }
     else
     {
         ROS_ERROR("[%s] Invalid State %i", getLimb().c_str(), s);
@@ -69,28 +78,25 @@ bool ARTagCtrl::doAction(int s, std::string a)
     return false;
 }
 
-bool ARTagCtrl::handOver()
+bool ARTagCtrl::getObject()
 {
-    if (!pickObject())              return false;
-    if (!prepare4HandOver())        return false;
-    ros::Duration(0.2).sleep();
-    if (!waitForOtherArm())         return false;
-    ros::Duration(0.8).sleep();
-    if (!releaseObject())           return false;
-    if (!moveArm("up", 0.05))       return false;
+    if (!hoverAbovePool())          return false;
+    ros::Duration(0.05).sleep();
+    if (!pickARTag())               return false;
+    if (!gripObject())              return false;
+    if (!moveArm("up", 0.4))        return false;
     if (!hoverAboveTableStrict())   return false;
-    setSubState("");
 
     return true;
 }
 
-bool ARTagCtrl::pickObject()
+bool ARTagCtrl::recover_get()
 {
-    if (!hoverAbovePool())          return false;
-    ros::Duration(0.1).sleep();
+    if(!hoverAboveTable(Z_HIGH))    return false;
+    ros::Duration(0.05).sleep();
     if (!pickARTag())               return false;
     if (!gripObject())              return false;
-    if (!moveArm("up", 0.4))        return false;
+    if (!moveArm("up", 0.2))        return false;
     if (!hoverAboveTableStrict())   return false;
 
     return true;
@@ -103,6 +109,21 @@ bool ARTagCtrl::passObject()
     if (!waitForForceInteraction())     return false;
     if (!releaseObject())               return false;
     if (!hoverAboveTableStrict())       return false;
+
+    return true;
+}
+
+bool ARTagCtrl::handOver()
+{
+    if (!getObject())              return false;
+    if (!prepare4HandOver())        return false;
+    ros::Duration(0.2).sleep();
+    if (!waitForOtherArm())         return false;
+    ros::Duration(0.8).sleep();
+    if (!releaseObject())           return false;
+    if (!moveArm("up", 0.05))       return false;
+    if (!hoverAboveTableStrict())   return false;
+    setSubState("");
 
     return true;
 }

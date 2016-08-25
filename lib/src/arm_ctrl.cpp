@@ -256,8 +256,8 @@ bool ArmCtrl::hoverAboveTable(double height, string mode, bool disable_coll_av)
     {
         return RobotInterface::goToPose(HOME_POS_L, height, VERTICAL_ORI_L,
                                                      mode, disable_coll_av);
-
     }
+    else return false;
 }
 
 bool ArmCtrl::goHome()
@@ -269,7 +269,6 @@ bool ArmCtrl::goHome()
 
 void ArmCtrl::recoverFromError()
 {
-    releaseObject();
     goHome();
 }
 

@@ -28,7 +28,9 @@ private:
 
     bool pickARTag();
 
-    bool pickObject();
+    bool getObject();
+
+    bool recover_get();
 
     bool passObject();
 
