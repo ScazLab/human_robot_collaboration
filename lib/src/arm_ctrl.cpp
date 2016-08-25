@@ -20,6 +20,9 @@ ArmCtrl::ArmCtrl(string _name, string _limb, bool no_robot) : RobotInterface(_li
     topic = "/"+getName()+"/service_"+_limb+"_to_"+other_limb;
     service_other_limb = _n.advertiseService(topic, &ArmCtrl::serviceOtherLimbCb,this);
     ROS_INFO("[%s] Created service server with name : %s", getLimb().c_str(), topic.c_str());
+
+    insertAction(ACTION_HOME,    &ArmCtrl::goHome);
+    insertAction(ACTION_RELEASE, &ArmCtrl::releaseObject);
 }
 
 void ArmCtrl::InternalThreadEntry()
@@ -30,18 +33,19 @@ void ArmCtrl::InternalThreadEntry()
 
     setState(WORKING);
 
-    if (a == ACTION_HOME)
+    if (a == ACTION_HOME || a == ACTION_RELEASE)
     {
-        if (goHome())   setState(DONE);
-    }
-    else if (a == ACTION_RELEASE)
-    {
-        if (releaseObject())   setState(DONE);
+        if (callAction(a))   setState(DONE);
     }
     else if (s == START || s == ERROR ||
              s == DONE  || s == KILLED )
     {
-        if (!doAction(s, a))   setState(ERROR);
+        if (doAction(s, a))   setState(DONE);
+        else                  setState(ERROR);
+    }
+    else
+    {
+        ROS_ERROR("[%s] Invalid Action %s in state %i", getLimb().c_str(), a.c_str(), s);
     }
 
     if (getState()==WORKING)

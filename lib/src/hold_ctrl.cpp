@@ -10,32 +10,22 @@ HoldCtrl::HoldCtrl(std::string _name, std::string _limb, bool _no_robot) :
 
     if (_no_robot) return;
 
-    if (!goHome()) setState(ERROR);
+    insertAction(ACTION_HOLD,      static_cast<f_action>(&HoldCtrl::holdObject));
+    insertAction(ACTION_HAND_OVER, static_cast<f_action>(&HoldCtrl::handOver));
+
+    if (!callAction(ACTION_HOME)) setState(ERROR);
 }
 
 bool HoldCtrl::doAction(int s, std::string a)
 {
-    if (a == ACTION_HOLD)
+    if (a == ACTION_HOLD || a == ACTION_HAND_OVER)
     {
-        if (holdObject())
-        {
-            setState(DONE);
-            return true;
-        }
-        else recoverFromError();
-    }
-    else if (a == ACTION_HAND_OVER)
-    {
-        if (handOver())
-        {
-            setState(DONE);
-            return true;
-        }
-        else recoverFromError();
+        if (callAction(a))  return true;
+        else                recoverFromError();
     }
     else
     {
-        ROS_ERROR("[%s] Invalid State %i", getLimb().c_str(), s);
+        ROS_ERROR("[%s] Invalid Action %s in state %i", getLimb().c_str(), a.c_str(), s);
     }
 
     return false;

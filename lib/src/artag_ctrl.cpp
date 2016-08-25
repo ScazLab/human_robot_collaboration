@@ -18,7 +18,12 @@ ARTagCtrl::ARTagCtrl(std::string _name, std::string _limb, bool _no_robot) :
 
     if (_no_robot) return;
 
-    if (!goHome()) setState(ERROR);
+    insertAction(ACTION_GET,       static_cast<f_action>(&ARTagCtrl::getObject));
+    insertAction(ACTION_PASS,      static_cast<f_action>(&ARTagCtrl::passObject));
+    insertAction(ACTION_HAND_OVER, static_cast<f_action>(&ARTagCtrl::handOver));
+    insertAction(ACTION_RECOVER,   static_cast<f_action>(&ARTagCtrl::recover_get));
+
+    if (!callAction(ACTION_HOME)) setState(ERROR);
 
     // moveArm("up",0.2,"strict");
     // moveArm("down",0.2,"strict");
@@ -32,47 +37,15 @@ ARTagCtrl::ARTagCtrl(std::string _name, std::string _limb, bool _no_robot) :
 // Protected
 bool ARTagCtrl::doAction(int s, std::string a)
 {
-    clearMarkerPose();
-
-    if (a == ACTION_GET)
+    if (a == ACTION_GET       || a == ACTION_PASS ||
+        a == ACTION_HAND_OVER || a == ACTION_RECOVER)
     {
-        if (getObject())
-        {
-            setState(DONE);
-            return true;
-        }
-        else recoverFromError();
-    }
-    else if (a == ACTION_PASS && getSubState() == ACTION_GET)
-    {
-        if(passObject())
-        {
-            setState(DONE);
-            return true;
-        }
-        else recoverFromError();
-    }
-    else if (a == ACTION_HAND_OVER)
-    {
-        if (handOver())
-        {
-            setState(DONE);
-            return true;
-        }
-        else recoverFromError();
-    }
-    else if (a == ACTION_RECOVER && getSubState() == ACTION_GET)
-    {
-        if (recover_get())
-        {
-            setState(DONE);
-            return true;
-        }
-        else recoverFromError();
+        if (callAction(a))  return true;
+        else                recoverFromError();
     }
     else
     {
-        ROS_ERROR("[%s] Invalid State %i", getLimb().c_str(), s);
+        ROS_ERROR("[%s] Invalid Action %s in state %i", getLimb().c_str(), a.c_str(), s);
     }
 
     return false;
@@ -92,18 +65,20 @@ bool ARTagCtrl::getObject()
 
 bool ARTagCtrl::recover_get()
 {
-    if(!hoverAboveTable(Z_HIGH))    return false;
+    if (getSubState() != ACTION_GET) return false;
+    if(!hoverAboveTable(Z_HIGH))     return false;
     ros::Duration(0.05).sleep();
-    if (!pickARTag())               return false;
-    if (!gripObject())              return false;
-    if (!moveArm("up", 0.2))        return false;
-    if (!hoverAboveTableStrict())   return false;
+    if (!pickARTag())                return false;
+    if (!gripObject())               return false;
+    if (!moveArm("up", 0.2))         return false;
+    if (!hoverAboveTableStrict())    return false;
 
     return true;
 }
 
 bool ARTagCtrl::passObject()
 {
+    if (getSubState() != ACTION_GET)    return false;
     if (!moveObjectTowardHuman())       return false;
     ros::Duration(1.0).sleep();
     if (!waitForForceInteraction())     return false;

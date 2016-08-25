@@ -24,15 +24,16 @@ private:
     std::string    action;
     int         marker_id;
 
-    typedef bool(ArmCtrl::*f_action)();
-    std::map <std::string, f_action> action_db;
-
     ros::ServiceServer service;
     ros::ServiceServer service_other_limb;
 
     ros::Publisher     state_pub;
 
 protected:
+
+    typedef bool(ArmCtrl::*f_action)();
+    std::map <std::string, f_action> action_db;
+
     /**
      * Provides basic functionalities for the object, such as a goHome and releaseObject.
      * For deeper, class-specific specialization, please modify doAction() instead.
