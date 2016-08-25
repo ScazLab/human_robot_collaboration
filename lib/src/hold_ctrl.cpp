@@ -140,11 +140,13 @@ bool HoldCtrl::serviceOtherLimbCb(baxter_collaboration::AskFeedback::Request  &r
 
 bool HoldCtrl::prepare4HandOver()
 {
+    ROS_INFO("[%s] Preparing for handover..", getLimb().c_str());
     return goToPose(0.61, 0.15, Z_LOW+0.02, HANDOVER_ORI_R);
 }
 
 bool HoldCtrl::goHoldPose(double height)
 {
+    ROS_INFO("[%s] Going to hold position..", getLimb().c_str());
     return goToPose(0.80, -0.4, height, HORIZONTAL_ORI_R);
 }
 

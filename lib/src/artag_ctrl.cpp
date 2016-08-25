@@ -65,13 +65,13 @@ bool ARTagCtrl::getObject()
 
 bool ARTagCtrl::recover_get()
 {
-    if (getSubState() != ACTION_GET) return false;
-    if(!hoverAboveTable(Z_HIGH))     return false;
+    if (getSubState() != ACTION_RELEASE) return false;
+    if(!hoverAboveTableStrict())         return false;
     ros::Duration(0.05).sleep();
-    if (!pickARTag())                return false;
-    if (!gripObject())               return false;
-    if (!moveArm("up", 0.2))         return false;
-    if (!hoverAboveTableStrict())    return false;
+    if (!pickARTag())                    return false;
+    if (!gripObject())                   return false;
+    if (!moveArm("up", 0.2))             return false;
+    if (!hoverAboveTableStrict())        return false;
 
     return true;
 }
