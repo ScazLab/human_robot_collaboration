@@ -1,4 +1,4 @@
-#include "robot_interface/hold_ctrl.h"
+#include "baxter_collaboration/hold_ctrl.h"
 
 using namespace std;
 using namespace baxter_core_msgs;

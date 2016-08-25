@@ -16,35 +16,44 @@ add_library(robot_interface include/robot_interface/utils.h
                             include/robot_interface/robot_interface.h
                             include/robot_interface/gripper.h
                             include/robot_interface/arm_ctrl.h
-                            include/robot_interface/artag_ctrl.h
-                            include/robot_interface/hold_ctrl.h
                             src/utils.cpp
                             src/ros_thread.cpp
                             src/baxter_trac_ik.cpp
                             src/robot_interface.cpp
                             src/gripper.cpp
-                            src/arm_ctrl.cpp
-                            src/artag_ctrl.cpp
-                            src/hold_ctrl.cpp)
+                            src/arm_ctrl.cpp)
+
+add_library(baxter_collaboration include/baxter_collaboration/artag_ctrl.h
+                                 include/baxter_collaboration/hold_ctrl.h
+                                 src/artag_ctrl.cpp
+                                 src/hold_ctrl.cpp)
 
 ## Add cmake target dependencies of the library
 ## as an example, code may need to be generated before libraries
 ## either from message generation or dynamic reconfigure
-add_dependencies(robot_interface    baxter_collaboration_generate_messages_cpp
-                                    ${catkin_EXPORTED_TARGETS})
+add_dependencies(robot_interface        baxter_collaboration_generate_messages_cpp
+                                        ${catkin_EXPORTED_TARGETS})
+
+add_dependencies(baxter_collaboration   baxter_collaboration_generate_messages_cpp
+                                        robot_interface
+                                        ${catkin_EXPORTED_TARGETS})
 
 ## Specify libraries to link a library or executable target against
-target_link_libraries(robot_interface  ${OpenCV_LIBS}
-                                       ${catkin_LIBRARIES})
+target_link_libraries(robot_interface       ${OpenCV_LIBS}
+                                            ${catkin_LIBRARIES})
+
+target_link_libraries(baxter_collaboration  robot_interface
+                                            ${catkin_LIBRARIES})
 
 ## Mark libraries for installation
-install (TARGETS robot_interface
+install (TARGETS robot_interface baxter_collaboration
          ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
          LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
 )
 
 ## Mark cpp header files for installation
 install(DIRECTORY ${PROJECT_SOURCE_DIR}/include/robot_interface
+                  ${PROJECT_SOURCE_DIR}/include/baxter_collaboration
         DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
         FILES_MATCHING PATTERN "*.h"
 )

@@ -2,8 +2,8 @@
 
 #include <ros/ros.h>
 #include <signal.h>
-#include "robot_interface/artag_ctrl.h"
-#include "robot_interface/hold_ctrl.h"
+#include "baxter_collaboration/artag_ctrl.h"
+#include "baxter_collaboration/hold_ctrl.h"
 
 using namespace std;
 

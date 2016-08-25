@@ -136,7 +136,8 @@ add_executable(baxter_display src/baxter_display.cpp)
 
 ## Add cmake target dependencies of the executable
 ## same as for the library above
-add_dependencies(action_provider ${${PROJECT_NAME}_EXPORTED_TARGETS}
+add_dependencies(action_provider baxter_collaboration_generate_messages_cpp
+                                 ${${PROJECT_NAME}_EXPORTED_TARGETS}
                                  ${catkin_EXPORTED_TARGETS})
 add_dependencies(baxter_display  baxter_collaboration_generate_messages_cpp
                                  ${${PROJECT_NAME}_EXPORTED_TARGETS}
@@ -144,6 +145,7 @@ add_dependencies(baxter_display  baxter_collaboration_generate_messages_cpp
 
 ## Specify libraries to link a library or executable target against
 target_link_libraries(action_provider  robot_interface
+                                       baxter_collaboration
                                        ${catkin_LIBRARIES} )
 target_link_libraries(baxter_display   robot_interface
                                        ${OpenCV_LIBS}
