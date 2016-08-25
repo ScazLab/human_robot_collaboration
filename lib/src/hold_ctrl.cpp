@@ -15,10 +15,7 @@ HoldCtrl::HoldCtrl(std::string _name, std::string _limb, bool _no_robot) :
 
 bool HoldCtrl::doAction(int s, std::string a)
 {
-    if (a == ACTION_HOLD && (s == START ||
-                             s == ERROR ||
-                             s == DONE  ||
-                             s == KILLED ))
+    if (a == ACTION_HOLD)
     {
         if (holdObject())
         {
@@ -27,10 +24,7 @@ bool HoldCtrl::doAction(int s, std::string a)
         }
         else recoverFromError();
     }
-    else if (a == ACTION_HAND_OVER && (s == START ||
-                                       s == ERROR ||
-                                       s == DONE  ||
-                                       s == KILLED ))
+    else if (a == ACTION_HAND_OVER)
     {
         if (handOver())
         {

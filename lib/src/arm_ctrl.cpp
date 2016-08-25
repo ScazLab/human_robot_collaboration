@@ -41,7 +41,8 @@ void ArmCtrl::InternalThreadEntry()
     {
         if (releaseObject())   setState(DONE);
     }
-    else
+    else if (s == START || s == ERROR ||
+             s == DONE  || s == KILLED )
     {
         if (!doAction(s, a))   setState(ERROR);
     }
@@ -249,12 +250,12 @@ bool ArmCtrl::hoverAboveTable(double height, string mode, bool disable_coll_av)
     if (getLimb() == "right")
     {
         return RobotInterface::goToPose(HOME_POS_R, height, VERTICAL_ORI_R,
-                                                mode, disable_coll_av);
+                                                     mode, disable_coll_av);
     }
     else if (getLimb() == "left")
     {
         return RobotInterface::goToPose(HOME_POS_L, height, VERTICAL_ORI_L,
-                                                mode, disable_coll_av);
+                                                     mode, disable_coll_av);
 
     }
 }
@@ -287,6 +288,10 @@ void ArmCtrl::setState(int _state)
     //     setAction("");
     //     setMarkerID(-1);
     // }
+    if (_state == DONE)
+    {
+        setSubState(getAction());
+    }
     publishState();
 }
 

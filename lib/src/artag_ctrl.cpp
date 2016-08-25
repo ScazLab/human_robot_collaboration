@@ -34,10 +34,7 @@ bool ARTagCtrl::doAction(int s, std::string a)
 {
     clearMarkerPose();
 
-    if (a == ACTION_GET && (s == START ||
-                            s == ERROR ||
-                            s == DONE  ||
-                            s == KILLED ))
+    if (a == ACTION_GET)
     {
         if (pickObject())
         {
@@ -46,7 +43,7 @@ bool ARTagCtrl::doAction(int s, std::string a)
         }
         else recoverFromError();
     }
-    else if (a == ACTION_PASS && s == DONE)
+    else if (a == ACTION_PASS && getSubState(ACTION_GET))
     {
         if(passObject())
         {
@@ -55,10 +52,7 @@ bool ARTagCtrl::doAction(int s, std::string a)
         }
         else recoverFromError();
     }
-    else if (a == ACTION_HAND_OVER && (s == START ||
-                                       s == ERROR ||
-                                       s == DONE  ||
-                                       s == KILLED ))
+    else if (a == ACTION_HAND_OVER)
     {
         if (handOver())
         {
