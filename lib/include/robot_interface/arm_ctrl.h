@@ -134,6 +134,17 @@ protected:
     bool callAction(const std::string &a);
 
     /**
+     * Prints the action database to screen.
+     */
+    void printDB();
+
+    /**
+     * Converts the action database to a string.
+     * @return the list of allowed actions, separated by a comma.
+     */
+    std::string DBToString();
+
+    /**
      * This function wraps the arm-specific and task-specific actions.
      * For this reason, it has been implemented as virtual because it depends on
      * the child class.
