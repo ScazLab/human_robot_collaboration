@@ -29,6 +29,8 @@
 #define ACTION_PASS         "pass"
 #define ACTION_HOLD         "hold"
 #define ACTION_HAND_OVER    "hand_over"
+// Protected action keys used for things that are not real actions
+#define PROT_ACTION_LIST    "list_actions"  // list the available actions
 
 #define Z_HIGH         0.400
 #define Z_LOW          0.200
