@@ -215,8 +215,8 @@ bool ARTagCtrl::pickARTag()
     ROS_INFO("Going to: %g %g %g", x, y, z);
     if (getAction() == ACTION_HAND_OVER)
     {
-        // If we have to hand_over, let's pre-orient the end effector such that
-        // further movements are easier
+        // If we have to hand_over, let's pre-orient the end effector
+        // such that further movements are easier
         q = computeHOorientation();
 
         if (!goToPose(x, y, z, q.x,q.y,q.z,q.w,"loose"))
@@ -378,7 +378,7 @@ bool ARTagCtrl::waitForARucoData()
     ros::Rate r(10);
     while (!aruco_ok)
     {
-        if (cnt!=0) // let's skip the first one since it is very likely to occurr
+        if (cnt!=0) // let's skip the first one since it is very likely to occur
         {
             ROS_WARN("No callback from ARuco. Is ARuco running?");
         }
