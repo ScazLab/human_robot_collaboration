@@ -39,7 +39,14 @@ protected:
 
     /**
      * Action database, which pairs a string key, corresponding to the action name,
-     * with its relative action, which is an f_action
+     * with its relative action, which is an f_action.
+     *
+     * Please be aware that, by default, if the user calls an action with the wrong
+     * key or an action that is not available, the code will segfault. By C++
+     * standard: operator[] returns (*((insert(make_pair(x, T()))).first)).second
+     * Which means that if we are having a map of pointers to functions, a wrong key
+     * will segfault the software. A layer of protection has been put in place to
+     * avoid accessing a non-existing key.
      */
     std::map <std::string, f_action> action_db;
 
@@ -48,17 +55,6 @@ protected:
      * For deeper, class-specific specialization, please modify doAction() instead.
      */
     void InternalThreadEntry();
-
-    /**
-     * This function wraps the arm-specific and task-specific actions.
-     * For this reason, it has been implemented as virtual because it depends on
-     * the child class.
-     *
-     * @param  s the state of the system before starting the action
-     * @param  a the action to do
-     * @return   true/false if success/failure
-     */
-    virtual bool doAction(int s, std::string a) = 0;
 
     /**
      * Recovers from errors during execution. It provides a basic interface,
@@ -106,29 +102,50 @@ protected:
 
     /**
      * Placeholder for an action that has not been implemented (yet)
+     *
      * @return false always
      */
     bool notImplemented();
 
     /**
      * Adds an action to the action database
-     * @param  a the action to be removed
-     * @param  f a pointer to the action, in the form bool action()
+     *
+     * @param   a the action to be removed
+     * @param   f a pointer to the action, in the form bool action()
+     * @return    true/false if the insertion was successful or not
      */
-    void insertAction(const std::string &a, ArmCtrl::f_action f);
+    bool insertAction(const std::string &a, ArmCtrl::f_action f);
 
     /**
-     * Removes an action from the database
-     * @param a the action to be removed
+     * Removes an action from the database. If the action is not in the
+     * database, the return value will be false.
+     *
+     * @param   a the action to be removed
+     * @return    true/false if the removal was successful or not
      */
-    void removeAction(const std::string &a);
+    bool removeAction(const std::string &a);
 
     /**
      * Calls an action from the action database
+     *
      * @param    a the action to take
-     * @return   true/false if the action called was successful or failed
+     * @return     true/false if the action called was successful or failed
      */
     bool callAction(const std::string &a);
+
+    /**
+     * This function wraps the arm-specific and task-specific actions.
+     * For this reason, it has been implemented as virtual because it depends on
+     * the child class.
+     *
+     * @param  s the state of the system BEFORE starting the action (when this
+     *           method is called the state has been already updated to WORKING,
+     *           so there is no way for the controller to recover it a part from
+     *           this)
+     * @param  a the action to do
+     * @return   true/false if success/failure
+     */
+    virtual bool doAction(int s, std::string a) = 0;
 
 public:
     /**
