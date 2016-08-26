@@ -16,8 +16,6 @@ ARTagCtrl::ARTagCtrl(std::string _name, std::string _limb, bool _no_robot) :
 
     setState(START);
 
-    if (_no_robot) return;
-
     insertAction(ACTION_GET,       static_cast<f_action>(&ARTagCtrl::getObject));
     insertAction(ACTION_PASS,      static_cast<f_action>(&ARTagCtrl::passObject));
     insertAction(ACTION_HAND_OVER, static_cast<f_action>(&ARTagCtrl::handOver));
@@ -31,6 +29,10 @@ ARTagCtrl::ARTagCtrl(std::string _name, std::string _limb, bool _no_robot) :
     insertAction("recover_"+string(ACTION_GET),       &ARTagCtrl::notImplemented);
     insertAction("recover_"+string(ACTION_PASS),      &ARTagCtrl::notImplemented);
     insertAction("recover_"+string(ACTION_HAND_OVER), &ARTagCtrl::notImplemented);
+
+    printDB();
+
+    if (_no_robot) return;
 
     if (!callAction(ACTION_HOME)) setState(ERROR);
 

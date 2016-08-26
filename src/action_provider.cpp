@@ -31,9 +31,10 @@ int main(int argc, char ** argv)
         }
     }
 
+    printf("\n");
     ARTagCtrl  left_ctrl("action_provider","left", no_robot);
+    printf("\n");
     HoldCtrl  right_ctrl("action_provider","right", no_robot);
-
     printf("\n");
     ROS_INFO("READY! Waiting for service messages..\n");
 
