@@ -3,7 +3,12 @@
 baxterTracIK::baxterTracIK(std::string limb, bool no_robot) : _limb(limb), _urdf_param("/robot_description"),
                                                               _timeout(0.005), _eps(1e-6), _num_steps(4)
 {
-    if (no_robot) return;
+    if (no_robot)
+    {
+        _tracik_solver = 0;
+        _nominal       = 0;
+        return;
+    }
 
     // TRACK_IK::Speed: returns very quickly the first solution found
     // TRACK_IK::Distance: runs for the full timeout_in_secs, then returns the solution that minimizes SSE from the seed
