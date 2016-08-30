@@ -16,9 +16,25 @@ ARTagCtrl::ARTagCtrl(std::string _name, std::string _limb, bool _no_robot) :
 
     setState(START);
 
+    insertAction(ACTION_GET,       static_cast<f_action>(&ARTagCtrl::getObject));
+    insertAction(ACTION_PASS,      static_cast<f_action>(&ARTagCtrl::passObject));
+    insertAction(ACTION_HAND_OVER, static_cast<f_action>(&ARTagCtrl::handOver));
+
+    // Let's override the recover_release action:
+    removeAction("recover_"+string(ACTION_RELEASE));
+    insertAction("recover_"+string(ACTION_RELEASE),
+                 static_cast<f_action>(&ARTagCtrl::recoverRelease));
+
+    // Not implemented actions throw a ROS_ERROR and return always false:
+    insertAction("recover_"+string(ACTION_GET),       &ARTagCtrl::notImplemented);
+    insertAction("recover_"+string(ACTION_PASS),      &ARTagCtrl::notImplemented);
+    insertAction("recover_"+string(ACTION_HAND_OVER), &ARTagCtrl::notImplemented);
+
+    printDB();
+
     if (_no_robot) return;
 
-    if (!goHome()) setState(ERROR);
+    if (!callAction(ACTION_HOME)) setState(ERROR);
 
     // moveArm("up",0.2,"strict");
     // moveArm("down",0.2,"strict");
@@ -32,47 +48,17 @@ ARTagCtrl::ARTagCtrl(std::string _name, std::string _limb, bool _no_robot) :
 // Protected
 bool ARTagCtrl::doAction(int s, std::string a)
 {
-    clearMarkerPose();
-
-    if (a == ACTION_GET)
+    if (a == ACTION_GET       || a == "recover_"+string(ACTION_GET)       ||
+        a == ACTION_PASS      || a == "recover_"+string(ACTION_PASS)      ||
+        a == ACTION_HAND_OVER || a == "recover_"+string(ACTION_HAND_OVER) ||
+        a == "recover_"+string(ACTION_RELEASE))
     {
-        if (getObject())
-        {
-            setState(DONE);
-            return true;
-        }
-        else recoverFromError();
-    }
-    else if (a == ACTION_PASS && getSubState() == ACTION_GET)
-    {
-        if(passObject())
-        {
-            setState(DONE);
-            return true;
-        }
-        else recoverFromError();
-    }
-    else if (a == ACTION_HAND_OVER)
-    {
-        if (handOver())
-        {
-            setState(DONE);
-            return true;
-        }
-        else recoverFromError();
-    }
-    else if (a == ACTION_RECOVER && getSubState() == ACTION_GET)
-    {
-        if (recover_get())
-        {
-            setState(DONE);
-            return true;
-        }
-        else recoverFromError();
+        if (callAction(a))  return true;
+        else                recoverFromError();
     }
     else
     {
-        ROS_ERROR("[%s] Invalid State %i", getLimb().c_str(), s);
+        ROS_ERROR("[%s] Invalid Action %s in state %i", getLimb().c_str(), a.c_str(), s);
     }
 
     return false;
@@ -90,20 +76,22 @@ bool ARTagCtrl::getObject()
     return true;
 }
 
-bool ARTagCtrl::recover_get()
+bool ARTagCtrl::recoverRelease()
 {
-    if(!hoverAboveTable(Z_HIGH))    return false;
+    if (getSubState() != ACTION_RELEASE) return false;
+    if(!hoverAboveTableStrict())         return false;
     ros::Duration(0.05).sleep();
-    if (!pickARTag())               return false;
-    if (!gripObject())              return false;
-    if (!moveArm("up", 0.2))        return false;
-    if (!hoverAboveTableStrict())   return false;
+    if (!pickARTag())                    return false;
+    if (!gripObject())                   return false;
+    if (!moveArm("up", 0.2))             return false;
+    if (!hoverAboveTableStrict())        return false;
 
     return true;
 }
 
 bool ARTagCtrl::passObject()
 {
+    if (getSubState() != ACTION_GET)    return false;
     if (!moveObjectTowardHuman())       return false;
     ros::Duration(1.0).sleep();
     if (!waitForForceInteraction())     return false;
@@ -227,8 +215,8 @@ bool ARTagCtrl::pickARTag()
     ROS_INFO("Going to: %g %g %g", x, y, z);
     if (getAction() == ACTION_HAND_OVER)
     {
-        // If we have to hand_over, let's pre-orient the end effector such that
-        // further movements are easier
+        // If we have to hand_over, let's pre-orient the end effector
+        // such that further movements are easier
         q = computeHOorientation();
 
         if (!goToPose(x, y, z, q.x,q.y,q.z,q.w,"loose"))
@@ -390,7 +378,7 @@ bool ARTagCtrl::waitForARucoData()
     ros::Rate r(10);
     while (!aruco_ok)
     {
-        if (cnt!=0) // let's skip the first one since it is very likely to occurr
+        if (cnt!=0) // let's skip the first one since it is very likely to occur
         {
             ROS_WARN("No callback from ARuco. Is ARuco running?");
         }

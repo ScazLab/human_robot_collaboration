@@ -4,12 +4,10 @@
 using namespace std;
 using namespace geometry_msgs;
 
-ArmCtrl::ArmCtrl(string _name, string _limb, bool no_robot) : RobotInterface(_limb, no_robot), Gripper(_limb),
-                                                              name(_name), marker_id(-1), action(""), sub_state("")
+ArmCtrl::ArmCtrl(string _name, string _limb, bool no_robot) :
+                 RobotInterface(_limb, no_robot), Gripper(_limb),
+                 name(_name), marker_id(-1), action(""), sub_state("")
 {
-    _cuff_sub      = _n.subscribe("/robot/digital_io/" + _limb + "_lower_button/state",
-                                    SUBSCRIBER_BUFFER, &ArmCtrl::cuffOKCb, this);
-
     std::string topic = "/"+getName()+"/state_"+_limb;
     state_pub = _n.advertise<baxter_collaboration::ArmState>(topic,1);
     ROS_INFO("[%s] Created state publisher with name : %s", getLimb().c_str(), topic.c_str());
@@ -18,11 +16,17 @@ ArmCtrl::ArmCtrl(string _name, string _limb, bool no_robot) : RobotInterface(_li
 
     topic = "/"+getName()+"/service_"+_limb;
     service = _n.advertiseService(topic, &ArmCtrl::serviceCb, this);
-    ROS_INFO("[%s] Created service server with name : %s", getLimb().c_str(), topic.c_str());
+    ROS_INFO("[%s] Created service server with name  : %s", getLimb().c_str(), topic.c_str());
 
     topic = "/"+getName()+"/service_"+_limb+"_to_"+other_limb;
     service_other_limb = _n.advertiseService(topic, &ArmCtrl::serviceOtherLimbCb,this);
-    ROS_INFO("[%s] Created service server with name : %s", getLimb().c_str(), topic.c_str());
+    ROS_INFO("[%s] Created service server with name  : %s", getLimb().c_str(), topic.c_str());
+
+    insertAction(ACTION_HOME,    &ArmCtrl::goHome);
+    insertAction(ACTION_RELEASE, &ArmCtrl::releaseObject);
+
+    insertAction("recover_"+string(ACTION_HOME),    &ArmCtrl::notImplemented);
+    insertAction("recover_"+string(ACTION_RELEASE), &ArmCtrl::notImplemented);
 }
 
 void ArmCtrl::InternalThreadEntry()
@@ -33,18 +37,19 @@ void ArmCtrl::InternalThreadEntry()
 
     setState(WORKING);
 
-    if (a == ACTION_HOME)
+    if (a == ACTION_HOME || a == ACTION_RELEASE)
     {
-        if (goHome())   setState(DONE);
-    }
-    else if (a == ACTION_RELEASE)
-    {
-        if (releaseObject())   setState(DONE);
+        if (callAction(a))   setState(DONE);
     }
     else if (s == START || s == ERROR ||
              s == DONE  || s == KILLED )
     {
-        if (!doAction(s, a))   setState(ERROR);
+        if (doAction(s, a))   setState(DONE);
+        else                  setState(ERROR);
+    }
+    else
+    {
+        ROS_ERROR("[%s] Invalid Action %s in state %i", getLimb().c_str(), a.c_str(), s);
     }
 
     if (getState()==WORKING)
@@ -60,15 +65,6 @@ void ArmCtrl::InternalThreadEntry()
 
     closeInternalThread();
     return;
-}
-
-void ArmCtrl::cuffOKCb(const baxter_core_msgs::DigitalIOState& msg)
-{
-    if (msg.state == baxter_core_msgs::DigitalIOState::PRESSED)
-    {
-        ROS_DEBUG("[%s] Action Killed!",getLimb().c_str());
-        setState(KILLED);
-    }
 }
 
 bool ArmCtrl::serviceOtherLimbCb(baxter_collaboration::AskFeedback::Request  &req,
@@ -87,6 +83,15 @@ bool ArmCtrl::serviceCb(baxter_collaboration::DoAction::Request  &req,
 
     ROS_INFO("[%s] Service request received. Action: %s object: %i", getLimb().c_str(),
                                                                    action.c_str(), ID);
+
+    if (action == PROT_ACTION_LIST)
+    {
+        printDB();
+        res.success  = true;
+        res.response = DBToString();
+        return true;
+    }
+
     if (is_no_robot())
     {
         ros::Duration(2.0).sleep();
@@ -132,6 +137,80 @@ bool ArmCtrl::serviceCb(baxter_collaboration::DoAction::Request  &req,
     ROS_INFO("[%s] Service reply with success: %s\n", getLimb().c_str(),
                                             res.success?"true":"false");
     return true;
+}
+
+bool ArmCtrl::notImplemented()
+{
+    ROS_ERROR("[%s] Action not implemented!", getLimb().c_str());
+    return false;
+}
+
+bool ArmCtrl::insertAction(const std::string &a, ArmCtrl::f_action f)
+{
+    if (a == PROT_ACTION_LIST)
+    {
+        ROS_ERROR("[%s][action_db] Attempted to insert protected action key: %s",
+                 getLimb().c_str(), a.c_str());
+        return false;
+    }
+
+    if (action_db.find(a) != action_db.end()) // The action is in the db
+    {
+        ROS_WARN("[%s][action_db] Overwriting existing action with key %s",
+                 getLimb().c_str(), a.c_str());
+    }
+
+    action_db.insert( std::make_pair( a, f ));
+    return true;
+}
+
+bool ArmCtrl::removeAction(const std::string &a)
+{
+    if (action_db.find(a) != action_db.end()) // The action is in the db
+    {
+        action_db.erase(a);
+        return true;
+    }
+    else
+    {
+        ROS_WARN("[%s][action_db] Action %s is not in the database.",
+                 getLimb().c_str(), a.c_str());
+        return false;
+    }
+}
+
+bool ArmCtrl::callAction(const std::string &a)
+{
+    if (action_db.find(a) != action_db.end()) // The action is in the db
+    {
+        f_action act = action_db[a];
+        return (this->*act)();
+    }
+    else
+    {
+        ROS_ERROR("[%s][action_db] Action %s is not in the database!",
+                  getLimb().c_str(), a.c_str());
+        return false;
+    }
+}
+
+void ArmCtrl::printDB()
+{
+    ROS_INFO("[%s] Available actions in the database : %s",
+              getLimb().c_str(), DBToString().c_str());
+}
+
+string ArmCtrl::DBToString()
+{
+    string res = "";
+    map<string, f_action>::iterator it;
+
+    for ( it = action_db.begin(); it != action_db.end(); it++ )
+    {
+        res = res + it->first + ", ";
+    }
+    res = res.substr(0, res.size()-2); // Remove the last ", "
+    return res;
 }
 
 bool ArmCtrl::moveArm(string dir, double dist, string mode, bool disable_coll_av)

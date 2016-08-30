@@ -331,7 +331,7 @@ bool RobotInterface::hasPoseCompleted(double px, double py, double pz,
     }
     else
     {
-        ROS_ERROR("Please specify a mode of operation!");
+        ROS_ERROR("[%s] Please specify a mode of operation!", getLimb().c_str());
         return false;
     }
 

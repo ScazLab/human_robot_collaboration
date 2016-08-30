@@ -8,34 +8,32 @@ HoldCtrl::HoldCtrl(std::string _name, std::string _limb, bool _no_robot) :
 {
     setState(START);
 
+    insertAction(ACTION_HOLD,      static_cast<f_action>(&HoldCtrl::holdObject));
+    insertAction(ACTION_HAND_OVER, static_cast<f_action>(&HoldCtrl::handOver));
+
+    // Not implemented actions throw a ROS_ERROR and return always false:
+    insertAction("recover_"+string(ACTION_HOLD),      &HoldCtrl::notImplemented);
+    insertAction("recover_"+string(ACTION_HAND_OVER), &HoldCtrl::notImplemented);
+
+    printDB();
+
     if (_no_robot) return;
 
-    if (!goHome()) setState(ERROR);
+    if (!callAction(ACTION_HOME)) setState(ERROR);
 }
 
 bool HoldCtrl::doAction(int s, std::string a)
 {
-    if (a == ACTION_HOLD)
+    if (a == ACTION_HOLD      || a == "recover_"+string(ACTION_HOLD)      ||
+        a == ACTION_HAND_OVER || a == "recover_"+string(ACTION_HAND_OVER) ||
+        a == "recover_"+string(ACTION_RELEASE))
     {
-        if (holdObject())
-        {
-            setState(DONE);
-            return true;
-        }
-        else recoverFromError();
-    }
-    else if (a == ACTION_HAND_OVER)
-    {
-        if (handOver())
-        {
-            setState(DONE);
-            return true;
-        }
-        else recoverFromError();
+        if (callAction(a))  return true;
+        else                recoverFromError();
     }
     else
     {
-        ROS_ERROR("[%s] Invalid State %i", getLimb().c_str(), s);
+        ROS_ERROR("[%s] Invalid Action %s in state %i", getLimb().c_str(), a.c_str(), s);
     }
 
     return false;
@@ -150,11 +148,13 @@ bool HoldCtrl::serviceOtherLimbCb(baxter_collaboration::AskFeedback::Request  &r
 
 bool HoldCtrl::prepare4HandOver()
 {
+    ROS_INFO("[%s] Preparing for handover..", getLimb().c_str());
     return goToPose(0.61, 0.15, Z_LOW+0.02, HANDOVER_ORI_R);
 }
 
 bool HoldCtrl::goHoldPose(double height)
 {
+    ROS_INFO("[%s] Going to hold position..", getLimb().c_str());
     return goToPose(0.80, -0.4, height, HORIZONTAL_ORI_R);
 }
 
