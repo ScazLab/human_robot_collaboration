@@ -40,36 +40,6 @@ private:
     cv::Scalar red;
     cv::Scalar green;
     cv::Scalar blue;
-public:
-
-    BaxterDisplay(string _name) : name(_name), it(nh), speech(""), speech_duration(10.0)
-    {
-        im_pub = it.advertise("/robot/xdisplay", 1);
-
-        l_sub = nh.subscribe("/action_provider/state_left", 1, &BaxterDisplay::armStateCbL, this);
-        r_sub = nh.subscribe("/action_provider/state_right",1, &BaxterDisplay::armStateCbR, this);
-
-        r_sub = nh.subscribe("/action_provider/speech",1, &BaxterDisplay::speechCb, this);
-
-        h = 600;
-        w = 1024;
-
-        w_delim = 8;
-
-        l_state.state  = "START";
-        l_state.action =     "";
-        l_state.object =     "";
-
-        r_state.state  = "START";
-        r_state.action =     "";
-        r_state.object =     "";
-
-        red   = cv::Scalar(  44,  48, 201);  // BGR color code
-        green = cv::Scalar(  60, 160,  60);
-        blue  = cv::Scalar( 200, 162,  77);
-
-        displayArmStates();
-    };
 
     void speechCb(const std_msgs::String& msg)
     {
@@ -85,7 +55,7 @@ public:
     {
         speech = "";
         displayArmStates();
-    }
+    };
 
     void armStateCbL(const ArmState& msg)
     {
@@ -111,42 +81,6 @@ public:
         }
 
         displayArmStates();
-    }
-
-    bool displayArmStates()
-    {
-        cv::Mat l = createSubImage("LEFT");
-        cv::Mat r = createSubImage("RIGHT");
-        cv::Mat d(h,w_delim,CV_8UC3,cv::Scalar::all(80));
-
-        cv::Mat res(h,w,CV_8UC3,cv::Scalar(255,100,255));
-
-        // Move right boundary to the left.
-        res.adjustROI(0,0,0,-(w+w_delim)/2);
-        r.copyTo(res);
-
-        // Move the left boundary to the right, right boundary to the right.
-        res.adjustROI(0, 0, -(w-w_delim)/2, w_delim);
-        d.copyTo(res);
-
-        // Move the left boundary to the right, right boundary to the right.
-        res.adjustROI(0, 0, -w_delim, (w-w_delim)/2);
-        l.copyTo(res);
-
-        res.adjustROI(0, 0, (w+w_delim)/2, 0);
-
-        displaySpeech(res);
-
-        cv_bridge::CvImage msg;
-        msg.encoding = sensor_msgs::image_encodings::BGR8;
-        msg.image    = res;
-
-        im_pub.publish(msg.toImageMsg());
-
-        // cv::imshow("res", res);
-        // cv::waitKey(20);
-
-        return true;
     };
 
     void displaySpeech(cv::Mat& in)
@@ -224,7 +158,75 @@ public:
         }
 
         return img;
-    }
+    };
+
+public:
+
+    BaxterDisplay(string _name) : name(_name), it(nh), speech(""), speech_duration(10.0)
+    {
+        im_pub = it.advertise("/robot/xdisplay", 1);
+
+        l_sub = nh.subscribe("/action_provider/state_left", 1, &BaxterDisplay::armStateCbL, this);
+        r_sub = nh.subscribe("/action_provider/state_right",1, &BaxterDisplay::armStateCbR, this);
+
+        r_sub = nh.subscribe("/action_provider/speech",1, &BaxterDisplay::speechCb, this);
+
+        h = 600;
+        w = 1024;
+
+        w_delim = 8;
+
+        l_state.state  = "START";
+        l_state.action =     "";
+        l_state.object =     "";
+
+        r_state.state  = "START";
+        r_state.action =     "";
+        r_state.object =     "";
+
+        red   = cv::Scalar(  44,  48, 201);  // BGR color code
+        green = cv::Scalar(  60, 160,  60);
+        blue  = cv::Scalar( 200, 162,  77);
+
+        displayArmStates();
+    };
+
+    bool displayArmStates()
+    {
+        cv::Mat l = createSubImage("LEFT");
+        cv::Mat r = createSubImage("RIGHT");
+        cv::Mat d(h,w_delim,CV_8UC3,cv::Scalar::all(80));
+
+        cv::Mat res(h,w,CV_8UC3,cv::Scalar(255,100,255));
+
+        // Move right boundary to the left.
+        res.adjustROI(0,0,0,-(w+w_delim)/2);
+        r.copyTo(res);
+
+        // Move the left boundary to the right, right boundary to the right.
+        res.adjustROI(0, 0, -(w-w_delim)/2, w_delim);
+        d.copyTo(res);
+
+        // Move the left boundary to the right, right boundary to the right.
+        res.adjustROI(0, 0, -w_delim, (w-w_delim)/2);
+        l.copyTo(res);
+
+        res.adjustROI(0, 0, (w+w_delim)/2, 0);
+
+        displaySpeech(res);
+
+        cv_bridge::CvImage msg;
+        msg.encoding = sensor_msgs::image_encodings::BGR8;
+        msg.image    = res;
+
+        im_pub.publish(msg.toImageMsg());
+
+        // cv::imshow("res", res);
+        // cv::waitKey(20);
+
+        return true;
+    };
+
 };
 
 int main(int argc, char ** argv)
