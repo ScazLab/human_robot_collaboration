@@ -2,6 +2,7 @@
 
 #include <ros/ros.h>
 #include <ros/console.h>
+#include <std_msgs/String.h>
 #include <image_transport/image_transport.h>
 #include <cv_bridge/cv_bridge.h>
 #include <sensor_msgs/image_encodings.h>
@@ -17,11 +18,16 @@ private:
     std::string name;
 
     ros::NodeHandle    nh;
-    ros::Subscriber l_sub;
-    ros::Subscriber r_sub;
+    ros::Subscriber l_sub;  // Subscriber for the left  arm state
+    ros::Subscriber r_sub;  // Subscriber for the right arm state
+    ros::Subscriber s_sub;  // Subscriber for the speech output
 
     ArmState l_state;
     ArmState r_state;
+
+    std::string speech;             // Text to display
+    ros::Timer  speech_timer;       // Timer remove the speech pop-up after specific duration
+    double      speech_duration;    // Duration of the speech pop-up
 
     image_transport::ImageTransport     it;
     image_transport::Publisher      im_pub;
@@ -33,14 +39,17 @@ private:
 
     cv::Scalar red;
     cv::Scalar green;
+    cv::Scalar blue;
 public:
 
-    BaxterDisplay(string _name) : name(_name), it(nh)
+    BaxterDisplay(string _name) : name(_name), it(nh), speech(""), speech_duration(10.0)
     {
         im_pub = it.advertise("/robot/xdisplay", 1);
 
         l_sub = nh.subscribe("/action_provider/state_left", 1, &BaxterDisplay::armStateCbL, this);
         r_sub = nh.subscribe("/action_provider/state_right",1, &BaxterDisplay::armStateCbR, this);
+
+        r_sub = nh.subscribe("/action_provider/speech",1, &BaxterDisplay::speechCb, this);
 
         h = 600;
         w = 1024;
@@ -55,11 +64,28 @@ public:
         r_state.action =     "";
         r_state.object =     "";
 
-        red   = cv::Scalar( 44,  48, 201);  // BGR color code
-        green = cv::Scalar( 60, 160,  60);
+        red   = cv::Scalar(  44,  48, 201);  // BGR color code
+        green = cv::Scalar(  60, 160,  60);
+        blue  = cv::Scalar( 200, 162,  77);
 
         displayArmStates();
     };
+
+    void speechCb(const std_msgs::String& msg)
+    {
+        speech = msg.data;
+
+        speech_timer = nh.createTimer(ros::Duration(speech_duration),
+                                      &BaxterDisplay::deleteSpeechCb, this, true);
+
+        displayArmStates();
+    };
+
+    void deleteSpeechCb(const ros::TimerEvent&)
+    {
+        speech = "";
+        displayArmStates();
+    }
 
     void armStateCbL(const ArmState& msg)
     {
@@ -109,6 +135,8 @@ public:
 
         res.adjustROI(0, 0, (w+w_delim)/2, 0);
 
+        displaySpeech(res);
+
         cv_bridge::CvImage msg;
         msg.encoding = sensor_msgs::image_encodings::BGR8;
         msg.image    = res;
@@ -119,6 +147,30 @@ public:
         // cv::waitKey(20);
 
         return true;
+    };
+
+    void displaySpeech(cv::Mat& in)
+    {
+        if (speech !="")
+        {
+            int thickness = 3;
+            int baseline  = 0;
+            int fontFace  = cv::FONT_HERSHEY_SIMPLEX;
+            int fontScale = 2;
+
+            int border = 40;
+
+            // Place a centered title on top
+            cv::Size textSize = cv::getTextSize( speech, fontFace, fontScale, thickness, &baseline);
+            baseline += thickness;
+            cv::Point textOrg((in.cols - textSize.width)/2, (in.rows + textSize.height)/2);
+            cv::Point textEnd((textOrg.x + textSize.width), (textOrg.y - textSize.height));
+
+            cv::Point rectOrg((textOrg.x - border), (textOrg.y + border));
+            cv::Point rectEnd((textEnd.x + border), (textEnd.y - border));
+            rectangle(in,rectOrg,rectEnd, blue,-1);
+            putText(in, speech, textOrg, fontFace, fontScale, cv::Scalar::all(255), thickness, CV_AA);
+        }
     };
 
     cv::Mat createSubImage(std::string _limb)
@@ -153,22 +205,22 @@ public:
         cv::Size textSize = cv::getTextSize( title, fontFace, fontScale, thickness, &baseline);
         baseline += thickness;
         cv::Point textOrg((img.cols - textSize.width)/2, (img.rows + textSize.height)/6);
-        putText(img, title, textOrg, fontFace, fontScale, col, thickness, 8);
+        putText(img, title, textOrg, fontFace, fontScale, col, thickness, CV_AA);
 
         if (state.state !="")
         {
             putText(img, "state:", cv::Point(20,300), fontFace, fontScale/2, col, 2, 8);
-            putText(img, state.state, cv::Point(150,300), fontFace, fontScale, col_state, thickness, 8);
+            putText(img, state.state, cv::Point(150,300), fontFace, fontScale, col_state, thickness, CV_AA);
         }
         if (state.action !="")
         {
             putText(img, "action:", cv::Point(20,400), fontFace, fontScale/2, col, 2, 8);
-            putText(img, state.action, cv::Point(150,400), fontFace, fontScale/1.25, col, thickness, 8);
+            putText(img, state.action, cv::Point(150,400), fontFace, fontScale/1.25, col, thickness, CV_AA);
         }
         if (state.object !="")
         {
             putText(img, "object:", cv::Point(20,500), fontFace, fontScale/2, col, 2, 8);
-            putText(img, state.object, cv::Point(150,500), fontFace, fontScale/1.25, col, thickness, 8);
+            putText(img, state.object, cv::Point(150,500), fontFace, fontScale/1.25, col, thickness, CV_AA);
         }
 
         return img;
