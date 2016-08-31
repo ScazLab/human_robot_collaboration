@@ -43,22 +43,6 @@ private:
     cv::Scalar green;
     cv::Scalar blue;
 
-    void speechCb(const std_msgs::String& msg)
-    {
-        speech = msg.data;
-
-        speech_timer = nh.createTimer(ros::Duration(speech_duration),
-                                      &BaxterDisplay::deleteSpeechCb, this, true);
-
-        displayArmStates();
-    };
-
-    void deleteSpeechCb(const ros::TimerEvent&)
-    {
-        speech = "";
-        displayArmStates();
-    };
-
     void armStateCbL(const ArmState& msg)
     {
         armStateCb(msg, "left");
@@ -94,18 +78,65 @@ private:
             int fontFace  = cv::FONT_HERSHEY_SIMPLEX;
             int fontScale = 2;
 
-            int border = 40;
+            int border = 20;
 
-            // Place a centered title on top
+            int max_width = 700; // max width of a text line
+
             cv::Size textSize = cv::getTextSize( speech, fontFace, fontScale, thickness, &baseline);
-            baseline += thickness;
-            cv::Point textOrg((in.cols - textSize.width)/2, (in.rows + textSize.height)/2);
-            cv::Point textEnd((textOrg.x + textSize.width), (textOrg.y - textSize.height));
+            int numLines = int(textSize.width/max_width)+1;
 
-            cv::Point rectOrg((textOrg.x - border), (textOrg.y + border));
-            cv::Point rectEnd((textEnd.x + border), (textEnd.y - border));
-            rectangle(in,rectOrg,rectEnd, blue,-1);
-            putText(in, speech, textOrg, fontFace, fontScale, cv::Scalar::all(255), thickness, CV_AA);
+            if (numLines>5)
+            {
+                fontScale = 1.6;
+                thickness =   2;
+                textSize = cv::getTextSize( speech, fontFace, fontScale, thickness, &baseline);
+                numLines = int(textSize.width/max_width);
+            }
+            ROS_INFO("Size of the text %i %i numLines %i", textSize.height, textSize.width, numLines);
+
+            std::vector<std::string> line;
+            std::vector<cv::Size>    size;
+
+            int interline  =         20;  // Number of pixels between a line and the next one
+            int rec_height = -interline;  // Height of the rectangle container (line_heigth + interline)
+            int rec_width  =          0;  // Width  of the rectangle container (max of the width of each of the lines)
+            int line_length = int(speech.size()/numLines);
+
+            for (int i = 0; i < numLines; ++i)
+            {
+                // The last line gets also the remainder of the splitting
+                if (i==numLines-1)
+                {
+                    line.push_back(speech.substr(i*line_length,speech.size()-i*line_length));
+                }
+                else
+                {
+                    line.push_back(speech.substr(i*line_length,line_length));
+                }
+
+                size.push_back(cv::getTextSize( line.back(), fontFace, fontScale, thickness, &baseline));
+                if (size.back().width>rec_width) rec_width=size.back().width;
+                rec_height += interline + size.back().height;
+
+                ROS_INFO("   Line %i: size: %i %i\ttext: %s", i, size.back().height, size.back().width, line.back().c_str());
+            }
+            rec_height += 2*border;
+            rec_width  += 2*border;
+
+            cv::Point rectOrg((in.cols - rec_width)/2, (in.rows - rec_height)/2);
+            cv::Point rectEnd((in.cols + rec_width)/2, (in.rows + rec_height)/2);
+            rectangle(in, rectOrg, rectEnd, blue, -1);
+
+            int textOrgy = rectOrg.y + border;
+            for (int i = 0; i < numLines; ++i)
+            {
+                textOrgy += size[i].height;
+                cv::Point textOrg((in.cols - size[i].width)/2, textOrgy);
+                putText(in, line[i], textOrg, fontFace, fontScale, cv::Scalar::all(255), thickness, CV_AA);
+                textOrgy += interline;
+            }
+
+            printf("\n");
         }
     };
 
@@ -139,7 +170,6 @@ private:
         // Place a centered title on top
         string title = _limb + " ARM";
         cv::Size textSize = cv::getTextSize( title, fontFace, fontScale, thickness, &baseline);
-        baseline += thickness;
         cv::Point textOrg((img.cols - textSize.width)/2, (img.rows + textSize.height)/6);
         putText(img, title, textOrg, fontFace, fontScale, col, thickness, CV_AA);
 
@@ -192,6 +222,27 @@ public:
 
         nh.param<double>("baxter_display/speech_duration", speech_duration, DEFAULT_DURATION);
 
+        displayArmStates();
+    };
+
+    void setSpeech(const std::string &s)
+    {
+        speech = s;
+    }
+
+    void speechCb(const std_msgs::String& msg)
+    {
+        setSpeech(msg.data);
+
+        speech_timer = nh.createTimer(ros::Duration(speech_duration),
+                                      &BaxterDisplay::deleteSpeechCb, this, true);
+
+        displayArmStates();
+    };
+
+    void deleteSpeechCb(const ros::TimerEvent&)
+    {
+        setSpeech("");
         displayArmStates();
     };
 
