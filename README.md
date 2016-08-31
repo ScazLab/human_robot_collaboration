@@ -6,7 +6,7 @@ Yet another repository for the Baxter collaboration task
 
  * `nlopt`: it should be installed by from the Ubuntu repositories: `sudo apt-get install libnlopt-dev `
  * `trac_ik` : for the time being, you should use [this version of `trac_ik`](https://bitbucket.org/alecive/trac_ik). It is a fork of [the original `trac_ik`](https://bitbucket.org/traclabs/trac_ik).
- * `svox_tts` : it's a SVOX-PICO based wrapper for text-to-speech. Available [here](https://github.com/ScazLab/svox_tts). It's not necessary, but recommended.
+ * `svox_tts` : it's a SVOX-PICO based wrapper for text-to-speech. It's not necessary, but recommended. Available [here](https://github.com/ScazLab/svox_tts).
 
 ## Installation
 
