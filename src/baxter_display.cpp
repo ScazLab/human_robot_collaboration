@@ -169,7 +169,7 @@ public:
         l_sub = nh.subscribe("/action_provider/state_left", 1, &BaxterDisplay::armStateCbL, this);
         r_sub = nh.subscribe("/action_provider/state_right",1, &BaxterDisplay::armStateCbR, this);
 
-        r_sub = nh.subscribe("/action_provider/speech",1, &BaxterDisplay::speechCb, this);
+        s_sub = nh.subscribe("/svox_tts/speech_output",1, &BaxterDisplay::speechCb, this);
 
         h = 600;
         w = 1024;

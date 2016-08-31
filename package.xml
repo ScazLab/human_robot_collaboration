@@ -50,6 +50,7 @@
   <depend>cv_bridge</depend>
   <depend>image_transport</depend>
   <depend>trac_ik_lib</depend>
+  <depend>svox_tts</depend>
 
   <exec_depend>message_runtime</exec_depend>
 
