@@ -31,3 +31,4 @@ Yet another repository for the Baxter collaboration task
  * To kill an action from the terminal, you can simulate a button press on the arm's cuff: `rostopic pub --once /robot/digital_io/left_lower_button/state baxter_core_msgs/DigitalIOState "{state: 1, isInputOnly: true}"`.
  * You can also kill an action from the web interface, by pressing the ERROR button. It writes to the same topic and achieves the same behavior.
  * To go **robot-less**, simply call the `action_provider` with the argument `--no_robot`: `rosrun baxter_collaboration action_provider --no_robot`. In this mode, only the service to request actions is enabled. It will always return with a 2s delay and it will always succeed.
+ * To be robot-less, add `--no_robot` to the `args` in the `baxter_collaboration.launch` file.

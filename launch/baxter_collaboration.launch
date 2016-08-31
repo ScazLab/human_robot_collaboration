@@ -3,20 +3,21 @@
     <!-- <include file="$(find baxter_collaboration)/launch/baxter_marker_publisher.launch" /> -->
     <include file="$(find svox_tts)/launch/svox_tts.launch" />
 
-    <arg name="forceThresholdL"  default="2.0"/>    <!-- [N] -->
-    <arg name="forceThresholdR"  default="2.0"/>    <!-- [N] -->
+    <arg name="forceThresholdL"      default="2.0"/>    <!-- [N] -->
+    <arg name="forceThresholdR"      default="2.0"/>    <!-- [N] -->
+    <arg name="speechPopUpDuration"  default="8.0"/>    <!-- [s] -->
 
     <param name="action_provider/force_threshold_left"  value="$(arg forceThresholdL)"/>
     <param name="action_provider/force_threshold_right" value="$(arg forceThresholdR)"/>
+    <param name="baxter_display/speech_duration"        value="$(arg speechPopUpDuration)"/>
 
     <node pkg="baxter_collaboration" type="baxter_display"  name="baxter_display"  output="screen"/>
-    <node pkg="baxter_collaboration" type="action_provider" name="action_provider" output="screen"/>
-    <!-- <node pkg="baxter_collaboration" type="action_provider" name="action_provider" output="screen" args="--no_robot"/> -->
+    <node pkg="baxter_collaboration" type="action_provider" name="action_provider" output="screen" args="--no_robot"/>
 
-    <!-- <node name="image_view" pkg="image_view" type="image_view" respawn="false" output="log">
+    <node name="image_view" pkg="image_view" type="image_view" respawn="false" output="log">
         <remap from="image" to="/robot/xdisplay"/>
         <param name="autosize" value="true" />
-    </node> -->
+    </node>
 
     <!-- <node pkg="baxter_collaboration" type="remote_control_node" name="l_srv" output="screen" args="left" />
     <node pkg="baxter_collaboration" type="remote_control_node" name="r_srv" output="screen" args="right" /> -->

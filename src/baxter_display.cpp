@@ -12,6 +12,8 @@
 using namespace std;
 using namespace baxter_collaboration;
 
+#define DEFAULT_DURATION 10.0  // [s]
+
 class BaxterDisplay
 {
 private:
@@ -162,7 +164,7 @@ private:
 
 public:
 
-    BaxterDisplay(string _name) : name(_name), it(nh), speech(""), speech_duration(10.0)
+    BaxterDisplay(string _name) : name(_name), it(nh), speech("")
     {
         im_pub = it.advertise("/robot/xdisplay", 1);
 
@@ -187,6 +189,8 @@ public:
         red   = cv::Scalar(  44,  48, 201);  // BGR color code
         green = cv::Scalar(  60, 160,  60);
         blue  = cv::Scalar( 200, 162,  77);
+
+        nh.param<double>("baxter_display/speech_duration", speech_duration, DEFAULT_DURATION);
 
         displayArmStates();
     };
