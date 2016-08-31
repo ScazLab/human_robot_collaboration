@@ -92,7 +92,7 @@ private:
                 textSize = cv::getTextSize( speech, fontFace, fontScale, thickness, &baseline);
                 numLines = int(textSize.width/max_width);
             }
-            ROS_INFO("Size of the text %i %i numLines %i", textSize.height, textSize.width, numLines);
+            ROS_DEBUG("Size of the text %i %i numLines %i", textSize.height, textSize.width, numLines);
 
             std::vector<std::string> line;
             std::vector<cv::Size>    size;
@@ -118,7 +118,7 @@ private:
                 if (size.back().width>rec_width) rec_width=size.back().width;
                 rec_height += interline + size.back().height;
 
-                ROS_INFO("   Line %i: size: %i %i\ttext: %s", i, size.back().height, size.back().width, line.back().c_str());
+                ROS_DEBUG("   Line %i: size: %i %i\ttext: %s", i, size.back().height, size.back().width, line.back().c_str());
             }
             rec_height += 2*border;
             rec_width  += 2*border;
