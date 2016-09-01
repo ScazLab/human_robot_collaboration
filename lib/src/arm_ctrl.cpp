@@ -4,8 +4,8 @@
 using namespace std;
 using namespace geometry_msgs;
 
-ArmCtrl::ArmCtrl(string _name, string _limb, bool no_robot) :
-                 RobotInterface(_limb, no_robot), Gripper(_limb),
+ArmCtrl::ArmCtrl(string _name, string _limb, bool _no_robot) :
+                 RobotInterface(_limb, _no_robot), Gripper(_limb, _no_robot),
                  name(_name), marker_id(-1), action(""), sub_state("")
 {
     std::string topic = "/"+getName()+"/state_"+_limb;

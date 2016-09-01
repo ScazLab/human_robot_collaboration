@@ -162,7 +162,7 @@ public:
     /**
      * Constructor
      */
-    ArmCtrl(std::string _name, std::string _limb, bool no_robot = false);
+    ArmCtrl(std::string _name, std::string _limb, bool _no_robot = false);
 
     /*
      * Destructor

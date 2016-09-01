@@ -16,7 +16,8 @@ class Gripper
 private:
     std::string _limb; // Limb of the gripper: left or right
 
-    bool first_run;    // Flag to calibrate the gripper at startup if needed
+    bool  _no_robot;   // Flag to know if we're going to use the robot or not
+    bool _first_run;   // Flag to calibrate the gripper at startup if needed
 
     ros::NodeHandle _nh;            // ROS node handle
     ros::Subscriber _sub_state;     // Subscriber to receive the state of the gripper
@@ -26,8 +27,8 @@ private:
 
     baxter_core_msgs::EndEffectorState _state;  // State of the gripper
 
-    // Callback that handles the gripper state messages. 
-    void gripperStateCb(const baxter_core_msgs::EndEffectorStateConstPtr& msg); 
+    // Callback that handles the gripper state messages.
+    void gripperStateCb(const baxter_core_msgs::EndEffectorStateConstPtr& msg);
 
     /**
      * @brief Calibrates the gripper
@@ -56,7 +57,7 @@ public:
      * Constructor of the class
      * \param limb either left or right limb
      **/
-    Gripper(std::string limb);
+    Gripper(std::string limb, bool no_robot = false);
 
     ~Gripper() {};
 

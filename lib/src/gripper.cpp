@@ -5,8 +5,11 @@
 using namespace baxter_core_msgs;
 using namespace std;
 
-Gripper::Gripper(std::string limb) : _limb(limb), first_run(true)
+Gripper::Gripper(std::string limb, bool no_robot) :
+                 _limb(limb), _no_robot(no_robot), _first_run(true)
 {
+    if (no_robot) return;
+
     _pub_command = _nh.advertise<EndEffectorCommand>(
                    "/robot/end_effector/" + _limb + "_gripper/command", 1);
 
@@ -14,7 +17,7 @@ Gripper::Gripper(std::string limb) : _limb(limb), first_run(true)
                                 &Gripper::gripperStateCb, this);
 
     //Initially all the interesting properties of the state are unknown
-    EndEffectorState initial_gripper_state; 
+    EndEffectorState initial_gripper_state;
     initial_gripper_state.calibrated=   \
     initial_gripper_state.enabled=      \
     initial_gripper_state.error=        \
@@ -67,14 +70,14 @@ void Gripper::gripperStateCb(const EndEffectorStateConstPtr &msg)
     _state = *msg;
     pthread_mutex_unlock(&_mutex);
 
-    if (first_run)
+    if (_first_run)
     {
         if (!is_calibrated())
         {
             ROS_INFO("[%s_gripper] Calibrating the gripper..", getGripperLimb().c_str());
             calibrate();
         }
-        first_run=false;
+        _first_run=false;
     }
 }
 
@@ -122,7 +125,7 @@ bool Gripper::is_calibrated()
 }
 
 bool Gripper::is_ready_to_grip()
-{    
+{
     return _state.ready==EndEffectorState::STATE_TRUE;
 }
 
