@@ -95,6 +95,7 @@ bool ARTagCtrl::recoverGet()
 {
     if (!hoverAbovePool())          return false;
     if (!releaseObject())           return false;
+    if (!hoverAboveTableStrict())   return false;
 
     return true;
 }

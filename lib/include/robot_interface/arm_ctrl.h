@@ -18,11 +18,15 @@
 class ArmCtrl : public RobotInterface, public Gripper
 {
 private:
-    std::string      name;
-    std::string sub_state;
+    std::string       name;
+    std::string  sub_state;
 
-    std::string    action;
-    int         marker_id;
+    std::string     action;
+    int          marker_id;
+
+    // Flag to know if the robot will recover from an error
+    // or will wait the external planner to take care of that
+    bool internal_recovery;
 
     ros::ServiceServer service;
     ros::ServiceServer service_other_limb;

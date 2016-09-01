@@ -27,6 +27,8 @@ ArmCtrl::ArmCtrl(string _name, string _limb, bool _no_robot) :
 
     insertAction("recover_"+string(ACTION_HOME),    &ArmCtrl::notImplemented);
     insertAction("recover_"+string(ACTION_RELEASE), &ArmCtrl::notImplemented);
+
+    _n.param<bool>("internal_recovery",  internal_recovery, true);
 }
 
 void ArmCtrl::InternalThreadEntry()
@@ -121,7 +123,7 @@ bool ArmCtrl::serviceCb(baxter_collaboration::DoAction::Request  &req,
 
         if (getState()==KILLED)
         {
-            goHome();
+            recoverFromError();
         }
 
         r.sleep();
@@ -348,7 +350,10 @@ bool ArmCtrl::goHome()
 
 void ArmCtrl::recoverFromError()
 {
-    goHome();
+    if (internal_recovery == true)
+    {
+        goHome();
+    }
 }
 
 void ArmCtrl::setState(int _state)
