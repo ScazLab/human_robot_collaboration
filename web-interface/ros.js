@@ -30,7 +30,7 @@ ros.on('close', function() {
 });
 
 // Create a connection to the rosbridge WebSocket server.
-ros.connect('ws://169.254.45.68:11311');
+ros.connect('ws://169.254.70.205:11311');
 
 // First, we create a Topic object with details of the topic's name and message type.
 var elemPressed = new ROSLIB.Topic({
