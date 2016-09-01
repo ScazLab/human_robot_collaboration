@@ -1,0 +1,217 @@
+#!/usr/bin/env python
+
+from htm.lib.pomdp import GraphPolicyRunner
+
+from htm.task import (HierarchicalTask, AbstractAction, SequentialCombination,
+                      LeafCombination)
+from htm.task_to_pomdp import CollaborativeAction, HTMToPOMDP
+
+
+import rospy
+from std_msgs.msg import String
+from baxter_core_msgs.msg import DigitalIOState
+from baxter_collaboration.srv import DoAction
+from svox_tts.srv import Speech
+
+
+# Task definition
+
+T_WAIT = 1.
+T_COMM = 2.
+C_TAKE_R = 10
+C_TAKE_H = 20
+C_SNAP_R = 30
+C_SNAP_H = 5
+C_FAILURE = 12.
+
+
+mount_central = LeafCombination(CollaborativeAction(
+    'Take central frame', (C_TAKE_H, C_TAKE_R, C_TAKE_R + C_FAILURE)))
+mount_legs = SequentialCombination(
+        [LeafCombination(CollaborativeAction(
+            'Take left leg', (C_TAKE_H, C_TAKE_R, C_TAKE_R + C_FAILURE))),
+         LeafCombination(CollaborativeAction(
+             'Snap left leg', (C_SNAP_H, C_SNAP_R, C_SNAP_R + C_FAILURE),
+             human_probability=1.)),
+         LeafCombination(CollaborativeAction(
+             'Take right leg', (C_TAKE_H, C_TAKE_R, C_TAKE_R + C_FAILURE))),
+         LeafCombination(CollaborativeAction(
+             'Snap right leg', (C_SNAP_H, C_SNAP_R, C_SNAP_R + C_FAILURE),
+             human_probability=1.)),
+         ],
+        name='Mount legs')
+mount_top = SequentialCombination([
+    LeafCombination(CollaborativeAction(
+        'Get top', (C_TAKE_H, C_TAKE_R, C_TAKE_R + C_FAILURE))),
+    LeafCombination(CollaborativeAction(
+        'Snap top', (C_SNAP_H, C_SNAP_R, C_SNAP_R + C_FAILURE),
+        human_probability=1.))],
+    name='Mount top')
+
+chair_task = HierarchicalTask(root=SequentialCombination(
+    [mount_central, mount_legs, mount_top], name='Mount chair'))
+
+h2p = HTMToPOMDP(T_WAIT, T_COMM)
+p = h2p.task_to_pomdp(chair_task)
+
+ACTION_SERVICE = '/action_provider/service_left'
+SPEECH_SERVICE = '/svox_tts/speech'
+COM_TOPIC = '/web_interface'
+ERR_TOPIC = '/robot/digital_io/left_lower_button/state'
+
+RELEASE = 'release'
+RECOVER = 'recover'
+
+
+class WaitForOneSuscriber:
+
+    period = .1
+
+    def __init__(self, topic, timeout=10.):
+        self._suscribe(topic)
+        self.listening = False
+        self.timeout = timeout
+
+    def _suscribe(self, topic):
+        raise NotImplemented()
+
+    def _reset_msg(self):
+        self.last_msg = None
+
+    def _handle_msg(self, msg):
+        raise NotImplemented()
+
+    def cb(self, msg):
+        if self.listening:
+            self._handle_msg(msg)
+        else:
+            pass
+
+    def wait_for_msg(self, timeout=None):
+        if timeout is None:
+            timeout = self.timeout
+        self._reset_msg()
+        self.listening = True
+        start_time = rospy.Time.now()
+        while (self.last_msg is None and
+               rospy.Time.now() < start_time + rospy.Duration(timeout)):
+            rospy.sleep(self.period)
+        self.listening = False
+        return self.last_msg
+
+
+class CommunicationSuscriber(WaitForOneSuscriber):
+
+    def _suscribe(self, topic):
+        self.sub = rospy.Subscriber(COM_TOPIC, String, self.cb)
+
+    def _handle_msg(self, msg):
+        self.last_msg = msg.data
+
+
+class ErrorSuscriber(WaitForOneSuscriber):
+
+    def _suscribe(self, topic):
+        self.sub = rospy.Subscriber(ERR_TOPIC, DigitalIOState, self.cb)
+
+    def _handle_msg(self, msg):
+        if msg.state == DigitalIOState.PRESSED:
+            self.last_msg = True
+        else:
+            pass
+
+
+class PGController:
+
+    OBJ = {
+        'left': -1,
+        'right': -1,
+        'central': -1,
+        'top': -1,
+    }
+    PAST = {
+        'snap': 'snapped',
+        'take': 'taken',
+    }
+    GET = 'get'
+    PASS = 'pass'
+    RECOVER_TAKE = 'recover_get'
+    
+    NONE = 'none'
+    YES = 'yes'
+    NO = 'no'
+
+    def __init__(policy):
+        self.pr = GraphPolicyRunner(policy)
+        self.finished = False
+        # ROS stuff
+        rospy.init_node("hold_and_release_controller")
+        rospy.wait_for_service(ACTION_SERVICE)
+        self.action_service = rospy.ServiceProxy(ACTION_SERVICE, DoAction)
+        rospy.wait_for_service(SPEECH_SERVICE)
+        self.speech_service = rospy.ServiceProxy(SPEECH_SERVICE, Speech)
+        self.com_sub = CommunicationSuscriber(COM_TOPIC)
+        self.error_sub = ErrorSuscriber(ERR_TOPIC, timeout=5)
+        # TODO: filter irrelevant messages
+
+    def run(self):
+        while not self.finished:
+            obs = self.take_action(self.pr.get_action())
+            rospy.loginfo("Observed: " + obs)
+            self.pr.step(obs)
+
+    def take_action(self, action):
+        if a == 'wait':
+            return self.action_wait()
+        else:
+            t, a, o = action.split('-', maxsplit=2)
+            if a[0] == 'phy':
+                return self.action_physical(a, o)
+            elif a[0] == 'com':
+                return self.action_communicate(a, o)
+            else:
+                raise ValueError('Unknown action: {}'.format(action))
+
+    def action_wait(self):
+        rospy.loginfo("Waiting.")
+        rospy.sleep(C_WAIT)
+        return self.NONE
+
+    def action_physical(self, name, obj):
+        rospy.loginfo("Taking action: {} on {}".format(name, obj))
+        o = self.OBJ[obj]
+        if name == 'take':
+            result = (self.action_service(self.GET, o)
+                    and self.action_service(self.PASS, o))
+            if result:
+                return self.NONE
+            else:
+                result = self.action_service(self.RECOVER_GET, o)
+                if not result:
+                    raise RuntimeError("Action 'recover get' failed.")
+                return self.NO
+        elif name == 'snap':
+            error = self.error_sub.wait_for_msg(timeout=C_SNAP_R)
+            return self.NO if error else self.NONE
+        else:
+            raise ValueError('Unkown physical action: {}'.format(name))
+
+    def action_communicate(self, name, obj):
+        q = "Have you {} the {}?".format(self.PAST[name],
+                                         self.o.replace('-', ' '))
+        rospy.loginfo("Asking: " + q)
+        self.speech_service(SPEECH.SAY, q)
+        s = self.answer_sub.wait_for_msg()
+        if s is None:
+            return self.NONE  # Currently this is not accounted for in the POMDP
+        elif s == 'yes':
+            return self.YES
+        elif s == 'no':
+            return SELF.NO
+        else:
+            raise ValueError('Unknown answer: ' + s)
+
+
+pg = p.solve(method='grid', timeout=5)
+controller = PGController(pg)
+controller.run()
