@@ -11,13 +11,13 @@ import rospy
 from std_msgs.msg import String
 from baxter_core_msgs.msg import DigitalIOState
 from baxter_collaboration.srv import DoAction
-from svox_tts.srv import Speech
+from svox_tts.srv import Speech, SpeechRequest
 
 
 # Task definition
 
-T_WAIT = 1.
-T_COMM = 2.
+C_WAIT = 1.
+C_COMM = 5.
 C_TAKE_R = 10
 C_TAKE_H = 20
 C_SNAP_R = 30
@@ -42,7 +42,7 @@ mount_legs = SequentialCombination(
         name='Mount legs')
 mount_top = SequentialCombination([
     LeafCombination(CollaborativeAction(
-        'Get top', (C_TAKE_H, C_TAKE_R, C_TAKE_R + C_FAILURE))),
+        'Take top', (C_TAKE_H, C_TAKE_R, C_TAKE_R + C_FAILURE))),
     LeafCombination(CollaborativeAction(
         'Snap top', (C_SNAP_H, C_SNAP_R, C_SNAP_R + C_FAILURE),
         human_probability=1.))],
@@ -51,7 +51,7 @@ mount_top = SequentialCombination([
 chair_task = HierarchicalTask(root=SequentialCombination(
     [mount_central, mount_legs, mount_top], name='Mount chair'))
 
-h2p = HTMToPOMDP(T_WAIT, T_COMM)
+h2p = HTMToPOMDP(C_WAIT, C_COMM)
 p = h2p.task_to_pomdp(chair_task)
 
 ACTION_SERVICE = '/action_provider/service_left'
@@ -124,10 +124,10 @@ class ErrorSuscriber(WaitForOneSuscriber):
 class PGController:
 
     OBJ = {
-        'left': -1,
-        'right': -1,
-        'central': -1,
-        'top': -1,
+        'left-leg': 17,
+        'right-leg': 26,
+        'central-frame': 24,
+        'top': 21,
     }
     PAST = {
         'snap': 'snapped',
@@ -141,7 +141,7 @@ class PGController:
     YES = 'yes'
     NO = 'no'
 
-    def __init__(policy):
+    def __init__(self, policy):
         self.pr = GraphPolicyRunner(policy)
         self.finished = False
         # ROS stuff
@@ -150,24 +150,25 @@ class PGController:
         self.action_service = rospy.ServiceProxy(ACTION_SERVICE, DoAction)
         rospy.wait_for_service(SPEECH_SERVICE)
         self.speech_service = rospy.ServiceProxy(SPEECH_SERVICE, Speech)
-        self.com_sub = CommunicationSuscriber(COM_TOPIC)
+        self.answer_sub = CommunicationSuscriber(COM_TOPIC)
         self.error_sub = ErrorSuscriber(ERR_TOPIC, timeout=5)
         # TODO: filter irrelevant messages
 
     def run(self):
         while not self.finished:
+            rospy.loginfo("Current state in policy: " + str(self.pr.current))
             obs = self.take_action(self.pr.get_action())
             rospy.loginfo("Observed: " + obs)
             self.pr.step(obs)
 
     def take_action(self, action):
-        if a == 'wait':
+        if action == 'wait':
             return self.action_wait()
         else:
-            t, a, o = action.split('-', maxsplit=2)
-            if a[0] == 'phy':
+            t, a, o = action.split('-', 2)
+            if t == 'phy':
                 return self.action_physical(a, o)
-            elif a[0] == 'com':
+            elif t == 'com':
                 return self.action_communicate(a, o)
             else:
                 raise ValueError('Unknown action: {}'.format(action))
@@ -181,12 +182,13 @@ class PGController:
         rospy.loginfo("Taking action: {} on {}".format(name, obj))
         o = self.OBJ[obj]
         if name == 'take':
-            result = (self.action_service(self.GET, o)
-                    and self.action_service(self.PASS, o))
+            result = (self.action_service(self.GET, o).success
+                    and self.action_service(self.PASS, o).success)
+            rospy.loginfo("received result: " + str(result))
             if result:
                 return self.NONE
             else:
-                result = self.action_service(self.RECOVER_GET, o)
+                result = self.action_service(self.RECOVER_TAKE, o)
                 if not result:
                     raise RuntimeError("Action 'recover get' failed.")
                 return self.NO
@@ -198,20 +200,20 @@ class PGController:
 
     def action_communicate(self, name, obj):
         q = "Have you {} the {}?".format(self.PAST[name],
-                                         self.o.replace('-', ' '))
+                                         obj.replace('-', ' '))
         rospy.loginfo("Asking: " + q)
-        self.speech_service(SPEECH.SAY, q)
+        self.speech_service(SpeechRequest.SAY, q, None)
         s = self.answer_sub.wait_for_msg()
         if s is None:
             return self.NONE  # Currently this is not accounted for in the POMDP
         elif s == 'yes':
             return self.YES
         elif s == 'no':
-            return SELF.NO
+            return self.NO
         else:
             raise ValueError('Unknown answer: ' + s)
 
 
-pg = p.solve(method='grid', timeout=5)
+pg = p.solve(method='grid', n_iterations=300)
 controller = PGController(pg)
 controller.run()
