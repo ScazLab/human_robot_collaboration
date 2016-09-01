@@ -21,26 +21,13 @@ using namespace geometry_msgs;
 /**************************************************************************/
 /*                               Utils                                    */
 /**************************************************************************/
-
-bool withinXHundredth(float x, float y, float z)
-{
-    float diff = abs(x - y);
-    float diffTwoDP = roundf(diff * 100) / 100;
-    return diffTwoDP <= (0.01 * z) ? true : false;
-}
-
-bool withinThres(float x, float y, float t)
-{
-    return abs(x-y)<t?true:false;
-}
-
 void setPosition(Pose& pose, float x, float y, float z)
 {
     pose.position.x = x;
     pose.position.y = y;
     pose.position.z = z;
 }
- 
+
 void setOrientation(Pose& pose, float x, float y, float z, float w)
 {
     pose.orientation.x = x;
@@ -70,10 +57,10 @@ State::operator std::string()
     if      ( state == WORKING  ) return "WORKING";
     else if ( state == ERROR    ) return "ERROR";
     else if ( state == START    ) return "START";
-    else if ( state == REST     ) return "REST"; 
-    else if ( state == SCANNED  ) return "SCANNED"; 
-    else if ( state == PICK_UP  ) return "PICK_UP"; 
-    else if ( state == PUT_DOWN ) return "PUT_DOWN"; 
+    else if ( state == REST     ) return "REST";
+    else if ( state == SCANNED  ) return "SCANNED";
+    else if ( state == PICK_UP  ) return "PICK_UP";
+    else if ( state == PUT_DOWN ) return "PUT_DOWN";
     else if ( state == DONE     ) return "DONE";
     else if ( state == KILLED   ) return "KILLED";
     else                          return "NONE";

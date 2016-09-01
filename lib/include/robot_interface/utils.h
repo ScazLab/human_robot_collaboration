@@ -55,26 +55,6 @@
 #define HOME_POS_R   0.65, -0.25
 
 /*
- * checks if two numbers rounded up to 2 decimal points are within 0.0z
- * (z is specified no.) to each other
- *
- * @param      two floats x and y specifying the numbers to be checked,
- *            and a float z determining the desired accuracy
- *
- * return     true if they are within 0.0z; false otherwise
- */
-bool withinXHundredth(float x, float y, float z);
-
-/*
- *
- *
- * @param
- *
- * @return  true/false if success/failure
- */
-bool withinThres(float x, float y, float t);
-
-/*
  * sets the position of a pose
  *
  * @param     pose, and three floats indicating the 3D position

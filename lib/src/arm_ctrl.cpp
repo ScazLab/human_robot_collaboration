@@ -307,18 +307,7 @@ bool ArmCtrl::moveArm(string dir, double dist, string mode, bool disable_coll_av
 
         if (!goToPoseNoCheck(joint_angles))   return false;
 
-        if(mode == "strict")
-        {
-            if(withinThres(getPos().x, final.x, 0.001) &&
-               withinThres(getPos().y, final.y, 0.001) &&
-               withinThres(getPos().z, final.z, 0.001)) return true;
-        }
-        else if(mode == "loose")
-        {
-            if(withinThres(getPos().x, final.x, 0.01) &&
-               withinThres(getPos().y, final.y, 0.01) &&
-               withinThres(getPos().z, final.z, 0.01)) return true;
-        }
+        if (isPositionReached(final.x, final.y, final.z, mode)) return true;
 
         r.sleep();
     }

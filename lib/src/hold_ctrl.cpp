@@ -121,7 +121,7 @@ bool HoldCtrl::hoverAboveTableStrict(bool disable_coll_av)
 
         r.sleep();
 
-        if(hasPoseCompleted(HOME_POS_R, Z_LOW, VERTICAL_ORI_R))
+        if(isPoseReached(HOME_POS_R, Z_LOW, VERTICAL_ORI_R))
         {
             return true;
         }

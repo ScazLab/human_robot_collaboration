@@ -105,15 +105,38 @@ protected:
     bool hasCollided(std::string mode = "loose");
 
     /*
-     * checks if the arm has completed its intended move by comparing
-     * the requested pose and the current pose
+     * Checks if the arm has reached its intended pose by comparing
+     * the requested and the current poses
      *
-     * @param  p     requested pose
-     * @param  mode  string (strict/loose) indicating the desired level of accuracy
+     * @param  p     requested position
+     * @param  o     requested orientation quaterion
+     * @param  mode  (strict/loose) the desired level of precision
      * @return       true/false if success/failure
      */
-    bool hasPoseCompleted(double px, double py, double pz,
-                          double ox, double oy, double oz, double ow, std::string mode = "loose");
+    bool isPoseReached(double px, double py, double pz,
+                       double ox, double oy, double oz, double ow, std::string mode = "loose");
+
+    /*
+     * Checks if the arm has reached its intended position by comparing
+     * the requested and the current positions
+     *
+     * @param  p     requested position
+     * @param  mode  (strict/loose) the desired level of precision
+     * @return       true/false if success/failure
+     */
+    bool isPositionReached(double px, double py, double pz, std::string mode = "loose");
+
+    /*
+     * Checks if the arm has reached its intended orientation by comparing
+     * the requested and the current orientations
+     *
+     * @param  o     requested orientation quaterion
+     * @param  mode  (strict/loose) the desired level of precision
+     *               (currently not implemented)
+     * @return       true/false if success/failure
+     */
+    bool isOrientationReached(double ox, double oy, double oz, double ow, std::string mode = "loose");
+
 
     /*
      * Uses built in IK solver to find joint angles solution for desired pose

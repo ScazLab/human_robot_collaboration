@@ -371,7 +371,7 @@ bool ARTagCtrl::hoverAboveTableStrict(bool disable_coll_av)
 
         r.sleep();
 
-        if(hasPoseCompleted(HOME_POS_L, Z_LOW, VERTICAL_ORI_L))
+        if(isPoseReached(HOME_POS_L, Z_LOW, VERTICAL_ORI_L))
         {
             ROS_INFO("[%s] Done", getLimb().c_str());
             return true;

@@ -12,9 +12,9 @@ using namespace cv;
 /**************************************************************************/
 /*                         RobotInterface                                 */
 /**************************************************************************/
-RobotInterface::RobotInterface(string limb, bool no_robot): _n("~"), _limb(limb), _state(START,0),
-                                                            spinner(4), ir_ok(false), _no_robot(no_robot),
-                                                            ik_solver(limb, no_robot)
+RobotInterface::RobotInterface(string limb, bool no_robot) :
+                _n("~"), _limb(limb), _state(START,0), spinner(4), ir_ok(false),
+                _no_robot(no_robot), ik_solver(limb, no_robot)
 {
     if (no_robot) return;
 
@@ -28,7 +28,8 @@ RobotInterface::RobotInterface(string limb, bool no_robot): _n("~"), _limb(limb)
     _cuff_sub      = _n.subscribe("/robot/digital_io/" + _limb + "_lower_button/state",
                                     SUBSCRIBER_BUFFER, &RobotInterface::cuffCb, this);
 
-    _jntstate_sub  = _n.subscribe("/robot/joint_states",SUBSCRIBER_BUFFER, &RobotInterface::jointStatesCb, this);
+    _jntstate_sub  = _n.subscribe("/robot/joint_states",
+                                    SUBSCRIBER_BUFFER, &RobotInterface::jointStatesCb, this);
 
     _coll_av_sub   = _n.subscribe("/robot/limb/" + _limb + "/collision_avoidance_state",
                                     SUBSCRIBER_BUFFER, &RobotInterface::collAvCb, this);
@@ -214,7 +215,7 @@ bool RobotInterface::goToPose(double px, double py, double pz,
 
         if (!goToPoseNoCheck(joint_angles))   return false;
 
-        if(hasPoseCompleted(px, py, pz, ox, oy, oz, ow, mode))
+        if(isPoseReached(px, py, pz, ox, oy, oz, ow, mode))
         {
             return true;
         }
@@ -311,23 +312,31 @@ bool RobotInterface::hasCollided(string mode)
     else return false;
 }
 
-bool RobotInterface::hasPoseCompleted(double px, double py, double pz,
-                                      double ox, double oy, double oz, double ow, string mode)
+bool RobotInterface::isPoseReached(double px, double py, double pz,
+                                   double ox, double oy, double oz, double ow, string mode)
 {
-    // ROS_INFO("[%s] Checking %s position: current %g %g %g Desired %g %g %g",
-    //                                         getLimb().c_str(), mode.c_str(),
-    //                            _curr_pos.x,_curr_pos.y,_curr_pos.z,px,py,pz);
+    if (!isPositionReached(px, py, pz, mode))         return false;
+    if (!isOrientationReached(ox, oy, oz, ow, mode))  return false;
+
+    return true;
+}
+
+bool RobotInterface::isPositionReached(double px, double py, double pz, string mode)
+{
+    ROS_INFO("[%s] Checking %s position. Error: %g %g %g", getLimb().c_str(),
+               mode.c_str(), px-getPos().x, py-getPos().y, pz-getPos().z);
+
     if(mode == "strict")
     {
-        if(!withinThres(_curr_pos.x, px, 0.001)) return false;
-        if(!withinThres(_curr_pos.y, py, 0.001)) return false;
-        if(!withinThres(_curr_pos.z, pz, 0.001)) return false;
+        if(abs(getPos().x-px) > 0.005) return false;
+        if(abs(getPos().y-py) > 0.005) return false;
+        if(abs(getPos().z-pz) > 0.005) return false;
     }
     else if(mode == "loose")
     {
-        if(!withinThres(_curr_pos.x, px, 0.01)) return false;
-        if(!withinThres(_curr_pos.y, py, 0.01)) return false;
-        if(!withinThres(_curr_pos.z, pz, 0.01)) return false;
+        if(abs(getPos().x-px) > 0.01) return false;
+        if(abs(getPos().y-py) > 0.01) return false;
+        if(abs(getPos().z-pz) > 0.01) return false;
     }
     else
     {
@@ -335,11 +344,20 @@ bool RobotInterface::hasPoseCompleted(double px, double py, double pz,
         return false;
     }
 
-    // ROS_INFO("[%s] Checking for orientation..", getLimb().c_str());
-    if(!withinXHundredth(_curr_ori.x, ox, 2.5))  return false;
-    if(!withinXHundredth(_curr_ori.y, oy, 2.5))  return false;
-    if(!withinXHundredth(_curr_ori.z, oz, 2.5))  return false;
-    if(!withinXHundredth(_curr_ori.w, ow, 2.5))  return false;
+    return true;
+}
+
+bool RobotInterface::isOrientationReached(double ox, double oy, double oz, double ow, string mode)
+{
+    tf::Quaternion des(ox,oy,oz,ow);
+    tf::Quaternion cur;
+    tf::quaternionMsgToTF(getOri(), cur);
+
+    ROS_INFO("[%s] Checking    orientation. Current %g %g %g %g Desired %g %g %g %g Dot %g",
+                          getLimb().c_str(), getOri().x, getOri().y, getOri().z, getOri().w,
+                                                                 ox,oy,oz,ow, des.dot(cur));
+
+    if (abs(des.dot(cur)) < 0.985)  return false;
 
     return true;
 }
