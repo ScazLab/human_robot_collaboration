@@ -12,12 +12,12 @@
     <param name="baxter_display/speech_duration"        value="$(arg speechPopUpDuration)"/>
 
     <node pkg="baxter_collaboration" type="baxter_display"  name="baxter_display"  output="screen"/>
-    <node pkg="baxter_collaboration" type="action_provider" name="action_provider" output="screen" args="--no_robot"/>
+    <node pkg="baxter_collaboration" type="action_provider" name="action_provider" output="screen" args=""/>
 
-    <node name="image_view" pkg="image_view" type="image_view" respawn="false" output="log">
+    <!-- <node name="image_baxter_display" pkg="image_view" type="image_view" respawn="false" output="log">
         <remap from="image" to="/robot/xdisplay"/>
         <param name="autosize" value="true" />
-    </node>
+    </node> -->
 
     <!-- <node pkg="baxter_collaboration" type="remote_control_node" name="l_srv" output="screen" args="left" />
     <node pkg="baxter_collaboration" type="remote_control_node" name="r_srv" output="screen" args="right" /> -->
