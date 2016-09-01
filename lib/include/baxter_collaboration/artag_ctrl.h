@@ -65,6 +65,12 @@ private:
      * [recoverRelease description]
      * @return true/false if success/failure
      */
+    bool recoverGet();
+
+    /**
+     * [recoverRelease description]
+     * @return true/false if success/failure
+     */
     bool recoverRelease();
 
     /**

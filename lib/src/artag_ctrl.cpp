@@ -25,8 +25,10 @@ ARTagCtrl::ARTagCtrl(std::string _name, std::string _limb, bool _no_robot) :
     insertAction("recover_"+string(ACTION_RELEASE),
                  static_cast<f_action>(&ARTagCtrl::recoverRelease));
 
+    insertAction("recover_"+string(ACTION_GET),
+                  static_cast<f_action>(&ARTagCtrl::recoverGet));
+
     // Not implemented actions throw a ROS_ERROR and return always false:
-    insertAction("recover_"+string(ACTION_GET),       &ARTagCtrl::notImplemented);
     insertAction("recover_"+string(ACTION_PASS),      &ARTagCtrl::notImplemented);
     insertAction("recover_"+string(ACTION_HAND_OVER), &ARTagCtrl::notImplemented);
 
@@ -85,6 +87,14 @@ bool ARTagCtrl::recoverRelease()
     if (!gripObject())                   return false;
     if (!moveArm("up", 0.2))             return false;
     if (!hoverAboveTableStrict())        return false;
+
+    return true;
+}
+
+bool ARTagCtrl::recoverGet()
+{
+    if (!hoverAbovePool())          return false;
+    if (!releaseObject())           return false;
 
     return true;
 }
