@@ -10,15 +10,15 @@ Class prefix        .col-xs-        .col-sm-    .col-md-    .col-lg-    .col-xl-
 
 
 @font-face {
-    font-family: 'Montserrat';
-    src: url("fonts/Montserrat-Light.otf") format("opentype");
-    font-weight: 300;
+  font-family: 'Montserrat';
+  src: url("fonts/Montserrat-Light.otf") format("opentype");
+  font-weight: 300;
 }
 
 @font-face {
-    font-family: 'Montserrat';
-    src: url("fonts/Montserrat-UltraLight.otf") format("opentype");
-    font-weight: 100;
+  font-family: 'Montserrat';
+  src: url("fonts/Montserrat-UltraLight.otf") format("opentype");
+  font-weight: 100;
 }
 
 html {
@@ -37,8 +37,8 @@ a:hover,
 a:focus,
 a:active,
 a.active {
-    outline: 0;
-    color: inherit;
+  outline: 0;
+  color: inherit;
 }
 
 h1,
@@ -48,29 +48,29 @@ h4,
 h5,
 h6,
 .btn {
-    text-transform: uppercase;
-    font-family: Montserrat,"Helvetica Neue",Helvetica,Arial,sans-serif;
-    font-weight: 100;
+  text-transform: uppercase;
+  font-family: Montserrat,"Helvetica Neue",Helvetica,Arial,sans-serif;
+  font-weight: 100;
 }
 
 section h2 {
-    margin-top: 20px;
-    margin-bottom: 40px;
-    font-size: 3rem;
-    word-wrap: break-word;
-}
-
-.btn-group .btn {
-  margin-bottom: 0;
+  margin-top: 20px;
+  margin-bottom: 40px;
+  font-size: 3rem;
+  word-wrap: break-word;
 }
 
 .interface .btn {
-  min-height: 74px;
-  min-width: 70px;
-  font-size: 1.4rem;
+  font-size: 1.2rem;
   font-weight: 300;
-  margin-top: 10px;
-  margin-bottom: 10px;
+  margin-bottom: 4px;
+  padding: 12px 16px;
+}
+
+.btn-group .btn {
+  font-size: 1rem;
+  margin-bottom: 0;
+  padding: 8px 8px;
 }
 
 .svg-container {
@@ -85,11 +85,16 @@ section h2 {
 .svg-content-responsive {
   display: inline-block;
   position: absolute;
-  top: 10px;
+  top: 0;
   left: 0;
   background-color: #fff;
 }
 
+.container-toggles {
+  display: inline-block;
+  margin-top: 10px;
+  margin-bottom: 10px;
+}
 
 .mouse-down {
   cursor: move;
@@ -167,44 +172,53 @@ section h2 {
 }
 
 @media(max-width: 768px) {
-    section h2 {
-        font-size: 3rem;
-    }
-
-    .btn {
-        min-height: 100px;
-        min-width: 100px;
-        font-size: 1.4rem;
-        margin: 10px;
-    }
+  section h2 {
+    font-size: 3rem;
+  }
 }
 
 @media(max-width: 400px) {
-    html {
-        font-size: 16px;
-    }
-
-    .btn {
-        min-height: 80px;
-        min-width: 80px;
-    }
+  html {
+    font-size: 16px;
+  }
 }
 
-
-@media (min-width:1500px) {
+@media (min-width:1200px) {
   .container {
       max-width: 80%;
   }
+}
+
+@media (min-width:1600px) {
 
   .interface .btn {
-    min-height: 9px;
-    min-width: 110px;
+    font-size: 1.8rem;
+    margin-bottom: 16px;
+    padding: 9px 18px;
+  }
+
+  .btn-group .btn {
+    font-size: 1.2rem;
+    padding: 9px 18px;
+  }
+
+  .container-toggles {
+    margin-bottom: 40px;
+  }
+}
+
+@media (min-width:2000px) {
+
+  .interface .btn {
+    font-size: 2.4rem;
+    margin-bottom: 32px;
+  }
+
+  .btn-group .btn {
     font-size: 1.8rem;
   }
 
-  .interface .btn-primary {
-    font-size: 1.2rem;
-    min-width: 80px;
+  .container-toggles {
+    margin-bottom: 60px;
   }
-
 }
