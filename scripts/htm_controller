@@ -1,11 +1,11 @@
 #!/usr/bin/env python
 
-from htm.lib.pomdp import GraphPolicyRunner
+from htm.lib.pomdp import GraphPolicyRunner, GraphPolicyBeliefRunner
 
 from htm.task import (HierarchicalTask, AbstractAction, SequentialCombination,
                       LeafCombination)
 from htm.task_to_pomdp import CollaborativeAction, HTMToPOMDP
-from htm.icra_scenarios import (chair_task_sequential, T_WAIT, T_COMM, C_INTR,
+from htm.stool_scenarios import (stool_task_sequential, T_WAIT, T_COMM, C_INTR,
                                 C_ERR, INF)
 
 import rospy
@@ -26,10 +26,14 @@ class GPController(BaseGPController):
     PAST = {
         'snap': 'snapped',
         'take': 'taken',
+        'get': 'got',
+	'hold': 'held',
     }
     GET = 'get'
     PASS = 'pass'
+    HOLD = 'hold'
     RECOVER_GET = 'recover_get'
+    RECOVER_HOLD = 'home'
 
     def take_action(self, action):
         if action == 'wait':
@@ -44,21 +48,26 @@ class GPController(BaseGPController):
                 raise ValueError('Unknown action: {}'.format(action))
 
     def action_physical(self, action):
-        a, o = action.split('-', 1)
+        name, obj = action.split('-', 1)
         rospy.loginfo("Taking action: {} on {}".format(name, obj))
         o = self.OBJ[obj]
         if name in ['bring', 'get']:
-            result = self.action_service(self.GET, o).success
+            result = self.action_left(self.GET, o).success
             if name == 'bring':
-                result = result and self.action_service(self.PASS, o).success
+                result = result and self._pass(o)
             rospy.loginfo("received result: " + str(result))
             if result:
                 return self.NONE
             else:
-                result = self.action_service(self.RECOVER_GET, o)
+                result = self.action_left(self.RECOVER_GET, o)
                 if not result:
                     raise RuntimeError("Action 'recover get' failed.")
                 return self.ERROR
+        elif name == 'hold':
+            result = self._prepare_hold(o)
+            return self.NONE if result else self.ERROR
+        elif name == 'release':
+            raise NotImplemented  # TODO
         elif name == 'snap':
             error = self.error_sub.wait_for_msg(timeout=T_FAKE)
             return self.NO if error else self.NONE
@@ -66,27 +75,60 @@ class GPController(BaseGPController):
             raise ValueError('Unkown physical action: {}'.format(name))
 
     def action_communicate(self, action):
-        a, c, o = action.split('-', 2)
-        o_name = obj.replace('-', ' ')
-        if a == 'ask':
-            sentence = "Have you {} the {}?".format(self.PAST[name], o_name)
-        elif a == 'tell':
-            sentence = "I'm going to {} the {}.".format(self.PAST[name], o_name)
-        rospy.loginfo("{}ing: \"{}\"".format(a.capitalize(), sentence))
+        v, c, a, o = action.split('-', 3)
+        o_name = o.replace('-', ' ')
+        if v == 'ask':
+            if c == 'intention':
+                sentence = "Can you {} the {}?".format(a, o_name)
+            elif c == 'finished':
+                sentence = "Have you {} the {}?".format(self.PAST[a], o_name)
+            else:
+                raise ValueError('Unknown question')
+        elif v == 'tell':
+            sentence = "I'm going to {} the {}.".format(a, o_name)
+        rospy.loginfo("{}ing: \"{}\"".format(v.capitalize(), sentence))
         self.say(sentence)
-        s = self.answer_sub.wait_for_msg()
-        if s is None:
-            return self.NONE  # Question at wrong time
-        elif s == 'yes':
-            return self.YES
-        elif s == 'no':
-            return self.NO
+	if v == 'ask':
+            ans = self.answer_sub.wait_for_msg()
+            if ans is None:
+                return self.NONE  # Question at wrong time
+            elif ans == 'yes':
+                if a == 'hold':
+                    self._pass(0)
+                    self._prepare_hold(0)
+                return self.YES
+            elif ans == 'no':
+                return self.NO
+            else:
+                raise ValueError('Unknown answer: ' + ans)
         else:
-            raise ValueError('Unknown answer: ' + s)
+            return self.NONE
+
+    def _prepare_hold(self, o):
+        result = self.action_right(self.HOLD, o).success
+        if result:
+            return True
+        else:
+            result = self.action_right(self.RECOVER_HOLD, o)
+            if not result:
+                raise RuntimeError("Action 'recover hold' failed.")
+            return False
+
+    def _pass(self, o):
+        result = self.action_left(self.PASS, o).success
+        if result:
+            return True
+        else:
+            return False
 
 
-h2p = HTMToPOMDP(C_WAIT, C_COMM)
-p = h2p.task_to_pomdp(chair_task)
-pg = p.solve(method='grid', n_iterations=500)
-controller = GPController(pg)
+h2p = HTMToPOMDP(T_WAIT, T_COMM)
+p = h2p.task_to_pomdp(stool_task_sequential)
+gp = p.solve(method='grid', n_iterations=200)
+
+# TODO remove (DEBUG)
+import os
+gp.dump_to(os.path.expanduser('~/src/htm/visualization/policy/json/stool.json'))
+
+controller = GPController(GraphPolicyRunner(gp))
 controller.run()

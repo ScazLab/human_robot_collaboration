@@ -8,7 +8,8 @@ from svox_tts.srv import Speech, SpeechRequest
 COM_TOPIC = '/web_interface'
 ERR_TOPIC = '/robot/digital_io/left_lower_button/state'
 SPEECH_SERVICE = '/svox_tts/speech'
-ACTION_SERVICE = '/action_provider/service_left'
+ACTION_SERVICE_LEFT = '/action_provider/service_left'
+ACTION_SERVICE_RIGHT = '/action_provider/service_right'
 RELEASE = 'release'
 RECOVER = 'recover'
 
@@ -28,15 +29,17 @@ class BaseGPController(object):
         self.finished = False
         # ROS stuff
         rospy.init_node("hold_and_release_controller")
-        rospy.wait_for_service(ACTION_SERVICE)
-        self.action_service = rospy.ServiceProxy(ACTION_SERVICE, DoAction)
+        rospy.wait_for_service(ACTION_SERVICE_LEFT)
+        self.action_left = rospy.ServiceProxy(ACTION_SERVICE_LEFT, DoAction)
+        rospy.wait_for_service(ACTION_SERVICE_RIGHT)
+        self.action_right = rospy.ServiceProxy(ACTION_SERVICE_RIGHT, DoAction)
         rospy.wait_for_service(SPEECH_SERVICE)
-        self.speech_service = rospy.ServiceProxy(SPEECH_SERVICE, Speech)
+        self.speech = rospy.ServiceProxy(SPEECH_SERVICE, Speech)
         self.answer_sub = CommunicationSuscriber(COM_TOPIC)
         self.error_sub = ErrorSuscriber(ERR_TOPIC, timeout=5)
 
     def say(self, sentence):
-        self.speech_service(SpeechRequest.SAY, sentence, None)
+        self.speech(SpeechRequest.SAY, sentence, None)
 
     def run(self):
         while not self.finished:
