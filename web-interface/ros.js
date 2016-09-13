@@ -107,8 +107,9 @@ function callback(e) {
           });
           var res = new ROSLIB.ServiceResponse();
 
-          rightArmService.callService(req,function(rsp) {
-              console.log('Got Response: ' + rsp.success);
+          console.log('Requested: ', req.action, req.object);
+          rightArmService.callService(req,function(res) {
+              console.log('Got Response: ' + res.success);
           });
         }
         else if (obj == 'get CF' || obj == 'get LL' ||
@@ -125,8 +126,21 @@ function callback(e) {
 
           var res = new ROSLIB.ServiceResponse();
 
-          leftArmService.callService(req,function(rsp) {
-              console.log('Got Response: ' + rsp.success);
+          console.log('Requested: ', req.action, req.object);
+          leftArmService.callService(req,function(res)
+          {
+            console.log('Got Response: ' + res.success);
+
+            if (res.success == true)
+            {
+              req.action = 'pass';
+
+              console.log('Requested: ', req.action, req.object)
+              leftArmService.callService(req,function(res)
+              {
+                console.log('Got Response: ' + res.success);
+              });
+            };
           });
         }
         else
