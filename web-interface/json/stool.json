@@ -1,0 +1,119 @@
+{
+  "nodes": {
+    "parent": null,
+    "name": "Available Tasks",
+    "combination": "Alternative",
+    "id": 0,
+    "attributes": [],
+    "children": [
+      {
+        "attributes": [],
+        "combination": null,
+        "name": "Mount Bench",
+        "parent": 0,
+        "id": 1
+      },
+      {
+        "parent": 0,
+        "name": "Mount Stool",
+        "combination": "Sequence",
+        "id": 2,
+        "attributes": [],
+        "children": [
+          {
+            "attributes": [],
+            "combination": null,
+            "name": "Take central frame",
+            "parent": 2,
+            "id": 3
+          },
+          {
+            "parent": 2,
+            "name": "Mount legs",
+            "combination": "Parallel",
+            "id": 4,
+            "attributes": [],
+            "children": [
+              {
+                "parent": 4,
+                "name": "Mount left leg",
+                "combination": "Sequence",
+                "id": 5,
+                "attributes": [],
+                "children": [
+                  {
+                    "attributes": [],
+                    "combination": null,
+                    "name": "Take left leg",
+                    "parent": 5,
+                    "id": 6
+                  },
+                  {
+                    "attributes": [],
+                    "combination": null,
+                    "name": "Snap left leg",
+                    "parent": 5,
+                    "id": 7
+                  }
+                ]
+              },
+              {
+                "parent": 4,
+                "name": "Mount right leg",
+                "combination": "Sequence",
+                "id": 8,
+                "attributes": [],
+                "children": [
+                  {
+                    "attributes": [],
+                    "combination": null,
+                    "name": "Take right leg",
+                    "parent": 8,
+                    "id": 9
+                  },
+                  {
+                    "attributes": [],
+                    "combination": null,
+                    "name": "Snap right leg",
+                    "parent": 8,
+                    "id": 10
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "parent": 2,
+            "name": "Mount top",
+            "combination": "Sequence",
+            "id": 11,
+            "attributes": [],
+            "children": [
+              {
+                "combination": null,
+                "name": "Take  top",
+                "parent": 11,
+                "id": 12
+              },
+              {
+                "attributes": [],
+                "combination": null,
+                "name": "Place top",
+                "parent": 11,
+                "id": 13
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "attributes": [],
+        "combination": null,
+        "name": "Mount Chair",
+        "parent": 0,
+        "id": 14
+      }
+    ]
+  },
+  "name": "Hierarchical task tree"
+}
