@@ -31,19 +31,35 @@
     </div>
     <div class="container">
         <div class="row">
-            <div class="col-md-6 text-xs-center">
-                <!-- Indicates a successful or positive action -->
-                <button type="button" class="btn btn-success btn-lg">yes</button>
-
-                <!-- Indicates a dangerous or potentially negative action -->
-                <button type="button" class="btn btn-danger btn-lg">no</button>
+            <div class="col-md-10 text-center">
+                <div id="svg-container" class="svg-container">
+                    <svg></svg>
+                </div>
             </div>
-            <div class="col-md-6 text-xs-center">
-                <button type="button" class="btn btn-danger btn-lg">error</button>
+            <div class="interface col-md-2 text-xs-center">
+                <div class="btn-group" data-toggle="buttons" style="display: block;">
+                  <label class="btn btn-primary active" id="d_exp1">
+                    <input type="radio" name="options" id="q_exp1" autocomplete="off" checked>EXP 1
+                  </label>
+                  <label class="btn btn-primary" id="d_exp2">
+                    <input type="radio" name="options" id="q_exp2" autocomplete="off">EXP 2
+                  </label>
+                </div>
+                <div id="container-exp1">
+                    <button type="button" class="btn btn-info btn-lg">get CF</button>
+                    <button type="button" class="btn btn-info btn-lg">get LL</button>
+                    <button type="button" class="btn btn-info btn-lg">get RL</button>
+                    <button type="button" class="btn btn-info btn-lg">get TOP</button>
+                    <button type="button" class="btn btn-info btn-lg">hold</button>
+                </div>
+                <div id="container-exp2" style="display: none;">
+                    <button type="button" class="btn btn-success btn-lg">yes</button>
+                    <button type="button" class="btn btn-danger btn-lg">no</button>
+                    <button type="button" class="btn btn-danger btn-lg">error</button>
+                </div>
             </div>
         </div>
     </div>
-
     <div id="status" class="container">
         <div class="row">
             <div class="col-md-12 text-xs-center">
@@ -79,9 +95,12 @@
     </div>
 </section>
 
-<!-- Roslib.js libraries -->
+<!-- load the d3.js library -->
+<script src="http://d3js.org/d3.v3.min.js"></script>
+<!-- load the roslib.js libraries -->
 <script src="http://cdn.robotwebtools.org/EventEmitter2/current/eventemitter2.min.js"></script>
 <script type="text/javascript" src="http://cdn.robotwebtools.org/roslibjs/current/roslib.js"></script>
+
 <!-- jQuery Version 3.0.0 -->
 <script type="text/javascript" src="http://code.jquery.com/jquery-2.0.0.min.js"></script>
 <!-- Tether for Bootstrap -->
@@ -89,10 +108,30 @@
 <!-- Bootstrap Core JavaScript -->
 <script src="https://cdn.rawgit.com/twbs/bootstrap/v4.0.0-alpha.2/dist/js/bootstrap.min.js"></script>
 
-<!-- ROSjs stuff -->
+<script src="baxter_collaboration.js"></script>
 <script src="ros.js"></script>
 
 <script type="text/javascript">
+    $('#d_exp1').on("click",function(){
+       document.getElementById('container-exp1').style.display = 'block';
+       document.getElementById('container-exp2').style.display = 'none';
+    });
+
+    $('#d_exp2').on("click",function(){
+       document.getElementById('container-exp1').style.display = 'none';
+       document.getElementById('container-exp2').style.display = 'block';
+    });
+
+    $("#svg-container").on("mousedown", function (e)
+                        {
+                            e.preventDefault();
+                            $(this).addClass("mouse-down");
+                        })
+                       .on("mouseup", function ()
+                        {
+                            $(this).removeClass("mouse-down");
+                        });
+
     $(function () {
       $('[data-toggle="popover"]').popover()
     })
