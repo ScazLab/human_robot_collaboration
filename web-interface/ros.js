@@ -30,7 +30,7 @@ ros.on('close', function() {
 });
 
 // Create a connection to the rosbridge WebSocket server.
-ros.connect('ws://169.254.70.205:11311');
+ros.connect('ws://localhost:9090');
 
 // First, we create a Topic object with details of the topic's name and message type.
 var elemPressed = new ROSLIB.Topic({
@@ -53,6 +53,20 @@ var errorPressedR = new ROSLIB.Topic({
   messageType : 'baxter_core_msgs/DigitalIOState'
 });
 
+// Service Client to interface with the left arm
+var leftArmService  = new ROSLIB.Service({
+  ros : ros,
+  name: '/action_provider/service_left',
+  messageType : 'baxter_collaboration/DoAction'
+});
+
+// Service Client to interface with the right arm
+var rightArmService = new ROSLIB.Service({
+  ros : ros,
+  name: '/action_provider/service_right',
+  messageType : 'baxter_collaboration/DoAction'
+});
+
 // Add a callback for any element on the page
 function callback(e) {
     var e = window.e || e;
@@ -60,10 +74,11 @@ function callback(e) {
     // console.log(e.target.tagName);
     if (e.target.tagName == 'BUTTON')
     {
+        var obj = e.target.firstChild.nodeValue;
         console.log('Pressed '+ e.target.tagName +
-                    ' item: ' + e.target.firstChild.nodeValue);
+                    ' item: ' + obj);
 
-        if (e.target.firstChild.nodeValue == 'error')
+        if (obj == 'error')
         {
           var message = new ROSLIB.Message({
             state: 1,
@@ -73,10 +88,41 @@ function callback(e) {
           errorPressedL.publish(message);
           errorPressedR.publish(message);
         }
+        else if (obj == 'hold')
+        {
+          var req = new ROSLIB.ServiceRequest(
+          {
+            action: 'hold',
+            object: -1
+          });
+          var res = new ROSLIB.ServiceResponse();
+
+          rightArmService.callService(req,function(rsp) {
+              console.log('Got Response: ' + rsp.success);
+          });
+        }
+        else if (obj == 'get CF' || obj == 'get LL' ||
+                 obj == 'get RL' || obj == 'get TOP' )
+        {
+          var req = new ROSLIB.ServiceRequest();
+          req.action = 'get';
+
+          if      (obj.replace('get ','') == 'CF')  { req.object = 24; }
+          else if (obj.replace('get ','') == 'LL')  { req.object = 17; }
+          else if (obj.replace('get ','') == 'RL')  { req.object = 26; }
+          else if (obj.replace('get ','') == 'TOP') { req.object = 21; }
+          else { console.error('Requested an object that was not allowed!'); };
+
+          var res = new ROSLIB.ServiceResponse();
+
+          leftArmService.callService(req,function(rsp) {
+              console.log('Got Response: ' + rsp.success);
+          });
+        }
         else
         {
           var message = new ROSLIB.Message({
-            data: e.target.firstChild.nodeValue
+            data: obj
           });
 
           elemPressed.publish(message);

@@ -22,17 +22,14 @@ Class prefix        .col-xs-        .col-sm-    .col-md-    .col-lg-    .col-xl-
 }
 
 html {
-    font-size: 18px;
+  font-size: 18px;
 }
 
 body {
-    overflow-x: hidden;
-    font-size: 1rem;
-}
-
-body
-{
-    font-family: 'Lato', sans-serif;
+  font-size: 16px;
+  background-color: #edeeef;
+  color: #505050;
+  font-family: 'Lato', sans-serif;
 }
 
 a,
@@ -56,22 +53,93 @@ h6,
     font-weight: 100;
 }
 
-section {
-    padding: 100px 0;
-}
-
 section h2 {
-    margin-bottom: 60px;
-    font-size: 4rem;
+    margin-top: 20px;
+    margin-bottom: 40px;
+    font-size: 3rem;
     word-wrap: break-word;
 }
 
-.btn {
-    min-height: 120px;
-    min-width: 120px;
-    font-size: 1.8rem;
-    font-weight: 300;
-    margin: 20px;
+.btn-group .btn {
+  margin-bottom: 0;
+}
+
+.interface .btn {
+  min-height: 74px;
+  min-width: 70px;
+  font-size: 1.4rem;
+  font-weight: 300;
+  margin-top: 10px;
+  margin-bottom: 10px;
+}
+
+.svg-container {
+  display: inline-block;
+  position: relative;
+  width: 100%;
+  padding-bottom: 50%; /* aspect ratio */
+  vertical-align: top;
+  overflow: hidden;
+}
+
+.svg-content-responsive {
+  display: inline-block;
+  position: absolute;
+  top: 10px;
+  left: 0;
+  background-color: #fff;
+}
+
+
+.mouse-down {
+  cursor: move;
+}
+
+.message.error,
+.title.filename {
+  font-size: 2rem;
+  font-weight: 300;
+}
+
+.node {
+  cursor: pointer;
+}
+
+.node rect {
+  stroke-width: 2px;
+  stroke: black;
+  fill: #fff;
+}
+
+.node text {
+  font: sans-serif;
+}
+
+.node .combination rect {
+  stroke-width: 0px;
+}
+
+.node .combination text {
+  fill: red;
+}
+
+.link {
+  fill: none;
+  stroke: #ccc;
+  stroke-width: 2px;
+}
+
+.highlighted text {
+  font-weight: bold;
+}
+
+.highlighted rect.label {
+  fill: #77dddd;
+  stroke-width: 0px;
+}
+
+.collapsed rect.label {
+  stroke: steelblue;
 }
 
 #status {
@@ -120,4 +188,23 @@ section h2 {
         min-height: 80px;
         min-width: 80px;
     }
+}
+
+
+@media (min-width:1500px) {
+  .container {
+      max-width: 80%;
+  }
+
+  .interface .btn {
+    min-height: 9px;
+    min-width: 110px;
+    font-size: 1.8rem;
+  }
+
+  .interface .btn-primary {
+    font-size: 1.2rem;
+    min-width: 80px;
+  }
+
 }
