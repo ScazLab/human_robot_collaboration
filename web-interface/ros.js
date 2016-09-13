@@ -29,8 +29,18 @@ ros.on('close', function() {
   document.getElementById('error').style.display = 'inline-block';
 });
 
+// Guess connection of the rosbridge websocket
+function getRosBridgeHost() {
+  if (window.location.protocol == 'file:') {
+    return 'localhost';
+  } else {
+    return window.location.hostname;
+  }
+}
+
+var rosBridgePort = 9090;
 // Create a connection to the rosbridge WebSocket server.
-ros.connect('ws://localhost:9090');
+ros.connect('ws://' + getRosBridgeHost() + ':' + rosBridgePort);
 
 // First, we create a Topic object with details of the topic's name and message type.
 var elemPressed = new ROSLIB.Topic({
