@@ -36,6 +36,8 @@ ArmCtrl::ArmCtrl(string _name, string _limb, bool _no_robot) :
 void ArmCtrl::InternalThreadEntry()
 {
     pthread_setcanceltype(PTHREAD_CANCEL_ASYNCHRONOUS,NULL);
+    _n.param<bool>("internal_recovery",  internal_recovery, true);
+
     std::string a =     getAction();
     int         s = int(getState());
 
