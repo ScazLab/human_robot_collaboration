@@ -69,6 +69,7 @@ class GPController(BaseGPController):
             return self.NONE if result else self.ERROR
         elif name == 'release':
             result = self.action_right(self.RELEASE, o)
+            return self.NONE
         elif name == 'snap':
             error = self.error_sub.wait_for_msg(timeout=T_FAKE)
             return self.NO if error else self.NONE
