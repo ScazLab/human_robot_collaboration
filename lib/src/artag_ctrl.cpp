@@ -114,14 +114,14 @@ bool ARTagCtrl::passObject()
 
 bool ARTagCtrl::handOver()
 {
-    if (getSubState() != ACTION_GET) return false;
-    if (!prepare4HandOver())         return false;
+    if (getSubState() != ACTION_GET)  return false;
+    if (!prepare4HandOver())          return false;
     ros::Duration(0.2).sleep();
-    if (!waitForOtherArm())          return false;
+    if (!waitForOtherArm(30.0, true)) return false;
     ros::Duration(0.8).sleep();
-    if (!releaseObject())            return false;
-    if (!moveArm("up", 0.05))        return false;
-    if (!hoverAboveTableStrict())    return false;
+    if (!releaseObject())             return false;
+    if (!moveArm("up", 0.05))         return false;
+    if (!hoverAboveTableStrict())     return false;
     setSubState("");
 
     return true;
