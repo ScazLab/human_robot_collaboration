@@ -29,6 +29,8 @@ ArmCtrl::ArmCtrl(string _name, string _limb, bool _no_robot) :
     insertAction("recover_"+string(ACTION_RELEASE), &ArmCtrl::notImplemented);
 
     _n.param<bool>("internal_recovery",  internal_recovery, true);
+    ROS_INFO("[%s] Internal_recovery flag set to %s", getLimb().c_str(),
+                                internal_recovery==true?"true":"false");
 }
 
 void ArmCtrl::InternalThreadEntry()

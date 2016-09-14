@@ -7,34 +7,29 @@
 
 using namespace std;
 
-
 void mySigintHandler(int sig)
 {
     // Do some custom action.
     // For example, publish a stop message to some other nodes.
 
-    // All the default sigint handler does is call shutdown()
+    // What the default sigint handler does is call shutdown()
     ros::shutdown();
 }
 
 int main(int argc, char ** argv)
 {
     ros::init(argc, argv, "action_provider");
+    ros::NodeHandle _n("~");
 
-    bool no_robot = false;
-
-    if (argc>1)
-    {
-        if (std::string(argv[1])=="--no_robot")
-        {
-            no_robot = true;
-        }
-    }
+    bool use_robot;
+    _n.param<bool>("use_robot", use_robot, true);
+    printf("\n");
+    ROS_INFO("use_robot flag set to %s", use_robot==true?"true":"false");
 
     printf("\n");
-    ARTagCtrl  left_ctrl("action_provider","left", no_robot);
+    ARTagCtrl  left_ctrl("action_provider","left", !use_robot);
     printf("\n");
-    HoldCtrl  right_ctrl("action_provider","right", no_robot);
+    HoldCtrl  right_ctrl("action_provider","right", !use_robot);
     printf("\n");
     ROS_INFO("READY! Waiting for service messages..\n");
 
