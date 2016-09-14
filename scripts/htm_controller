@@ -131,7 +131,7 @@ class GPController(BaseGPController):
             return False
 
 
-h2p = HTMToPOMDP(T_WAIT, T_COMM)
+h2p = HTMToPOMDP(T_WAIT, T_COMM, C_INTR, end_reward=0.1, loop=False)
 p = h2p.task_to_pomdp(stool_task_sequential)
 gp = p.solve(method='grid', n_iterations=200)
 
