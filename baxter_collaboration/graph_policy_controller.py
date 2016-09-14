@@ -25,6 +25,8 @@ class BaseGPController(object):
     NO = 'no'
     ERROR = 'error'
 
+    HOME = 'home'
+
     def __init__(self, policy_runner):
         self.pr = policy_runner
         self.finished = False
@@ -39,6 +41,14 @@ class BaseGPController(object):
         self.answer_sub = CommunicationSuscriber(COM_TOPIC)
         self.error_sub = ErrorSuscriber(ERR_TOPIC, timeout=5)
         self._say_req = None
+	self._home()
+
+    def _home(self):
+        rospy.loginfo('Going home befor starting.')
+        l = ServiceRequest(self.action_left, self.HOME, 0)
+        r = ServiceRequest(self.action_right, self.HOME, 0)
+        l.wait_result()
+        r.wait_result()
 
     def say(self, sentence, sync=True):
         prev = self._say_req

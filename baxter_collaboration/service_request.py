@@ -1,9 +1,11 @@
+import rospy
 import threading
 
 
 class ServiceRequest(threading.Thread):
 
     def __init__(self, service_proxy, *args):
+        super(ServiceRequest, self).__init__()
         self.proxy = service_proxy
         self.args = args
         self.finished = False

@@ -32,8 +32,9 @@ class GPController(BaseGPController):
     }
     GET = 'get'
     PASS = 'pass'
-    HOLD = 'hold_start'
-    RELEASE = 'hold_end'
+    HOLD = 'start_hold'
+    RELEASE = 'end_hold'
+    HAND_OVER = 'hand_over'
     RECOVER_GET = 'recover_get'
     RECOVER_HOLD = 'home'
 
@@ -56,7 +57,7 @@ class GPController(BaseGPController):
         if name in ['bring', 'get']:
             result = self.action_left(self.GET, o).success
             if name == 'bring':
-                result = result and self._pass(o)
+                result = result and self.action_left(self.PASS, o).success
             rospy.loginfo("received result: " + str(result))
             if result:
                 return self.NONE
@@ -66,14 +67,14 @@ class GPController(BaseGPController):
                     raise RuntimeError("Action 'recover get' failed.")
                 return self.ERROR
         elif name == 'hold':
-            rqr = ServiceRequest(self.action_right(self.HAND_OVER, o))
-            rql = ServiceRequest(self.action_left(self.HAND_OVER, o))
-            result = rqr.wait_result()
-            result += rql.wait_result()
+            rqr = ServiceRequest(self.action_right, self.HAND_OVER, o)
+            rql = ServiceRequest(self.action_left, self.HAND_OVER, o)
+            result = rqr.wait_for_result().success
+            result = result and rql.wait_for_result().success
             return self.NONE if result else self.ERROR
         elif name == 'release':
             result = self.action_right(self.RELEASE, o)
-            return self.NONE
+            return self.NONE if result else self.ERROR
         elif name == 'snap':
             error = self.error_sub.wait_for_msg(timeout=T_FAKE)
             return self.NO if error else self.NONE
@@ -82,7 +83,7 @@ class GPController(BaseGPController):
 
     def action_communicate(self, action):
         v, c, a, o = action.split('-', 3)
-        sentence = self._get_sentence(c, a, o)
+        sentence = self._get_sentence(v, c, a, o)
         rospy.loginfo("{}ing: \"{}\"".format(v.capitalize(), sentence))
         ans = self.answer_sub.start_listening()
         self.say(sentence, sync=False)
@@ -91,9 +92,14 @@ class GPController(BaseGPController):
             if ans is None:
                 return self.NONE  # Question at wrong time
             elif ans == 'yes':
-                if a == 'hold':
-                    self._pass(0)
-                    self._prepare_hold(0)
+                if a == 'hold' and c == 'intention':
+                    rp = ServiceRequest(self.action_left, self.PASS, self.OBJ[o])
+                    rospy.sleep(rospy.Duration(.7))
+                    rh = ServiceRequest(self.action_right, self.HOLD, self.OBJ[o])
+                    result = rp.wait_result().success
+                    result = result and rh.wait_result().success
+                    if not result:
+                        return self.ERROR
                 return self.YES
             elif ans == 'no':
                 return self.NO
@@ -102,7 +108,7 @@ class GPController(BaseGPController):
         else:
             return self.NONE
 
-    def _get_sentence(self, v, a, o):
+    def _get_sentence(self, v, c, a, o):
         o_name = o.replace('-', ' ')
         if v == 'ask':
             if c == 'intention':
@@ -116,23 +122,9 @@ class GPController(BaseGPController):
                 raise ValueError('Unknown question')
         elif v == 'tell':
             sentence = "I'm going to {} the {}.".format(a, o_name)
-
-    def _prepare_hold(self, o):
-        result = self.action_right(self.HOLD, o).success
-        if result:
-            return True
         else:
-            result = self.action_right(self.RECOVER_HOLD, o)
-            if not result:
-                raise RuntimeError("Action 'recover hold' failed.")
-            return False
-
-    def _pass(self, o):
-        result = self.action_left(self.PASS, o).success
-        if result:
-            return True
-        else:
-            return False
+            raise ValueError('Unknown verbal action: {}'.format(v))
+        return sentence
 
 
 h2p = HTMToPOMDP(T_WAIT, T_COMM, C_INTR, end_reward=0.1, loop=False)

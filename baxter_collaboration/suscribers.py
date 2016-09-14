@@ -41,7 +41,7 @@ class WaitForOneSuscriber:
     def wait_for_msg(self, timeout=None, continuing=False):
         if timeout is None:
             timeout = self.timeout
-        if continuing:
+        if not continuing:
             self.start_listening()
         start_time = rospy.Time.now()
         while (self.listening and
