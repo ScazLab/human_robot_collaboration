@@ -30,13 +30,21 @@ class WaitForOneSuscriber:
         else:
             pass
 
-    def wait_for_msg(self, timeout=None):
-        if timeout is None:
-            timeout = self.timeout
+    def start_listening(self):
         self._reset_msg()
         self.listening = True
+
+    def found_message(self, value):
+        self.last_msg = value
+        self.listening = False
+
+    def wait_for_msg(self, timeout=None, continuing=False):
+        if timeout is None:
+            timeout = self.timeout
+        if continuing:
+            self.start_listening()
         start_time = rospy.Time.now()
-        while (self.last_msg is None and
+        while (self.listening and
                rospy.Time.now() < start_time + rospy.Duration(timeout)):
             rospy.sleep(self.period)
         self.listening = False
@@ -49,7 +57,7 @@ class CommunicationSuscriber(WaitForOneSuscriber):
         self.sub = rospy.Subscriber(topic, String, self.cb)
 
     def _handle_msg(self, msg):
-        self.last_msg = msg.data
+        self.found_message(msg.data)
 
 
 class ErrorSuscriber(WaitForOneSuscriber):
@@ -59,6 +67,6 @@ class ErrorSuscriber(WaitForOneSuscriber):
 
     def _handle_msg(self, msg):
         if msg.state == DigitalIOState.PRESSED:
-            self.last_msg = True
+            self.found_message(True)
         else:
             pass

@@ -88,9 +88,10 @@ class GPController(BaseGPController):
         elif v == 'tell':
             sentence = "I'm going to {} the {}.".format(a, o_name)
         rospy.loginfo("{}ing: \"{}\"".format(v.capitalize(), sentence))
+        ans = self.answer_sub.start_listening()
         self.say(sentence)
         if v == 'ask':
-            ans = self.answer_sub.wait_for_msg()
+            ans = self.answer_sub.wait_for_msg(continuing=True)
             if ans is None:
                 return self.NONE  # Question at wrong time
             elif ans == 'yes':
