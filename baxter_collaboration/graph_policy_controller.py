@@ -1,4 +1,5 @@
 import rospy
+from baxter_collaboration.service_request import ServiceRequest
 from baxter_collaboration.srv import DoAction
 from baxter_collaboration.suscribers import (CommunicationSuscriber,
                                              ErrorSuscriber)
@@ -37,9 +38,19 @@ class BaseGPController(object):
         self.speech = rospy.ServiceProxy(SPEECH_SERVICE, Speech)
         self.answer_sub = CommunicationSuscriber(COM_TOPIC)
         self.error_sub = ErrorSuscriber(ERR_TOPIC, timeout=5)
+        self._say_req = None
 
-    def say(self, sentence):
-        self.speech(SpeechRequest.SAY, sentence, None)
+    def say(self, sentence, sync=True):
+        prev = self._say_req
+        if prev is not None and not prev.finished:
+            rospy.loginfo('Waiting for end of previous speech utterance.')
+            prev.wait_result()
+        self._say_req = ServiceRequest(
+            self.speech, SpeechRequest.SAY, sentence, None)
+        if sync:
+            self._say_req.join()
+        else:
+            return self._say_req
 
     def run(self):
         while not self.finished:

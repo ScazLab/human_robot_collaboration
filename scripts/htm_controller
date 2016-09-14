@@ -10,6 +10,7 @@ from htm.stool_scenarios import (stool_task_sequential, T_WAIT, T_COMM, C_INTR,
 
 import rospy
 from baxter_collaboration.graph_policy_controller import BaseGPController
+from baxter_collaboration.service_request import ServiceRequest
 
 
 T_FAKE = 10
@@ -65,7 +66,10 @@ class GPController(BaseGPController):
                     raise RuntimeError("Action 'recover get' failed.")
                 return self.ERROR
         elif name == 'hold':
-            result = self._prepare_hold(o)
+            rqr = ServiceRequest(self.action_right(self.HAND_OVER, o))
+            rql = ServiceRequest(self.action_left(self.HAND_OVER, o))
+            result = rqr.wait_result()
+            result += rql.wait_result()
             return self.NONE if result else self.ERROR
         elif name == 'release':
             result = self.action_right(self.RELEASE, o)
@@ -81,7 +85,7 @@ class GPController(BaseGPController):
         sentence = self._get_sentence(c, a, o)
         rospy.loginfo("{}ing: \"{}\"".format(v.capitalize(), sentence))
         ans = self.answer_sub.start_listening()
-        self.say(sentence)
+        self.say(sentence, sync=False)
         if v == 'ask':
             ans = self.answer_sub.wait_for_msg(continuing=True)
             if ans is None:
@@ -112,7 +116,6 @@ class GPController(BaseGPController):
                 raise ValueError('Unknown question')
         elif v == 'tell':
             sentence = "I'm going to {} the {}.".format(a, o_name)
-        return sentence
 
     def _prepare_hold(self, o):
         result = self.action_right(self.HOLD, o).success
