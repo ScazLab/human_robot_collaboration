@@ -112,6 +112,7 @@ class GPController(BaseGPController):
                 raise ValueError('Unknown question')
         elif v == 'tell':
             sentence = "I'm going to {} the {}.".format(a, o_name)
+        return sentence
 
     def _prepare_hold(self, o):
         result = self.action_right(self.HOLD, o).success
