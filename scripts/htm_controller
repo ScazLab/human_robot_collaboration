@@ -69,8 +69,8 @@ class GPController(BaseGPController):
         elif name == 'hold':
             rqr = ServiceRequest(self.action_right, self.HAND_OVER, o)
             rql = ServiceRequest(self.action_left, self.HAND_OVER, o)
-            result = rqr.wait_for_result().success
-            result = result and rql.wait_for_result().success
+            result = rqr.wait_result().success
+            result = result and rql.wait_result().success
             return self.NONE if result else self.ERROR
         elif name == 'release':
             result = self.action_right(self.RELEASE, o)
