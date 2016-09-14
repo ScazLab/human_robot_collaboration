@@ -144,4 +144,5 @@ import os
 gp.dump_to(os.path.expanduser('~/src/htm/visualization/policy/json/stool.json'))
 
 controller = GPController(GraphPolicyRunner(gp))
+rospy.set_param('/action_provider/internal_recovery', False)
 controller.run()
