@@ -224,7 +224,7 @@ bool ARTagCtrl::pickARTag()
     double z =         getPos().z;
 
     ROS_INFO("Going to: %g %g %g", x, y, z);
-    if (getAction() == ACTION_HAND_OVER)
+    if (getMarkerID() == 24)
     {
         // If we have to hand_over, let's pre-orient the end effector
         // such that further movements are easier
@@ -262,7 +262,7 @@ bool ARTagCtrl::pickARTag()
 
         bool res=false;
 
-        if (getAction() == ACTION_HAND_OVER)
+        if (getMarkerID() == 24)
         {
             // q   = computeHOorientation();
             res = goToPoseNoCheck(x,y,z,q.x,q.y,q.z,q.w);
