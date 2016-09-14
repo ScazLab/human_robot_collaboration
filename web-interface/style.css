@@ -183,7 +183,13 @@ section h2 {
   }
 }
 
-@media (min-width:1200px) {
+@media (min-width:992px) {
+  .container {
+      max-width: 95%;
+  }
+}
+
+@media (min-width:1400px) {
   .container {
       max-width: 80%;
   }
