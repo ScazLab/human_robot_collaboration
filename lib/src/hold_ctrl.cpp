@@ -28,8 +28,10 @@ HoldCtrl::HoldCtrl(std::string _name, std::string _limb, bool _no_robot) :
 
 bool HoldCtrl::doAction(int s, std::string a)
 {
-    if (a == ACTION_HOLD      || a == "recover_"+string(ACTION_HOLD)      ||
-        a == ACTION_HAND_OVER || a == "recover_"+string(ACTION_HAND_OVER) ||
+    if (a == ACTION_HOLD       || a == "recover_"+string(ACTION_HOLD)       ||
+        a == ACTION_START_HOLD || a == "recover_"+string(ACTION_START_HOLD) ||
+        a == ACTION_END_HOLD   || a == "recover_"+string(ACTION_END_HOLD)   ||
+        a == ACTION_HAND_OVER  || a == "recover_"+string(ACTION_HAND_OVER)  ||
         a == "recover_"+string(ACTION_RELEASE))
     {
         if (callAction(a))  return true;
@@ -52,11 +54,11 @@ bool HoldCtrl::handOver()
     if (!gripObject())                    return false;
     ros::Duration(1.2).sleep();
     if (!goHoldPose(0.24))                return false;
-    ros::Duration(1.0).sleep();
-    if (!waitForForceInteraction(180.0))  return false;
-    if (!releaseObject())                 return false;
-    ros::Duration(1.0).sleep();
-    if (!hoverAboveTableStrict())         return false;
+    // ros::Duration(1.0).sleep();
+    // if (!waitForForceInteraction(180.0))  return false;
+    // if (!releaseObject())                 return false;
+    // ros::Duration(1.0).sleep();
+    // if (!hoverAboveTableStrict())         return false;
     setSubState("");
 
     return true;
