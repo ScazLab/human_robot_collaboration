@@ -46,17 +46,17 @@ bool HoldCtrl::doAction(int s, std::string a)
 bool HoldCtrl::handOver()
 {
     setSubState(HAND_OVER_START);
-    if (!prepare4HandOver())                   return false;
+    if (!prepare4HandOver())              return false;
     setSubState(HAND_OVER_READY);
-    if (!waitForOtherArm(120.0, true))         return false;
-    if (!gripObject())                         return false;
+    if (!waitForOtherArm(120.0, true))    return false;
+    if (!gripObject())                    return false;
     ros::Duration(1.2).sleep();
-    if (!goHoldPose(0.24))                     return false;
+    if (!goHoldPose(0.24))                return false;
     ros::Duration(1.0).sleep();
-    if (!waitForForceInteraction(180.0))       return false;
-    if (!releaseObject())                      return false;
+    if (!waitForForceInteraction(180.0))  return false;
+    if (!releaseObject())                 return false;
     ros::Duration(1.0).sleep();
-    if (!hoverAboveTableStrict())              return false;
+    if (!hoverAboveTableStrict())         return false;
     setSubState("");
 
     return true;
@@ -65,10 +65,12 @@ bool HoldCtrl::handOver()
 
 bool HoldCtrl::startHold()
 {
-    if (!goHoldPose(0.30))                return false;
+    double time=getMarkerID()>0?getMarkerID():30.0;
+
+    if (!goHoldPose(0.30))              return false;
     ros::Duration(1.0).sleep();
-    if (!waitForForceInteraction(30.0))   return false;
-    if (!gripObject())                    return false;
+    if (!waitForForceInteraction(time)) return false;
+    if (!gripObject())                  return false;
 
     return true;
 }
@@ -76,18 +78,20 @@ bool HoldCtrl::startHold()
 
 bool HoldCtrl::endHold()
 {
-    if (!waitForForceInteraction(getMarkerID())) return false;
-    if (!releaseObject())                        return false;
+    double time=getMarkerID()>0?getMarkerID():180.0;
+
+    if (!waitForForceInteraction(time)) return false;
+    if (!releaseObject())               return false;
     ros::Duration(1.0).sleep();
-    if (!hoverAboveTableStrict())                return false;
+    if (!hoverAboveTableStrict())       return false;
     return true;
 }
 
 bool HoldCtrl::holdObject()
 {
-    if (!startHold())               return false;
+    if (!startHold())            return false;
     ros::Duration(1.0).sleep();
-    if (!endHold())                 return false;
+    if (!endHold())              return false;
 
     return true;
 }
