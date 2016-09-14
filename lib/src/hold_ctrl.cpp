@@ -8,12 +8,16 @@ HoldCtrl::HoldCtrl(std::string _name, std::string _limb, bool _no_robot) :
 {
     setState(START);
 
-    insertAction(ACTION_HOLD,      static_cast<f_action>(&HoldCtrl::holdObject));
-    insertAction(ACTION_HAND_OVER, static_cast<f_action>(&HoldCtrl::handOver));
+    insertAction(ACTION_START_HOLD, static_cast<f_action>(&HoldCtrl::startHold));
+    insertAction(ACTION_END_HOLD,   static_cast<f_action>(&HoldCtrl::endHold));
+    insertAction(ACTION_HOLD,       static_cast<f_action>(&HoldCtrl::holdObject));
+    insertAction(ACTION_HAND_OVER,  static_cast<f_action>(&HoldCtrl::handOver));
 
     // Not implemented actions throw a ROS_ERROR and return always false:
-    insertAction("recover_"+string(ACTION_HOLD),      &HoldCtrl::notImplemented);
-    insertAction("recover_"+string(ACTION_HAND_OVER), &HoldCtrl::notImplemented);
+    insertAction("recover_"+string(ACTION_START_HOLD), &HoldCtrl::notImplemented);
+    insertAction("recover_"+string(ACTION_END_HOLD),   &HoldCtrl::notImplemented);
+    insertAction("recover_"+string(ACTION_HOLD),       &HoldCtrl::notImplemented);
+    insertAction("recover_"+string(ACTION_HAND_OVER),  &HoldCtrl::notImplemented);
 
     printDB();
 
@@ -58,17 +62,32 @@ bool HoldCtrl::handOver()
     return true;
 }
 
-bool HoldCtrl::holdObject()
+
+bool HoldCtrl::startHold()
 {
     if (!goHoldPose(0.30))                return false;
     ros::Duration(1.0).sleep();
     if (!waitForForceInteraction(30.0))   return false;
     if (!gripObject())                    return false;
+
+    return true;
+}
+
+
+bool HoldCtrl::endHold()
+{
+    if (!waitForForceInteraction(getMarkerID())) return false;
+    if (!releaseObject())                        return false;
     ros::Duration(1.0).sleep();
-    if (!waitForForceInteraction(180.0))  return false;
-    if (!releaseObject())                 return false;
+    if (!hoverAboveTableStrict())                return false;
+    return true;
+}
+
+bool HoldCtrl::holdObject()
+{
+    if (!startHold())               return false;
     ros::Duration(1.0).sleep();
-    if (!hoverAboveTableStrict())         return false;
+    if (!endHold())                 return false;
 
     return true;
 }

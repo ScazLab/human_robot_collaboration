@@ -23,12 +23,17 @@
 
 #define SUBSCRIBER_BUFFER 3
 
+// Both arms
 #define ACTION_HOME         "home"
-#define ACTION_GET          "get"
 #define ACTION_RELEASE      "release"
-#define ACTION_PASS         "pass"
-#define ACTION_HOLD         "hold"
 #define ACTION_HAND_OVER    "hand_over"
+// Only left arm
+#define ACTION_GET          "get"
+#define ACTION_PASS         "pass"
+// Only right arm
+#define ACTION_HOLD         "hold"
+#define ACTION_START_HOLD   "start_hold"
+#define ACTION_END_HOLD     "end_hold"
 // Protected action keys used for things that are not real actions
 #define PROT_ACTION_LIST    "list_actions"  // list the available actions
 

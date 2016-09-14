@@ -14,6 +14,18 @@ private:
     bool goHoldPose(double height);
 
     /**
+     * [startHold description]
+     * @return true/false if success/failure
+     */
+    bool startHold();
+
+    /**
+     * [endHold description]
+     * @return true/false if success/failure
+     */
+    bool endHold();
+
+    /**
      * [holdObject description]
      * @return true/false if success/failure
      */
