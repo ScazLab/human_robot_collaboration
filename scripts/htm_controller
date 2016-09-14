@@ -27,11 +27,12 @@ class GPController(BaseGPController):
         'snap': 'snapped',
         'take': 'taken',
         'get': 'got',
-	'hold': 'held',
+        'hold': 'held',
     }
     GET = 'get'
     PASS = 'pass'
-    HOLD = 'hold'
+    HOLD = 'hold_start'
+    RELEASE = 'hold_end'
     RECOVER_GET = 'recover_get'
     RECOVER_HOLD = 'home'
 
@@ -67,7 +68,7 @@ class GPController(BaseGPController):
             result = self._prepare_hold(o)
             return self.NONE if result else self.ERROR
         elif name == 'release':
-            raise NotImplemented  # TODO
+            result = self.action_right(self.RELEASE, o)
         elif name == 'snap':
             error = self.error_sub.wait_for_msg(timeout=T_FAKE)
             return self.NO if error else self.NONE
@@ -88,7 +89,7 @@ class GPController(BaseGPController):
             sentence = "I'm going to {} the {}.".format(a, o_name)
         rospy.loginfo("{}ing: \"{}\"".format(v.capitalize(), sentence))
         self.say(sentence)
-	if v == 'ask':
+        if v == 'ask':
             ans = self.answer_sub.wait_for_msg()
             if ans is None:
                 return self.NONE  # Question at wrong time
