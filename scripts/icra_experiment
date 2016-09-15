@@ -127,7 +127,10 @@ class GPController(BaseGPController):
             else:
                 raise ValueError('Unknown question')
         elif v == 'tell':
-            sentence = "I'm going to {} the {}.".format(a, o_name)
+            aux = 'going'
+            if a == 'release':
+                aux = 'ready'
+            sentence = "I'm {} to {} the {}.".format(aux, a, o_name)
         else:
             raise ValueError('Unknown verbal action: {}'.format(v))
         return sentence
