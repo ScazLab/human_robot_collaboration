@@ -98,17 +98,19 @@ function callback(e) {
           errorPressedL.publish(message);
           errorPressedR.publish(message);
         }
-        else if (obj == 'hold')
+        else if (obj == 'hold' || obj == 'release')
         {
-          var req = new ROSLIB.ServiceRequest(
-          {
-            action: 'hold',
-            object: -1
-          });
+          var req = new ROSLIB.ServiceRequest();
+          req.object = -1;
+
+          if      (obj == 'hold')    { req.action = 'start_hold'; }
+          else if (obj == 'release') { req.action =   'end_hold'; }
+
           var res = new ROSLIB.ServiceResponse();
 
           console.log('Requested: ', req.action, req.object);
-          rightArmService.callService(req,function(res) {
+          rightArmService.callService(req,function(res)
+          {
               console.log('Got Response: ' + res.success);
           });
         }
@@ -141,6 +143,23 @@ function callback(e) {
                 console.log('Got Response: ' + res.success);
               });
             };
+          });
+        }
+        else if (obj == 'home')
+        {
+          var req = new ROSLIB.ServiceRequest();
+          var res = new ROSLIB.ServiceResponse();
+          req.action = obj;
+          req.object =  -1;
+
+          console.log('Requested: ', req.action, req.object);
+          rightArmService.callService(req,function(res)
+          {
+              console.log('[right] Got Response: ' + res.success);
+          });
+          leftArmService.callService(req,function(res)
+          {
+              console.log('[left] Got Response: ' + res.success);
           });
         }
         else
