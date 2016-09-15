@@ -63,9 +63,15 @@ class CommunicationSuscriber(WaitForOneSuscriber):
         self.sub = rospy.Subscriber(topic, String, self.cb)
 
     def _handle_msg(self, msg):
+        self.found_message(msg.data)
+
+    def cb(self, msg):
         if msg.data == self.STOP:
             self.stop_cb()
-        self.found_message(msg.data)
+        if self.listening:
+            self._handle_msg(msg)
+        else:
+            pass
 
 
 class ErrorSuscriber(WaitForOneSuscriber):
