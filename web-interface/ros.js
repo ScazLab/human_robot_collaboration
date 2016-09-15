@@ -184,7 +184,7 @@ function callback(e) {
         var datenow = Date.now();
         var elapsed = (datenow - beginning)/1000;
         var timestamp = '[' + datenow + '][' + elapsed + ']';
-        var logstring = timestamp + ' ' + e.target.firstChild.nodeValue;
+        var logstring = timestamp + ' ' + obj;
 
         // console.log(logstring);
         var message = new ROSLIB.Message({
