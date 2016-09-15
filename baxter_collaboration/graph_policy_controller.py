@@ -1,6 +1,7 @@
 import rospy
-from baxter_collaboration.service_request import ServiceRequest
 from baxter_collaboration.srv import DoAction
+from baxter_collaboration.timer import Timer
+from baxter_collaboration.service_request import ServiceRequest
 from baxter_collaboration.suscribers import (CommunicationSuscriber,
                                              ErrorSuscriber)
 from svox_tts.srv import Speech, SpeechRequest
@@ -41,7 +42,8 @@ class BaseGPController(object):
         self.answer_sub = CommunicationSuscriber(COM_TOPIC)
         self.error_sub = ErrorSuscriber(ERR_TOPIC, timeout=5)
         self._say_req = None
-	self._home()
+        self.timer = Timer()
+        self._home()
 
     def _home(self):
         rospy.loginfo('Going home befor starting.')
@@ -63,8 +65,14 @@ class BaseGPController(object):
             return self._say_req
 
     def run(self):
+        self.timer.start()
+        obs = None
         while not self.finished:
             rospy.loginfo("Current state in policy: " + str(self.pr.current))
+            self.timer.log({'node': self.pr.current,
+                            'action': self.pr.get_action(),
+                            'last-observation': obs,
+                            })
             obs = self.take_action(self.pr.get_action())
             rospy.loginfo("Observed: " + obs)
             self.pr.step(obs)
