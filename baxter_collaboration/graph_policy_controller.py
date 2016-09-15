@@ -28,7 +28,7 @@ class BaseGPController(object):
 
     HOME = 'home'
 
-    def __init__(self, policy_runner):
+    def __init__(self, policy_runner, timer_path=None):
         self.pr = policy_runner
         self.finished = False
         # ROS stuff
@@ -39,10 +39,10 @@ class BaseGPController(object):
         self.action_right = rospy.ServiceProxy(ACTION_SERVICE_RIGHT, DoAction)
         rospy.wait_for_service(SPEECH_SERVICE)
         self.speech = rospy.ServiceProxy(SPEECH_SERVICE, Speech)
-        self.answer_sub = CommunicationSuscriber(COM_TOPIC)
+        self.answer_sub = CommunicationSuscriber(COM_TOPIC, self._stop)
         self.error_sub = ErrorSuscriber(ERR_TOPIC, timeout=5)
         self._say_req = None
-        self.timer = Timer()
+        self.timer = Timer(path=timer_path)
         self._home()
 
     def _home(self):
@@ -64,18 +64,30 @@ class BaseGPController(object):
         else:
             return self._say_req
 
+    def _stop(self):
+        rospy.loginfo('Stopping policy controller')
+        self.timer.log('Stop')
+        import json
+        rospy.loginfo(str(self.timer.data))
+        self.timer.save()
+        self.finished = True
+
     def run(self):
         self.timer.start()
         obs = None
         while not self.finished:
-            rospy.loginfo("Current state in policy: " + str(self.pr.current))
-            self.timer.log({'node': self.pr.current,
-                            'action': self.pr.get_action(),
-                            'last-observation': obs,
-                            })
-            obs = self.take_action(self.pr.get_action())
-            rospy.loginfo("Observed: " + obs)
-            self.pr.step(obs)
+            try:
+                rospy.loginfo("Current state in policy: " + str(self.pr.current))
+                self.timer.log({'node': self.pr.current,
+                                'action': self.pr.get_action(),
+                                'last-observation': obs,
+                                })
+                obs = self.take_action(self.pr.get_action())
+                rospy.loginfo("Observed: " + obs)
+                self.pr.step(obs)
+            except Exception as e:
+                rospy.logerr(e)
+                self.finished = True
 
     def take_action(self, action):
         raise NotImplemented

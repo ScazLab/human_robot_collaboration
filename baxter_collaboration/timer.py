@@ -1,12 +1,13 @@
+import json
 import rospy
 
 
 class Timer:
 
-    def __init__(self):
+    def __init__(self, path=None):
         self.data = []
         self.init = None
-        self.start()
+        self.path = path
 
     def start(self):
         self.init = rospy.Time.now()
@@ -19,3 +20,8 @@ class Timer:
             'elapsed': (time - self.init).to_sec(),
             'value': value,
             })
+
+    def save(self):
+        if self.path is not None:
+            with open(self.path, 'w') as f:
+                json.dump(self.data, f)

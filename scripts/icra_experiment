@@ -1,17 +1,23 @@
 #!/usr/bin/env python
 
-from htm.lib.pomdp import GraphPolicyRunner, GraphPolicyBeliefRunner
+import os
+import sys
+import argparse
 
-from htm.task import (HierarchicalTask, AbstractAction, SequentialCombination,
-                      LeafCombination)
-from htm.task_to_pomdp import CollaborativeAction, HTMToPOMDP
-from htm.stool_scenarios import (stool_task_sequential, T_WAIT, T_ASK, T_TELL,
-                                 C_INTR, C_ERR, INF)
+from htm.lib.pomdp import (POMDP, GraphPolicy, GraphPolicyRunner,
+                           GraphPolicyBeliefRunner)
 
 import rospy
 from baxter_collaboration.graph_policy_controller import BaseGPController
 from baxter_collaboration.service_request import ServiceRequest
 
+
+parser = argparse.ArgumentParser(
+    description="Script to run users for ICRA 2017 experiment.")
+parser.add_argument(
+    'path',
+    help='path used for experiment, must contain pomdp.json and policy.json')
+parser.add_argument('user', help='user id, used for storing times')
 
 T_FAKE = 10
 
@@ -113,7 +119,7 @@ class GPController(BaseGPController):
         if v == 'ask':
             if c == 'intention':
                 if a == 'hold':
-                    sentence = "Can you move the central frame to my right hand?"
+                    sentence = "Can you pass the central frame to my right hand?"
                 else:
                     sentence = "Can you {} the {}?".format(a, o_name)
             elif c == 'finished':
@@ -126,16 +132,11 @@ class GPController(BaseGPController):
             raise ValueError('Unknown verbal action: {}'.format(v))
         return sentence
 
+args = parser.parse_args(sys.argv[1:])
+p = POMDP.load_from_json(os.path.join(args.path, 'pomdp.json'))
+gp = GraphPolicy.load_from_json(os.path.join(args.path, 'policy.json'))
+timer_path = os.path.join(args.path, 'timer-{}.json'.format(args.user))
 
-h2p = HTMToPOMDP(T_WAIT, T_ASK, T_TELL, C_INTR, end_reward=0.3, loop=False,
-                 no_answer=True)
-p = h2p.task_to_pomdp(stool_task_sequential)
-gp = p.solve(method='grid', n_iterations=500)
-
-# TODO remove (DEBUG)
-import os
-gp.dump_to(os.path.expanduser('~/src/htm/visualization/policy/json/stool.json'))
-
-controller = GPController(GraphPolicyRunner(gp))
+controller = GPController(GraphPolicyRunner(gp), timer_path=timer_path)
 rospy.set_param('/action_provider/internal_recovery', False)
 controller.run()

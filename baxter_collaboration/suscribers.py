@@ -4,7 +4,7 @@ from std_msgs.msg import String
 from baxter_core_msgs.msg import DigitalIOState
 
 
-class WaitForOneSuscriber:
+class WaitForOneSuscriber(object):
     """Suscriber to wait for an expected message.
     """
 
@@ -53,10 +53,18 @@ class WaitForOneSuscriber:
 
 class CommunicationSuscriber(WaitForOneSuscriber):
 
+    STOP = 'stop'
+
+    def __init__(self, topic, stop_cb, timeout=10):
+        super(CommunicationSuscriber, self).__init__(topic, timeout=timeout)
+        self.stop_cb = stop_cb
+
     def _suscribe(self, topic):
         self.sub = rospy.Subscriber(topic, String, self.cb)
 
     def _handle_msg(self, msg):
+        if msg.data == self.STOP:
+            self.stop_cb()
         self.found_message(msg.data)
 
 
