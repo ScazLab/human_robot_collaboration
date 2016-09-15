@@ -5,8 +5,8 @@ from htm.lib.pomdp import GraphPolicyRunner, GraphPolicyBeliefRunner
 from htm.task import (HierarchicalTask, AbstractAction, SequentialCombination,
                       LeafCombination)
 from htm.task_to_pomdp import CollaborativeAction, HTMToPOMDP
-from htm.stool_scenarios import (stool_task_sequential, T_WAIT, T_COMM, C_INTR,
-                                C_ERR, INF)
+from htm.stool_scenarios import (stool_task_sequential, T_WAIT, T_ASK, T_TELL,
+                                 C_INTR, C_ERR, INF)
 
 import rospy
 from baxter_collaboration.graph_policy_controller import BaseGPController
@@ -127,9 +127,10 @@ class GPController(BaseGPController):
         return sentence
 
 
-h2p = HTMToPOMDP(T_WAIT, T_COMM, C_INTR, end_reward=0.1, loop=False)
+h2p = HTMToPOMDP(T_WAIT, T_ASK, T_TELL, C_INTR, end_reward=0.3, loop=False,
+                 no_answer=True)
 p = h2p.task_to_pomdp(stool_task_sequential)
-gp = p.solve(method='grid', n_iterations=200)
+gp = p.solve(method='grid', n_iterations=500)
 
 # TODO remove (DEBUG)
 import os
