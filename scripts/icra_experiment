@@ -62,9 +62,6 @@ class GPController(BaseGPController):
         o = self.OBJ[obj]
         if name in ['bring', 'get']:
             result = self.action_left(self.GET, o).success
-            if name == 'bring':
-                result = result and self.action_left(self.PASS, o).success
-            rospy.loginfo("received result: " + str(result))
             if result:
                 return self.NONE
             else:
@@ -82,6 +79,7 @@ class GPController(BaseGPController):
             result = self.action_right(self.RELEASE, o)
             return self.NONE if result else self.ERROR
         elif name == 'snap':
+            self.action_left(self.HOME, o).success
             error = self.error_sub.wait_for_msg(timeout=T_FAKE)
             return self.NO if error else self.NONE
         else:
@@ -104,6 +102,10 @@ class GPController(BaseGPController):
                     rh = ServiceRequest(self.action_right, self.HOLD, self.OBJ[o])
                     result = rp.wait_result().success
                     result = result and rh.wait_result().success
+                    if not result:
+                        return self.ERROR
+                elif a == 'snap':
+                    result = self.action_left(self.PASS, self.OBJ[o])
                     if not result:
                         return self.ERROR
                 return self.YES
