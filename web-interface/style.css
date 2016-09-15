@@ -77,7 +77,7 @@ section h2 {
   display: inline-block;
   position: relative;
   width: 100%;
-  padding-bottom: 50%; /* aspect ratio */
+  padding-bottom: 55%; /* aspect ratio */
   vertical-align: top;
   overflow: hidden;
 }
@@ -243,7 +243,7 @@ section h2 {
 
   .interface .btn {
     font-size: 2.4rem;
-    margin-bottom: 32px;
+    margin-bottom: 24px;
   }
 
   .btn-group .btn {
@@ -251,6 +251,6 @@ section h2 {
   }
 
   .container-toggles {
-    margin-bottom: 60px;
+    margin-bottom: 20px;
   }
 }

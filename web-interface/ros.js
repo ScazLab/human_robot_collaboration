@@ -1,5 +1,6 @@
 // Connecting to ROS
 // -----------------
+var beginning = Date.now();
 var ros = new ROSLIB.Ros();
 
 // If there is an error on the backend, an 'error' emit will be emitted.
@@ -41,6 +42,13 @@ function getRosBridgeHost() {
 var rosBridgePort = 9090;
 // Create a connection to the rosbridge WebSocket server.
 ros.connect('ws://' + getRosBridgeHost() + ':' + rosBridgePort);
+
+// First, we create a Topic object with details of the topic's name and message type.
+var logTopic = new ROSLIB.Topic({
+  ros : ros,
+  name : '/web_interface/log',
+  messageType : 'std_msgs/String'
+});
 
 // First, we create a Topic object with details of the topic's name and message type.
 var elemPressed = new ROSLIB.Topic({
@@ -164,12 +172,25 @@ function callback(e) {
         }
         else
         {
+          if (obj == 'finish') obj = 'stop'; // To comply with the py code
+
           var message = new ROSLIB.Message({
             data: obj
           });
 
           elemPressed.publish(message);
         }
+
+        var datenow = Date.now();
+        var elapsed = (datenow - beginning)/1000;
+        var timestamp = '[' + datenow + '][' + elapsed + ']';
+        var logstring = timestamp + ' ' + e.target.firstChild.nodeValue;
+
+        // console.log(logstring);
+        var message = new ROSLIB.Message({
+          data: logstring
+        });
+        logTopic.publish(message);
     }
 
     return;

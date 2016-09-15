@@ -7,10 +7,10 @@ function loadhtm(file)
   if (file == '') { file = defaultjsonfile;}
   else            { defaultjsonfile = file;};
 
-  console.log('Loading file: '+file);
+  console.log('Loading file',file);
 
-  var width  = 1110,
-      height =  555;
+  var width  = 1200,
+      height =  660;
 
   var i = 0,
       duration = 500,
@@ -38,7 +38,7 @@ function loadhtm(file)
   var vis = svg.append('svg:g');
 
   var draw = vis.append('svg:g')
-                .attr('transform', 'translate(' + (width-rectW)/2 + ',' + 40 + ')');
+                .attr('transform', 'translate(' + (width-rectW)/2 + ',' + 100 + ')');
 
   // load the external data
   d3.json('json/'+file, function(error, json)
@@ -57,7 +57,7 @@ function loadhtm(file)
         }
     }
 
-    // root.children.forEach(collapse);
+    root.children.forEach(collapse);
     update(root);
   });
 
