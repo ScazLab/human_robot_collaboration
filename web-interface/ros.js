@@ -122,11 +122,14 @@ function callback(e) {
               console.log('Got Response: ' + res.success);
           });
         }
-        else if (obj == 'get CF' || obj == 'get LL' ||
-                 obj == 'get RL' || obj == 'get TOP' )
+        else if (obj == 'get CF' || obj == 'get LL'  ||
+                 obj == 'get RL' || obj == 'get TOP' ||
+                 obj == 'pass' )
         {
           var req = new ROSLIB.ServiceRequest();
-          req.action = 'get';
+
+          if (obj == 'pass') { req.action = 'pass'; }
+          else               { req.action = 'get';  }
 
           if      (obj.replace('get ','') == 'CF')  { req.object = 24; }
           else if (obj.replace('get ','') == 'LL')  { req.object = 17; }
@@ -140,17 +143,6 @@ function callback(e) {
           leftArmService.callService(req,function(res)
           {
             console.log('Got Response: ' + res.success);
-
-            if (res.success == true)
-            {
-              req.action = 'pass';
-
-              console.log('Requested: ', req.action, req.object)
-              leftArmService.callService(req,function(res)
-              {
-                console.log('Got Response: ' + res.success);
-              });
-            };
           });
         }
         else if (obj == 'home')
