@@ -65,12 +65,12 @@ class BaseGPController(object):
             return self._say_req
 
     def _stop(self):
-        rospy.loginfo('Stopping policy controller')
-        self.timer.log('Stop')
-        import json
-        rospy.loginfo(str(self.timer.data))
-        self.timer.save()
-        self.finished = True
+        if not self.finished:
+            rospy.loginfo('Stopping policy controller')
+            self.timer.log('Stop')
+            rospy.loginfo(str(self.timer.data))
+            self.timer.save()
+            self.finished = True
 
     def run(self):
         self.timer.start()
