@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Tower Building</title>
+    <meta name="viewport" content="width=device-width">
+    <meta name="description" content="">
+    <meta name="author" content="Alessandro Roncone">
+    <!-- <link rel="canonical" href="{{ page.url | replace:'index.html','' | prepend: site.url }}"> -->
+
+    <!-- Custom CSS & Bootstrap Core CSS - Uses Bootswatch Flatly Theme: http://bootswatch.com/flatly/ -->
+    <link href="https://cdn.rawgit.com/twbs/bootstrap/v4.0.0-alpha.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+
+    <!-- Custom Fonts -->
+    <script src="https://use.fontawesome.com/ebd2d08b0e.js"></script>
+    <link href="//fonts.googleapis.com/css?family=Montserrat:400,700" rel="stylesheet" type="text/css">
+    <link href="//fonts.googleapis.com/css?family=Lato:400,700,400italic,700italic" rel="stylesheet" type="text/css">
+
+</head>
+
+<body id="page-top" class="index">
+<section>
+    <div class="container-fluid">
+        <div class="row-fluid">
+            <div class="col-lg-12 text-xs-center">
+                <h2>Tower Building</h2>
+            </div>
+        </div>
+    </div>
+    <div class="container">
+        <div class="row">
+            <div class="col-xl-9 text-center">
+                <div id="svg-container" class="svg-container">
+                    <svg></svg>
+                </div>
+            </div>
+            <div class="interface col-xl-3 text-xs-center">
+                <button type="button" class="btn btn-success btn-lg">yes</button>
+                <button type="button" class="btn btn-danger btn-lg">no</button>
+                <button type="button" class="btn btn-danger btn-lg">error</button>
+                <button type="button" class="btn btn-info btn-lg">home</button>
+                <button type="button" class="btn btn-success btn-lg">finish</button>
+            </div>
+        </div>
+    </div>
+    <div id="status" class="container">
+        <div class="row">
+            <div class="col-md-12 text-xs-center">
+                <div id="connecting" class="alert alert-info" role="alert">
+                  ROS STATUS: Connecting to rosbridge...
+                </div>
+                <div id="connected" style="display:none;" class="alert alert-success" role="alert">
+                  ROS STATUS: Connected!
+                </div>
+                <div id="error" style="display:none;" class="alert alert-warning" role="alert">
+                  ROS STATUS: Error in the backend!
+                </div>
+                <div id="closed" style="display:none;" class="alert alert-danger" role="alert">
+                  ROS STATUS: Connection closed.
+                </div>
+            </div>
+            <div class="col-md-12 text-xs-center">
+                <div class="btn-group" id="troubleshooting" style="display:none;">
+                    <button type="button" class="btn btn-danger dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Troubleshooting</button>
+                    <div class="dropdown-menu">
+                        <a class="dropdown-item" href="#">0. Check the IP of the baxter's robot by looking for the <code>eth1</code> interface in <code>sudo ifconfig</code></a>
+                        <a class="dropdown-item" href="#">0. Copy this address into the <code>ros.js</code> file at line <code>33</code>, and in <code>rosbridge_websocket.launch</code> file at line <code>3</code></a>
+                        <div class="dropdown-divider"></div>
+                        <a class="dropdown-item" href="#">1. Run <code>roslaunch rosbridge_server rosbridge_websocket.launch</code></a>
+                        <a class="dropdown-item" href="#">2. Reload this page</a>
+                        <a class="dropdown-item" href="#">3. Run <code>rostopic echo /web_interface</code></a>
+                        <div class="dropdown-divider"></div>
+                        <a class="dropdown-item" href="#">4. At every press of the yes/no buttons, a message is sent on the topic <code>/web_interface</code> with some information on the button that has been pressed</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- load the d3.js library -->
+<script src="http://d3js.org/d3.v3.min.js"></script>
+<!-- load the roslib.js libraries -->
+<script src="http://cdn.robotwebtools.org/EventEmitter2/current/eventemitter2.min.js"></script>
+<script type="text/javascript" src="http://cdn.robotwebtools.org/roslibjs/current/roslib.js"></script>
+
+<!-- jQuery Version 3.0.0 -->
+<script type="text/javascript" src="http://code.jquery.com/jquery-2.0.0.min.js"></script>
+<!-- Tether for Bootstrap -->
+<script src="https://www.atlasestateagents.co.uk/javascript/tether.min.js"></script>
+<!-- Bootstrap Core JavaScript -->
+<script src="https://cdn.rawgit.com/twbs/bootstrap/v4.0.0-alpha.2/dist/js/bootstrap.min.js"></script>
+
+<script src="ros.js"></script>
+<script src="tower_building.js"></script>
+
+<script type="text/javascript">
+    $('#d_exp1').on("click",function(){
+       document.getElementById('container-exp1').style.display = 'block';
+       document.getElementById('container-exp2').style.display = 'none';
+    });
+
+    $('#d_exp2').on("click",function(){
+       document.getElementById('container-exp1').style.display = 'none';
+       document.getElementById('container-exp2').style.display = 'block';
+    });
+
+    $("#svg-container").on("mousedown", function (e)
+                        {
+                            e.preventDefault();
+                            $(this).addClass("mouse-down");
+                        })
+                       .on("mouseup", function ()
+                        {
+                            $(this).removeClass("mouse-down");
+                        });
+
+    $(function () {
+      $('[data-toggle="popover"]').popover()
+    })
+
+    $('.popover-dismiss').popover({
+        container: 'body',
+        trigger: 'focus'
+    })
+</script>
+</body>
+</html>
