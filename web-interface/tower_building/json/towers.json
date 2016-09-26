@@ -1,0 +1,14 @@
+"towers": [
+  {
+    "name": "Blue tower",
+    "blocks": [1, 2, 3]
+  },
+  {
+    "name": "Wood tower",
+    "blocks": [4, 5, 6]
+  },
+  {
+    "name": "White tower",
+    "blocks": [7, 8, 9]
+  }
+]
