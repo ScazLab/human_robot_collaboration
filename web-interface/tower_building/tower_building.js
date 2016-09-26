@@ -50,15 +50,15 @@ function loadhtm(file)
 
   function update(source) {
 
-    var blocks = draw.selectAll('g.node')
+    var blocks = draw.selectAll('g.blocks')
                      .data(source);
 
     var block = blocks.enter()
                       .append('g')
                       .attr('transform', function(d,i) { return 'translate(' + i*(rectW+100) + ',' + 0 + ')'; });
 
-    block.selectAll('g.block')
-         .data(d.blocks);
+    var part= block.selectAll('g')
+                   .data(function(d,i) {return d.blocks;});
 
     block.append('rect')
              .attr('width', rectW)
