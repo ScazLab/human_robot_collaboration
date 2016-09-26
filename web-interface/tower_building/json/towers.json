@@ -1,14 +1,22 @@
-"towers": [
-  {
-    "name": "Blue tower",
-    "blocks": [1, 2, 3]
-  },
-  {
-    "name": "Wood tower",
-    "blocks": [4, 5, 6]
-  },
-  {
-    "name": "White tower",
-    "blocks": [7, 8, 9]
-  }
-]
+{
+  "towers": [
+    {
+      "name": "Blue Tower",
+      "blocks": [1, 2, 3],
+      "color": "#FFF000",
+      "x0": 0
+    },
+    {
+      "name": "Wood Tower",
+      "blocks": [4, 5, 6],
+      "color": "#FFFF00",
+      "x0": 1
+    },
+    {
+      "name": "White Tower",
+      "blocks": [7, 8, 9],
+      "color": "#FFFFF0",
+      "x0": 2
+    }
+  ]
+}

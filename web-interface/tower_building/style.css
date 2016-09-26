@@ -27,7 +27,7 @@ html {
 
 body {
   font-size: 16px;
-  background-color: #edeeef;
+  background-color: #fff;
   color: #505050;
   font-family: 'Lato', sans-serif;
 }
@@ -63,8 +63,18 @@ section h2 {
 .interface .btn {
   font-size: 1.2rem;
   font-weight: 300;
+  margin: auto;
   margin-bottom: 4px;
   padding: 12px 16px;
+  display: block;
+}
+
+.interface.answers .btn {
+  display: inline;
+}
+
+.interface.robot {
+  margin-top: 30px;
 }
 
 .btn-group .btn {
@@ -87,7 +97,7 @@ section h2 {
   position: absolute;
   top: 0;
   left: 0;
-  background-color: #fff;
+  background-color: #edeeef;
 }
 
 .container-toggles {
