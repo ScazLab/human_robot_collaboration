@@ -9,22 +9,12 @@ function loadhtm(file)
 
   console.log('Loading file',file);
 
-  var width  = 1200,
-      height =  660;
+  var width  =  900,
+      height =  560;
 
   var i = 0,
-      duration = 500,
-      rectW = 200,
-      rectH = 200;
-
-  var tree = d3.layout.tree()
-               .nodeSize([rectW+20, rectH])
-               .separation(function separation(a, b) {
-                  return (a.parent == b.parent ? 1 : 1.4);
-                });
-
-  var diagonal = d3.svg.diagonal()
-                   .projection(function(d) { return [d.x+rectW/2, d.y+rectH/2]; });
+      rectW = 140,
+      rectH = 140;
 
   var svg = d3.select('svg')
               //responsive SVG needs these 2 attributes and no width and height attr
@@ -36,41 +26,58 @@ function loadhtm(file)
   svg.call(d3.behavior.zoom().scaleExtent([0.4, 3]).on('zoom', redraw));
 
   var vis = svg.append('svg:g');
-
   var draw = vis.append('svg:g')
-                .attr('transform', 'translate(' + 100 + ',' + 100 + ')');
+                .attr('transform', 'translate(' + 140 + ',' + 60 + ')');
 
   // load the external data
   d3.json('json/'+file, function(error, json)
   {
-    towers = json.towers;
+    data = json.towers;
 
-    update(towers);
+    update(data);
   });
 
   function update(source) {
 
-    var blocks = draw.selectAll('g.blocks')
-                     .data(source);
+    var towers = draw.selectAll('g')
+                     .data(source)
+                     .enter()
+                     .append('g')
+                     .attr('class', 'tower')
+                     .attr('transform', function(d,i) { return 'translate(' + d.x0*(rectW+100) + ',' + 0 + ')'; });
 
-    var block = blocks.enter()
+    var max_length = 0;
+    towers.each(function(d,i) {
+      if (d.blocks.length>max_length) { max_length=d.blocks.length}
+    });
+
+    towers.each(function(d,i) {
+      for (var j = 0; j < max_length; j++)
+      {
+        if (j<d.blocks.length) {
+        var block = d3.select(this)
                       .append('g')
-                      .attr('transform', function(d,i) { return 'translate(' + i*(rectW+100) + ',' + 0 + ')'; });
+                      .attr('transform', 'translate(' + 0 + ',' + ((max_length-1-j)*rectH*(1+0.04)) + ')');
 
-    var part= block.selectAll('g')
-                   .data(function(d,i) {return d.blocks;});
-
-    block.append('rect')
+        block.append('rect')
              .attr('width', rectW)
              .attr('height', rectH)
              .attr('class', 'label')
-             .style("fill", function(d) { return d.color; });
+             .style("fill", d.blocks[j].color);
 
-    block.append('text')
+        block.append('text')
              .attr('x', rectW / 2)
              .attr('y', rectH / 2)
              .attr('text-anchor', 'middle')
-             .text(function (d) { return d.blocks; });
+             .text(d.blocks[j].label);
+        }
+      }
+    });
+
+    // towers.append('text')
+    //       .attr('text-anchor','middle')
+    //       .text(function(d) {return d.name;});
+
   };
 
   //Redraw for zoom
