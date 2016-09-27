@@ -1,7 +1,12 @@
 // Connecting to ROS
 // -----------------
+//
 var beginning = Date.now();
 var ros = new ROSLIB.Ros();
+
+function resetDate() {
+  beginning = Date.now();
+}
 
 // If there is an error on the backend, an 'error' emit will be emitted.
 ros.on('error', function(error) {
@@ -51,9 +56,9 @@ var logTopic = new ROSLIB.Topic({
 });
 
 // First, we create a Topic object with details of the topic's name and message type.
-var elemPressed = new ROSLIB.Topic({
+var webInterfacePub = new ROSLIB.Topic({
   ros : ros,
-  name : '/web_interface',
+  name : '/web_interface/pub',
   messageType : 'std_msgs/String'
 });
 
@@ -83,6 +88,18 @@ var rightArmService = new ROSLIB.Service({
   ros : ros,
   name: '/action_provider/service_right',
   messageType : 'baxter_collaboration/DoAction'
+});
+
+var webInterfaceSub = new ROSLIB.Topic({
+  ros : ros,
+  name: '/web_interface/sub',
+  messageType: 'std_msgs/String'
+});
+
+webInterfaceSub.subscribe(function(msg) {
+  console.log('Received message on ' + webInterfaceSub.name);
+  var data = JSON.parse(msg.data);
+  updatetowerscheme(data.towers);
 });
 
 // Add a callback for any element on the page
@@ -170,7 +187,7 @@ function callback(e) {
             data: obj
           });
 
-          elemPressed.publish(message);
+          webInterfacePub.publish(message);
         }
 
         var datenow = Date.now();

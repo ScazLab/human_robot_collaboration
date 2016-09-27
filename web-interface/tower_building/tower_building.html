@@ -93,27 +93,15 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/tether/1.2.0/js/tether.min.js" integrity="sha384-Plbmg8JY28KFelvJVai01l8WyZzrYWG825m+cZ0eDDS1f7d/js6ikvy1+X+guPIB" crossorigin="anonymous"></script>
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.4/js/bootstrap.min.js" integrity="sha384-VjEeINv9OSwtWFLAtmc4JCtEJXXBub00gtSnszmspDLCtC0I4z4nqz7rEFbIZLLU" crossorigin="anonymous"></script>
 
-<script src="ros.js"></script>
 <script src="tower_building.js"></script>
+<script src="ros.js"></script>
 
 <script type="text/javascript">
-    $('#d_exp1').on("click",function(){
-       document.getElementById('container-exp1').style.display = 'block';
-       document.getElementById('container-exp2').style.display = 'none';
-    });
-
-    $('#d_exp2').on("click",function(){
-       document.getElementById('container-exp1').style.display = 'none';
-       document.getElementById('container-exp2').style.display = 'block';
-    });
-
-    $("#svg-container").on("mousedown", function (e)
-                        {
+    $("#svg-container").on("mousedown", function (e) {
                             e.preventDefault();
                             $(this).addClass("mouse-down");
                         })
-                       .on("mouseup", function ()
-                        {
+                       .on("mouseup", function () {
                             $(this).removeClass("mouse-down");
                         });
 
