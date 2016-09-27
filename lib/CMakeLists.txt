@@ -23,8 +23,8 @@ add_library(robot_interface include/robot_interface/utils.h
                             src/gripper.cpp
                             src/arm_ctrl.cpp)
 
-add_library(baxter_collaboration include/baxter_collaboration/artag_ctrl.h
-                                 include/baxter_collaboration/hold_ctrl.h
+add_library(flatpack_furniture include/flatpack_furniture/artag_ctrl.h
+                                 include/flatpack_furniture/hold_ctrl.h
                                  src/artag_ctrl.cpp
                                  src/hold_ctrl.cpp)
 
@@ -34,7 +34,7 @@ add_library(baxter_collaboration include/baxter_collaboration/artag_ctrl.h
 add_dependencies(robot_interface        baxter_collaboration_generate_messages_cpp
                                         ${catkin_EXPORTED_TARGETS})
 
-add_dependencies(baxter_collaboration   baxter_collaboration_generate_messages_cpp
+add_dependencies(flatpack_furniture   baxter_collaboration_generate_messages_cpp
                                         robot_interface
                                         ${catkin_EXPORTED_TARGETS})
 
@@ -42,18 +42,18 @@ add_dependencies(baxter_collaboration   baxter_collaboration_generate_messages_c
 target_link_libraries(robot_interface       ${OpenCV_LIBS}
                                             ${catkin_LIBRARIES})
 
-target_link_libraries(baxter_collaboration  robot_interface
+target_link_libraries(flatpack_furniture  robot_interface
                                             ${catkin_LIBRARIES})
 
 ## Mark libraries for installation
-install (TARGETS robot_interface baxter_collaboration
+install (TARGETS robot_interface flatpack_furniture
          ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
          LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
 )
 
 ## Mark cpp header files for installation
 install(DIRECTORY ${PROJECT_SOURCE_DIR}/include/robot_interface
-                  ${PROJECT_SOURCE_DIR}/include/baxter_collaboration
+                  ${PROJECT_SOURCE_DIR}/include/flatpack_furniture
         DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
         FILES_MATCHING PATTERN "*.h"
 )

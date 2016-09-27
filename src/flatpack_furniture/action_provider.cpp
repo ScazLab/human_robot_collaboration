@@ -2,8 +2,8 @@
 
 #include <ros/ros.h>
 #include <signal.h>
-#include "baxter_collaboration/artag_ctrl.h"
-#include "baxter_collaboration/hold_ctrl.h"
+#include "flatpack_furniture/artag_ctrl.h"
+#include "flatpack_furniture/hold_ctrl.h"
 
 using namespace std;
 

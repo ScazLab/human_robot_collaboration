@@ -131,22 +131,22 @@ include_directories(lib/include
 add_subdirectory(lib)
 
 ## Declare a C++ executable
-add_executable(action_provider src/action_provider.cpp)
+add_executable(flatpack_action_provider src/flatpack_furniture/action_provider.cpp)
 add_executable(baxter_display src/baxter_display.cpp)
 
 ## Add cmake target dependencies of the executable
 ## same as for the library above
-add_dependencies(action_provider baxter_collaboration_generate_messages_cpp
-                                 ${${PROJECT_NAME}_EXPORTED_TARGETS}
-                                 ${catkin_EXPORTED_TARGETS})
+add_dependencies(flatpack_action_provider baxter_collaboration_generate_messages_cpp
+                                          ${${PROJECT_NAME}_EXPORTED_TARGETS}
+                                          ${catkin_EXPORTED_TARGETS})
 add_dependencies(baxter_display  baxter_collaboration_generate_messages_cpp
                                  ${${PROJECT_NAME}_EXPORTED_TARGETS}
                                  ${catkin_EXPORTED_TARGETS})
 
 ## Specify libraries to link a library or executable target against
-target_link_libraries(action_provider  robot_interface
-                                       baxter_collaboration
-                                       ${catkin_LIBRARIES} )
+target_link_libraries(flatpack_action_provider  robot_interface
+                                                flatpack_furniture
+                                                ${catkin_LIBRARIES} )
 target_link_libraries(baxter_display   robot_interface
                                        ${OpenCV_LIBS}
                                        ${catkin_LIBRARIES} )
