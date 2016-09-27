@@ -16,17 +16,17 @@ add_library(robot_interface include/robot_interface/utils.h
                             include/robot_interface/robot_interface.h
                             include/robot_interface/gripper.h
                             include/robot_interface/arm_ctrl.h
-                            src/utils.cpp
-                            src/ros_thread.cpp
-                            src/baxter_trac_ik.cpp
-                            src/robot_interface.cpp
-                            src/gripper.cpp
-                            src/arm_ctrl.cpp)
+                            src/robot_interface/utils.cpp
+                            src/robot_interface/ros_thread.cpp
+                            src/robot_interface/baxter_trac_ik.cpp
+                            src/robot_interface/robot_interface.cpp
+                            src/robot_interface/gripper.cpp
+                            src/robot_interface/arm_ctrl.cpp)
 
-add_library(flatpack_furniture include/flatpack_furniture/artag_ctrl.h
-                                 include/flatpack_furniture/hold_ctrl.h
-                                 src/artag_ctrl.cpp
-                                 src/hold_ctrl.cpp)
+add_library(flatpack_furniture  include/flatpack_furniture/artag_ctrl.h
+                                include/flatpack_furniture/hold_ctrl.h
+                                src/flatpack_furniture/artag_ctrl.cpp
+                                src/flatpack_furniture/hold_ctrl.cpp)
 
 ## Add cmake target dependencies of the library
 ## as an example, code may need to be generated before libraries
@@ -34,7 +34,7 @@ add_library(flatpack_furniture include/flatpack_furniture/artag_ctrl.h
 add_dependencies(robot_interface        baxter_collaboration_generate_messages_cpp
                                         ${catkin_EXPORTED_TARGETS})
 
-add_dependencies(flatpack_furniture   baxter_collaboration_generate_messages_cpp
+add_dependencies(flatpack_furniture     baxter_collaboration_generate_messages_cpp
                                         robot_interface
                                         ${catkin_EXPORTED_TARGETS})
 
