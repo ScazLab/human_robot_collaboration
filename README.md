@@ -14,7 +14,7 @@ Yet another repository for the Baxter collaboration task
 ## Execution
 
  1. On one terminal, launch the `ARuco` software: `roslaunch baxter_collaboration baxter_marker_publisher.launch`
- 2. On another terminal, launch the Baxter Collaboration software: `roslaunch baxter_collaboration baxter_collaboration.launch` (these two commands should be in the same launch file, but for development purposes it is much better to separate development code and production code)
+ 2. On another terminal, launch the Baxter Collaboration software, e.g. `roslaunch baxter_collaboration flatpack_furniture.launch` (these two launch files should be in the same launch file, but for development purposes it is much better to separate development code and production-ready code)
  3. Request actions to either one of the two arms by using the proper service (`/action_provider/service_left` for left arm, `/action_provider/service_right` for right arm). Here are some examples to make the demo work from terminal:
   * `rosservice call /action_provider/service_right "{action: 'hand_over', object: 17}"`
   * `rosservice call /action_provider/service_left "{action: 'get', object: 17}"`
