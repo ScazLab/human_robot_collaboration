@@ -28,6 +28,9 @@ add_library(flatpack_furniture  include/flatpack_furniture/artag_ctrl.h
                                 src/flatpack_furniture/artag_ctrl.cpp
                                 src/flatpack_furniture/hold_ctrl.cpp)
 
+add_library(tower_building  include/tower_building/cube_picker.h
+                            src/tower_building/cube_picker.cpp)
+
 ## Add cmake target dependencies of the library
 ## as an example, code may need to be generated before libraries
 ## either from message generation or dynamic reconfigure
@@ -38,15 +41,24 @@ add_dependencies(flatpack_furniture     baxter_collaboration_generate_messages_c
                                         robot_interface
                                         ${catkin_EXPORTED_TARGETS})
 
+add_dependencies(tower_building     baxter_collaboration_generate_messages_cpp
+                                    flatpack_furniture
+                                    robot_interface
+                                    ${catkin_EXPORTED_TARGETS})
+
 ## Specify libraries to link a library or executable target against
 target_link_libraries(robot_interface       ${OpenCV_LIBS}
                                             ${catkin_LIBRARIES})
 
-target_link_libraries(flatpack_furniture  robot_interface
+target_link_libraries(flatpack_furniture    robot_interface
                                             ${catkin_LIBRARIES})
 
+target_link_libraries(tower_building    robot_interface
+                                        flatpack_furniture
+                                        ${catkin_LIBRARIES})
+
 ## Mark libraries for installation
-install (TARGETS robot_interface flatpack_furniture
+install (TARGETS robot_interface flatpack_furniture tower_building
          ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
          LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
 )
@@ -54,6 +66,7 @@ install (TARGETS robot_interface flatpack_furniture
 ## Mark cpp header files for installation
 install(DIRECTORY ${PROJECT_SOURCE_DIR}/include/robot_interface
                   ${PROJECT_SOURCE_DIR}/include/flatpack_furniture
+                  ${PROJECT_SOURCE_DIR}/include/tower_building
         DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
         FILES_MATCHING PATTERN "*.h"
 )
