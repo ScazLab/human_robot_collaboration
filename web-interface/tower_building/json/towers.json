@@ -2,21 +2,54 @@
   "towers": [
     {
       "name": "Blue Tower",
-      "blocks": [1, 2, 3],
-      "color": "#FFF000",
-      "x0": 0
+      "x0": 0,
+      "blocks": [
+        {
+          "label":"1",
+          "color":"#FFF000"
+        },
+        {
+          "label":"2",
+          "color":"#FFF000"
+        },
+        {
+          "label":"3",
+          "color":"#FF00FF"
+        }]
     },
     {
       "name": "Wood Tower",
-      "blocks": [4, 5, 6],
-      "color": "#FFFF00",
-      "x0": 1
+      "x0": 1,
+      "blocks": [
+        {
+          "label":"4",
+          "color":"#FFFF00"
+        },
+        {
+          "label":"5",
+          "color":"#FFFF00"
+        },
+        {
+          "label":"6",
+          "color":"#FFFF00"
+        }]
     },
     {
       "name": "White Tower",
-      "blocks": [7, 8, 9],
-      "color": "#FFFFF0",
-      "x0": 2
+      "x0": 2,
+      "blocks": [
+        {
+          "label":"7",
+          "color":"#FFFFF0"
+        },
+        {
+          "label":"8",
+          "color":"#FFFFF0"
+        },
+        {
+          "label":"9",
+          "color":"#FFFFF0"
+        }]
     }
   ]
 }
