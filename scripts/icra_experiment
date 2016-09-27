@@ -104,7 +104,7 @@ class GPController(BaseGPController):
                     result = result and rh.wait_result().success
                     if not result:
                         return self.ERROR
-                elif a == 'snap':
+                elif a == 'snap' and c == 'intention':
                     result = self.action_left(self.PASS, self.OBJ[o])
                     if not result:
                         return self.ERROR
