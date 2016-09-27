@@ -1,4 +1,4 @@
-#include "baxter_collaboration/artag_ctrl.h"
+#include "flatpack_furniture/artag_ctrl.h"
 
 #include <tf/transform_datatypes.h>
 

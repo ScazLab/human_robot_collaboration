@@ -19,7 +19,7 @@
     <param name="baxter_display/speech_duration"        value="$(arg speechPopUpDuration)"/>
 
     <node pkg="baxter_collaboration" type="baxter_display"  name="baxter_display"  output="screen"/>
-    <node pkg="baxter_collaboration" type="action_provider" name="action_provider" output="screen"/>
+    <node pkg="baxter_collaboration" type="tower_action_provider" name="tower_action_provider" output="screen"/>
 
     <!-- <node name="image_baxter_display" pkg="image_view" type="image_view" respawn="false" output="log">
         <remap from="image" to="/robot/xdisplay"/>

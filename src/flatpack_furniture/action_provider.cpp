@@ -2,8 +2,8 @@
 
 #include <ros/ros.h>
 #include <signal.h>
-#include "baxter_collaboration/artag_ctrl.h"
-#include "baxter_collaboration/hold_ctrl.h"
+#include "flatpack_furniture/artag_ctrl.h"
+#include "flatpack_furniture/hold_ctrl.h"
 
 using namespace std;
 
@@ -19,7 +19,7 @@ void mySigintHandler(int sig)
 int main(int argc, char ** argv)
 {
     ros::init(argc, argv, "action_provider");
-    ros::NodeHandle _n("~");
+    ros::NodeHandle _n("action_provider");
 
     bool use_robot;
     _n.param<bool>("use_robot", use_robot, true);

@@ -1,4 +1,4 @@
-#include "baxter_collaboration/hold_ctrl.h"
+#include "flatpack_furniture/hold_ctrl.h"
 
 using namespace std;
 using namespace baxter_core_msgs;
