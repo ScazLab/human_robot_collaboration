@@ -3,6 +3,7 @@
 
 using namespace std;
 using namespace geometry_msgs;
+using namespace baxter_core_msgs;
 
 ArmCtrl::ArmCtrl(string _name, string _limb, bool _no_robot) :
                  RobotInterface(_limb, _no_robot), Gripper(_limb, _no_robot),
@@ -332,6 +333,39 @@ bool ArmCtrl::hoverAboveTable(double height, string mode, bool disable_coll_av)
                                                      mode, disable_coll_av);
     }
     else return false;
+}
+
+bool ArmCtrl::homePoseStrict(bool disable_coll_av)
+{
+    ROS_INFO("[%s] Going to home position strict..", getLimb().c_str());
+
+    ros::Rate r(100);
+    while(ros::ok())
+    {
+        if (disable_coll_av)    suppressCollisionAv();
+
+        JointCommand joint_cmd;
+        joint_cmd.mode = JointCommand::POSITION_MODE;
+        setJointNames(joint_cmd);
+
+        joint_cmd.command = home_conf.command;
+
+        publish_joint_cmd(joint_cmd);
+
+        r.sleep();
+
+        if(isConfigurationReached(joint_cmd))
+        {
+            return true;
+        }
+    }
+    ROS_INFO("[%s] Done", getLimb().c_str());
+}
+
+void ArmCtrl::setHomeConf(double s0, double s1, double e0, double e1,
+                                     double w0, double w1, double w2)
+{
+    setJointCommands( s0, s1, e0, e1, w0, w1, w2, home_conf);
 }
 
 bool ArmCtrl::goHome()

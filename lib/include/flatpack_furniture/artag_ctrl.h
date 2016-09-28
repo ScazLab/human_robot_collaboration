@@ -101,16 +101,9 @@ private:
     bool waitForOtherArm(double _wait_time = 60.0, bool disable_coll_av = false);
 
     /**
-     * Home position with a specific joint configuration. This has
-     * been introduced in order to force the arms to go to the home configuration
-     * in always the same exact way, in order to clean the seed configuration in
-     * case of subsequent inverse kinematics requests.
-     *
-     * @param  disable_coll_av if to disable the collision avoidance while
-     *                         performing the action or not
-     * @return                 true/false if success/failure
+     * Sets the joint-level configuration for the home position
      */
-    bool homePoseStrict(bool disable_coll_av = false);
+    void setHomeConfiguration();
 
     /**
      * Computes the end-effector orientation needed to pick the object up with a constant

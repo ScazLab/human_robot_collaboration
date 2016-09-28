@@ -190,6 +190,22 @@ protected:
     void setJointNames(baxter_core_msgs::JointCommand& joint_cmd);
 
     /*
+     * Sets the joint commands of a JointCommand
+     *
+     * @param        s0 First  shoulder joint
+     * @param        s1 Second shoulder joint
+     * @param        e0 First  elbow    joint
+     * @param        e1 Second elbow    joint
+     * @param        w0 First  wrist    joint
+     * @param        w1 Second wrist    joint
+     * @param        w2 Third  wrist    joint
+     * @param joint_cmd the joint command
+     */
+    void setJointCommands(double s0, double s1, double e0, double e1,
+                                     double w0, double w1, double w2,
+                          baxter_core_msgs::JointCommand& joint_cmd);
+
+    /*
      * Detects if the force overcame a set threshold in either one of its three axis
      *
      * @return true/false if the force overcame the threshold

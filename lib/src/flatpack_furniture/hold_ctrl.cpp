@@ -6,6 +6,7 @@ using namespace baxter_core_msgs;
 HoldCtrl::HoldCtrl(std::string _name, std::string _limb, bool _no_robot) :
                    ArmCtrl(_name,_limb, _no_robot)
 {
+    setHomeConfiguration();
     setState(START);
 
     insertAction(ACTION_START_HOLD, static_cast<f_action>(&HoldCtrl::startHold));
@@ -121,37 +122,10 @@ bool HoldCtrl::waitForOtherArm(double _wait_time, bool disable_coll_av)
     return false;
 }
 
-bool HoldCtrl::homePoseStrict(bool disable_coll_av)
+void HoldCtrl::setHomeConfiguration()
 {
-    ROS_INFO("[%s] Going to home position strict..", getLimb().c_str());
-
-    ros::Rate r(100);
-    while(ros::ok())
-    {
-        if (disable_coll_av)    suppressCollisionAv();
-
-        JointCommand joint_cmd;
-        joint_cmd.mode = JointCommand::POSITION_MODE;
-        setJointNames(joint_cmd);
-
-        joint_cmd.command.push_back( 0.07171360183364309);  //'right_s0'
-        joint_cmd.command.push_back(-1.0009224640952326);   //'right_s1'
-        joint_cmd.command.push_back( 1.1083011192472114);   //'right_e0'
-        joint_cmd.command.push_back( 1.5520050621430674);   //'right_e1'
-        joint_cmd.command.push_back(-0.5234709438658974);   //'right_w0'
-        joint_cmd.command.push_back( 1.3468351317633933);   //'right_w1'
-        joint_cmd.command.push_back( 0.4463884092746554);   //'right_w2'
-
-        publish_joint_cmd(joint_cmd);
-
-        r.sleep();
-
-        if(isConfigurationReached(joint_cmd))
-        {
-            return true;
-        }
-    }
-    ROS_INFO("[%s] Done", getLimb().c_str());
+    setHomeConf( 0.0717, -1.0009, 1.1083, 1.5520,
+                         -0.5235, 1.3468, 0.4464);
 }
 
 bool HoldCtrl::serviceOtherLimbCb(baxter_collaboration::AskFeedback::Request  &req,

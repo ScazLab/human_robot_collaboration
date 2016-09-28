@@ -33,6 +33,11 @@ private:
 
     ros::Publisher     state_pub;
 
+    // Home configuration. Setting it in any of the children
+    // of this class is mandatory (through the virtual method
+    // called setHomeConfiguration() )
+    baxter_core_msgs::JointCommand home_conf;
+
 protected:
 
     /**
@@ -84,7 +89,26 @@ protected:
      *                         performing the action or not
      * @return                 true/false if success/failure
      */
-    virtual bool homePoseStrict(bool disable_coll_av = false) = 0;
+    bool homePoseStrict(bool disable_coll_av = false);
+
+    /**
+     * Sets the joint-level configuration for the home position
+     *
+     * @param s0 First  shoulder joint
+     * @param s1 Second shoulder joint
+     * @param e0 First  elbow    joint
+     * @param e1 Second elbow    joint
+     * @param w0 First  wrist    joint
+     * @param w1 Second wrist    joint
+     * @param w2 Third  wrist    joint
+     */
+    void setHomeConf(double s0, double s1, double e0, double e1,
+                                double w0, double w1, double w2);
+
+    /**
+     * Sets the joint-level configuration for the home position
+     */
+    virtual void setHomeConfiguration() = 0;
 
     /**
      * Goes to the home position

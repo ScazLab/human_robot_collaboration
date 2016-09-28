@@ -414,6 +414,19 @@ void RobotInterface::setJointNames(JointCommand& joint_cmd)
     joint_cmd.names.push_back(getLimb() + "_w2");
 }
 
+void RobotInterface::setJointCommands(double s0, double s1, double e0, double e1,
+                                                 double w0, double w1, double w2,
+                                      baxter_core_msgs::JointCommand& joint_cmd)
+{
+    joint_cmd.command.push_back(s0);
+    joint_cmd.command.push_back(s1);
+    joint_cmd.command.push_back(e0);
+    joint_cmd.command.push_back(e1);
+    joint_cmd.command.push_back(w0);
+    joint_cmd.command.push_back(w1);
+    joint_cmd.command.push_back(w2);
+}
+
 bool RobotInterface::detectForceInteraction()
 {
     double f_x = abs(_curr_wrench.force.x - _filt_force[0]);
