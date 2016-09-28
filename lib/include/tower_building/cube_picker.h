@@ -6,6 +6,32 @@
 class CubePicker : public ArmCtrl, public ARucoClient
 {
 private:
+    double elap_time;
+
+    /**
+     * [moveObjectTowardHuman description]
+     * @return true/false if success/failure
+     */
+    bool moveObjectTowardHuman();
+
+    /**
+     * [pickARTag description]
+     * @return true/false if success/failure
+     */
+    bool pickARTag();
+
+    /**
+     * [pickObject description]
+     * @return true/false if success/failure
+     */
+    bool pickObject();
+
+    /**
+     * [passObject description]
+     * @return true/false if success/failure
+     */
+    bool passObject();
+
     /**
      * Sets the joint-level configuration for the home position
      */
@@ -31,6 +57,8 @@ public:
      * Destructor
      */
     ~CubePicker();
+
+    void setObject(int _obj);
 };
 
 #endif
