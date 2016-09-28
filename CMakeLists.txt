@@ -110,7 +110,7 @@ generate_messages(DEPENDENCIES
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
     INCLUDE_DIRS lib/include
-    LIBRARIES robot_interface
+    LIBRARIES robot_utils robot_interface robot_perception
     CATKIN_DEPENDS trac_ik_lib
     # DEPENDS system_lib
 )
@@ -148,18 +148,21 @@ add_dependencies(baxter_display  baxter_collaboration_generate_messages_cpp
                                  ${catkin_EXPORTED_TARGETS})
 
 ## Specify libraries to link a library or executable target against
-target_link_libraries(flatpack_action_provider  robot_interface
+target_link_libraries(flatpack_action_provider  robot_utils
+                                                robot_interface
                                                 robot_perception
                                                 flatpack_furniture
                                                 ${catkin_LIBRARIES} )
-target_link_libraries(tower_action_provider     robot_interface
+target_link_libraries(tower_action_provider     robot_utils
+                                                robot_interface
                                                 robot_perception
                                                 flatpack_furniture
                                                 tower_building
                                                 ${catkin_LIBRARIES} )
-target_link_libraries(baxter_display   robot_interface
-                                       ${OpenCV_LIBS}
-                                       ${catkin_LIBRARIES} )
+target_link_libraries(baxter_display  robot_utils
+                                      robot_interface
+                                      ${OpenCV_LIBS}
+                                      ${catkin_LIBRARIES} )
 
 #############
 ## Install ##

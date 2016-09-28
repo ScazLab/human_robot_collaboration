@@ -3,7 +3,7 @@
 #include <kdl/chainiksolverpos_nr_jl.hpp>
 #include <sensor_msgs/JointState.h>
 
-#include "utils.h"
+#include "robot_utils/utils.h"
 
 class baxterTracIK
 {

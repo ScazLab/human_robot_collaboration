@@ -6,7 +6,7 @@
 
 #include <aruco_msgs/MarkerArray.h>
 
-#define SUBSCRIBER_BUFFER 3
+#include "robot_utils/utils.h"
 
 class ARucoClient
 {

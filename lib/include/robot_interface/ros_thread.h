@@ -22,7 +22,7 @@
 #include <sensor_msgs/Range.h>
 #include <std_msgs/Empty.h>
 
-#include "utils.h"
+#include "robot_utils/utils.h"
 
 /**
  * @brief A Thread class

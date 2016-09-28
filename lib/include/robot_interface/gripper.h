@@ -9,7 +9,7 @@
 #include <baxter_core_msgs/EndEffectorState.h>
 #include <baxter_core_msgs/EndEffectorCommand.h>
 
-#include "utils.h"
+#include "robot_utils/utils.h"
 
 class Gripper
 {
