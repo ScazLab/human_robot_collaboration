@@ -145,9 +145,9 @@ protected:
      * @param     array of joint angles solution
      * @return    true/false if success/failure
      */
-    bool callIKService(double px, double py, double pz,
-                       double ox, double oy, double oz, double ow,
-                       std::vector<double>& joint_angles);
+    bool computeIK(double px, double py, double pz,
+                   double ox, double oy, double oz, double ow,
+                   std::vector<double>& joint_angles);
 
     /*
      * Moves arm to the requested pose. This differs from RobotInterface::goToPose because it

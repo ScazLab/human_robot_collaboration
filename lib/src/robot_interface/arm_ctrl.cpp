@@ -307,7 +307,7 @@ bool ArmCtrl::moveArm(string dir, double dist, string mode, bool disable_coll_av
         double ow = ori.w;
 
         vector<double> joint_angles;
-        if (!callIKService(px, py, pz, ox, oy, oz, ow, joint_angles)) return false;
+        if (!computeIK(px, py, pz, ox, oy, oz, ow, joint_angles)) return false;
 
         if (!goToPoseNoCheck(joint_angles))   return false;
 

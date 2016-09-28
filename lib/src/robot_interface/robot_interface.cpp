@@ -168,7 +168,7 @@ bool RobotInterface::goToPoseNoCheck(double px, double py, double pz,
                                      double ox, double oy, double oz, double ow)
 {
     vector<double> joint_angles;
-    if (!callIKService(px, py, pz, ox, oy, oz, ow, joint_angles)) return false;
+    if (!computeIK(px, py, pz, ox, oy, oz, ow, joint_angles)) return false;
 
     return goToPoseNoCheck(joint_angles);
 }
@@ -195,7 +195,7 @@ bool RobotInterface::goToPose(double px, double py, double pz,
                          std::string mode, bool disable_coll_av)
 {
     vector<double> joint_angles;
-    if (!callIKService(px, py, pz, ox, oy, oz, ow, joint_angles)) return false;
+    if (!computeIK(px, py, pz, ox, oy, oz, ow, joint_angles)) return false;
 
     ros::Rate r(100);
     while(RobotInterface::ok())
@@ -226,7 +226,7 @@ bool RobotInterface::goToPose(double px, double py, double pz,
     return false;
 }
 
-bool RobotInterface::callIKService(double px, double py, double pz,
+bool RobotInterface::computeIK(double px, double py, double pz,
                                    double ox, double oy, double oz, double ow,
                                    std::vector<double>& joint_angles)
 {
@@ -260,7 +260,7 @@ bool RobotInterface::callIKService(double px, double py, double pz,
             double te  = ros::Time::now().toSec()-tn.toSec();
             if (te>0.010)
             {
-                ROS_ERROR("\t\t\tTime elapsed in callIKService: %g cnt %i",te,cnt);
+                ROS_ERROR("\t\t\tTime elapsed in computeIK: %g cnt %i",te,cnt);
             }
             cnt++;
             got_solution = ik.res.isValid;
