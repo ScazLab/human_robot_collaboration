@@ -371,7 +371,7 @@ bool ARTagCtrl::homePoseStrict(bool disable_coll_av)
 
         r.sleep();
 
-        if(isPoseReached(HOME_POS_L, Z_LOW, VERTICAL_ORI_L))
+        if(isConfigurationReached(joint_cmd))
         {
             ROS_INFO("[%s] Done", getLimb().c_str());
             return true;

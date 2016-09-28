@@ -123,7 +123,7 @@ bool HoldCtrl::waitForOtherArm(double _wait_time, bool disable_coll_av)
 
 bool HoldCtrl::homePoseStrict(bool disable_coll_av)
 {
-    ROS_INFO("[%s] Hovering above table strict..", getLimb().c_str());
+    ROS_INFO("[%s] Going to home position strict..", getLimb().c_str());
 
     ros::Rate r(100);
     while(ros::ok())
@@ -146,7 +146,7 @@ bool HoldCtrl::homePoseStrict(bool disable_coll_av)
 
         r.sleep();
 
-        if(isPoseReached(HOME_POS_R, Z_LOW, VERTICAL_ORI_R))
+        if(isConfigurationReached(joint_cmd))
         {
             return true;
         }

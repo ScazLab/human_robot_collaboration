@@ -180,7 +180,7 @@ bool RobotInterface::goToPoseNoCheck(vector<double> joint_angles)
 
     setJointNames(joint_cmd);
 
-    for(int i = 0; i < joint_angles.size(); i++)
+    for (int i = 0; i < joint_angles.size(); i++)
     {
         joint_cmd.command.push_back(joint_angles[i]);
     }
@@ -198,7 +198,7 @@ bool RobotInterface::goToPose(double px, double py, double pz,
     if (!computeIK(px, py, pz, ox, oy, oz, ow, joint_angles)) return false;
 
     ros::Rate r(100);
-    while(RobotInterface::ok())
+    while (RobotInterface::ok())
     {
         if (disable_coll_av)
         {
@@ -215,7 +215,7 @@ bool RobotInterface::goToPose(double px, double py, double pz,
 
         if (!goToPoseNoCheck(joint_angles))   return false;
 
-        if(isPoseReached(px, py, pz, ox, oy, oz, ow, mode))
+        if (isPoseReached(px, py, pz, ox, oy, oz, ow, mode))
         {
             return true;
         }
@@ -242,7 +242,7 @@ bool RobotInterface::computeIK(double px, double py, double pz,
     ros::Time start = ros::Time::now();
     float thresh_z = pose_stamp.pose.position.z + 0.012;
 
-    while(!got_solution)
+    while (!got_solution)
     {
         IK_call ik;
 
@@ -255,7 +255,7 @@ bool RobotInterface::computeIK(double px, double py, double pz,
 
         int cnt = 0;
         ros::Time tn = ros::Time::now();
-        if(ik_solver.perform_ik(ik))
+        if (ik_solver.perform_ik(ik))
         {
             double te  = ros::Time::now().toSec()-tn.toSec();
             if (te>0.010)
@@ -285,7 +285,7 @@ bool RobotInterface::computeIK(double px, double py, double pz,
 
         // if no solution is found within 50 milliseconds or no solution within the acceptable
         // z-coordinate threshold is found, then no solution exists and exit oufof loop
-        if((ros::Time::now() - start).toSec() > 0.05 || pose_stamp.pose.position.z > thresh_z)
+        if ((ros::Time::now() - start).toSec() > 0.05 || pose_stamp.pose.position.z > thresh_z)
         {
             ROS_WARN("[%s] Did not find a suitable IK solution! Final Position %g %g %g",
                                                                        getLimb().c_str(),
@@ -304,9 +304,9 @@ bool RobotInterface::hasCollided(string mode)
     float thres;
 
     if     (mode == "strict") thres = 0.050;
-    else if(mode ==  "loose") thres = 0.067;
+    else if (mode ==  "loose") thres = 0.067;
 
-    if(_curr_range <= _curr_max_range &&
+    if (_curr_range <= _curr_max_range &&
        _curr_range >= _curr_min_range &&
        _curr_range <= thres) return true;
     else return false;
@@ -326,17 +326,17 @@ bool RobotInterface::isPositionReached(double px, double py, double pz, string m
     ROS_DEBUG("[%s] Checking %s position. Error: %g %g %g", getLimb().c_str(),
                    mode.c_str(), px-getPos().x, py-getPos().y, pz-getPos().z);
 
-    if(mode == "strict")
+    if (mode == "strict")
     {
-        if(abs(getPos().x-px) > 0.005) return false;
-        if(abs(getPos().y-py) > 0.005) return false;
-        if(abs(getPos().z-pz) > 0.005) return false;
+        if (abs(getPos().x-px) > 0.005) return false;
+        if (abs(getPos().y-py) > 0.005) return false;
+        if (abs(getPos().z-pz) > 0.005) return false;
     }
-    else if(mode == "loose")
+    else if (mode == "loose")
     {
-        if(abs(getPos().x-px) > 0.01) return false;
-        if(abs(getPos().y-py) > 0.01) return false;
-        if(abs(getPos().z-pz) > 0.01) return false;
+        if (abs(getPos().x-px) > 0.01) return false;
+        if (abs(getPos().y-py) > 0.01) return false;
+        if (abs(getPos().z-pz) > 0.01) return false;
     }
     else
     {
@@ -362,15 +362,56 @@ bool RobotInterface::isOrientationReached(double ox, double oy, double oz, doubl
     return true;
 }
 
+bool RobotInterface::isConfigurationReached(baxter_core_msgs::JointCommand joint_cmd, std::string mode)
+{
+    if (_seed_jnts.position.size() < 7)
+    {
+        return false;
+    }
+
+    ROS_DEBUG("[%s] Checking configuration: Current %g %g %g %g %g %g %g\tDesired %g %g %g %g %g %g %g",
+                                                                                      getLimb().c_str(),
+         _seed_jnts.position[0], _seed_jnts.position[1], _seed_jnts.position[2], _seed_jnts.position[3],
+                                 _seed_jnts.position[4], _seed_jnts.position[5], _seed_jnts.position[6],
+                 joint_cmd.command[0], joint_cmd.command[1], joint_cmd.command[2], joint_cmd.command[3],
+                                       joint_cmd.command[4], joint_cmd.command[5], joint_cmd.command[6]);
+
+    bool result = false;
+    for (int i = 0; i < joint_cmd.names.size(); ++i)
+    {
+        bool res = false;
+        for (int j = 0; j < _seed_jnts.name.size(); ++j)
+        {
+            if (joint_cmd.names[i] == _seed_jnts.name[j])
+            {
+                if (mode == "strict")
+                {
+                    // It's approximatively half a degree
+                    if (abs(joint_cmd.command[i]-_seed_jnts.position[j]) > 0.010) return false;
+                }
+                else if (mode == "loose")
+                {
+                    // It's approximatively a degree
+                    if (abs(joint_cmd.command[i]-_seed_jnts.position[j]) > 0.020) return false;
+                }
+                res = true;
+            }
+        }
+        if (res == false)   return false;
+    }
+
+    return true;
+}
+
 void RobotInterface::setJointNames(JointCommand& joint_cmd)
 {
-    joint_cmd.names.push_back(_limb + "_s0");
-    joint_cmd.names.push_back(_limb + "_s1");
-    joint_cmd.names.push_back(_limb + "_e0");
-    joint_cmd.names.push_back(_limb + "_e1");
-    joint_cmd.names.push_back(_limb + "_w0");
-    joint_cmd.names.push_back(_limb + "_w1");
-    joint_cmd.names.push_back(_limb + "_w2");
+    joint_cmd.names.push_back(getLimb() + "_s0");
+    joint_cmd.names.push_back(getLimb() + "_s1");
+    joint_cmd.names.push_back(getLimb() + "_e0");
+    joint_cmd.names.push_back(getLimb() + "_e1");
+    joint_cmd.names.push_back(getLimb() + "_w0");
+    joint_cmd.names.push_back(getLimb() + "_w1");
+    joint_cmd.names.push_back(getLimb() + "_w2");
 }
 
 bool RobotInterface::detectForceInteraction()
@@ -397,7 +438,7 @@ bool RobotInterface::waitForForceInteraction(double _wait_time, bool disable_col
     ros::Time _init = ros::Time::now();
 
     ros::Rate r(100);
-    while(RobotInterface::ok())
+    while (RobotInterface::ok())
     {
         if (disable_coll_av)          suppressCollisionAv();
         if (detectForceInteraction())           return true;

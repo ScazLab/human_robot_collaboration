@@ -137,6 +137,15 @@ protected:
      */
     bool isOrientationReached(double ox, double oy, double oz, double ow, std::string mode = "loose");
 
+    /*
+     * Checks if the arm has reached its intended joint configuration by comparing
+     * the requested and the current joint configurations
+     *
+     * @param  j     requested joint configuration
+     * @param  mode  (strict/loose) the desired level of precision
+     * @return       true/false if success/failure
+     */
+    bool isConfigurationReached(baxter_core_msgs::JointCommand joint_cmd, std::string mode = "loose");
 
     /*
      * Uses built in IK solver to find joint angles solution for desired pose

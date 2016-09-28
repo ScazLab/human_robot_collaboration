@@ -11,7 +11,7 @@ CubePicker::CubePicker(std::string _name, std::string _limb, bool _no_robot) :
 
 bool CubePicker::homePoseStrict(bool disable_coll_av)
 {
-    ROS_INFO("[%s] Hovering above table strict..", getLimb().c_str());
+    ROS_INFO("[%s] Going to home position strict..", getLimb().c_str());
 
     ros::Rate r(100);
     while(ros::ok())
@@ -34,7 +34,7 @@ bool CubePicker::homePoseStrict(bool disable_coll_av)
 
         r.sleep();
 
-        if(isPoseReached(HOME_POS_L, Z_LOW, VERTICAL_ORI_L))
+        if(isConfigurationReached(joint_cmd))
         {
             ROS_INFO("[%s] Done", getLimb().c_str());
             return true;
