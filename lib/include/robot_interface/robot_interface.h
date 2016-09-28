@@ -64,7 +64,7 @@ private:
 
     // Joint States
     ros::Subscriber         _jntstate_sub;
-    sensor_msgs::JointState    _seed_jnts;
+    sensor_msgs::JointState    _curr_jnts;
 
     // Mutex to protect joint state variable
     pthread_mutex_t _mutex_jnts;

@@ -91,16 +91,16 @@ void RobotInterface::jointStatesCb(const sensor_msgs::JointState& msg)
     if (msg.name.size() >= joint_cmd.names.size())
     {
         pthread_mutex_lock(&_mutex_jnts);
-        _seed_jnts.name.clear();
-        _seed_jnts.position.clear();
+        _curr_jnts.name.clear();
+        _curr_jnts.position.clear();
         for (int i = 0; i < joint_cmd.names.size(); ++i)
         {
             for (int j = 0; j < msg.name.size(); ++j)
             {
                 if (joint_cmd.names[i] == msg.name[j])
                 {
-                    _seed_jnts.name.push_back(msg.name[j]);
-                    _seed_jnts.position.push_back(msg.position[j]);
+                    _curr_jnts.name.push_back(msg.name[j]);
+                    _curr_jnts.position.push_back(msg.position[j]);
                 }
             }
         }
@@ -250,7 +250,7 @@ bool RobotInterface::computeIK(double px, double py, double pz,
         ik.req.pose_stamp  = pose_stamp;
 
         pthread_mutex_lock(&_mutex_jnts);
-        ik.req.seed_angles = _seed_jnts;
+        ik.req.seed_angles = _curr_jnts;
         pthread_mutex_unlock(&_mutex_jnts);
 
         int cnt = 0;
@@ -364,15 +364,15 @@ bool RobotInterface::isOrientationReached(double ox, double oy, double oz, doubl
 
 bool RobotInterface::isConfigurationReached(baxter_core_msgs::JointCommand joint_cmd, std::string mode)
 {
-    if (_seed_jnts.position.size() < 7)
+    if (_curr_jnts.position.size() < 7)
     {
         return false;
     }
 
     ROS_DEBUG("[%s] Checking configuration: Current %g %g %g %g %g %g %g\tDesired %g %g %g %g %g %g %g",
                                                                                       getLimb().c_str(),
-         _seed_jnts.position[0], _seed_jnts.position[1], _seed_jnts.position[2], _seed_jnts.position[3],
-                                 _seed_jnts.position[4], _seed_jnts.position[5], _seed_jnts.position[6],
+         _curr_jnts.position[0], _curr_jnts.position[1], _curr_jnts.position[2], _curr_jnts.position[3],
+                                 _curr_jnts.position[4], _curr_jnts.position[5], _curr_jnts.position[6],
                  joint_cmd.command[0], joint_cmd.command[1], joint_cmd.command[2], joint_cmd.command[3],
                                        joint_cmd.command[4], joint_cmd.command[5], joint_cmd.command[6]);
 
@@ -380,19 +380,19 @@ bool RobotInterface::isConfigurationReached(baxter_core_msgs::JointCommand joint
     for (int i = 0; i < joint_cmd.names.size(); ++i)
     {
         bool res = false;
-        for (int j = 0; j < _seed_jnts.name.size(); ++j)
+        for (int j = 0; j < _curr_jnts.name.size(); ++j)
         {
-            if (joint_cmd.names[i] == _seed_jnts.name[j])
+            if (joint_cmd.names[i] == _curr_jnts.name[j])
             {
                 if (mode == "strict")
                 {
                     // It's approximatively half a degree
-                    if (abs(joint_cmd.command[i]-_seed_jnts.position[j]) > 0.010) return false;
+                    if (abs(joint_cmd.command[i]-_curr_jnts.position[j]) > 0.010) return false;
                 }
                 else if (mode == "loose")
                 {
                     // It's approximatively a degree
-                    if (abs(joint_cmd.command[i]-_seed_jnts.position[j]) > 0.020) return false;
+                    if (abs(joint_cmd.command[i]-_curr_jnts.position[j]) > 0.020) return false;
                 }
                 res = true;
             }
