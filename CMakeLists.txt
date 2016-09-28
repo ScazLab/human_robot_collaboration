@@ -149,9 +149,11 @@ add_dependencies(baxter_display  baxter_collaboration_generate_messages_cpp
 
 ## Specify libraries to link a library or executable target against
 target_link_libraries(flatpack_action_provider  robot_interface
+                                                robot_perception
                                                 flatpack_furniture
                                                 ${catkin_LIBRARIES} )
 target_link_libraries(tower_action_provider     robot_interface
+                                                robot_perception
                                                 flatpack_furniture
                                                 tower_building
                                                 ${catkin_LIBRARIES} )

@@ -33,6 +33,7 @@
 class RobotInterface : public ROSThread
 {
 private:
+    std::string    _name;
     std::string    _limb;       // Limb (either left or right)
     State         _state;       // State of the controller
     ros::Time _init_time;
@@ -293,20 +294,22 @@ protected:
     void suppressCollisionAv();
 
 public:
-    RobotInterface(std::string limb, bool no_robot = false);
+    RobotInterface(std::string name, std::string limb, bool no_robot = false);
 
     virtual ~RobotInterface();
 
     /*
      * Self-explaining "setters"
      */
+    void setName(std::string name) { _name = name; };
     void setState(int state);
 
     /*
      * Self-explaining "getters"
      */
+    std::string  getName() { return  _name; };
+    std::string  getLimb() { return  _limb; };
     State       getState() { return _state; };
-    std::string getLimb()  { return  _limb; };
 
     geometry_msgs::Point        getPos()    { return    _curr_pos; };
     geometry_msgs::Quaternion   getOri()    { return    _curr_ori; };
@@ -342,7 +345,7 @@ protected:
     pthread_mutex_t _mutex_img;
 
 public:
-    ROSThreadImage(std::string limb);
+    ROSThreadImage(std::string name, std::string limb);
     ~ROSThreadImage();
 
     /*

@@ -18,11 +18,10 @@
 class ArmCtrl : public RobotInterface, public Gripper
 {
 private:
-    std::string       name;
     std::string  sub_state;
 
     std::string     action;
-    int          marker_id;
+    int             object;
 
     // Flag to know if the robot will recover from an error
     // or will wait the external planner to take care of that
@@ -218,18 +217,16 @@ public:
     void publishState();
 
     /* Self-explaining "setters" */
-    void setName(std::string _name)      { name      =   _name; };
     void setSubState(std::string _state) { sub_state =  _state; };
-    void setMarkerID(int _id)            { marker_id =     _id; };
+    virtual void setObject(int _obj)     { object    =    _obj; };
     void setAction(std::string _action);
 
     void setState(int _state);
 
     /* Self-explaining "getters" */
-    std::string getName()     { return      name; };
     std::string getSubState() { return sub_state; };
     std::string getAction()   { return    action; };
-    int         getMarkerID() { return marker_id; };
+    int         getObject()   { return    object; };
     std::string getObjName();
 };
 

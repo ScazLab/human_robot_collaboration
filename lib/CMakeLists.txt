@@ -23,6 +23,9 @@ add_library(robot_interface include/robot_interface/utils.h
                             src/robot_interface/gripper.cpp
                             src/robot_interface/arm_ctrl.cpp)
 
+add_library(robot_perception    include/robot_perception/aruco_client.h
+                                src/robot_perception/aruco_client.cpp)
+
 add_library(flatpack_furniture  include/flatpack_furniture/artag_ctrl.h
                                 include/flatpack_furniture/hold_ctrl.h
                                 src/flatpack_furniture/artag_ctrl.cpp
@@ -37,20 +40,29 @@ add_library(tower_building  include/tower_building/cube_picker.h
 add_dependencies(robot_interface        baxter_collaboration_generate_messages_cpp
                                         ${catkin_EXPORTED_TARGETS})
 
+add_dependencies(robot_perception       baxter_collaboration_generate_messages_cpp
+                                        ${catkin_EXPORTED_TARGETS})
+
 add_dependencies(flatpack_furniture     baxter_collaboration_generate_messages_cpp
                                         robot_interface
+                                        robot_perception
                                         ${catkin_EXPORTED_TARGETS})
 
 add_dependencies(tower_building     baxter_collaboration_generate_messages_cpp
-                                    flatpack_furniture
                                     robot_interface
+                                    robot_perception
+                                    flatpack_furniture
                                     ${catkin_EXPORTED_TARGETS})
 
 ## Specify libraries to link a library or executable target against
 target_link_libraries(robot_interface       ${OpenCV_LIBS}
                                             ${catkin_LIBRARIES})
 
+target_link_libraries(robot_perception      ${OpenCV_LIBS}
+                                            ${catkin_LIBRARIES})
+
 target_link_libraries(flatpack_furniture    robot_interface
+                                            robot_perception
                                             ${catkin_LIBRARIES})
 
 target_link_libraries(tower_building    robot_interface
@@ -58,7 +70,7 @@ target_link_libraries(tower_building    robot_interface
                                         ${catkin_LIBRARIES})
 
 ## Mark libraries for installation
-install (TARGETS robot_interface flatpack_furniture tower_building
+install (TARGETS robot_interface robot_perception flatpack_furniture tower_building
          ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
          LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
 )

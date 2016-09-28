@@ -12,9 +12,9 @@ using namespace cv;
 /**************************************************************************/
 /*                         RobotInterface                                 */
 /**************************************************************************/
-RobotInterface::RobotInterface(string limb, bool no_robot) :
-                _n("~"), _limb(limb), _state(START,0), spinner(4), ir_ok(false),
-                _no_robot(no_robot), ik_solver(limb, no_robot)
+RobotInterface::RobotInterface(string name, string limb, bool no_robot) :
+        _n(name), _name(name), _limb(limb), _state(START,0), spinner(4),
+        ir_ok(false), _no_robot(no_robot), ik_solver(limb, no_robot)
 {
     if (no_robot) return;
 
@@ -495,7 +495,7 @@ RobotInterface::~RobotInterface()
 /*                          ROSThreadImage                                */
 /**************************************************************************/
 
-ROSThreadImage::ROSThreadImage(string limb): _img_trp(_n), RobotInterface(limb)
+ROSThreadImage::ROSThreadImage(string name, string limb): _img_trp(_n), RobotInterface(name, limb)
 {
     _img_sub = _img_trp.subscribe("/cameras/"+getLimb()+"_hand_camera/image",
                            SUBSCRIBER_BUFFER, &ROSThreadImage::imageCb, this);

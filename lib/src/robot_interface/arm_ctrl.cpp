@@ -6,8 +6,8 @@ using namespace geometry_msgs;
 using namespace baxter_core_msgs;
 
 ArmCtrl::ArmCtrl(string _name, string _limb, bool _no_robot) :
-                 RobotInterface(_limb, _no_robot), Gripper(_limb, _no_robot),
-                 name(_name), marker_id(-1), action(""), sub_state("")
+                 RobotInterface(_name,_limb, _no_robot), Gripper(_limb, _no_robot),
+                 object(-1), action(""), sub_state("")
 {
     std::string topic = "/"+getName()+"/state_"+_limb;
     state_pub = _n.advertise<baxter_collaboration::ArmState>(topic,1);
@@ -86,10 +86,10 @@ bool ArmCtrl::serviceCb(baxter_collaboration::DoAction::Request  &req,
                         baxter_collaboration::DoAction::Response &res)
 {
     string action = req.action;
-    int    ID     = req.object;
+    int    obj    = req.object;
 
     ROS_INFO("[%s] Service request received. Action: %s object: %i", getLimb().c_str(),
-                                                                   action.c_str(), ID);
+                                                                   action.c_str(), obj);
 
     if (action == PROT_ACTION_LIST)
     {
@@ -109,7 +109,7 @@ bool ArmCtrl::serviceCb(baxter_collaboration::DoAction::Request  &req,
     res.success = false;
 
     setAction(action);
-    setMarkerID(ID);
+    setObject(obj);
 
     startInternalThread();
     ros::Duration(0.5).sleep();
@@ -424,10 +424,10 @@ void ArmCtrl::publishState()
 
 string ArmCtrl::getObjName()
 {
-    if      (marker_id == 17) return "left leg";
-    else if (marker_id == 21) return "top";
-    else if (marker_id == 24) return "central frame";
-    else if (marker_id == 26) return "right leg";
+    if      (object == 17) return "left leg";
+    else if (object == 21) return "top";
+    else if (object == 24) return "central frame";
+    else if (object == 26) return "right leg";
     else return "";
 }
 

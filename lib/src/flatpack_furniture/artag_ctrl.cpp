@@ -7,17 +7,15 @@ using namespace baxter_collaboration;
 using namespace baxter_core_msgs;
 
 ARTagCtrl::ARTagCtrl(std::string _name, std::string _limb, bool _no_robot) :
-                     ArmCtrl(_name,_limb, _no_robot), aruco_ok(false), marker_found(false)
+                     ARucoClient(_name, _limb), ArmCtrl(_name,_limb, _no_robot)
 {
     setHomeConfiguration();
-    _aruco_sub = _n.subscribe("/aruco_marker_publisher/markers",
-                               SUBSCRIBER_BUFFER, &ARTagCtrl::ARucoCb, this);
 
     elap_time = 0;
 
     setState(START);
 
-    insertAction(ACTION_GET,       static_cast<f_action>(&ARTagCtrl::getObject));
+    insertAction(ACTION_GET,       static_cast<f_action>(&ARTagCtrl::pickObject));
     insertAction(ACTION_PASS,      static_cast<f_action>(&ARTagCtrl::passObject));
     insertAction(ACTION_HAND_OVER, static_cast<f_action>(&ARTagCtrl::handOver));
 
@@ -67,14 +65,14 @@ bool ARTagCtrl::doAction(int s, std::string a)
     return false;
 }
 
-bool ARTagCtrl::getObject()
+bool ARTagCtrl::pickObject()
 {
     if (!hoverAbovePool())          return false;
     ros::Duration(0.05).sleep();
     if (!pickARTag())               return false;
     if (!gripObject())              return false;
     if (!moveArm("up", 0.4))        return false;
-    if (!homePoseStrict())   return false;
+    if (!homePoseStrict())          return false;
 
     return true;
 }
@@ -174,38 +172,6 @@ bool ARTagCtrl::waitForOtherArm(double _wait_time, bool disable_coll_av)
     return false;
 }
 
-void ARTagCtrl::ARucoCb(const aruco_msgs::MarkerArray& msg)
-{
-    for (int i = 0; i < msg.markers.size(); ++i)
-    {
-        // ROS_DEBUG("Processing marker with id %i",msg.markers[i].id);
-
-        if (msg.markers[i].id == getMarkerID())
-        {
-            _curr_marker_pos = msg.markers[i].pose.pose.position;
-            _curr_marker_ori = msg.markers[i].pose.pose.orientation;
-
-            ROS_DEBUG("Marker is in: %g %g %g", _curr_marker_pos.x,
-                                                _curr_marker_pos.y,
-                                                _curr_marker_pos.z);
-            // ROS_INFO("Marker is in: %g %g %g %g", _curr_marker_ori.x,
-            //                                       _curr_marker_ori.y,
-            //                                       _curr_marker_ori.z,
-            //                                       _curr_marker_ori.w);
-
-            if (!marker_found)
-            {
-                marker_found = true;
-            }
-        }
-    }
-
-    if (!aruco_ok)
-    {
-        aruco_ok = true;
-    }
-}
-
 bool ARTagCtrl::pickARTag()
 {
     ROS_INFO("[%s] Start Picking up tag..", getLimb().c_str());
@@ -220,12 +186,12 @@ bool ARTagCtrl::pickARTag()
 
     geometry_msgs::Quaternion q;
 
-    double x = _curr_marker_pos.x;
-    double y = _curr_marker_pos.y + 0.04;
-    double z =         getPos().z;
+    double x = getMarkerPos().x;
+    double y = getMarkerPos().y + 0.04;
+    double z =       getPos().z;
 
-    ROS_INFO("Going to: %g %g %g", x, y, z);
-    if (getMarkerID() == 24)
+    ROS_DEBUG("Going to: %g %g %g", x, y, z);
+    if (getObject() == 24)
     {
         // If we have to hand_over, let's pre-orient the end effector
         // such that further movements are easier
@@ -255,15 +221,15 @@ bool ARTagCtrl::pickARTag()
     {
         double new_elap_time = (ros::Time::now() - start_time).toSec();
 
-        double x = _curr_marker_pos.x;
-        double y = _curr_marker_pos.y;
+        double x = getMarkerPos().x;
+        double y = getMarkerPos().y;
         double z = z_start - PICK_UP_SPEED * new_elap_time;
 
         ROS_DEBUG("Time %g Going to: %g %g %g", new_elap_time, x, y, z);
 
         bool res=false;
 
-        if (getMarkerID() == 24)
+        if (getObject() == 24)
         {
             // q   = computeHOorientation();
             res = goToPoseNoCheck(x,y,z,q.x,q.y,q.z,q.w);
@@ -308,7 +274,7 @@ geometry_msgs::Quaternion ARTagCtrl::computeHOorientation()
 {
     // Get the rotation matrix for the marker, as retrieved from ARuco
     tf::Quaternion mrk_q;
-    tf::quaternionMsgToTF(_curr_marker_ori, mrk_q);
+    tf::quaternionMsgToTF(getMarkerOri(), mrk_q);
     tf::Matrix3x3 mrk_rot(mrk_q);
 
     // printf("Marker Orientation\n");
@@ -353,57 +319,6 @@ void ARTagCtrl::setHomeConfiguration()
                          0.6516,  1.2464, -0.1787);
 }
 
-bool ARTagCtrl::waitForARucoData()
-{
-    clearMarkerPose();
-    ROS_INFO("[%s] Waiting for ARuco data..", getLimb().c_str());
-    int cnt=0;
-
-    ros::Rate r(10);
-    while (!aruco_ok)
-    {
-        if (cnt!=0) // let's skip the first one since it is very likely to occur
-        {
-            ROS_WARN("No callback from ARuco. Is ARuco running?");
-        }
-        ++cnt;
-
-        if (cnt == 10)
-        {
-            ROS_ERROR("No callback from ARuco! Stopping.");
-            return false;
-        }
-
-        r.sleep();
-    }
-
-    cnt=0;
-    while (!marker_found)
-    {
-        if (cnt!=0) // let's skip the first one since it is very likely to occurr
-        {
-            ROS_WARN("Object with ID %i not found. Is the object there?", getMarkerID());
-        }
-        ++cnt;
-
-        if (cnt == 10)
-        {
-            ROS_ERROR("Object with ID %i not found! Stopping.", getMarkerID());
-            return false;
-        }
-
-        r.sleep();
-    }
-
-    return true;
-}
-
-void ARTagCtrl::clearMarkerPose()
-{
-    aruco_ok     = false;
-    marker_found = false;
-}
-
 bool ARTagCtrl::hoverAbovePool()
 {
     ROS_INFO("[%s] Hovering above pool..", getLimb().c_str());
@@ -414,6 +329,12 @@ bool ARTagCtrl::moveObjectTowardHuman()
 {
     ROS_INFO("[%s] Moving object toward human..", getLimb().c_str());
     return goToPose(0.80, 0.26, 0.32, HORIZONTAL_ORI_L);
+}
+
+void ARTagCtrl::setObject(int _obj)
+{
+    ArmCtrl::setObject(_obj);
+    ARucoClient::setMarkerID(_obj);
 }
 
 ARTagCtrl::~ARTagCtrl()

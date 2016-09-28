@@ -4,38 +4,12 @@
 #include <aruco_msgs/MarkerArray.h>
 
 #include "robot_interface/arm_ctrl.h"
+#include "robot_perception/aruco_client.h"
 
-class ARTagCtrl : public ArmCtrl
+class ARTagCtrl : public ArmCtrl, public ARucoClient
 {
 private:
     double elap_time;
-
-    // Subscriber to the ARuco detector,
-    // plus some flags related to it
-    ros::Subscriber _aruco_sub;
-    bool              aruco_ok;
-    bool          marker_found;
-
-    // Marker position and orientation
-    geometry_msgs::Point        _curr_marker_pos;
-    geometry_msgs::Quaternion   _curr_marker_ori;
-
-    /**
-     * Clears the marker pose to reset its state internally
-     */
-    void clearMarkerPose();
-
-    /**
-     * Callback function for the ARuco topic
-     * @param msg the topic message
-     */
-    void ARucoCb(const aruco_msgs::MarkerArray& msg);
-
-    /**
-     * Waits for useful data coming from ARuco
-     * @return true/false if success/failure
-     */
-    bool waitForARucoData();
 
     /**
      * [hoverAbovePool description]
@@ -56,10 +30,10 @@ private:
     bool pickARTag();
 
     /**
-     * [getObject description]
+     * [pickObject description]
      * @return true/false if success/failure
      */
-    bool getObject();
+    bool pickObject();
 
     /**
      * [recoverRelease description]
@@ -113,11 +87,6 @@ private:
      */
     geometry_msgs::Quaternion computeHOorientation();
 
-    /*
-     * Check availability of the ARuco data
-    */
-    bool is_aruco_ok() { return aruco_ok; };
-
 protected:
     /**
      * Executes the arm-specific and task-specific actions.
@@ -138,6 +107,8 @@ public:
      * Destructor
      */
     ~ARTagCtrl();
+
+    void setObject(int _obj);
 };
 
 #endif
