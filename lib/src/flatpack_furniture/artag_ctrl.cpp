@@ -73,7 +73,7 @@ bool ARTagCtrl::getObject()
     if (!pickARTag())               return false;
     if (!gripObject())              return false;
     if (!moveArm("up", 0.4))        return false;
-    if (!hoverAboveTableStrict())   return false;
+    if (!homePoseStrict())   return false;
 
     return true;
 }
@@ -81,12 +81,12 @@ bool ARTagCtrl::getObject()
 bool ARTagCtrl::recoverRelease()
 {
     if (getSubState() != ACTION_RELEASE) return false;
-    if(!hoverAboveTableStrict())         return false;
+    if(!homePoseStrict())         return false;
     ros::Duration(0.05).sleep();
     if (!pickARTag())                    return false;
     if (!gripObject())                   return false;
     if (!moveArm("up", 0.2))             return false;
-    if (!hoverAboveTableStrict())        return false;
+    if (!homePoseStrict())        return false;
 
     return true;
 }
@@ -95,7 +95,7 @@ bool ARTagCtrl::recoverGet()
 {
     if (!hoverAbovePool())          return false;
     if (!releaseObject())           return false;
-    if (!hoverAboveTableStrict())   return false;
+    if (!homePoseStrict())   return false;
 
     return true;
 }
@@ -107,7 +107,7 @@ bool ARTagCtrl::passObject()
     ros::Duration(1.0).sleep();
     if (!waitForForceInteraction())     return false;
     if (!releaseObject())               return false;
-    if (!hoverAboveTableStrict())       return false;
+    if (!homePoseStrict())       return false;
 
     return true;
 }
@@ -121,7 +121,7 @@ bool ARTagCtrl::handOver()
     ros::Duration(0.8).sleep();
     if (!releaseObject())             return false;
     if (!moveArm("up", 0.05))         return false;
-    if (!hoverAboveTableStrict())     return false;
+    if (!homePoseStrict())     return false;
     setSubState("");
 
     return true;
@@ -346,7 +346,7 @@ geometry_msgs::Quaternion ARTagCtrl::computeHOorientation()
     return ee_q_msg;
 }
 
-bool ARTagCtrl::hoverAboveTableStrict(bool disable_coll_av)
+bool ARTagCtrl::homePoseStrict(bool disable_coll_av)
 {
     ROS_INFO("[%s] Hovering above table strict..", getLimb().c_str());
 

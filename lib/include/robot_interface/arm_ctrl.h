@@ -75,7 +75,7 @@ protected:
                                     bool disable_coll_av = false);
 
     /**
-     * Hovers above the table with a specific joint configuration. This has
+     * Home position with a specific joint configuration. This has
      * been introduced in order to force the arms to go to the home configuration
      * in always the same exact way, in order to clean the seed configuration in
      * case of subsequent inverse kinematics requests.
@@ -84,7 +84,7 @@ protected:
      *                         performing the action or not
      * @return                 true/false if success/failure
      */
-    virtual bool hoverAboveTableStrict(bool disable_coll_av = false) = 0;
+    virtual bool homePoseStrict(bool disable_coll_av = false) = 0;
 
     /**
      * Goes to the home position

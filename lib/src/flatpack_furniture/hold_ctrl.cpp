@@ -58,7 +58,7 @@ bool HoldCtrl::handOver()
     // if (!waitForForceInteraction(180.0))  return false;
     // if (!releaseObject())                 return false;
     // ros::Duration(1.0).sleep();
-    // if (!hoverAboveTableStrict())         return false;
+    // if (!homePoseStrict())         return false;
     setSubState("");
 
     return true;
@@ -85,7 +85,7 @@ bool HoldCtrl::endHold()
     if (!waitForForceInteraction(time)) return false;
     if (!releaseObject())               return false;
     ros::Duration(1.0).sleep();
-    if (!hoverAboveTableStrict())       return false;
+    if (!homePoseStrict())       return false;
     return true;
 }
 
@@ -121,7 +121,7 @@ bool HoldCtrl::waitForOtherArm(double _wait_time, bool disable_coll_av)
     return false;
 }
 
-bool HoldCtrl::hoverAboveTableStrict(bool disable_coll_av)
+bool HoldCtrl::homePoseStrict(bool disable_coll_av)
 {
     ROS_INFO("[%s] Hovering above table strict..", getLimb().c_str());
 

@@ -336,7 +336,7 @@ bool ArmCtrl::hoverAboveTable(double height, string mode, bool disable_coll_av)
 
 bool ArmCtrl::goHome()
 {
-    bool res = hoverAboveTableStrict();
+    bool res = homePoseStrict();
     releaseObject();
     return res;
 }

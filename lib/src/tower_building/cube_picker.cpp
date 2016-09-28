@@ -9,7 +9,7 @@ CubePicker::CubePicker(std::string _name, std::string _limb, bool _no_robot) :
 
 }
 
-bool CubePicker::hoverAboveTableStrict(bool disable_coll_av)
+bool CubePicker::homePoseStrict(bool disable_coll_av)
 {
     ROS_INFO("[%s] Hovering above table strict..", getLimb().c_str());
 
