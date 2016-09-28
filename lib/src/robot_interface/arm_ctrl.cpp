@@ -26,8 +26,8 @@ ArmCtrl::ArmCtrl(string _name, string _limb, bool _no_robot) :
     insertAction(ACTION_HOME,    &ArmCtrl::goHome);
     insertAction(ACTION_RELEASE, &ArmCtrl::releaseObject);
 
-    insertAction("recover_"+string(ACTION_HOME),    &ArmCtrl::notImplemented);
-    insertAction("recover_"+string(ACTION_RELEASE), &ArmCtrl::notImplemented);
+    // insertAction("recover_"+string(ACTION_HOME),    &ArmCtrl::notImplemented);
+    // insertAction("recover_"+string(ACTION_RELEASE), &ArmCtrl::notImplemented);
 
     _n.param<bool>("internal_recovery",  internal_recovery, true);
     ROS_INFO("[%s] Internal_recovery flag set to %s", getLimb().c_str(),
