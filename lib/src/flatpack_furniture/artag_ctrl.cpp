@@ -46,7 +46,6 @@ ARTagCtrl::ARTagCtrl(std::string _name, std::string _limb, bool _no_robot) :
     // moveArm("forward",0.1,"strict");
 }
 
-// Protected
 bool ARTagCtrl::doAction(int s, std::string a)
 {
     if (a == ACTION_GET       || a == "recover_"+string(ACTION_GET)       ||

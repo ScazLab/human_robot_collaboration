@@ -53,7 +53,6 @@ add_dependencies(flatpack_furniture     robot_interface
 
 add_dependencies(tower_building     robot_interface
                                     robot_perception
-                                    flatpack_furniture
                                     ${catkin_EXPORTED_TARGETS})
 
 ## Specify libraries to link a library or executable target against
@@ -72,7 +71,6 @@ target_link_libraries(flatpack_furniture    robot_interface
 
 target_link_libraries(tower_building    robot_interface
                                         robot_perception
-                                        flatpack_furniture
                                         ${catkin_LIBRARIES})
 
 ## Mark libraries for installation

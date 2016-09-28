@@ -156,7 +156,6 @@ target_link_libraries(flatpack_action_provider  robot_utils
 target_link_libraries(tower_action_provider     robot_utils
                                                 robot_interface
                                                 robot_perception
-                                                flatpack_furniture
                                                 tower_building
                                                 ${catkin_LIBRARIES} )
 target_link_libraries(baxter_display  robot_utils
