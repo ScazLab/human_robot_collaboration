@@ -12,6 +12,7 @@ CubePicker::CubePicker(std::string _name, std::string _limb, bool _no_robot) :
 
     insertAction(ACTION_GET,       static_cast<f_action>(&CubePicker::pickObject));
     insertAction(ACTION_PASS,      static_cast<f_action>(&CubePicker::passObject));
+    insertAction(ACTION_GET_PASS,  static_cast<f_action>(&CubePicker::pickPassObject));
 
     printDB();
 
@@ -40,6 +41,15 @@ bool CubePicker::passObject()
     if (!waitForForceInteraction())     return false;
     if (!releaseObject())               return false;
     if (!homePoseStrict())              return false;
+
+    return true;
+}
+
+bool CubePicker::pickPassObject()
+{
+    if (!pickObject())      return false;
+    setSubState(ACTION_GET);
+    if (!passObject())      return false;
 
     return true;
 }

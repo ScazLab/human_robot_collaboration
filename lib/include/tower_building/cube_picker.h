@@ -33,6 +33,12 @@ private:
     bool passObject();
 
     /**
+     * [pickObject description]
+     * @return true/false if success/failure
+     */
+    bool pickPassObject();
+
+    /**
      * Sets the joint-level configuration for the home position
      */
     void setHomeConfiguration();

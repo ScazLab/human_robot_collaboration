@@ -30,6 +30,7 @@
 // Only left arm
 #define ACTION_GET          "get"
 #define ACTION_PASS         "pass"
+#define ACTION_GET_PASS     "get_pass"
 // Only right arm
 #define ACTION_HOLD         "hold"
 #define ACTION_START_HOLD   "start_hold"
