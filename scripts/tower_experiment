@@ -1,0 +1,122 @@
+#!/usr/bin/env python
+
+import os
+import sys
+import argparse
+
+from htm.lib.pomdp import GraphPolicyBeliefRunner
+from htm.bring_next_to_pomdp import HTMToPOMDP
+from htm.tower_problem import TowerProblem
+
+import rospy
+from baxter_collaboration.graph_policy_controller import BaseGPController
+from baxter_collaboration.service_request import ServiceRequest
+
+
+parser = argparse.ArgumentParser(
+    description="Script to run users for the Tower building experiment.")
+parser.add_argument(
+    'path',
+    help='path used for experiment, must contain pomdp.json and policy.json')
+parser.add_argument('user', help='user id, used for storing times')
+parser.add_argument('--generate', action='store_true',
+                    help='if set, generate and solve POMDP')
+
+T_FAKE = 10
+
+
+args = parser.parse_args(sys.argv[1:])
+pomdp_file = os.path.join(args.path, 'pomdp.json')
+
+tp = TowerProblem()
+task_vh = tp.vertical_horizontal_task()
+orders_medium = [
+    [2, 0, 4, 3, 1, 5],
+    [2, 4, 0, 3, 5, 1],
+    tp.v_first(),
+    [0, 1, 4, 5, 2, 3],
+    [2, 3, 0, 1, 4, 5],
+    [2, 3, 4, 5, 0, 1],
+    ]
+task_medium = tp.task_from_orders(
+        orders_medium,
+        names=['-'.join([str(i) for i in o]) for o in orders_medium])
+h2p = HTMToPOMDP(2., 8., 5., tp.parts, end_reward=50., loop=False)
+
+task = task_medium
+
+if not os.path.exists(pomdp_file) or args.generate:
+    # Generate and solve POMDP
+    p = h2p.task_to_pomdp(task)
+    gp = p.solve(method='grid', grid_type='pairwise', n_iterations=50,
+                verbose=True)
+    # Save POMDP and policy
+    p.save_as_json(pomdp_file)
+    gp.save_as_json(os.path.join(args.path, 'policy.json'))
+    # Compute belief trajectories
+    pol = GraphPolicyBeliefRunner(gp, p)
+    pol.save_trajectories_from_starts(
+        os.path.join(os.path.join(args.path, 'trajectories.json')),
+        horizon=10, indent=2)
+    gp2 = pol.visit()
+    gp2.save_as_json(os.path.join(args.path, 'from_beliefs.json'))
+else:
+    # Load policy and POMDP
+    p = POMDP.load_from_json(pomdp_file)
+    gp = GraphPolicy.load_from_json(os.path.join(args.path, 'policy.json'))
+    pol = GraphPolicyBeliefRunner(gp, p)
+
+
+class GPController(BaseGPController):
+
+    OBJ = {str(i): i for i in range(6)}
+    GET = 'get_pass'
+    TOWERS = ['Wood', 'White', 'Blue']
+
+    def take_action(self, action):
+        a, o = action.split('-', 1)
+        if t == 'get':
+            return self.action_get(o)
+        elif t == 'ask':
+            return self.action_ask(o)
+        else:
+            raise ValueError('Unknown action: {}'.format(action))
+
+    def action_get(self, obj):
+        rospy.loginfo("Taking action: {} on {}".format(name, obj))
+        o = self.OBJ[obj]
+        result = self.action_left(self.GET, o).success
+        if result:
+            return self.NONE
+        else:
+            return self.ERROR  # Currently interpreted as success by POMDP
+
+    def action_ask(self, obj):
+        o = self.OBJ[obj]
+        sentence = self._get_sentence(o)
+        rospy.loginfo("{}ing: \"{}\"".format(v.capitalize(), sentence))
+        ans = self.answer_sub.start_listening()
+        self.say(sentence, sync=False)
+        ans = self.answer_sub.wait_for_msg(continuing=True)
+        if ans is None:
+            return self.NONE  # Not handled
+        elif ans == 'yes':
+            return self.YES
+        elif ans == 'no':
+            return self.NO
+        else:
+            raise ValueError('Unknown answer: ' + ans)
+
+    def _get_sentence(self, o):
+        n_t = len(self.TOWERS)
+        t = self.TOWERS[o % n_t]
+        f = ['bottom', 'top'][o  // n_t]
+        return "Do you need {} of {} tower?".format(f, t)
+
+
+timer_path = os.path.join(args.path, 'timer-{}.json'.format(args.user))
+# TODO: switch to belief runner
+controller = GPController(GraphPolicyRunner(gp), timer_path=timer_path)
+
+#rospy.set_param('/action_provider/internal_recovery', False)
+controller.run()
