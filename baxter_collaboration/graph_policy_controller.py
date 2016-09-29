@@ -16,6 +16,10 @@ RELEASE = 'release'
 RECOVER = 'recover'
 
 
+def fake_service_proxy(*args):
+    return True
+
+
 class BaseGPController(object):
 
     T_WAIT = 1.  # Wait time
@@ -28,21 +32,28 @@ class BaseGPController(object):
 
     HOME = 'home'
 
-    def __init__(self, policy_runner, timer_path=None):
+    def __init__(self, policy_runner, timer_path=None, right=True):
         self.pr = policy_runner
         self.finished = False
         # ROS stuff
         rospy.init_node("hold_and_release_controller")
+        rospy.loginfo('Waiting for left service...')
         rospy.wait_for_service(ACTION_SERVICE_LEFT)
         self.action_left = rospy.ServiceProxy(ACTION_SERVICE_LEFT, DoAction)
-        rospy.wait_for_service(ACTION_SERVICE_RIGHT)
-        self.action_right = rospy.ServiceProxy(ACTION_SERVICE_RIGHT, DoAction)
+        if right:
+            rospy.loginfo('Waiting for right service...')
+            rospy.wait_for_service(ACTION_SERVICE_RIGHT)
+            self.action_right = rospy.ServiceProxy(ACTION_SERVICE_RIGHT, DoAction)
+        else:
+            self.action_right = fake_service_proxy 
+        rospy.loginfo('Waiting for speech service...')
         rospy.wait_for_service(SPEECH_SERVICE)
         self.speech = rospy.ServiceProxy(SPEECH_SERVICE, Speech)
         self.answer_sub = CommunicationSuscriber(COM_TOPIC, self._stop)
         self.error_sub = ErrorSuscriber(ERR_TOPIC, timeout=5)
         self._say_req = None
         self.timer = Timer(path=timer_path)
+        rospy.loginfo('Done.')
         self._home()
 
     def _home(self):

@@ -4,7 +4,8 @@ import os
 import sys
 import argparse
 
-from htm.lib.pomdp import GraphPolicyBeliefRunner
+from htm.lib.pomdp import (GraphPolicyBeliefRunner, GraphPolicy,
+                           GraphPolicyRunner, POMDP)
 from htm.bring_next_to_pomdp import HTMToPOMDP
 from htm.tower_problem import TowerProblem
 
@@ -73,17 +74,21 @@ class GPController(BaseGPController):
     GET = 'get_pass'
     TOWERS = ['Wood', 'White', 'Blue']
 
+    def __init__(self, *args, **kargs):
+        kargs['right'] = False
+        super(GPController, self).__init__(*args, **kargs)
+
     def take_action(self, action):
         a, o = action.split('-', 1)
-        if t == 'get':
+        if a == 'get':
             return self.action_get(o)
-        elif t == 'ask':
+        elif a == 'ask':
             return self.action_ask(o)
         else:
             raise ValueError('Unknown action: {}'.format(action))
 
     def action_get(self, obj):
-        rospy.loginfo("Taking action: {} on {}".format(name, obj))
+        rospy.loginfo("Bringing: {}.".format(obj))
         o = self.OBJ[obj]
         result = self.action_left(self.GET, o).success
         if result:
@@ -94,7 +99,7 @@ class GPController(BaseGPController):
     def action_ask(self, obj):
         o = self.OBJ[obj]
         sentence = self._get_sentence(o)
-        rospy.loginfo("{}ing: \"{}\"".format(v.capitalize(), sentence))
+        rospy.loginfo("Asking: \"{}\"".format(sentence))
         ans = self.answer_sub.start_listening()
         self.say(sentence, sync=False)
         ans = self.answer_sub.wait_for_msg(continuing=True)
