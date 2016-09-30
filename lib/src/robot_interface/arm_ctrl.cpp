@@ -161,7 +161,7 @@ bool ArmCtrl::insertAction(const std::string &a, ArmCtrl::f_action f)
         return false;
     }
 
-    if (action_db.find(a) != action_db.end()) // The action is in the db
+    if (isActionInDB(a)) // The action is in the db
     {
         ROS_WARN("[%s][action_db] Overwriting existing action with key %s",
                  getLimb().c_str(), a.c_str());
@@ -173,7 +173,7 @@ bool ArmCtrl::insertAction(const std::string &a, ArmCtrl::f_action f)
 
 bool ArmCtrl::removeAction(const std::string &a)
 {
-    if (action_db.find(a) != action_db.end()) // The action is in the db
+    if (isActionInDB(a)) // The action is in the db
     {
         action_db.erase(a);
         return true;
@@ -188,7 +188,7 @@ bool ArmCtrl::removeAction(const std::string &a)
 
 bool ArmCtrl::callAction(const std::string &a)
 {
-    if (action_db.find(a) != action_db.end()) // The action is in the db
+    if (isActionInDB(a)) // The action is in the db
     {
         f_action act = action_db[a];
         return (this->*act)();
@@ -199,6 +199,12 @@ bool ArmCtrl::callAction(const std::string &a)
                   getLimb().c_str(), a.c_str());
         return false;
     }
+}
+
+bool ArmCtrl::isActionInDB(const std::string &a)
+{
+    if (action_db.find(a) != action_db.end()) return true;
+    return false;
 }
 
 void ArmCtrl::printDB()

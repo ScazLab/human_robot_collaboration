@@ -161,6 +161,13 @@ protected:
     bool callAction(const std::string &a);
 
     /**
+     * Checks if an action is available in the database
+     * @param  a the action to check for
+     * @return   true/false if the action is available in the database
+     */
+    bool isActionInDB(const std::string &a);
+
+    /**
      * Prints the action database to screen.
      */
     void printDB();
