@@ -46,24 +46,6 @@ ARTagCtrl::ARTagCtrl(std::string _name, std::string _limb, bool _no_robot) :
     // moveArm("forward",0.1,"strict");
 }
 
-bool ARTagCtrl::doAction(int s, std::string a)
-{
-    if (a == ACTION_GET       || a == "recover_"+string(ACTION_GET)       ||
-        a == ACTION_PASS      || a == "recover_"+string(ACTION_PASS)      ||
-        a == ACTION_HAND_OVER || a == "recover_"+string(ACTION_HAND_OVER) ||
-        a == "recover_"+string(ACTION_RELEASE))
-    {
-        if (callAction(a))  return true;
-        else                recoverFromError();
-    }
-    else
-    {
-        ROS_ERROR("[%s] Invalid Action %s in state %i", getLimb().c_str(), a.c_str(), s);
-    }
-
-    return false;
-}
-
 bool ARTagCtrl::pickObject()
 {
     if (!hoverAbovePool())          return false;

@@ -87,16 +87,6 @@ private:
      */
     geometry_msgs::Quaternion computeHOorientation();
 
-protected:
-    /**
-     * Executes the arm-specific and task-specific actions.
-     *
-     * @param  s the state of the system before starting the action
-     * @param  a the action to do
-     * @return   true/false if success/failure
-     */
-    bool doAction(int s, std::string a);
-
 public:
     /**
      * Constructor

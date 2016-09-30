@@ -193,6 +193,21 @@ bool ArmCtrl::callAction(const std::string &a)
     return false;
 }
 
+bool ArmCtrl::doAction(int s, std::string a)
+{
+    if (isActionInDB(a))
+    {
+        if (callAction(a))         return true;
+        else                recoverFromError();
+    }
+    else
+    {
+        ROS_ERROR("[%s] Invalid Action %s in state %i", getLimb().c_str(), a.c_str(), s);
+    }
+
+    return false;
+}
+
 bool ArmCtrl::isActionInDB(const std::string &a)
 {
     if (action_db.find(a) != action_db.end()) return true;

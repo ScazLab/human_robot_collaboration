@@ -132,21 +132,6 @@ bool CubePicker::moveObjectTowardHuman()
     return goToPose(0.80, 0.26, 0.32, VERTICAL_ORI_L);
 }
 
-bool CubePicker::doAction(int s, std::string a)
-{
-    if (a == ACTION_GET || a == ACTION_PASS)
-    {
-        if (callAction(a))         return true;
-        else                recoverFromError();
-    }
-    else
-    {
-        ROS_ERROR("[%s] Invalid Action %s in state %i", getLimb().c_str(), a.c_str(), s);
-    }
-
-    return false;
-}
-
 void CubePicker::setHomeConfiguration()
 {
     setHomeConf(0.7060, -1.2717, 0.3846,  1.5405,

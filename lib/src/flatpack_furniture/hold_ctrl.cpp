@@ -27,25 +27,6 @@ HoldCtrl::HoldCtrl(std::string _name, std::string _limb, bool _no_robot) :
     if (!callAction(ACTION_HOME)) setState(ERROR);
 }
 
-bool HoldCtrl::doAction(int s, std::string a)
-{
-    if (a == ACTION_HOLD       || a == "recover_"+string(ACTION_HOLD)       ||
-        a == ACTION_START_HOLD || a == "recover_"+string(ACTION_START_HOLD) ||
-        a == ACTION_END_HOLD   || a == "recover_"+string(ACTION_END_HOLD)   ||
-        a == ACTION_HAND_OVER  || a == "recover_"+string(ACTION_HAND_OVER)  ||
-        a == "recover_"+string(ACTION_RELEASE))
-    {
-        if (callAction(a))  return true;
-        else                recoverFromError();
-    }
-    else
-    {
-        ROS_ERROR("[%s] Invalid Action %s in state %i", getLimb().c_str(), a.c_str(), s);
-    }
-
-    return false;
-}
-
 bool HoldCtrl::handOver()
 {
     setSubState(HAND_OVER_START);

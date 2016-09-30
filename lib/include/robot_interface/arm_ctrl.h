@@ -161,6 +161,20 @@ protected:
     bool callAction(const std::string &a);
 
     /**
+     * This function wraps the arm-specific and task-specific actions.
+     * For this reason, it has been implemented as virtual because it depends on
+     * the child class.
+     *
+     * @param  s the state of the system BEFORE starting the action (when this
+     *           method is called the state has been already updated to WORKING,
+     *           so there is no way for the controller to recover it a part from
+     *           this)
+     * @param  a the action to do
+     * @return   true/false if success/failure
+     */
+    virtual bool doAction(int s, std::string a);
+
+    /**
      * Checks if an action is available in the database
      * @param  a the action to check for
      * @return   true/false if the action is available in the database
@@ -177,20 +191,6 @@ protected:
      * @return the list of allowed actions, separated by a comma.
      */
     std::string DBToString();
-
-    /**
-     * This function wraps the arm-specific and task-specific actions.
-     * For this reason, it has been implemented as virtual because it depends on
-     * the child class.
-     *
-     * @param  s the state of the system BEFORE starting the action (when this
-     *           method is called the state has been already updated to WORKING,
-     *           so there is no way for the controller to recover it a part from
-     *           this)
-     * @param  a the action to do
-     * @return   true/false if success/failure
-     */
-    virtual bool doAction(int s, std::string a) = 0;
 
 public:
     /**
