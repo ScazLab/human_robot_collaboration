@@ -447,6 +447,15 @@ string ArmCtrl::getObjName()
     else if (object == 21) return "top";
     else if (object == 24) return "central frame";
     else if (object == 26) return "right leg";
+    else if (object == 1)  return "wood bottom";
+    else if (object == 2)  return "wood middle";
+    else if (object == 3)  return "wood top";
+    else if (object == 4)  return "white bottom";
+    else if (object == 5)  return "white middle";
+    else if (object == 6)  return "white top";
+    else if (object == 7)  return "blue bottom";
+    else if (object == 8)  return "blue middle";
+    else if (object == 9)  return "blue top";
     else return "";
 }
 
