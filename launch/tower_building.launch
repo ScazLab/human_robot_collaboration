@@ -5,7 +5,7 @@
 
     <arg name="forceThresholdL"      default="2.75"/>    <!-- [N] -->
     <arg name="forceThresholdR"      default="2.0"/>    <!-- [N] -->
-    <arg name="speechPopUpDuration"  default="8.0"/>    <!-- [s] -->
+    <arg name="speechPopUpDuration"  default="20.0"/>    <!-- [s] -->
 
     <!-- If the robot will recover from an error or will wait the external planner's decisions -->
     <arg name="internalRecovery"    default="false"/>

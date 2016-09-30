@@ -2,6 +2,8 @@
 
 import os
 import sys
+import json
+import random
 import argparse
 
 from htm.lib.pomdp import (GraphPolicyBeliefRunner, GraphPolicy,
@@ -10,6 +12,7 @@ from htm.bring_next_to_pomdp import HTMToPOMDP
 from htm.tower_problem import TowerProblem
 
 import rospy
+from std_msgs.msg import String
 from baxter_collaboration.graph_policy_controller import BaseGPController
 from baxter_collaboration.service_request import ServiceRequest
 
@@ -20,17 +23,26 @@ parser.add_argument(
     'path',
     help='path used for experiment, must contain pomdp.json and policy.json')
 parser.add_argument('user', help='user id, used for storing times')
+parser.add_argument('task', choices=['simple', 'medium', 'complex'], help='complexity of the task')
 parser.add_argument('--generate', action='store_true',
                     help='if set, generate and solve POMDP')
 
+
 T_FAKE = 10
+TOWERS = ['Wood', 'White', 'Blue']
+COLORS = ['burlywood', '#FFFFF0', 'dodgerblue']
 
 
 args = parser.parse_args(sys.argv[1:])
-pomdp_file = os.path.join(args.path, 'pomdp.json')
+pomdp_file = os.path.join(args.path, 'pomdp-{}.json'.format(args.task))
+policy_file = os.path.join(args.path, 'policy-{}.json'.format(args.task))
+belief_policy_file = os.path.join(args.path, 'belief-policy-{}.json'.format(args.task))
 
 tp = TowerProblem()
-task_vh = tp.vertical_horizontal_task()
+h2p = HTMToPOMDP(2., 8., 5., tp.parts, end_reward=50., loop=False)
+# Simple
+orders_simple = [tp.v_first(), tp.h_first()]
+# Medium
 orders_medium = [
     [2, 0, 4, 3, 1, 5],
     [2, 4, 0, 3, 5, 1],
@@ -39,12 +51,33 @@ orders_medium = [
     [2, 3, 0, 1, 4, 5],
     [2, 3, 4, 5, 0, 1],
     ]
-task_medium = tp.task_from_orders(
-        orders_medium,
-        names=['-'.join([str(i) for i in o]) for o in orders_medium])
-h2p = HTMToPOMDP(2., 8., 5., tp.parts, end_reward=50., loop=False)
+# Complex
+orders_complex = [
+    tp.v_first(),
+    [0, 1, 4, 5, 2, 3],
+    [2, 3, 0, 1, 4, 5],
+    [2, 3, 4, 5, 0, 1],
+    [4, 5, 0, 1, 2, 3],
+    [4, 5, 2, 3, 0, 1],
+    tp.h_first(),
+    [0, 4, 2, 1, 5, 3],
+    [2, 0, 4, 3, 1, 5],
+    [2, 4, 0, 3, 5, 1],
+    [4, 0, 2, 5, 1, 3],
+    [4, 2, 0, 5, 3, 1],
+    ]
 
-task = task_medium
+if args.task == 'simple':
+    orders = orders_simple
+elif args.task == 'medium':
+    orders = orders_medium
+elif args.task == 'complex':
+    orders = orders_complex
+else:
+    raise ValueError
+
+task = tp.task_from_orders(
+        orders, names=['-'.join([str(i) for i in o]) for o in orders])
 
 if not os.path.exists(pomdp_file) or args.generate:
     # Generate and solve POMDP
@@ -53,18 +86,18 @@ if not os.path.exists(pomdp_file) or args.generate:
                 verbose=True)
     # Save POMDP and policy
     p.save_as_json(pomdp_file)
-    gp.save_as_json(os.path.join(args.path, 'policy.json'))
+    gp.save_as_json(policy_file)
     # Compute belief trajectories
     pol = GraphPolicyBeliefRunner(gp, p)
-    pol.save_trajectories_from_starts(
-        os.path.join(os.path.join(args.path, 'trajectories.json')),
-        horizon=10, indent=2)
+    #pol.save_trajectories_from_starts(
+    #    os.path.join(os.path.join(args.path, 'trajectories.json')),
+    #    horizon=10, indent=2)
     gp2 = pol.visit()
-    gp2.save_as_json(os.path.join(args.path, 'from_beliefs.json'))
+    gp2.save_as_json(belief_policy)
 else:
     # Load policy and POMDP
     p = POMDP.load_from_json(pomdp_file)
-    gp = GraphPolicy.load_from_json(os.path.join(args.path, 'policy.json'))
+    gp = GraphPolicy.load_from_json(policy_file)
     pol = GraphPolicyBeliefRunner(gp, p)
 
 
@@ -72,11 +105,13 @@ class GPController(BaseGPController):
 
     OBJ = {'0': 2, '1': 3, '2': 5, '3': 6, '4': 8, '5': 9}
     GET = 'get_pass'
-    TOWERS = ['Wood', 'White', 'Blue']
 
     def __init__(self, *args, **kargs):
+        self.tower_display_pub = rospy.Publisher('/web_interface/sub', String,
+                                                 queue_size=1)
         kargs['right'] = False
         super(GPController, self).__init__(*args, **kargs)
+        self.answer_sub.timeout = 200
 
     def take_action(self, action):
         a, o = action.split('-', 1)
@@ -111,14 +146,33 @@ class GPController(BaseGPController):
             raise ValueError('Unknown answer: ' + ans)
 
     def _get_sentence(self, o):
-        t = self.TOWERS[o // 2]
+        t = TOWERS[o // 2]
         f = ['bottom', 'top'][o % 2]
         return "Do you need the {} of {} tower?".format(f, t)
 
+    def send_tower_order(self, order):
+        part_order = [None] * len(order)
+        for i, p in enumerate(order):
+            part_order[p] = i
+        tower_display = {
+            "towers": [
+                    {"name": "{} Tower".format(TOWERS[i]),
+                    "x0": i,
+                    "blocks": [
+                        {"label": part_order[2 * i], "color": COLORS[i]},
+                        {"label": part_order[2 * i + 1], "color": COLORS[i]},
+                        ]
+                    } for i in range(len(TOWERS))]
+            }
+        self.tower_display_pub.publish(json.dumps(tower_display))
+        rospy.loginfo('Published')
+        
 
-timer_path = os.path.join(args.path, 'timer-{}.json'.format(args.user))
-# TODO: switch to belief runner
-controller = GPController(GraphPolicyRunner(gp), timer_path=timer_path)
+
+timer_path = os.path.join(args.path, 'timer-{}-{}.json'.format(args.user, args.task))
+#controller = GPController(GraphPolicyRunner(gp), timer_path=timer_path)
+controller = GPController(pol, timer_path=timer_path)
+controller.send_tower_order(random.choice(orders))
 
 #rospy.set_param('/action_provider/internal_recovery', False)
 controller.run()
