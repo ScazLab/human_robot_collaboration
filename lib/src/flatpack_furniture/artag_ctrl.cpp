@@ -20,7 +20,7 @@ ARTagCtrl::ARTagCtrl(std::string _name, std::string _limb, bool _no_robot) :
     insertAction(ACTION_HAND_OVER, static_cast<f_action>(&ARTagCtrl::handOver));
 
     // Let's override the recover_release action:
-    removeAction("recover_"+string(ACTION_RELEASE));
+    // removeAction("recover_"+string(ACTION_RELEASE));
     insertAction("recover_"+string(ACTION_RELEASE),
                  static_cast<f_action>(&ARTagCtrl::recoverRelease));
 
@@ -31,7 +31,14 @@ ARTagCtrl::ARTagCtrl(std::string _name, std::string _limb, bool _no_robot) :
     insertAction("recover_"+string(ACTION_PASS),      &ARTagCtrl::notImplemented);
     insertAction("recover_"+string(ACTION_HAND_OVER), &ARTagCtrl::notImplemented);
 
-    printDB();
+    printActionDB();
+
+    insertObject(17, "left leg");
+    insertObject(21, "top");
+    insertObject(24, "central frame");
+    insertObject(26, "right leg");
+
+    printObjectDB();
 
     if (_no_robot) return;
 
