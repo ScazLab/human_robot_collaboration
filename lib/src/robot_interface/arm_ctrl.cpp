@@ -481,7 +481,7 @@ void ArmCtrl::publishState()
 
     msg.state  = string(getState());
     msg.action = getAction();
-    msg.object = getObjectName();
+    msg.object = getObjectName(getObjectID());
 
     state_pub.publish(msg);
 }
