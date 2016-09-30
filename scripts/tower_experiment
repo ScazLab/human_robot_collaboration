@@ -70,7 +70,7 @@ else:
 
 class GPController(BaseGPController):
 
-    OBJ = {str(i): i for i in range(6)}
+    OBJ = {'0': 2, '1': 3, '2': 5, '3': 6, '4': 8, '5': 9}
     GET = 'get_pass'
     TOWERS = ['Wood', 'White', 'Blue']
 
@@ -89,16 +89,14 @@ class GPController(BaseGPController):
 
     def action_get(self, obj):
         rospy.loginfo("Bringing: {}.".format(obj))
-        o = self.OBJ[obj]
-        result = self.action_left(self.GET, o).success
+        result = self.action_left(self.GET, self.OBJ[obj]).success
         if result:
             return self.NONE
         else:
             return self.ERROR  # Currently interpreted as success by POMDP
 
     def action_ask(self, obj):
-        o = self.OBJ[obj]
-        sentence = self._get_sentence(o)
+        sentence = self._get_sentence(int(obj))
         rospy.loginfo("Asking: \"{}\"".format(sentence))
         ans = self.answer_sub.start_listening()
         self.say(sentence, sync=False)
@@ -113,10 +111,9 @@ class GPController(BaseGPController):
             raise ValueError('Unknown answer: ' + ans)
 
     def _get_sentence(self, o):
-        n_t = len(self.TOWERS)
-        t = self.TOWERS[o % n_t]
-        f = ['bottom', 'top'][o  // n_t]
-        return "Do you need {} of {} tower?".format(f, t)
+        t = self.TOWERS[o // 2]
+        f = ['bottom', 'top'][o % 2]
+        return "Do you need the {} of {} tower?".format(f, t)
 
 
 timer_path = os.path.join(args.path, 'timer-{}.json'.format(args.user))
