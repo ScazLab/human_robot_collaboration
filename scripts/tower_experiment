@@ -136,7 +136,7 @@ class GPController(BaseGPController):
         ans = self.answer_sub.start_listening()
         self.say(sentence, sync=False)
         ans = self.answer_sub.wait_for_msg(continuing=True)
-        if ans is None:
+        if ans is None or ans == 'stop':
             return self.NONE  # Not handled
         elif ans == 'yes':
             return self.YES
@@ -165,8 +165,7 @@ class GPController(BaseGPController):
                     } for i in range(len(TOWERS))]
             }
         self.tower_display_pub.publish(json.dumps(tower_display))
-        rospy.loginfo('Published')
-        
+        self.timer.log('order: {}'.format(order))
 
 
 timer_path = os.path.join(args.path, 'timer-{}-{}.json'.format(args.user, args.task))
