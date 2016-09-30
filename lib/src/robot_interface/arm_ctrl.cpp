@@ -95,7 +95,7 @@ bool ArmCtrl::serviceCb(baxter_collaboration::DoAction::Request  &req,
     {
         printActionDB();
         res.success  = true;
-        res.response = DBToString();
+        res.response = actionDBToString();
         return true;
     }
 
@@ -197,6 +197,25 @@ bool ArmCtrl::isObjectInDB(int id)
     return false;
 }
 
+void ArmCtrl::printObjectDB()
+{
+    ROS_INFO("[%s] Available objects in the database : %s",
+              getLimb().c_str(), objectDBToString().c_str());
+}
+
+string ArmCtrl::objectDBToString()
+{
+    string res = "";
+    map<int, string>::iterator it;
+
+    for ( it = object_db.begin(); it != object_db.end(); it++ )
+    {
+        res = res + it->second + ", ";
+    }
+    res = res.substr(0, res.size()-2); // Remove the last ", "
+    return res;
+}
+
 bool ArmCtrl::insertAction(const std::string &a, ArmCtrl::f_action f)
 {
     if (a == PROT_ACTION_LIST)
@@ -268,10 +287,10 @@ bool ArmCtrl::isActionInDB(const std::string &a, bool insertAction)
 void ArmCtrl::printActionDB()
 {
     ROS_INFO("[%s] Available actions in the database : %s",
-              getLimb().c_str(), DBToString().c_str());
+              getLimb().c_str(), actionDBToString().c_str());
 }
 
-string ArmCtrl::DBToString()
+string ArmCtrl::actionDBToString()
 {
     string res = "";
     map<string, f_action>::iterator it;

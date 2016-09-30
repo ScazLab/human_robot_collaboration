@@ -179,6 +179,17 @@ protected:
     bool isObjectInDB(int id);
 
     /**
+     * Prints the object database to screen.
+     */
+    void printObjectDB();
+
+    /**
+     * Converts the action database to a string.
+     * @return the list of allowed actions, separated by a comma.
+     */
+    std::string objectDBToString();
+
+    /**
      * Adds an action to the action database
      *
      * @param   a the action to be removed
@@ -237,7 +248,7 @@ protected:
      * Converts the action database to a string.
      * @return the list of allowed actions, separated by a comma.
      */
-    std::string DBToString();
+    std::string actionDBToString();
 
 public:
     /**
