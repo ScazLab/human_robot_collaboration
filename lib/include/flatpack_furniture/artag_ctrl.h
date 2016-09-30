@@ -98,7 +98,7 @@ public:
      */
     ~ARTagCtrl();
 
-    void setObject(int _obj);
+    void setObjectID(int _obj);
 };
 
 #endif

@@ -138,9 +138,9 @@ void CubePicker::setHomeConfiguration()
                         -0.1273, 1.3135,  0.3206);
 }
 
-void CubePicker::setObject(int _obj)
+void CubePicker::setObjectID(int _obj)
 {
-    ArmCtrl::setObject(_obj);
+    ArmCtrl::setObjectID(_obj);
     ARucoClient::setMarkerID(_obj);
 }
 
