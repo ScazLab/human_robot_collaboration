@@ -492,15 +492,6 @@ string ArmCtrl::getObjName()
     else if (getObjectID() == 21) return "top";
     else if (getObjectID() == 24) return "central frame";
     else if (getObjectID() == 26) return "right leg";
-    else if (getObjectID() == 1)  return "wood bottom";
-    else if (getObjectID() == 2)  return "wood middle";
-    else if (getObjectID() == 3)  return "wood top";
-    else if (getObjectID() == 4)  return "white bottom";
-    else if (getObjectID() == 5)  return "white middle";
-    else if (getObjectID() == 6)  return "white top";
-    else if (getObjectID() == 7)  return "blue bottom";
-    else if (getObjectID() == 8)  return "blue middle";
-    else if (getObjectID() == 9)  return "blue top";
     else return "";
 }
 
