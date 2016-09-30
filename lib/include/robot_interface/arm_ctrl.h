@@ -292,7 +292,6 @@ public:
     std::string getSubState() { return sub_state; };
     std::string getAction()   { return    action; };
     int         getObjectID() { return object_id; };
-    std::string getObjName();
 };
 
 #endif

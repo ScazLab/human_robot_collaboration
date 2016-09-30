@@ -505,15 +505,6 @@ void ArmCtrl::publishState()
     state_pub.publish(msg);
 }
 
-string ArmCtrl::getObjName()
-{
-    if      (getObjectID() == 17) return "left leg";
-    else if (getObjectID() == 21) return "top";
-    else if (getObjectID() == 24) return "central frame";
-    else if (getObjectID() == 26) return "right leg";
-    else return "";
-}
-
 ArmCtrl::~ArmCtrl()
 {
     killInternalThread();
