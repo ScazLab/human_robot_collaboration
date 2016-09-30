@@ -7,7 +7,7 @@ from baxter_collaboration.suscribers import (CommunicationSuscriber,
 from svox_tts.srv import Speech, SpeechRequest
 
 
-COM_TOPIC = '/web_interface'
+COM_TOPIC = '/web_interface/pub'
 ERR_TOPIC = '/robot/digital_io/left_lower_button/state'
 SPEECH_SERVICE = '/svox_tts/speech'
 ACTION_SERVICE_LEFT = '/action_provider/service_left'
