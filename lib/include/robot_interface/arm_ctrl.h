@@ -176,10 +176,13 @@ protected:
 
     /**
      * Checks if an action is available in the database
-     * @param  a the action to check for
+     * @param             a the action to check for
+     * @param  insertAction flag to know if the method has been called
+     *                      inside insertAction (it only removes the
+     *                      ROS_ERROR if the action is not in the DB)
      * @return   true/false if the action is available in the database
      */
-    bool isActionInDB(const std::string &a);
+    bool isActionInDB(const std::string &a, bool insertAction=false);
 
     /**
      * Prints the action database to screen.
