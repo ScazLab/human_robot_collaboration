@@ -31,7 +31,12 @@ ARTagCtrl::ARTagCtrl(std::string _name, std::string _limb, bool _no_robot) :
     insertAction("recover_"+string(ACTION_PASS),      &ARTagCtrl::notImplemented);
     insertAction("recover_"+string(ACTION_HAND_OVER), &ARTagCtrl::notImplemented);
 
-    printDB();
+    printActionDB();
+
+    insertObject(17, "left leg");
+    insertObject(21, "top");
+    insertObject(24, "central frame");
+    insertObject(26, "right leg");
 
     if (_no_robot) return;
 

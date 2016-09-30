@@ -14,7 +14,7 @@ CubePicker::CubePicker(std::string _name, std::string _limb, bool _no_robot) :
     insertAction(ACTION_PASS,      static_cast<f_action>(&CubePicker::passObject));
     insertAction(ACTION_GET_PASS,  static_cast<f_action>(&CubePicker::pickPassObject));
 
-    printDB();
+    printActionDB();
 
     insertObject(1, "wood bottom");
     insertObject(2, "wood middle");

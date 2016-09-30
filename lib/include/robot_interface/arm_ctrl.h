@@ -231,7 +231,7 @@ protected:
     /**
      * Prints the action database to screen.
      */
-    void printDB();
+    void printActionDB();
 
     /**
      * Converts the action database to a string.

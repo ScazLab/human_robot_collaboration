@@ -20,7 +20,7 @@ HoldCtrl::HoldCtrl(std::string _name, std::string _limb, bool _no_robot) :
     insertAction("recover_"+string(ACTION_HOLD),       &HoldCtrl::notImplemented);
     insertAction("recover_"+string(ACTION_HAND_OVER),  &HoldCtrl::notImplemented);
 
-    printDB();
+    printActionDB();
 
     if (_no_robot) return;
 

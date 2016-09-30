@@ -93,7 +93,7 @@ bool ArmCtrl::serviceCb(baxter_collaboration::DoAction::Request  &req,
 
     if (action == PROT_ACTION_LIST)
     {
-        printDB();
+        printActionDB();
         res.success  = true;
         res.response = DBToString();
         return true;
@@ -265,7 +265,7 @@ bool ArmCtrl::isActionInDB(const std::string &a, bool insertAction)
     return false;
 }
 
-void ArmCtrl::printDB()
+void ArmCtrl::printActionDB()
 {
     ROS_INFO("[%s] Available actions in the database : %s",
               getLimb().c_str(), DBToString().c_str());
