@@ -165,13 +165,15 @@ class GPController(BaseGPController):
                     } for i in range(len(TOWERS))]
             }
         self.tower_display_pub.publish(json.dumps(tower_display))
-        self.timer.log('order: {}'.format(order))
 
-
+human_order = random.choice(orders)
+with open(os.path.join(args.path,
+          'order-{}-{}'.format(args.user, args.task)), 'w') as f:
+    f.write(str(human_order))
 timer_path = os.path.join(args.path, 'timer-{}-{}.json'.format(args.user, args.task))
 #controller = GPController(GraphPolicyRunner(gp), timer_path=timer_path)
 controller = GPController(pol, timer_path=timer_path)
-controller.send_tower_order(random.choice(orders))
+controller.send_tower_order(human_order)
 
 #rospy.set_param('/action_provider/internal_recovery', False)
 controller.run()
