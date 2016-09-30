@@ -82,6 +82,7 @@ class BaseGPController(object):
             rospy.loginfo(str(self.timer.data))
             self.timer.save()
             self.finished = True
+            self._home()
 
     def run(self):
         self.timer.start()
