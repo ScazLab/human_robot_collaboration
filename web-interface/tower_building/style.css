@@ -126,18 +126,12 @@ section h2 {
   font-weight: 300;
 }
 
-.node {
-  cursor: pointer;
+.tower g {
+  /*cursor: pointer;*/
 }
 
-.node rect {
-  stroke-width: 2px;
-  stroke: black;
-  fill: #fff;
-}
-
-.node text {
-  font: sans-serif;
+.tower g text {
+  font-size: 1.6rem;
 }
 
 .node .combination rect {

@@ -6,15 +6,15 @@
       "blocks": [
         {
           "label":"1",
-          "color":"#FFF000"
+          "color":"dodgerblue"
         },
         {
           "label":"2",
-          "color":"#FFF000"
+          "color":"dodgerblue"
         },
         {
           "label":"3",
-          "color":"#FF00FF"
+          "color":"dodgerblue"
         }]
     },
     {
@@ -23,15 +23,15 @@
       "blocks": [
         {
           "label":"4",
-          "color":"#FFFF00"
+          "color":"burlywood"
         },
         {
           "label":"5",
-          "color":"#FFFF00"
+          "color":"burlywood"
         },
         {
           "label":"6",
-          "color":"#FFFF00"
+          "color":"burlywood"
         }]
     },
     {
