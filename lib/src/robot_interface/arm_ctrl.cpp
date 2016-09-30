@@ -178,12 +178,8 @@ bool ArmCtrl::removeAction(const std::string &a)
         action_db.erase(a);
         return true;
     }
-    else
-    {
-        ROS_WARN("[%s][action_db] Action %s is not in the database.",
-                 getLimb().c_str(), a.c_str());
-        return false;
-    }
+
+    return false;
 }
 
 bool ArmCtrl::callAction(const std::string &a)
@@ -193,17 +189,16 @@ bool ArmCtrl::callAction(const std::string &a)
         f_action act = action_db[a];
         return (this->*act)();
     }
-    else
-    {
-        ROS_ERROR("[%s][action_db] Action %s is not in the database!",
-                  getLimb().c_str(), a.c_str());
-        return false;
-    }
+
+    return false;
 }
 
 bool ArmCtrl::isActionInDB(const std::string &a)
 {
     if (action_db.find(a) != action_db.end()) return true;
+
+    ROS_ERROR("[%s][action_db] Action %s is not in the database!",
+              getLimb().c_str(), a.c_str());
     return false;
 }
 
