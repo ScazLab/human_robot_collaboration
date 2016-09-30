@@ -49,7 +49,7 @@ bool HoldCtrl::handOver()
 
 bool HoldCtrl::startHold()
 {
-    double time=getObject()>0?getObject():30.0;
+    double time=getObjectID()>0?getObjectID():30.0;
 
     if (!goHoldPose(0.30))              return false;
     ros::Duration(1.0).sleep();
@@ -62,7 +62,7 @@ bool HoldCtrl::startHold()
 
 bool HoldCtrl::endHold()
 {
-    double time=getObject()>0?getObject():180.0;
+    double time=getObjectID()>0?getObjectID():180.0;
 
     if (!waitForForceInteraction(time)) return false;
     if (!releaseObject())               return false;

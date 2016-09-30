@@ -7,7 +7,7 @@ using namespace baxter_core_msgs;
 
 ArmCtrl::ArmCtrl(string _name, string _limb, bool _no_robot) :
                  RobotInterface(_name,_limb, _no_robot), Gripper(_limb, _no_robot),
-                 object(-1), action(""), sub_state("")
+                 object_id(-1), action(""), sub_state("")
 {
     std::string topic = "/"+getName()+"/state_"+_limb;
     state_pub = _n.advertise<baxter_collaboration::ArmState>(topic,1);
@@ -109,7 +109,7 @@ bool ArmCtrl::serviceCb(baxter_collaboration::DoAction::Request  &req,
     res.success = false;
 
     setAction(action);
-    setObject(obj);
+    setObjectID(obj);
 
     startInternalThread();
     ros::Duration(0.5).sleep();
@@ -149,6 +149,51 @@ bool ArmCtrl::serviceCb(baxter_collaboration::DoAction::Request  &req,
 bool ArmCtrl::notImplemented()
 {
     ROS_ERROR("[%s] Action not implemented!", getLimb().c_str());
+    return false;
+}
+
+bool ArmCtrl::insertObject(int id, const std::string &n)
+{
+    if (isObjectInDB(id))
+    {
+        ROS_WARN("[%s][object_db] Overwriting existing object %i with name %s",
+                 getLimb().c_str(), id, n.c_str());
+    }
+
+    object_db.insert( std::make_pair( id, n ));
+    return true;
+}
+
+bool ArmCtrl::removeObject(int id)
+{
+    if (isObjectInDB(id))
+    {
+        object_db.erase(id);
+        return true;
+    }
+
+    return false;
+}
+
+string ArmCtrl::getObjectName(int id)
+{
+    if (isObjectInDB(id))
+    {
+        return object_db[id];
+    }
+
+    return "";
+}
+
+bool ArmCtrl::isObjectInDB(int id)
+{
+    if (object_db.find(id) != object_db.end()) return true;
+
+    // if (!insertAction)
+    // {
+    //     ROS_ERROR("[%s][object_db] Object %i is not in the database!",
+    //               getLimb().c_str(), id);
+    // }
     return false;
 }
 
@@ -443,19 +488,10 @@ void ArmCtrl::publishState()
 
 string ArmCtrl::getObjName()
 {
-    if      (object == 17) return "left leg";
-    else if (object == 21) return "top";
-    else if (object == 24) return "central frame";
-    else if (object == 26) return "right leg";
-    else if (object == 1)  return "wood bottom";
-    else if (object == 2)  return "wood middle";
-    else if (object == 3)  return "wood top";
-    else if (object == 4)  return "white bottom";
-    else if (object == 5)  return "white middle";
-    else if (object == 6)  return "white top";
-    else if (object == 7)  return "blue bottom";
-    else if (object == 8)  return "blue middle";
-    else if (object == 9)  return "blue top";
+    if      (getObjectID() == 17) return "left leg";
+    else if (getObjectID() == 21) return "top";
+    else if (getObjectID() == 24) return "central frame";
+    else if (getObjectID() == 26) return "right leg";
     else return "";
 }
 

@@ -54,7 +54,7 @@ public:
      */
     ~CubePicker();
 
-    void setObject(int _obj);
+    void setObjectID(int _obj);
 };
 
 #endif

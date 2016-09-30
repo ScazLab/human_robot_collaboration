@@ -172,7 +172,7 @@ bool ARTagCtrl::pickARTag()
     double z =       getPos().z;
 
     ROS_DEBUG("Going to: %g %g %g", x, y, z);
-    if (getObject() == 24)
+    if (getObjectID() == 24)
     {
         // If we have to hand_over, let's pre-orient the end effector
         // such that further movements are easier
@@ -210,7 +210,7 @@ bool ARTagCtrl::pickARTag()
 
         bool res=false;
 
-        if (getObject() == 24)
+        if (getObjectID() == 24)
         {
             // q   = computeHOorientation();
             res = goToPoseNoCheck(x,y,z,q.x,q.y,q.z,q.w);
@@ -312,9 +312,9 @@ bool ARTagCtrl::moveObjectTowardHuman()
     return goToPose(0.80, 0.26, 0.32, HORIZONTAL_ORI_L);
 }
 
-void ARTagCtrl::setObject(int _obj)
+void ARTagCtrl::setObjectID(int _obj)
 {
-    ArmCtrl::setObject(_obj);
+    ArmCtrl::setObjectID(_obj);
     ARucoClient::setMarkerID(_obj);
 }
 

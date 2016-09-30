@@ -21,7 +21,7 @@ private:
     std::string  sub_state;
 
     std::string     action;
-    int             object;
+    int          object_id;
 
     // Flag to know if the robot will recover from an error
     // or will wait the external planner to take care of that
@@ -54,9 +54,17 @@ protected:
      * standard: operator[] returns (*((insert(make_pair(x, T()))).first)).second
      * Which means that if we are having a map of pointers to functions, a wrong key
      * will segfault the software. A layer of protection has been put in place to
-     * avoid accessing a non-existing key.
+     * avoid accessing a non-existing key (so this does not happen any more, but it
+     * is still worth knowing).
      */
     std::map <std::string, f_action> action_db;
+
+    /**
+     * Object database, which pairs an integer key, corresponding to the marker ID
+     * placed on the object and read by ARuco, with a string that describes the object
+     * itself in human terms.
+     */
+    std::map<int, std::string> object_db;
 
     /**
      * Provides basic functionalities for the object, such as a goHome and releaseObject.
@@ -133,6 +141,42 @@ protected:
      * @return false always
      */
     bool notImplemented();
+
+    /**
+     * Adds an object to the object database
+     * @param  id the id of the object as read by ARuco
+     * @param  n  its name as a string
+     * @return    true/false if the insertion was successful or not
+     */
+    bool insertObject(int id, const std::string &n);
+
+    /**
+     * Removes an object from the database. If the object is not in the
+     * database, the return value will be false.
+     *
+     * @param   id the object to be removed
+     * @return     true/false if the removal was successful or not
+     */
+    bool removeObject(int id);
+
+    /**
+     * Gets an object from the object database
+     *
+     * @param    id the requested object
+     * @return      the associated string
+     *              (empty string if object is not there)
+     */
+    std::string getObjectName(int id);
+
+    /**
+     * Checks if an object is available in the database
+     * @param  id the action to check for
+     * @param  insertAction flag to know if the method has been called
+     *                      inside insertAction (it only removes the
+     *                      ROS_ERROR if the action is not in the DB)
+     * @return   true/false if the action is available in the database
+     */
+    bool isObjectInDB(int id);
 
     /**
      * Adds an action to the action database
@@ -228,7 +272,7 @@ public:
 
     /* Self-explaining "setters" */
     void setSubState(std::string _state) { sub_state =  _state; };
-    virtual void setObject(int _obj)     { object    =    _obj; };
+    virtual void setObjectID(int _obj)   { object_id =    _obj; };
     void setAction(std::string _action);
 
     void setState(int _state);
@@ -236,7 +280,7 @@ public:
     /* Self-explaining "getters" */
     std::string getSubState() { return sub_state; };
     std::string getAction()   { return    action; };
-    int         getObject()   { return    object; };
+    int         getObjectID() { return object_id; };
     std::string getObjName();
 };
 
