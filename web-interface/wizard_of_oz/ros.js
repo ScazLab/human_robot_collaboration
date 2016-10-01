@@ -85,9 +85,17 @@ var webInterfaceSub = new ROSLIB.Topic({
 
 webInterfaceSub.subscribe(function(msg) {
   console.log('Received message on ' + webInterfaceSub.name);
-  var data = JSON.parse(msg.data);
-  updatetowerscheme(data.towers);
-  resetDate();
+
+  if (msg.data == 'start')
+  {
+    resetDate();
+    console.log('Date reset.');
+  }
+  else
+  {
+    var data = JSON.parse(msg.data);
+    updatetowerscheme(data.towers);
+  }
 });
 
 var robotStateSub = new ROSLIB.Topic({
