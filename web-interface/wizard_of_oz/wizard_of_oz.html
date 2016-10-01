@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Wizard of OZ</title>
+    <meta name="viewport" content="width=device-width">
+    <meta name="description" content="">
+    <meta name="author" content="Alessandro Roncone">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.4/css/bootstrap.min.css" integrity="sha384-2hfp1SzUoho7/TsGGGDaFdsuuDL0LX2hnUp6VkX3CUQ2K4K+xjboZdsXyp4oUHZj" crossorigin="anonymous">
+    <link rel="stylesheet" href="style.css">
+
+    <!-- Custom Fonts -->
+    <script src="https://use.fontawesome.com/ebd2d08b0e.js"></script>
+    <link href="//fonts.googleapis.com/css?family=Montserrat:400,700" rel="stylesheet" type="text/css">
+    <link href="//fonts.googleapis.com/css?family=Lato:400,700,400italic,700italic" rel="stylesheet" type="text/css">
+
+</head>
+
+<body id="page-top" class="index">
+<section>
+    <div class="container-fluid">
+        <div class="row-fluid">
+            <div class="col-lg-12 text-xs-center">
+                <h2>Tower Building</h2>
+            </div>
+        </div>
+    </div>
+    <div class="container">
+        <div class="row">
+            <div class="col-xl-6 text-center">
+                <div id="svg-container" class="svg-container">
+                    <svg></svg>
+                </div>
+            </div>
+            <div class="col-xl-3 text-xs-center">
+                <h3 style="margin-top:40px;">Ask Object</h3>
+                <div class="interface">
+                    <button type="button" class="btn btn-info btn-lg">2</button>
+                    <button type="button" class="btn btn-info btn-lg">4</button>
+                    <button type="button" class="btn btn-info btn-lg">6</button>
+                </div>
+                <div class="interface">
+                    <button type="button" class="btn btn-info btn-lg">1</button>
+                    <button type="button" class="btn btn-info btn-lg">3</button>
+                    <button type="button" class="btn btn-info btn-lg">5</button>
+                </div>
+            </div>
+            <div class="col-xl-3 text-xs-center">
+                <h3 style="margin-top:40px;">Get Object</h3>
+                <div class="interface">
+                    <button type="button" class="btn btn-warning btn-lg">2</button>
+                    <button type="button" class="btn btn-warning btn-lg">4</button>
+                    <button type="button" class="btn btn-warning btn-lg">6</button>
+                </div>
+                <div class="interface">
+                    <button type="button" class="btn btn-warning btn-lg">1</button>
+                    <button type="button" class="btn btn-warning btn-lg">3</button>
+                    <button type="button" class="btn btn-warning btn-lg">5</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="status" class="container">
+        <div class="row">
+            <div class="col-md-12 text-xs-center">
+                <div id="connecting" class="alert alert-info" role="alert">
+                  ROS STATUS: Connecting to rosbridge...
+                </div>
+                <div id="connected" style="display:none;" class="alert alert-success" role="alert">
+                  ROS STATUS: Connected!
+                </div>
+                <div id="error" style="display:none;" class="alert alert-warning" role="alert">
+                  ROS STATUS: Error in the backend!
+                </div>
+                <div id="closed" style="display:none;" class="alert alert-danger" role="alert">
+                  ROS STATUS: Connection closed.
+                </div>
+            </div>
+            <div class="col-md-12 text-xs-center">
+                <div class="btn-group" id="troubleshooting" style="display:none;">
+                    <button type="button" class="btn btn-danger dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Troubleshooting</button>
+                    <div class="dropdown-menu">
+                        <a class="dropdown-item" href="#">0. Check the IP of the baxter's robot by looking for the <code>eth1</code> interface in <code>sudo ifconfig</code></a>
+                        <a class="dropdown-item" href="#">0. Copy this address into the <code>ros.js</code> file at line <code>33</code>, and in <code>rosbridge_websocket.launch</code> file at line <code>3</code></a>
+                        <div class="dropdown-divider"></div>
+                        <a class="dropdown-item" href="#">1. Run <code>roslaunch rosbridge_server rosbridge_websocket.launch</code></a>
+                        <a class="dropdown-item" href="#">2. Reload this page</a>
+                        <a class="dropdown-item" href="#">3. Run <code>rostopic echo /web_interface</code></a>
+                        <div class="dropdown-divider"></div>
+                        <a class="dropdown-item" href="#">4. At every press of the yes/no buttons, a message is sent on the topic <code>/web_interface</code> with some information on the button that has been pressed</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- load the d3.js library -->
+<script src="http://d3js.org/d3.v3.min.js"></script>
+<!-- load the roslib.js libraries -->
+<script src="http://cdn.robotwebtools.org/EventEmitter2/current/eventemitter2.min.js"></script>
+<script type="text/javascript" src="http://cdn.robotwebtools.org/roslibjs/current/roslib.js"></script>
+
+<!-- load the jQuery and Bootstrap libraries -->
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.0.0/jquery.min.js" integrity="sha384-THPy051/pYDQGanwU6poAc/hOdQxjnOEXzbT+OuUAFqNqFjL+4IGLBgCJC3ZOShY" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/tether/1.2.0/js/tether.min.js" integrity="sha384-Plbmg8JY28KFelvJVai01l8WyZzrYWG825m+cZ0eDDS1f7d/js6ikvy1+X+guPIB" crossorigin="anonymous"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.4/js/bootstrap.min.js" integrity="sha384-VjEeINv9OSwtWFLAtmc4JCtEJXXBub00gtSnszmspDLCtC0I4z4nqz7rEFbIZLLU" crossorigin="anonymous"></script>
+
+<script src="wizard_of_oz.js"></script>
+<script src="ros.js"></script>
+
+<script type="text/javascript">
+    $("#svg-container").on("mousedown", function (e) {
+                            e.preventDefault();
+                            $(this).addClass("mouse-down");
+                        })
+                       .on("mouseup", function () {
+                            $(this).removeClass("mouse-down");
+                        });
+
+    $(function () {
+      $('[data-toggle="popover"]').popover()
+    })
+
+    $('.popover-dismiss').popover({
+        container: 'body',
+        trigger: 'focus'
+    })
+</script>
+</body>
+</html>

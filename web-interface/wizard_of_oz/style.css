@@ -1,0 +1,255 @@
+/*While Bootstrap uses ems or rems for defining most sizes, pxs are used for grid breakpoints and container widths.
+This is because the viewport width is in pixels and does not change with the font size.
+
+See how aspects of the Bootstrap grid system work across multiple devices with a handy table.
+                    Extra small     Small       Medium      Large       Extra Large
+                    <544px          ≥544px      ≥768px      ≥992px      ≥1200px
+Container width     None (auto)     576px       720px       940px       1140px
+Class prefix        .col-xs-        .col-sm-    .col-md-    .col-lg-    .col-xl-
+*/
+
+
+@font-face {
+  font-family: 'Montserrat';
+  src: url("fonts/Montserrat-Light.otf") format("opentype");
+  font-weight: 300;
+}
+
+@font-face {
+  font-family: 'Montserrat';
+  src: url("fonts/Montserrat-UltraLight.otf") format("opentype");
+  font-weight: 100;
+}
+
+html {
+  font-size: 18px;
+}
+
+body {
+  font-size: 16px;
+  background-color: #fff;
+  color: #505050;
+  font-family: 'Lato', sans-serif;
+}
+
+a,
+a:hover,
+a:focus,
+a:active,
+a.active {
+  outline: 0;
+  color: inherit;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+.btn {
+  text-transform: uppercase;
+  font-family: Montserrat,"Helvetica Neue",Helvetica,Arial,sans-serif;
+  font-weight: 100;
+}
+
+section h2 {
+  margin-top: 20px;
+  margin-bottom: 40px;
+  font-size: 3rem;
+  word-wrap: break-word;
+}
+
+.interface {
+  display: block;
+}
+
+.interface .btn {
+  font-size: 1.2rem;
+  font-weight: 300;
+  margin: 10px;
+  padding: 12px 16px;
+  display: inline;
+  min-width: 80px;
+  min-height: 80px;
+}
+
+.interface.robot {
+  margin-top: 30px;
+}
+
+.btn-group .btn {
+  font-size: 1rem;
+  margin-bottom: 0;
+  padding: 8px 8px;
+}
+
+.svg-container {
+  display: inline-block;
+  position: relative;
+  width: 100%;
+  padding-bottom: 45%; /* aspect ratio */
+  vertical-align: top;
+  overflow: hidden;
+}
+
+.svg-content-responsive {
+  display: inline-block;
+  position: absolute;
+  top: 0;
+  left: 0;
+  background-color: #edeeef;
+}
+
+#container-exp2 {
+  margin-top: 20px;
+}
+
+#container-exp2 .btn {
+  min-width: 70%;
+  min-height: 60px;
+  margin-bottom: 20px;
+}
+
+.mouse-down {
+  cursor: move;
+}
+
+.message.error,
+.title.filename {
+  font-size: 2rem;
+  font-weight: 300;
+}
+
+.tower g {
+  /*cursor: pointer;*/
+}
+
+.tower g text {
+  font-size: 1.6rem;
+}
+
+.node .combination rect {
+  stroke-width: 0px;
+}
+
+.node .combination text {
+  fill: red;
+}
+
+.link {
+  fill: none;
+  stroke: #ccc;
+  stroke-width: 2px;
+}
+
+.highlighted text {
+  font-weight: bold;
+}
+
+.highlighted rect.label {
+  fill: #77dddd;
+  stroke-width: 0px;
+}
+
+.collapsed rect.label {
+  stroke: steelblue;
+}
+
+#status {
+    padding: 40px;
+}
+
+#status .alert,
+#status .btn-group,
+#status button {
+    width: 100%;
+}
+
+#status button {
+    font-size: 1.2rem;
+    min-height: 60px;
+}
+
+#status .dropdown-item {
+    white-space: normal;
+}
+
+#status .dropdown-menu,
+#status .dropdown-item {
+    max-width: 100%;
+}
+
+@media(max-width: 768px) {
+  section h2 {
+    font-size: 3rem;
+  }
+}
+
+@media(max-width: 400px) {
+  html {
+    font-size: 16px;
+  }
+}
+
+@media (min-width:992px) {
+  .container {
+      max-width: 95%;
+  }
+}
+
+@media (max-width: 1199px) {
+  #container-exp2 {
+    margin-top: 0px;
+  }
+
+  #container-exp2 .btn {
+    min-width: 0;
+    margin-bottom: 4px;
+    min-height: 0px;
+  }
+}
+
+@media (min-width:1400px) {
+  .container {
+      max-width: 80%;
+  }
+}
+
+@media (min-width:1600px) {
+
+  .interface .btn {
+    font-size: 1.8rem;
+    margin-bottom: 12px;
+    padding: 9px 18px;
+  }
+
+  .btn-group .btn {
+    font-size: 1.2rem;
+    padding: 9px 18px;
+  }
+
+  .container-toggles {
+    margin-bottom: 20px;
+  }
+
+  #container-exp2 .btn {
+    min-height: 80px;
+  }
+}
+
+@media (min-width:2000px) {
+
+  .interface .btn {
+    font-size: 2.4rem;
+    margin-bottom: 24px;
+  }
+
+  .btn-group .btn {
+    font-size: 1.8rem;
+  }
+
+  .container-toggles {
+    margin-bottom: 20px;
+  }
+}
