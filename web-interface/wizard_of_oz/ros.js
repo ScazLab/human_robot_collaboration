@@ -70,10 +70,10 @@ var leftArmService  = new ROSLIB.Service({
 });
 
 // Service Client to interface with the right arm
-var rightArmService = new ROSLIB.Service({
+var svoxService = new ROSLIB.Service({
   ros : ros,
-  name: '/action_provider/service_right',
-  messageType : 'baxter_collaboration/DoAction'
+  name: '/svox_tts/speech',
+  messageType : 'svox_tts/Speech'
 });
 
 var webInterfaceSub = new ROSLIB.Topic({
@@ -103,7 +103,23 @@ function callback(e) {
 
         if (cls == 'info')
         {
+          var req = new ROSLIB.ServiceRequest();
+          req.mode = 5;
 
+          var block_type = parseInt(obj)%2==1?'bottom':'top';
+
+          var tower_type = 'blue';
+          var tower_num  = Math.floor((parseInt(obj)-1)/2);
+          if (tower_num==1) { tower_type = 'wood'}
+          else if (tower_num==2) { tower_type = 'white'}
+
+          req.string = 'Do you need the ' + block_type + ' of ' + tower_type + ' tower?';
+
+          console.log('Requested: ', req.string);
+          svoxService.callService(req,function(res)
+          {
+            console.log('Got Response: ' + res.success);
+          });
         }
         else if (cls == 'warning')
         {
