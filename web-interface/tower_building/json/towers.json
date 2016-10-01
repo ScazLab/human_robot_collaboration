@@ -5,15 +5,11 @@
       "x0": 0,
       "blocks": [
         {
-          "label":"1",
-          "color":"dodgerblue"
-        },
-        {
           "label":"2",
           "color":"dodgerblue"
         },
         {
-          "label":"3",
+          "label":"5",
           "color":"dodgerblue"
         }]
     },
@@ -22,11 +18,7 @@
       "x0": 1,
       "blocks": [
         {
-          "label":"4",
-          "color":"burlywood"
-        },
-        {
-          "label":"5",
+          "label":"3",
           "color":"burlywood"
         },
         {
@@ -39,15 +31,11 @@
       "x0": 2,
       "blocks": [
         {
-          "label":"7",
+          "label":"1",
           "color":"#FFFFF0"
         },
         {
-          "label":"8",
-          "color":"#FFFFF0"
-        },
-        {
-          "label":"9",
+          "label":"4",
           "color":"#FFFFF0"
         }]
     }

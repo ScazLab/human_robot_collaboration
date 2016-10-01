@@ -17,7 +17,7 @@ function loadtowerscheme(file)
   console.log('Loading file',file);
 
   var width  =  900,
-      height =  560;
+      height =  450;
 
   var svg = d3.select('svg')
               //responsive SVG needs these 2 attributes and no width and height attr

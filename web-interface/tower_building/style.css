@@ -87,7 +87,7 @@ section h2 {
   display: inline-block;
   position: relative;
   width: 100%;
-  padding-bottom: 65%; /* aspect ratio */
+  padding-bottom: 45%; /* aspect ratio */
   vertical-align: top;
   overflow: hidden;
 }
