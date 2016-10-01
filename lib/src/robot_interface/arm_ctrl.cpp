@@ -101,7 +101,9 @@ bool ArmCtrl::serviceCb(baxter_collaboration::DoAction::Request  &req,
 
     if (is_no_robot())
     {
+        setState(WORKING);
         ros::Duration(2.0).sleep();
+        setState(DONE);
         res.success = true;
         return true;
     }
