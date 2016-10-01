@@ -116,9 +116,14 @@ section h2 {
 }
 
 .message.error,
+.title.filename,
+#robotstate {
+  font-weight: 300;
+}
+
+.message.error,
 .title.filename {
   font-size: 2rem;
-  font-weight: 300;
 }
 
 .tower g {

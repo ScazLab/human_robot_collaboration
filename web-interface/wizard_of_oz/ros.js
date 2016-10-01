@@ -88,6 +88,18 @@ webInterfaceSub.subscribe(function(msg) {
   updatetowerscheme(data.towers);
 });
 
+var robotStateSub = new ROSLIB.Topic({
+  ros : ros,
+  name: '/action_provider/state_left',
+  messageType: 'baxter_collaboration/ArmState'
+})
+
+robotStateSub.subscribe(function(msg) {
+  console.log('Received message on ' + robotStateSub.name + ': ' + msg.state);
+  var data
+  document.getElementById("robotstate").innerHTML = msg.state;
+})
+
 // Add a callback for any element on the page
 function callback(e) {
     var e = window.e || e;
