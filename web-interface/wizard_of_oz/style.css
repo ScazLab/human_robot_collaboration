@@ -236,18 +236,6 @@ section h2 {
   }
 }
 
-@media (max-width: 1199px) {
-  #container-exp2 {
-    margin-top: 0px;
-  }
-
-  #container-exp2 .btn {
-    min-width: 0;
-    margin-bottom: 4px;
-    min-height: 0px;
-  }
-}
-
 @media (min-width:1400px) {
   .container {
       max-width: 80%;

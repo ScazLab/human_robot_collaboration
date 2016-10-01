@@ -118,7 +118,10 @@ function callback(e) {
     if (e.target.tagName == 'BUTTON')
     {
         var obj = e.target.firstChild.nodeValue;
-        var cls = e.target.className.replace('btn ','').replace(' btn-lg','').replace('btn-','');
+        var cls = e.target.className.replace('btn ','').replace(' btn-lg','')
+                                    .replace('btn-','').replace('top ','')
+                                    .replace('bottom ','').replace('wood ','')
+                                    .replace('white ','').replace('blue ','');
 
         console.log('Pressed '+ e.target.tagName +
                     ' item: ' + obj + ' ' + cls);
@@ -128,12 +131,12 @@ function callback(e) {
           var req = new ROSLIB.ServiceRequest();
           req.mode = 5;
 
-          var block_type = parseInt(obj)%2==1?'bottom':'top';
+          var block_type = parseInt(obj)%3==0?'top':'bottom';
 
-          var tower_type = 'blue';
-          var tower_num  = Math.floor((parseInt(obj)-1)/2);
-          if (tower_num==1) { tower_type = 'wood'}
-          else if (tower_num==2) { tower_type = 'white'}
+          var tower_type = 'wood';
+          var tower_num  = Math.floor((parseInt(obj)-1)/3);
+          if (tower_num==1) { tower_type = 'white'}
+          else if (tower_num==2) { tower_type = 'blue'}
 
           req.string = 'Do you need the ' + block_type + ' of ' + tower_type + ' tower?';
 
@@ -146,7 +149,7 @@ function callback(e) {
         else if (cls == 'warning')
         {
           var req = new ROSLIB.ServiceRequest();
-          req.action =    'pass_get';
+          req.action =    'get_pass';
           req.object = parseInt(obj);
 
           var res = new ROSLIB.ServiceResponse();
