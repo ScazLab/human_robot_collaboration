@@ -65,13 +65,46 @@ section h2 {
 }
 
 .interface .btn {
-  font-size: 1.2rem;
+  font-size: 1.1rem;
   font-weight: 300;
-  margin: 10px;
   padding: 12px 16px;
   display: inline;
+  margin: 10px;
+  border-width: 4px;
+  color: transparent;
+}
+
+.interface .btn:active {
+  color: transparent;
+}
+
+.interface .bottom {
+  min-width: 120px;
+  min-height: 120px;
+  max-width: 120px;
+  max-height: 120px;
+  margin-top: 0px;
+}
+
+.interface .top {
   min-width: 80px;
   min-height: 80px;
+  max-width: 80px;
+  max-height: 80px;
+  margin: 30px;
+  margin-bottom: 0px;
+}
+
+.interface .wood {
+  background-color: burlywood;
+}
+
+.interface .white {
+  background-color: #FFFFF0;
+}
+
+.interface .blue {
+  background-color: dodgerblue;
 }
 
 .interface.robot {
@@ -225,7 +258,7 @@ section h2 {
 
   .interface .btn {
     font-size: 1.8rem;
-    margin-bottom: 12px;
+    /*margin-bottom: 12px;*/
     padding: 9px 18px;
   }
 
@@ -247,7 +280,7 @@ section h2 {
 
   .interface .btn {
     font-size: 2.4rem;
-    margin-bottom: 24px;
+    /*margin-bottom: 24px;*/
   }
 
   .btn-group .btn {
