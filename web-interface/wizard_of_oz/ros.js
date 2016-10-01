@@ -7,6 +7,8 @@ var ros = new ROSLIB.Ros();
 
 function resetDate() {
   beginning = Date.now();
+  setrobotanswer('');
+  setrobotstate('start');
 }
 
 // If there is an error on the backend, an 'error' emit will be emitted.
@@ -106,9 +108,40 @@ var robotStateSub = new ROSLIB.Topic({
 
 robotStateSub.subscribe(function(msg) {
   console.log('Received message on ' + robotStateSub.name + ': ' + msg.state);
-  var data
-  document.getElementById("robotstate").innerHTML = msg.state;
+  setrobotstate(msg.state);
 })
+
+function setrobotstate(t) {
+  document.getElementById("robotstate").innerHTML = t;
+}
+
+var robotAnswerSub = new ROSLIB.Topic({
+  ros : ros,
+  name: '/web_interface/pub',
+  messageType: 'std_msgs/String'
+})
+
+robotAnswerSub.subscribe(function(msg) {
+  console.log('Received message on ' + robotAnswerSub.name + ': ' + msg.data);
+  setrobotanswer(msg.data);
+})
+
+var errorStateSub = new ROSLIB.Topic({
+  ros : ros,
+  name: '/robot/digital_io/left_lower_button/state',
+  messageType: 'baxter_core_msgs/DigitalIOState'
+})
+
+errorStateSub.subscribe(function(msg) {
+  if (msg.state == 1) {
+    console.log('Received message on ' + errorStateSub.name + ': error');
+    setrobotanswer('error');
+  }
+})
+
+function setrobotanswer(t) {
+  document.getElementById("robotanswer").innerHTML = t;
+}
 
 // Add a callback for any element on the page
 function callback(e) {
@@ -128,6 +161,7 @@ function callback(e) {
 
         if (cls == 'info')
         {
+          setrobotanswer('');
           var req = new ROSLIB.ServiceRequest();
           req.mode = 5;
 

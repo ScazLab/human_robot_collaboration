@@ -150,7 +150,8 @@ section h2 {
 
 .message.error,
 .title.filename,
-#robotstate {
+#robotstate,
+#robotanswer {
   font-weight: 300;
 }
 
