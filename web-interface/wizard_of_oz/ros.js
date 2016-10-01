@@ -1,6 +1,7 @@
 // Connecting to ROS
 // -----------------
 //
+var appname = 'woz';
 var beginning = Date.now();
 var ros = new ROSLIB.Ros();
 
@@ -162,7 +163,7 @@ function callback(e) {
         var datenow = Date.now();
         var elapsed = (datenow - beginning)/1000;
         var timestamp = '[' + datenow + '][' + elapsed + ']';
-        var logstring = timestamp + ' ' + obj;
+        var logstring = timestamp + '[' + appname + ']' + ' ' + obj;
 
         // console.log(logstring);
         var message = new ROSLIB.Message({
