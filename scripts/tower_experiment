@@ -24,6 +24,8 @@ parser.add_argument(
     help='path used for experiment, must contain pomdp.json and policy.json')
 parser.add_argument('user', help='user id, used for storing times')
 parser.add_argument('task', choices=['simple', 'medium', 'complex'], help='complexity of the task')
+parser.add_argument('--wizard', action='store_true',
+                    help='if set, use remote controle')
 parser.add_argument('--generate', action='store_true',
                     help='if set, generate and solve POMDP')
 
@@ -79,6 +81,42 @@ else:
 task = tp.task_from_orders(
         orders, names=['-'.join([str(i) for i in o]) for o in orders])
 
+human_order = random.choice(orders)
+order_file = os.path.join(args.path, 'order-{}-{}-{}'.format(
+    args.user, args.task, 'wizard' if args.wizard else 'robot'))
+with open(order_file, 'w') as f:
+    f.write(str(human_order))
+
+
+web_pub = rospy.Publisher('/web_interface/sub', String, queue_size=1)
+woz_pub = rospy.Publisher('/wizard_of_oz/sub', String, queue_size=1)
+
+
+def send_tower_order(order):
+    part_order = [None] * len(order)
+    for i, p in enumerate(order):
+        part_order[p] = i
+    tower_display = {
+        "towers": [
+                {"name": "{} Tower".format(TOWERS[i]),
+                "x0": i,
+                "blocks": [
+                    {"label": part_order[2 * i], "color": COLORS[i]},
+                    {"label": part_order[2 * i + 1], "color": COLORS[i]},
+                    ]
+                } for i in range(len(TOWERS))]
+        }
+    web_pub.publish(json.dumps(tower_display))      
+    web_pub.publish('start')
+    woz_pub.publish('start')
+
+
+if args.wizard:
+    rospy.init_node('wizard_init')
+    send_tower_order(human_order)
+    rospy.loginfo('Order: {}'.format(human_order))
+    sys.exit(0)
+
 if not os.path.exists(pomdp_file) or args.generate:
     # Generate and solve POMDP
     p = h2p.task_to_pomdp(task)
@@ -107,8 +145,6 @@ class GPController(BaseGPController):
     GET = 'get_pass'
 
     def __init__(self, *args, **kargs):
-        self.tower_display_pub = rospy.Publisher('/web_interface/sub', String,
-                                                 queue_size=1)
         kargs['right'] = False
         super(GPController, self).__init__(*args, **kargs)
         self.answer_sub.timeout = 200
@@ -150,26 +186,7 @@ class GPController(BaseGPController):
         f = ['bottom', 'top'][o % 2]
         return "Do you need the {} of {} tower?".format(f, t)
 
-    def send_tower_order(self, order):
-        part_order = [None] * len(order)
-        for i, p in enumerate(order):
-            part_order[p] = i
-        tower_display = {
-            "towers": [
-                    {"name": "{} Tower".format(TOWERS[i]),
-                    "x0": i,
-                    "blocks": [
-                        {"label": part_order[2 * i], "color": COLORS[i]},
-                        {"label": part_order[2 * i + 1], "color": COLORS[i]},
-                        ]
-                    } for i in range(len(TOWERS))]
-            }
-        self.tower_display_pub.publish(json.dumps(tower_display))
 
-human_order = random.choice(orders)
-with open(os.path.join(args.path,
-          'order-{}-{}'.format(args.user, args.task)), 'w') as f:
-    f.write(str(human_order))
 timer_path = os.path.join(args.path, 'timer-{}-{}.json'.format(args.user, args.task))
 #controller = GPController(GraphPolicyRunner(gp), timer_path=timer_path)
 controller = GPController(pol, timer_path=timer_path)
