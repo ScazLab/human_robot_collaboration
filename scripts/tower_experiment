@@ -88,7 +88,7 @@ with open(order_file, 'w') as f:
     f.write(str(human_order))
 
 
-web_pub = rospy.Publisher('/web_interface/sub', String, queue_size=1)
+web_pub = rospy.Publisher('/web_interface/sub', String, queue_size=2)
 woz_pub = rospy.Publisher('/wizard_of_oz/sub', String, queue_size=1)
 
 
