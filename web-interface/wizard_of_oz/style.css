@@ -176,23 +176,20 @@ section h2 {
   fill: red;
 }
 
-.link {
-  fill: none;
-  stroke: #ccc;
-  stroke-width: 2px;
+#robotstate,
+#robotanswer {
+  /*transition: color 1s ease-in;*/
 }
 
-.highlighted text {
-  font-weight: bold;
+.DONE,
+.yes {
+  color: #5CB85C;
 }
 
-.highlighted rect.label {
-  fill: #77dddd;
-  stroke-width: 0px;
-}
-
-.collapsed rect.label {
-  stroke: steelblue;
+.no,
+.ERROR,
+.error {
+  color: #D9534F;
 }
 
 #status {

@@ -113,6 +113,7 @@ robotStateSub.subscribe(function(msg) {
 
 function setrobotstate(t) {
   document.getElementById("robotstate").innerHTML = t;
+  document.getElementById('robotstate').className = t;
 }
 
 var robotAnswerSub = new ROSLIB.Topic({
@@ -141,6 +142,7 @@ errorStateSub.subscribe(function(msg) {
 
 function setrobotanswer(t) {
   document.getElementById("robotanswer").innerHTML = t;
+  document.getElementById('robotanswer').className = t;
 }
 
 // Add a callback for any element on the page
