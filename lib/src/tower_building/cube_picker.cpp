@@ -66,6 +66,18 @@ bool CubePicker::pickPassObject()
     return true;
 }
 
+bool CubePicker::recoverPickPass()
+{
+    if (!homePoseStrict()) return false;
+
+    if (getSubState() == ACTION_GET)
+    {
+        if (!moveArm("down", 0.4)) return false;
+        if (!releaseObject())      return false;
+    }
+    return true;
+}
+
 bool CubePicker::pickARTag()
 {
     ROS_INFO("[%s] Start Picking up tag..", getLimb().c_str());

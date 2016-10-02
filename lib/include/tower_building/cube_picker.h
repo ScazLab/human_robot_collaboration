@@ -39,6 +39,12 @@ private:
     bool pickPassObject();
 
     /**
+     * [recoverPickPass description]
+     * @return true/false if success/failure
+     */
+    bool recoverPickPass();
+
+    /**
      * Sets the joint-level configuration for the home position
      */
     void setHomeConfiguration();
