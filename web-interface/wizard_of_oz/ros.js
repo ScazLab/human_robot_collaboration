@@ -91,7 +91,7 @@ webInterfaceSub.subscribe(function(msg) {
   if (msg.data == 'start')
   {
     resetDate();
-    setrobotstate('start');
+    setrobotstate('ready');
     console.log('Date reset.');
   }
   else

@@ -182,7 +182,8 @@ section h2 {
 }
 
 .DONE,
-.yes {
+.yes,
+.ready {
   color: #5CB85C;
 }
 
