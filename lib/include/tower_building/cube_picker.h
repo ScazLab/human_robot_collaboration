@@ -45,6 +45,12 @@ private:
     bool recoverPickPass();
 
     /**
+     * Recovers from errors during execution. It provides a basic interface,
+     * but it is advised to specialize this function in the ArmCtrl's children.
+     */
+    void recoverFromError();
+
+    /**
      * Sets the joint-level configuration for the home position
      */
     void setHomeConfiguration();

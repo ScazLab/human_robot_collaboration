@@ -8,7 +8,7 @@
     <arg name="speechPopUpDuration"  default="20.0"/>    <!-- [s] -->
 
     <!-- If the robot will recover from an error or will wait the external planner's decisions -->
-    <arg name="internalRecovery"    default="false"/>
+    <arg name="internalRecovery"    default="true"/>
     <!-- If the system should use the robot or not (useful for debugging) -->
     <arg name="useRobot"            default="true"/>
 

@@ -11,6 +11,7 @@
 
 #include <sensor_msgs/JointState.h>
 
+#define RECOVER  -4
 #define WORKING  -3
 #define KILLED   -2
 #define ERROR    -1

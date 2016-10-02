@@ -76,7 +76,7 @@ protected:
      * Recovers from errors during execution. It provides a basic interface,
      * but it is advised to specialize this function in the ArmCtrl's children.
      */
-    void recoverFromError();
+    virtual void recoverFromError();
 
     /**
      * Hovers above table at a specific x-y position.
@@ -292,6 +292,7 @@ public:
     std::string getSubState() { return sub_state; };
     std::string getAction()   { return    action; };
     int         getObjectID() { return object_id; };
+    bool        getInternalRecovery() { return internal_recovery; };
 };
 
 #endif

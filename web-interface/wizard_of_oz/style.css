@@ -189,7 +189,8 @@ section h2 {
 
 .no,
 .ERROR,
-.error {
+.error,
+.RECOVER {
   color: #D9534F;
 }
 

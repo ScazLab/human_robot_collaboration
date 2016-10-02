@@ -63,5 +63,6 @@ State::operator std::string()
     else if ( state == PUT_DOWN ) return "PUT_DOWN";
     else if ( state == DONE     ) return "DONE";
     else if ( state == KILLED   ) return "KILLED";
+    else if ( state == RECOVER  ) return "RECOVER";
     else                          return "NONE";
 }

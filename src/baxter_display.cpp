@@ -148,7 +148,7 @@ private:
         cv::Scalar col       = cv::Scalar::all(60);
         cv::Scalar col_state = green;
 
-        if (state.state == "ERROR"  || state.state == "TEST" ||
+        if (state.state == "ERROR"  || state.state == "RECOVER" ||
             state.state == "KILLED" || state.state == "DONE" ||
             state.state == "START" )
         {

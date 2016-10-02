@@ -13,6 +13,7 @@ CubePicker::CubePicker(std::string _name, std::string _limb, bool _no_robot) :
     insertAction(ACTION_GET,       static_cast<f_action>(&CubePicker::pickObject));
     insertAction(ACTION_PASS,      static_cast<f_action>(&CubePicker::passObject));
     insertAction(ACTION_GET_PASS,  static_cast<f_action>(&CubePicker::pickPassObject));
+    insertAction("recover_"+string(ACTION_GET_PASS), static_cast<f_action>(&CubePicker::recoverPickPass));
 
     printActionDB();
 
@@ -60,7 +61,6 @@ bool CubePicker::passObject()
 bool CubePicker::pickPassObject()
 {
     if (!pickObject())      return false;
-    setSubState(ACTION_GET);
     if (!passObject())      return false;
 
     return true;
@@ -72,10 +72,22 @@ bool CubePicker::recoverPickPass()
 
     if (getSubState() == ACTION_GET)
     {
-        if (!moveArm("down", 0.4)) return false;
+        if (!moveArm("left", 0.1)) return false;
+        if (!moveArm("down", 0.3)) return false;
         if (!releaseObject())      return false;
+        if (!homePoseStrict()) return false;
     }
     return true;
+}
+
+void CubePicker::recoverFromError()
+{
+    if (getInternalRecovery() == true)
+    {
+        setState(RECOVER);
+        recoverPickPass();
+        setState(ERROR);
+    }
 }
 
 bool CubePicker::pickARTag()
@@ -131,6 +143,7 @@ bool CubePicker::pickARTag()
             if(hasCollided("strict"))
             {
                 ROS_DEBUG("Collision!");
+                setSubState(ACTION_GET);
                 return true;
             }
 
