@@ -131,7 +131,7 @@ if not os.path.exists(pomdp_file) or args.generate:
     #    os.path.join(os.path.join(args.path, 'trajectories.json')),
     #    horizon=10, indent=2)
     gp2 = pol.visit()
-    gp2.save_as_json(belief_policy)
+    gp2.save_as_json(belief_policy_file)
 else:
     # Load policy and POMDP
     p = POMDP.load_from_json(pomdp_file)
@@ -190,7 +190,7 @@ class GPController(BaseGPController):
 timer_path = os.path.join(args.path, 'timer-{}-{}.json'.format(args.user, args.task))
 #controller = GPController(GraphPolicyRunner(gp), timer_path=timer_path)
 controller = GPController(pol, timer_path=timer_path)
-controller.send_tower_order(human_order)
+send_tower_order(human_order)
 
 #rospy.set_param('/action_provider/internal_recovery', False)
 controller.run()
