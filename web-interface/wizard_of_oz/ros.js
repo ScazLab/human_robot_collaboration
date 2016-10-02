@@ -184,6 +184,7 @@ function callback(e) {
         }
         else if (cls == 'warning')
         {
+          setrobotanswer('');
           var req = new ROSLIB.ServiceRequest();
           req.action =    'get_pass';
           req.object = parseInt(obj);
