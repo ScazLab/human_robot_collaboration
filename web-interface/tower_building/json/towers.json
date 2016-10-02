@@ -6,11 +6,11 @@
       "blocks": [
         {
           "label":"2",
-          "color":"dodgerblue"
+          "color":"burlywood"
         },
         {
           "label":"5",
-          "color":"dodgerblue"
+          "color":"burlywood"
         }]
     },
     {
@@ -19,11 +19,11 @@
       "blocks": [
         {
           "label":"3",
-          "color":"burlywood"
+          "color":"#FFFFF0"
         },
         {
           "label":"6",
-          "color":"burlywood"
+          "color":"#FFFFF0"
         }]
     },
     {
@@ -32,11 +32,11 @@
       "blocks": [
         {
           "label":"1",
-          "color":"#FFFFF0"
+          "color":"dodgerblue"
         },
         {
           "label":"4",
-          "color":"#FFFFF0"
+          "color":"dodgerblue"
         }]
     }
   ]
