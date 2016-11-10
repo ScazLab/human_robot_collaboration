@@ -25,7 +25,7 @@ CubePicker::CubePicker(std::string _name, std::string _limb, bool _no_robot) :
     insertObject(6, "white top");
     insertObject(7, "blue very bottom");
     insertObject(8, "blue bottom");
-    insertObject(9, "blue top");
+    insertObject(9, "blue tp");
 
     printObjectDB();
 
