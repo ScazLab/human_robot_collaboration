@@ -52,6 +52,8 @@ RobotInterface::RobotInterface(string name, string limb, bool no_robot) :
     if (getLimb()=="left")
     {
         _n.param<double>("force_threshold_left",  force_thres, FORCE_THRES_L);
+        _n.param<double>("force_filt_variance_left", filt_variance, FORCE_FILT_VAR_L);
+        _n.param<double>("rel_force_threshold_left", rel_force_thres, REL_FORCE_THRES_L);
     }
     else if (getLimb()=="right")
     {
@@ -59,6 +61,8 @@ RobotInterface::RobotInterface(string name, string limb, bool no_robot) :
     }
 
     ROS_INFO("[%s] Force Threshold : %g", getLimb().c_str(), force_thres);
+    ROS_INFO("[%s] Force Filter Variance: %g", getLimb().c_str(), filt_variance);
+    ROS_INFO("[%s] Relative Force Threshold: %g", getLimb().c_str(), rel_force_thres);
 
     pthread_mutex_init(&_mutex_jnts, NULL);
     spinner.start();
@@ -168,96 +172,30 @@ void RobotInterface::filterForces()
     new_filt[1] = (1 - FORCE_ALPHA) * _filt_force[1] + FORCE_ALPHA * _curr_wrench.force.y;
     new_filt[2] = (1 - FORCE_ALPHA) * _filt_force[2] + FORCE_ALPHA * _curr_wrench.force.z;
 
-    // for (int i = 0; i < 3; ++i)
-    // {
-    //     predicted_filt[i] = _filt_force[i] + (_filt_change[i] * delta_time);
-    //     _filt_change[i] = (new_filt[i] - _filt_force[i])/delta_time;
-    //     if (predicted_filt[i] > exp (-6))
-    //     {
-    //         if (abs((new_filt[i] - predicted_filt[i])/predicted_filt[i]) < 1)
-    //         {
-    //             _filt_force[i] = new_filt[i];
-    //         }
-    //     }
-    //     else
-    //     {
-    //         _filt_force[i] = new_filt[i];
-    //     }
-    // }
-    predicted_filt[0] = _filt_force[0] + (_filt_change[0] * delta_time);
-    predicted_filt[1] = _filt_force[1] + (_filt_change[1] * delta_time);
-    predicted_filt[2] = _filt_force[2] + (_filt_change[2] * delta_time);
-
-    // // update the values
-    _filt_change[0] = (new_filt[0] - _filt_force[0])/delta_time;
-    _filt_change[1] = (new_filt[1] - _filt_force[1])/delta_time;
-    _filt_change[2] = (new_filt[2] - _filt_force[2])/delta_time;
-    _filt_updated = ros::Time::now().toSec();
-
     // if the predicted force is not essentially 0, use it to calculate the
     // percentage difference between the predicted and the actual filter
     // if the predicted force is essentially 0, this is most likely the first
     // calculation, so just set the filter to the new filter value
-    // this filter is still under construction (by Sarah W)
 
-    if (predicted_filt[0] > exp (-6))
+    for (int i = 0; i < 3; ++i)
     {
-        if (abs((new_filt[0] - predicted_filt[0])/predicted_filt[0]) < 1)
+        predicted_filt[i] = _filt_force[i] + (_filt_change[i] * delta_time);
+        _filt_change[i] = (new_filt[i] - _filt_force[i])/delta_time;
+        if (predicted_filt[i] > exp (-6))
         {
-            _filt_force[0] = new_filt[0];
+            if (abs((new_filt[i] - predicted_filt[i])/predicted_filt[i]) < filt_variance)
+            {
+                _filt_force[i] = new_filt[i];
+            }
+        }
+        else
+        {
+            _filt_force[i] = new_filt[i];
         }
     }
-    else
-    {
-        _filt_force[0] = new_filt[0];
-    }
 
-    if (predicted_filt[1] > exp (-6))
-    {
-        if (abs((new_filt[1] - predicted_filt[1])/predicted_filt[1]) < 1)
-        {
-            _filt_force[1] = new_filt[1];
-        }
-    }
-    else
-    {
-        _filt_force[1] = new_filt[1];
-    }
+    _filt_updated = ros::Time::now().toSec();
 
-    if (predicted_filt[2] > exp (-6))
-    {
-        if (abs((new_filt[2] - predicted_filt[2])/predicted_filt[2]) < 1)
-        {
-            _filt_force[2] = new_filt[2];
-        }
-    }
-    else
-    {
-        _filt_force[2] = new_filt[2];
-    }
-
-    // previous attempt with comparing the new filter to the old filter
-
-    // if (abs(new_filt[0] - _filt_force[0]) < _filt_force[0] || _filt_force[0] < exp (-6))
-    // {
-    //     _filt_force[0] = new_filt[0];
-    // }
-
-    // if (abs(new_filt[1] - _filt_force[1]) < _filt_force[1] || _filt_force[1] < exp (-6))
-    // {
-    //     _filt_force[1] = new_filt[1];
-    // }
-
-    // if (abs(new_filt[2] - _filt_force[2]) < _filt_force[2] || _filt_force[2] < exp (-6))
-    // {
-    //     _filt_force[2] = new_filt[2];
-    // }
-
-    // original method - EMA using alpha value
-
-    // _filt_force[0] = (1 - FORCE_ALPHA) * _filt_force[0] + FORCE_ALPHA * _curr_wrench.force.x;
-    // _filt_force[1] = (1 - FORCE_ALPHA) * _filt_force[1] + FORCE_ALPHA * _curr_wrench.force.y;
-    // _filt_force[2] = (1 - FORCE_ALPHA) * _filt_force[2] + FORCE_ALPHA * _curr_wrench.force.z;
 }
 
 void RobotInterface::hoverAboveTokens(double height)
@@ -536,63 +474,36 @@ bool RobotInterface::detectForceInteraction()
     // the following is still under construction (by Sarah)
 
     double small_thres = exp (-5);
-    double curr_diff_x;
-    double curr_diff_y;
-    double curr_diff_z;
 
-    if (abs(_filt_force[0]) > small_thres)
-    {
-        curr_diff_x = abs((_curr_wrench.force.x - _filt_force[0])/_filt_force[0]);
-    }
-    else
-    {
-        curr_diff_x = abs((_curr_wrench.force.x - _filt_force[0])/(abs(_filt_force[0]) + 0.1));
-    }
+    std::vector<double> curr_force;
+    curr_force[0] = _curr_wrench.force.x;
+    curr_force[1] = _curr_wrench.force.y;
+    curr_force[2] = _curr_wrench.force.z;
 
-    if (abs(_filt_force[1]) > small_thres)
-    {
-        curr_diff_y = abs((_curr_wrench.force.y - _filt_force[1])/_filt_force[1]);
-    }
-    else
-    {
-        curr_diff_y = abs((_curr_wrench.force.y - _filt_force[1])/(abs(_filt_force[1]) + 0.01));
-    }
+    std::vector<double> curr_diff;
 
-    if (abs(_filt_force[2]) > small_thres)
+    for (int i = 0; i < 3; ++i)
     {
-        curr_diff_z = abs((_curr_wrench.force.z - _filt_force[2])/_filt_force[2]);
+        if (abs(_filt_force[i]) > small_thres)
+        {
+            curr_diff[i] = abs((curr_force[i] - _filt_force[i])/_filt_force[i]);
+        }
+        else
+        {
+            curr_diff[i] = abs((curr_force[i] - _filt_force[i])/(abs(_filt_force[i]) + 0.01));
+        }
+        if (curr_diff[i] > rel_force_thres)
+        {
+            ROS_INFO("Interaction: %g %g %g", curr_force[0], curr_force[1], curr_force[2]);
+            ROS_INFO("Difference relative to filter of force element %i: %g", i, curr_diff[i]);
+            return true;
+        }
+        else
+        {
+            ROS_INFO("Difference relative to filter of force element %i: %g", i, curr_diff[i]);
+            return false;
+        }
     }
-    else
-    {
-        curr_diff_z = abs((_curr_wrench.force.z - _filt_force[2])/(abs(_filt_force[2]) + 0.01));
-    }
-
-    if (curr_diff_x > 65 || curr_diff_y > 65 || curr_diff_z > 65)
-    {
-        ROS_INFO("Interaction: %g %g %g", _curr_wrench.force.x, _curr_wrench.force.y, _curr_wrench.force.z);
-        ROS_INFO("Percent above norm: %g %g %g", curr_diff_x, curr_diff_y, curr_diff_z);
-        return true;
-    }
-    else
-    {
-        ROS_INFO("Percent above norm: %g %g %g", curr_diff_x, curr_diff_y, curr_diff_z);
-        return false;
-    }
-    // double f_x = abs(_curr_wrench.force.x - _filt_force[0]);
-    // double f_y = abs(_curr_wrench.force.y - _filt_force[1]);
-    // double f_z = abs(_curr_wrench.force.z - _filt_force[2]);
-
-    // ROS_DEBUG("Interaction: %g %g %g", f_x, f_y, f_z);
-
-    // if (f_x > force_thres || f_y > force_thres || f_z > force_thres)
-    // {
-    //     ROS_INFO("[%s] Interaction: %g %g %g", getLimb().c_str(), f_x, f_y, f_z);
-    //     return true;
-    // }
-    // else
-    // {
-    //     return false;
-    // }
 }
 
 bool RobotInterface::waitForForceInteraction(double _wait_time, bool disable_coll_av)

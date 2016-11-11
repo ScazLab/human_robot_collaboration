@@ -5,6 +5,8 @@
 
     <arg name="forceThresholdL"      default="2.v5"/>    <!-- [N] -->
     <arg name="forceThresholdR"      default="2.0"/>    <!-- [N] -->
+    <arg name="forceFiltVarianceL"   default="1.v5"/>
+    <arg name="relForceThresholdL"   default="65.v5"/>
     <arg name="speechPopUpDuration"  default="20.0"/>    <!-- [s] -->
 
     <!-- If the robot will recover from an error or will wait the external planner's decisions -->
@@ -14,6 +16,8 @@
 
     <param name="action_provider/force_threshold_left"  value="$(arg forceThresholdL)"/>
     <param name="action_provider/force_threshold_right" value="$(arg forceThresholdR)"/>
+    <param name="action_provider/force_filt_variance_left" value="$(arg forceFiltVarianceL)"/>
+    <param name="action_provider/rel_force_threshold_left" value="$(arg relForceThresholdL)"/>
     <param name="action_provider/internal_recovery"     value="$(arg internalRecovery)"/>
     <param name="action_provider/use_robot"             value="$(arg useRobot)"/>
     <param name="baxter_display/speech_duration"        value="$(arg speechPopUpDuration)"/>

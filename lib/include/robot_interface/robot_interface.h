@@ -60,6 +60,8 @@ private:
     double                    force_thres;
     std::vector<double>      _filt_change;
     double                  _filt_updated;
+    double                rel_force_thres;
+    double                  filt_variance;
 
     geometry_msgs::Point        _curr_pos;
     geometry_msgs::Quaternion   _curr_ori;
