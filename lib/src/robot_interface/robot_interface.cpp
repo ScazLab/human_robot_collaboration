@@ -168,9 +168,9 @@ void RobotInterface::filterForces()
     std::vector<double> new_filt;
     std::vector<double> predicted_filt;
 
-    new_filt[0] = (1 - FORCE_ALPHA) * _filt_force[0] + FORCE_ALPHA * _curr_wrench.force.x;
-    new_filt[1] = (1 - FORCE_ALPHA) * _filt_force[1] + FORCE_ALPHA * _curr_wrench.force.y;
-    new_filt[2] = (1 - FORCE_ALPHA) * _filt_force[2] + FORCE_ALPHA * _curr_wrench.force.z;
+    new_filt.push_back((1 - FORCE_ALPHA) * _filt_force[0] + FORCE_ALPHA * _curr_wrench.force.x);
+    new_filt.push_back((1 - FORCE_ALPHA) * _filt_force[1] + FORCE_ALPHA * _curr_wrench.force.y);
+    new_filt.push_back((1 - FORCE_ALPHA) * _filt_force[2] + FORCE_ALPHA * _curr_wrench.force.z);
 
     // if the predicted force is not essentially 0, use it to calculate the
     // percentage difference between the predicted and the actual filter
@@ -179,7 +179,7 @@ void RobotInterface::filterForces()
 
     for (int i = 0; i < 3; ++i)
     {
-        predicted_filt[i] = _filt_force[i] + (_filt_change[i] * delta_time);
+        predicted_filt.push_back(_filt_force[i] + (_filt_change[i] * delta_time));
         _filt_change[i] = (new_filt[i] - _filt_force[i])/delta_time;
         if (predicted_filt[i] > exp (-6))
         {
@@ -195,6 +195,11 @@ void RobotInterface::filterForces()
     }
 
     _filt_updated = ros::Time::now().toSec();
+
+    // the old way...
+    // _filt_force[0] = (1 - FORCE_ALPHA) * _filt_force[0] + FORCE_ALPHA * _curr_wrench.force.x;
+    // _filt_force[1] = (1 - FORCE_ALPHA) * _filt_force[0] + FORCE_ALPHA * _curr_wrench.force.y;
+    // _filt_force[2] = (1 - FORCE_ALPHA) * _filt_force[0] + FORCE_ALPHA * _curr_wrench.force.z;
 
 }
 
@@ -476,11 +481,14 @@ bool RobotInterface::detectForceInteraction()
     double small_thres = exp (-5);
 
     std::vector<double> curr_force;
-    curr_force[0] = _curr_wrench.force.x;
-    curr_force[1] = _curr_wrench.force.y;
-    curr_force[2] = _curr_wrench.force.z;
+    curr_force.push_back(_curr_wrench.force.x);
+    curr_force.push_back(_curr_wrench.force.y);
+    curr_force.push_back(_curr_wrench.force.z);
 
     std::vector<double> curr_diff;
+    curr_diff.push_back(0.0);
+    curr_diff.push_back(0.0);
+    curr_diff.push_back(0.0);
 
     for (int i = 0; i < 3; ++i)
     {
@@ -492,18 +500,30 @@ bool RobotInterface::detectForceInteraction()
         {
             curr_diff[i] = abs((curr_force[i] - _filt_force[i])/(abs(_filt_force[i]) + 0.01));
         }
-        if (curr_diff[i] > rel_force_thres)
-        {
-            ROS_INFO("Interaction: %g %g %g", curr_force[0], curr_force[1], curr_force[2]);
-            ROS_INFO("Difference relative to filter of force element %i: %g", i, curr_diff[i]);
-            return true;
-        }
-        else
-        {
-            ROS_INFO("Difference relative to filter of force element %i: %g", i, curr_diff[i]);
-            return false;
-        }
+
     }
+    if (curr_diff[0] > rel_force_thres || curr_diff[1] > rel_force_thres || curr_diff[2] > rel_force_thres)
+    {
+        ROS_INFO("Interaction: %g %g %g", curr_force[0], curr_force[1], curr_force[2]);
+        ROS_INFO("Difference relative to filter of force element: %g %g %g", curr_diff[0], curr_diff[1], curr_diff[2]);
+        return true;
+    }
+    else
+    {
+        // ROS_INFO("Difference relative to filter of force element %g %g %g", curr_diff[0], curr_diff[1], curr_diff[2]);
+        return false;
+    }
+
+    // ye olde way...
+    // if (_curr_wrench.force.x > force_thres || _curr_wrench.force.y > force_thres || _curr_wrench.force.z > force_thres)
+    // {
+    //     ROS_INFO("Interaction: %g %g %g", _curr_wrench.force.x, _curr_wrench.force.y, _curr_wrench.force.z);
+    //     return true;
+    // }
+    // else
+    // {
+    //     return false;
+    // }
 }
 
 bool RobotInterface::waitForForceInteraction(double _wait_time, bool disable_coll_av)
