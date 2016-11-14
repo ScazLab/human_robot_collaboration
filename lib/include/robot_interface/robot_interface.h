@@ -39,6 +39,7 @@ private:
     ros::Time _init_time;
 
     bool       _no_robot;       // Flag to know if we're going to use the robot or not
+    bool     _use_forces;       // Flag to know if we're going to use the force feedback
 
     ros::AsyncSpinner spinner;  // AsyncSpinner to handle callbacks
 
@@ -294,7 +295,8 @@ protected:
     void suppressCollisionAv();
 
 public:
-    RobotInterface(std::string name, std::string limb, bool no_robot = false);
+    RobotInterface(std::string name, std::string limb,
+                   bool no_robot = false, bool _use_forces = true);
 
     virtual ~RobotInterface();
 
@@ -345,7 +347,8 @@ protected:
     pthread_mutex_t _mutex_img;
 
 public:
-    ROSThreadImage(std::string name, std::string limb);
+    ROSThreadImage(std::string name, std::string limb,
+                   bool no_robot = false, bool use_forces = true);
     ~ROSThreadImage();
 
     /*

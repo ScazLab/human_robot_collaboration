@@ -12,17 +12,21 @@ using namespace cv;
 /**************************************************************************/
 /*                         RobotInterface                                 */
 /**************************************************************************/
-RobotInterface::RobotInterface(string name, string limb, bool no_robot) :
+RobotInterface::RobotInterface(string name, string limb, bool no_robot, bool use_forces) :
         _n(name), _name(name), _limb(limb), _state(START,0), spinner(4),
-        ir_ok(false), _no_robot(no_robot), ik_solver(limb, no_robot)
+        ir_ok(false), _no_robot(no_robot), ik_solver(limb, no_robot), _use_forces(use_forces)
 {
     if (no_robot) return;
 
     _joint_cmd_pub = _n.advertise<JointCommand>("/robot/limb/" + _limb + "/joint_command", 1);
     _coll_av_pub   = _n.advertise<Empty>("/robot/limb/" + _limb + "/suppress_collision_avoidance", 1);
 
-    _endpt_sub     = _n.subscribe("/robot/limb/" + _limb + "/endpoint_state",
-                                    SUBSCRIBER_BUFFER, &RobotInterface::endpointCb, this);
+    if (_use_forces == true)
+    {
+        _endpt_sub     = _n.subscribe("/robot/limb/" + _limb + "/endpoint_state",
+                            SUBSCRIBER_BUFFER, &RobotInterface::endpointCb, this);
+    }
+
     _ir_sub        = _n.subscribe("/robot/range/" + _limb + "_hand_range/state",
                                     SUBSCRIBER_BUFFER, &RobotInterface::IRCb, this);
     _cuff_sub      = _n.subscribe("/robot/digital_io/" + _limb + "_lower_button/state",
@@ -495,7 +499,8 @@ RobotInterface::~RobotInterface()
 /*                          ROSThreadImage                                */
 /**************************************************************************/
 
-ROSThreadImage::ROSThreadImage(string name, string limb): _img_trp(_n), RobotInterface(name, limb)
+ROSThreadImage::ROSThreadImage(string name, string limb, bool no_robot, bool use_forces)
+                              : _img_trp(_n), RobotInterface(name, limb, no_robot, use_forces)
 {
     _img_sub = _img_trp.subscribe("/cameras/"+getLimb()+"_hand_camera/image",
                            SUBSCRIBER_BUFFER, &ROSThreadImage::imageCb, this);
