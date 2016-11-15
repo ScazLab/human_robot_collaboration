@@ -21,11 +21,8 @@ RobotInterface::RobotInterface(string name, string limb, bool no_robot, bool use
     _joint_cmd_pub = _n.advertise<JointCommand>("/robot/limb/" + _limb + "/joint_command", 1);
     _coll_av_pub   = _n.advertise<Empty>("/robot/limb/" + _limb + "/suppress_collision_avoidance", 1);
 
-    if (_use_forces == true)
-    {
-        _endpt_sub     = _n.subscribe("/robot/limb/" + _limb + "/endpoint_state",
-                            SUBSCRIBER_BUFFER, &RobotInterface::endpointCb, this);
-    }
+    _endpt_sub     = _n.subscribe("/robot/limb/" + _limb + "/endpoint_state",
+                                   SUBSCRIBER_BUFFER, &RobotInterface::endpointCb, this);
 
     _ir_sub        = _n.subscribe("/robot/range/" + _limb + "_hand_range/state",
                                     SUBSCRIBER_BUFFER, &RobotInterface::IRCb, this);
@@ -69,6 +66,17 @@ bool RobotInterface::ok()
     res = res && getState() != KILLED;
 
     return res;
+}
+
+bool RobotInterface::getIKLimits(KDL::JntArray &ll, KDL::JntArray &ul)
+{
+    return ik_solver.getKDLLimits(ll,ul);
+}
+
+bool RobotInterface::setIKLimits(KDL::JntArray ll, KDL::JntArray ul)
+{
+    ik_solver.setKDLLimits(ll,ul);
+    return true;
 }
 
 void RobotInterface::collAvCb(const baxter_core_msgs::CollisionAvoidanceState& msg)
@@ -127,7 +135,8 @@ void RobotInterface::endpointCb(const baxter_core_msgs::EndpointState& msg)
     ROS_DEBUG("endpointCb");
     _curr_pos      = msg.pose.position;
     _curr_ori      = msg.pose.orientation;
-    _curr_wrench   = msg.wrench;
+
+    if (_use_forces == true) _curr_wrench   = msg.wrench;
 
     tf::Quaternion _marker_quat;
     tf::quaternionMsgToTF(_curr_ori, _marker_quat);
@@ -140,7 +149,7 @@ void RobotInterface::endpointCb(const baxter_core_msgs::EndpointState& msg)
     // }
     // printf("\n");
 
-    filterForces();
+    if (_use_forces == true) filterForces();
 }
 
 void RobotInterface::IRCb(const sensor_msgs::RangeConstPtr& msg)

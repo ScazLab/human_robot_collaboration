@@ -28,6 +28,9 @@ public:
 
     bool perform_ik(IK_call &ik);
 
+    bool getKDLLimits(KDL::JntArray &ll, KDL::JntArray &ul);
+    bool setKDLLimits(KDL::JntArray  ll, KDL::JntArray  ul);
+
     void computeFwdKin(KDL::JntArray jointpositions);
 };
 

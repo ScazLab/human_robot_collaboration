@@ -24,7 +24,7 @@ baxterTracIK::baxterTracIK(std::string limb, bool no_robot) : _limb(limb), _urdf
         exit(EXIT_FAILURE);
     }
 
-    if(!(_tracik_solver->getKDLLimits(ll,ul)))
+    if(!(getKDLLimits(ll,ul)))
     {
         ROS_ERROR("There were no valid KDL joint limits found");
         exit(EXIT_FAILURE);
@@ -43,7 +43,7 @@ baxterTracIK::baxterTracIK(std::string limb, bool no_robot) : _limb(limb), _urdf
     ll.data[1] =  s1l;
     ul.data[1] =  s1u;
 
-    _tracik_solver->setKDLLimits(ll,ul);
+    setKDLLimits(ll,ul);
 
     // Create Nominal chain configuration midway between all joint limits
     _nominal = new KDL::JntArray(_chain.getNrOfJoints());
@@ -52,6 +52,17 @@ baxterTracIK::baxterTracIK(std::string limb, bool no_robot) : _limb(limb), _urdf
     {
       _nominal->operator()(j) = (ll(j)+ul(j))/2.0;
     }
+}
+
+bool baxterTracIK::getKDLLimits(KDL::JntArray &ll, KDL::JntArray &ul)
+{
+    return _tracik_solver->getKDLLimits(ll,ul);
+}
+
+bool baxterTracIK::setKDLLimits(KDL::JntArray ll, KDL::JntArray ul)
+{
+    _tracik_solver->setKDLLimits(ll,ul);
+    return true;
 }
 
 baxterTracIK::~baxterTracIK()

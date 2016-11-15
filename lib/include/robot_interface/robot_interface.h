@@ -306,6 +306,8 @@ public:
     void setName(std::string name) { _name = name; };
     void setState(int state);
 
+    bool setIKLimits(KDL::JntArray  ll, KDL::JntArray  ul);
+
     /*
      * Self-explaining "getters"
      */
@@ -316,6 +318,8 @@ public:
     geometry_msgs::Point        getPos()    { return    _curr_pos; };
     geometry_msgs::Quaternion   getOri()    { return    _curr_ori; };
     geometry_msgs::Wrench       getWrench() { return _curr_wrench; };
+
+    bool getIKLimits(KDL::JntArray &ll, KDL::JntArray &ul);
 
     /*
      * Check availability of the infrared data
