@@ -45,8 +45,8 @@
 
 #define FORCE_THRES_R   2.0  // [N]
 #define FORCE_THRES_L   2.0  // [N]
-#define FORCE_ALPHA     0.3
-#define FORCE_FILT_VAR_L 1.0
+#define FORCE_ALPHA     0.2
+#define FORCE_FILT_VAR_L 10.0
 #define REL_FORCE_THRES_L 65.0
 
 #define HORIZONTAL_ORI_L      0.0, 0.70, 0.10, 0.70
