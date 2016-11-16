@@ -264,10 +264,11 @@ bool RobotInterface::computeIK(double px, double py, double pz,
 
     while (!got_solution)
     {
+        IK_call ik;
+        SolvePositionIK ik_srv;
+
         if (_use_trac_ik)
         {
-            IK_call ik;
-
             pose_stamp.header.stamp=ros::Time::now();
             ik.req.pose_stamp  = pose_stamp;
 
@@ -277,7 +278,6 @@ bool RobotInterface::computeIK(double px, double py, double pz,
         }
         else
         {
-            SolvePositionIK ik_srv;
             //ik_srv.request.seed_mode=2;       // i.e. SEED_CURRENT
             ik_srv.request.seed_mode=0;         // i.e. SEED_AUTO
             pose_stamp.header.stamp=ros::Time::now();
