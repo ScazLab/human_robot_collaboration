@@ -53,7 +53,13 @@ private:
     float   _curr_min_range;
     float   _curr_max_range;
 
+    // Inverse Kinematics
+    // Default: TRAC IK
     baxterTracIK ik_solver;
+
+    // Alternative IK: baxter-provided IK solver (for the TTT demo)
+    bool             _use_trac_ik;
+    ros::ServiceClient _ik_client;
 
     // End-Effector
     ros::Subscriber            _endpt_sub;
@@ -296,7 +302,7 @@ protected:
 
 public:
     RobotInterface(std::string name, std::string limb,
-                   bool no_robot = false, bool _use_forces = true);
+                   bool no_robot = false, bool use_forces = true, bool use_trac_ik = true);
 
     virtual ~RobotInterface();
 

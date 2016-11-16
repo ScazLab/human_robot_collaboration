@@ -12,9 +12,10 @@ using namespace cv;
 /**************************************************************************/
 /*                         RobotInterface                                 */
 /**************************************************************************/
-RobotInterface::RobotInterface(string name, string limb, bool no_robot, bool use_forces) :
+RobotInterface::RobotInterface(string name, string limb, bool no_robot, bool use_forces, bool use_trac_ik) :
         _n(name), _name(name), _limb(limb), _state(START,0), spinner(4),
-        ir_ok(false), _no_robot(no_robot), ik_solver(limb, no_robot), _use_forces(use_forces)
+        ir_ok(false), _no_robot(no_robot), ik_solver(limb, no_robot),
+        _use_forces(use_forces), _use_trac_ik(use_trac_ik)
 {
     if (no_robot) return;
 
@@ -34,6 +35,12 @@ RobotInterface::RobotInterface(string name, string limb, bool no_robot, bool use
 
     _coll_av_sub   = _n.subscribe("/robot/limb/" + _limb + "/collision_avoidance_state",
                                     SUBSCRIBER_BUFFER, &RobotInterface::collAvCb, this);
+
+    if (!_use_trac_ik)
+    {
+        _ik_client = _n.serviceClient<SolvePositionIK>("/ExternalTools/" + _limb +
+                                                       "/PositionKinematicsNode/IKService");
+    }
 
     _init_time = ros::Time::now();
 
@@ -253,35 +260,49 @@ bool RobotInterface::computeIK(double px, double py, double pz,
     joint_angles.clear();
     bool got_solution = false;
     ros::Time start = ros::Time::now();
-    float thresh_z = pose_stamp.pose.position.z + 0.012;
+    float thresh_z = pose_stamp.pose.position.z + 0.01;
 
     while (!got_solution)
     {
-        IK_call ik;
+        if (_use_trac_ik)
+        {
+            IK_call ik;
 
-        pose_stamp.header.stamp=ros::Time::now();
-        ik.req.pose_stamp  = pose_stamp;
+            pose_stamp.header.stamp=ros::Time::now();
+            ik.req.pose_stamp  = pose_stamp;
 
-        pthread_mutex_lock(&_mutex_jnts);
-        ik.req.seed_angles = _curr_jnts;
-        pthread_mutex_unlock(&_mutex_jnts);
+            pthread_mutex_lock(&_mutex_jnts);
+            ik.req.seed_angles = _curr_jnts;
+            pthread_mutex_unlock(&_mutex_jnts);
+        }
+        else
+        {
+            SolvePositionIK ik_srv;
+            //ik_srv.request.seed_mode=2;       // i.e. SEED_CURRENT
+            ik_srv.request.seed_mode=0;         // i.e. SEED_AUTO
+            pose_stamp.header.stamp=ros::Time::now();
+            ik_srv.request.pose_stamp.push_back(pose_stamp);
+        }
 
         int cnt = 0;
         ros::Time tn = ros::Time::now();
-        if (ik_solver.perform_ik(ik))
+
+        bool result = _use_trac_ik?ik_solver.perform_ik(ik):_ik_client.call(ik_srv);
+
+        if(result)
         {
-            double te  = ros::Time::now().toSec()-tn.toSec();
+            double te  = ros::Time::now().toSec()-tn.toSec();;
             if (te>0.010)
             {
-                ROS_ERROR("\t\t\tTime elapsed in computeIK: %g cnt %i",te,cnt);
+                ROS_WARN_ONCE("\t\t\tTime elapsed in computing IK: %g cnt %i",te,cnt);
             }
             cnt++;
-            got_solution = ik.res.isValid;
+            got_solution = _use_trac_ik?ik.res.isValid:ik_srv.response.isValid[0];
 
             if (got_solution)
             {
                 ROS_DEBUG("Got solution!");
-                joint_angles = ik.res.joints.position;
+                joint_angles = _use_trac_ik?ik.res.joints.position:ik_srv.response.joints[0].position;
                 return true;
             }
             else
@@ -289,15 +310,15 @@ bool RobotInterface::computeIK(double px, double py, double pz,
                 // if position cannot be reached, try a position with the same x-y coordinates
                 // but higher z (useful when placing tokens)
                 ROS_DEBUG("[%s] IK solution not valid: %g %g %g", getLimb().c_str(),
-                                                       pose_stamp.pose.position.x,
-                                                       pose_stamp.pose.position.y,
-                                                       pose_stamp.pose.position.z);
+                                                         pose_stamp.pose.position.x,
+                                                         pose_stamp.pose.position.y,
+                                                         pose_stamp.pose.position.z);
                 pose_stamp.pose.position.z += 0.001;
             }
         }
 
         // if no solution is found within 50 milliseconds or no solution within the acceptable
-        // z-coordinate threshold is found, then no solution exists and exit oufof loop
+        // z-coordinate threshold is found, then no solution exists and exit out of loop
         if ((ros::Time::now() - start).toSec() > 0.05 || pose_stamp.pose.position.z > thresh_z)
         {
             ROS_WARN("[%s] Did not find a suitable IK solution! Final Position %g %g %g",
