@@ -505,7 +505,7 @@ bool RobotInterface::detectForceInteraction()
     if (curr_diff[0] > rel_force_thres || curr_diff[1] > rel_force_thres || curr_diff[2] > rel_force_thres)
     {
         ROS_INFO("Interaction: %g %g %g", curr_force[0], curr_force[1], curr_force[2]);
-        ROS_INFO("Difference relative to filter of force element: %g %g %g", curr_diff[0], curr_diff[1], curr_diff[2]);
+        ROS_INFO("Difference relative to filter: %g %g %g", curr_diff[0], curr_diff[1], curr_diff[2]);
         return true;
     }
     else
@@ -514,8 +514,8 @@ bool RobotInterface::detectForceInteraction()
         return false;
     }
 
-    // ye olde way...
-    // if (_curr_wrench.force.x > force_thres || _curr_wrench.force.y > force_thres || _curr_wrench.force.z > force_thres)
+    // the old way...
+    // if (abs(_curr_wrench.force.x - _filt_force[0]) > force_thres || abs(_curr_wrench.force.y - _filt_force[1]) > force_thres || abs(_curr_wrench.force.z - _filt_force[2]) > force_thres)
     // {
     //     ROS_INFO("Interaction: %g %g %g", _curr_wrench.force.x, _curr_wrench.force.y, _curr_wrench.force.z);
     //     return true;
