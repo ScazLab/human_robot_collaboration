@@ -13,8 +13,8 @@ Gripper::Gripper(std::string limb, bool no_robot) :
     _pub_command = _nh.advertise<EndEffectorCommand>(
                    "/robot/end_effector/" + _limb + "_gripper/command", 1);
 
-    _sub_state = _nh.subscribe("/robot/end_effector/" + _limb + "_gripper/state", 4,
-                                &Gripper::gripperStateCb, this);
+    _sub_state = _nh.subscribe("/robot/end_effector/" + _limb + "_gripper/state",
+                                SUBSCRIBER_BUFFER, &Gripper::gripperCb, this);
 
     //Initially all the interesting properties of the state are unknown
     EndEffectorState initial_gripper_state;
@@ -63,11 +63,10 @@ bool Gripper::releaseObject()
     return false;
 }
 
-void Gripper::gripperStateCb(const EndEffectorStateConstPtr &msg)
+void Gripper::gripperCb(const EndEffectorState &msg)
 {
-    // ROS_INFO("Gripper Callback");
     pthread_mutex_lock(&_mutex);
-    _state = *msg;
+    _state = msg;
     pthread_mutex_unlock(&_mutex);
 
     if (_first_run)
