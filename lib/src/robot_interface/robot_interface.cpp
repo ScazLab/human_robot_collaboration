@@ -536,9 +536,12 @@ RobotInterface::~RobotInterface()
 ROSThreadImage::ROSThreadImage(string name, string limb, bool no_robot, bool use_forces)
                               : _img_trp(_n), RobotInterface(name, limb, no_robot, use_forces)
 {
+    pthread_mutexattr_t _mutex_attr;
+    pthread_mutexattr_init(&_mutex_attr);
+    pthread_mutexattr_settype(&_mutex_attr, PTHREAD_MUTEX_RECURSIVE_NP);
+    pthread_mutex_init(&_mutex_img, &_mutex_attr);
     _img_sub = _img_trp.subscribe("/cameras/"+getLimb()+"_hand_camera/image",
                            SUBSCRIBER_BUFFER, &ROSThreadImage::imageCb, this);
-    pthread_mutex_init(&_mutex_img, NULL);
 }
 
 ROSThreadImage::~ROSThreadImage()
