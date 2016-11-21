@@ -63,7 +63,10 @@ RobotInterface::RobotInterface(string name, string limb, bool no_robot, bool use
 
     ROS_INFO("[%s] Force Threshold : %g", getLimb().c_str(), force_thres);
 
-    pthread_mutex_init(&_mutex_jnts, NULL);
+    pthread_mutexattr_t _mutex_attr;
+    pthread_mutexattr_init(&_mutex_attr);
+    pthread_mutexattr_settype(&_mutex_attr, PTHREAD_MUTEX_RECURSIVE_NP);
+    pthread_mutex_init(&_mutex_jnts, &_mutex_attr);
     spinner.start();
 }
 
