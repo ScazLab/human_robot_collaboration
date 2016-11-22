@@ -338,36 +338,4 @@ public:
     bool is_no_robot() { return _no_robot; };
 };
 
-/**
- * @brief A ROS Thread with an image callbck
- * @details This class inherits from RobotInterface, but it adds also an image callback
- *          to be overwritten by its children. Useful to to visual processing.
- */
-class ROSThreadImage : public RobotInterface
-{
-private:
-    image_transport::ImageTransport _img_trp;
-    image_transport::Subscriber     _img_sub;
-
-protected:
-    cv::Mat  _curr_img;
-    cv::Size _img_size;
-    bool    _img_empty;
-
-    pthread_mutex_t _mutex_img;
-
-public:
-    ROSThreadImage(std::string name, std::string limb,
-                   bool no_robot = false, bool use_forces = true);
-    ~ROSThreadImage();
-
-    /*
-     * image callback function that displays the image stream from the hand camera
-     *
-     * @param      The image
-     * @return     N/A
-     */
-    void imageCb(const sensor_msgs::ImageConstPtr& msg);
-};
-
 #endif

@@ -15,10 +15,12 @@ add_library(robot_utils     include/robot_utils/utils.h
                             src/robot_utils/utils.cpp)
 
 add_library(robot_interface include/robot_interface/ros_thread.h
+                            include/robot_interface/ros_thread_image.h
                             include/robot_interface/robot_interface.h
                             include/robot_interface/gripper.h
                             include/robot_interface/arm_ctrl.h
                             src/robot_interface/ros_thread.cpp
+                            src/robot_interface/ros_thread_image.cpp
                             src/robot_interface/baxter_trac_ik.cpp
                             src/robot_interface/robot_interface.cpp
                             src/robot_interface/gripper.cpp
