@@ -28,11 +28,12 @@ private:
     image_transport::ImageTransport _img_trp;
     image_transport::Subscriber     _img_sub;
 
-    pthread_mutex_t _mutex_img;
 
     ros::AsyncSpinner spinner;  // AsyncSpinner to handle callbacks
 
 protected:
+    pthread_mutex_t _mutex_img;
+
     cv::Mat  _curr_img;
     cv::Size _img_size;
     bool    _img_empty;

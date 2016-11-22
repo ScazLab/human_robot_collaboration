@@ -29,7 +29,7 @@ ROSThreadImage::~ROSThreadImage()
 
 void ROSThreadImage::imageCb(const sensor_msgs::ImageConstPtr& msg)
 {
-    ROS_DEBUG("imageCb");
+    // ROS_INFO("imageCb");
     cv_bridge::CvImageConstPtr cv_ptr;
 
     try
@@ -38,7 +38,7 @@ void ROSThreadImage::imageCb(const sensor_msgs::ImageConstPtr& msg)
     }
     catch(cv_bridge::Exception& e)
     {
-        ROS_ERROR("[Arm Controller] cv_bridge exception: %s", e.what());
+        ROS_ERROR("[ROSThreadImage] cv_bridge exception: %s", e.what());
         return;
     }
 
