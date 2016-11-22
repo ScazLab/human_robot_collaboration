@@ -6,21 +6,24 @@ using namespace std;
 /*                          ROSThreadImage                                */
 /**************************************************************************/
 
-ROSThreadImage::ROSThreadImage(string name) :
-                               _n(name), _name(name), _img_trp(_n), spinner(4)
+ROSThreadImage::ROSThreadImage(string name) :  ROSThread(), _name(name), _n(name),
+                                               _img_trp(_n), spinner(4), _img_empty(true)
 {
     pthread_mutexattr_t _mutex_attr;
     pthread_mutexattr_init(&_mutex_attr);
     pthread_mutexattr_settype(&_mutex_attr, PTHREAD_MUTEX_RECURSIVE_NP);
     pthread_mutex_init(&_mutex_img, &_mutex_attr);
+
     _img_sub = _img_trp.subscribe("/"+getName()+"/image",
                            SUBSCRIBER_BUFFER, &ROSThreadImage::imageCb, this);
 
     spinner.start();
+    startInternalThread();
 }
 
 ROSThreadImage::~ROSThreadImage()
 {
+    closeInternalThread();
     pthread_mutex_destroy(&_mutex_img);
 }
 

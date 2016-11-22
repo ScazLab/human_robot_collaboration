@@ -32,6 +32,9 @@
  */
 class RobotInterface : public ROSThread
 {
+protected:
+    ros::NodeHandle _n;
+
 private:
     std::string    _name;
     std::string    _limb;       // Limb (either left or right)
@@ -86,8 +89,6 @@ protected:
      * Function that will be spun out as a thread
      */
     virtual void InternalThreadEntry() = 0;
-
-    ros::NodeHandle _n;
 
     // Cuff OK Button (the circular one)
     ros::Subscriber _cuff_sub;

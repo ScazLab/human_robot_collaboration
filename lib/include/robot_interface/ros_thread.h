@@ -78,7 +78,7 @@ public:
     /*
      * Destructor
     */
-    virtual ~ROSThread();
+    ~ROSThread();
 
 };
 

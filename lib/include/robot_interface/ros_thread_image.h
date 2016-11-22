@@ -1,10 +1,6 @@
 #ifndef __ROS_THREAD_IMAGE_H__
 #define __ROS_THREAD_IMAGE_H__
 
-#include <iostream>
-#include <cmath>
-#include <algorithm>
-#include <vector>
 #include <pthread.h>
 
 #include <image_transport/image_transport.h>
@@ -12,14 +8,6 @@
 #include <sensor_msgs/image_encodings.h>
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/highgui/highgui.hpp>
-
-#include <baxter_core_msgs/DigitalIOState.h>
-#include <baxter_core_msgs/EndpointState.h>
-#include <baxter_core_msgs/CollisionAvoidanceState.h>
-#include <baxter_core_msgs/JointCommand.h>
-#include <geometry_msgs/Point.h>
-#include <sensor_msgs/Range.h>
-#include <std_msgs/Empty.h>
 
 #include "robot_utils/utils.h"
 #include "robot_interface/ros_thread.h"
@@ -31,6 +19,9 @@
  */
 class ROSThreadImage : public ROSThread
 {
+protected:
+    ros::NodeHandle _n;
+
 private:
     std::string    _name;
 
@@ -42,8 +33,6 @@ private:
     ros::AsyncSpinner spinner;  // AsyncSpinner to handle callbacks
 
 protected:
-    ros::NodeHandle _n;
-
     cv::Mat  _curr_img;
     cv::Size _img_size;
     bool    _img_empty;
