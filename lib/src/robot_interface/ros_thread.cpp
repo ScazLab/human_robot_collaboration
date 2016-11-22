@@ -34,6 +34,7 @@ void ROSThread::waitForInternalThreadToExit()
 void ROSThread::closeInternalThread()
 {
     pthread_exit(NULL);
+    is_started = false;
     return;
 }
 
