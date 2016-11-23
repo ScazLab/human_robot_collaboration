@@ -23,7 +23,7 @@ ROSThreadImage::ROSThreadImage(string name) :  ROSThread(), _name(name), _n(name
 
 ROSThreadImage::~ROSThreadImage()
 {
-    closeInternalThread();
+    // closeInternalThread();
     pthread_mutex_destroy(&_mutex_img);
 }
 
