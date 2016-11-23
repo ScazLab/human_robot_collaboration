@@ -34,7 +34,7 @@ void ROSThreadImage::imageCb(const sensor_msgs::ImageConstPtr& msg)
 
     try
     {
-        cv_ptr = cv_bridge::toCvShare(msg);
+        cv_ptr = cv_bridge::toCvShare(msg, "bgr8");
     }
     catch(cv_bridge::Exception& e)
     {
