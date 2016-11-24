@@ -22,12 +22,11 @@ class ROSThreadImage : public ROSThread
 protected:
     ros::NodeHandle _n;
 
-private:
-    std::string    _name;
-
     image_transport::ImageTransport _img_trp;
     image_transport::Subscriber     _img_sub;
 
+private:
+    std::string    _name;
 
     ros::AsyncSpinner spinner;  // AsyncSpinner to handle callbacks
 
