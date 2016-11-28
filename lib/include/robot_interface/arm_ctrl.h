@@ -118,7 +118,8 @@ protected:
     virtual void setHomeConfiguration() = 0;
 
     /**
-     * Goes to the home position
+     * Goes to the home position, and "releases" the gripper
+     *
      * @return        true/false if success/failure
      */
     bool goHome();

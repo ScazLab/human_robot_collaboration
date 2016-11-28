@@ -124,7 +124,7 @@ bool baxterTracIK::perform_ik(IK_call &ik)
     {
         if (num_attempts>0)
         {
-            ROS_INFO("Attempt num %i with tolerance %g", num_attempts, _eps);
+            ROS_DEBUG("Attempt num %i with tolerance %g", num_attempts, _eps);
         }
 
         rc = _tracik_solver->CartToJnt(seeds_provided? seed: *(_nominal), ee_pose, result);

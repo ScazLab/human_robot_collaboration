@@ -312,6 +312,7 @@ public:
      */
     void setName(std::string name) { _name = name; };
     void setState(int state);
+    void setTracIK(bool use_trac_ik) { _use_trac_ik = use_trac_ik; };
 
     bool setIKLimits(KDL::JntArray  ll, KDL::JntArray  ul);
 
