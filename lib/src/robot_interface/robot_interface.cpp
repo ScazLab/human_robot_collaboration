@@ -74,7 +74,7 @@ RobotInterface::RobotInterface(string name, string limb, bool no_robot, bool use
 bool RobotInterface::ok()
 {
     bool res = ros::ok();
-    res = res && getState() != KILLED;
+    res = res && getState() != KILLED && getState() != STOPPED;
 
     return res;
 }

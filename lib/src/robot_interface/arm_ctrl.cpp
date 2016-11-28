@@ -44,7 +44,12 @@ void ArmCtrl::InternalThreadEntry()
 
     setState(WORKING);
 
-    if (a == ACTION_HOME || a == ACTION_RELEASE)
+    if (is_no_robot())
+    {
+        ros::Duration(2.0).sleep();
+        setState(DONE);
+    }
+    else if (a == ACTION_HOME || a == ACTION_RELEASE)
     {
         if (callAction(a))   setState(DONE);
     }
@@ -99,15 +104,6 @@ bool ArmCtrl::serviceCb(baxter_collaboration::DoAction::Request  &req,
         return true;
     }
 
-    if (is_no_robot())
-    {
-        setState(WORKING);
-        ros::Duration(2.0).sleep();
-        setState(DONE);
-        res.success = true;
-        return true;
-    }
-
     res.success = false;
 
     setAction(action);
@@ -119,8 +115,7 @@ bool ArmCtrl::serviceCb(baxter_collaboration::DoAction::Request  &req,
     ros::Rate r(100);
     while( ros::ok() && ( int(getState()) != START   &&
                           int(getState()) != ERROR   &&
-                          int(getState()) != DONE    &&
-                          int(getState()) != PICK_UP   ))
+                          int(getState()) != DONE      ))
     {
         if (ros::isShuttingDown())
         {
@@ -137,8 +132,7 @@ bool ArmCtrl::serviceCb(baxter_collaboration::DoAction::Request  &req,
     }
 
     if ( int(getState()) == START   ||
-         int(getState()) == DONE    ||
-         int(getState()) == PICK_UP   )
+         int(getState()) == DONE      )
     {
         res.success = true;
     }

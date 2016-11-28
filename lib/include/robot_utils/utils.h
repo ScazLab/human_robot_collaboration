@@ -11,16 +11,13 @@
 
 #include <sensor_msgs/JointState.h>
 
-#define RECOVER  -4
-#define WORKING  -3
+#define RECOVER  -3
 #define KILLED   -2
 #define ERROR    -1
 #define START     0
-#define REST      1
-#define SCANNED   2
-#define PICK_UP   3
-#define PUT_DOWN  4
-#define DONE      5
+#define WORKING   1
+#define DONE      2
+#define STOPPED   3
 
 #define SUBSCRIBER_BUFFER 3
 
