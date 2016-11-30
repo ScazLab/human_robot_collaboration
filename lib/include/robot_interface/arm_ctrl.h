@@ -15,7 +15,7 @@
 #define HAND_OVER_DONE   "handover_done"
 #define HAND_OVER_WAIT   "handover_wait"
 
-class ArmCtrl : public RobotInterface, public Gripper
+class ArmCtrl : public RobotInterface, public Gripper, public ROSThread
 {
 private:
     // Substate of the controller (useful to keep track of

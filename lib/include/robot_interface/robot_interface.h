@@ -32,7 +32,7 @@
  * @details This class initializes overhead ROS features: subscriber/publishers,
  *          services, callback functions etc.
  */
-class RobotInterface : public ROSThread
+class RobotInterface
 {
 protected:
     ros::NodeHandle _n;
@@ -87,10 +87,6 @@ private:
     bool            is_colliding;
 
 protected:
-    /*
-     * Function that will be spun out as a thread
-     */
-    virtual void InternalThreadEntry() = 0;
 
     // Cuff OK Button (the circular one)
     ros::Subscriber _cuff_sub;
