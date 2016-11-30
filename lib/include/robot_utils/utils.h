@@ -128,25 +128,4 @@ public:
     operator ros::Time ();
 };
 
-/**
- * Struct that handles the Inverse kinematics call to the baxter IK service
- */
-struct IK_call
-{
-    struct IK_req
-    {
-        geometry_msgs::PoseStamped pose_stamp;
-        sensor_msgs::JointState   seed_angles;
-    };
-
-    struct IK_res
-    {
-        sensor_msgs::JointState joints;
-        bool                   isValid;
-    };
-
-    IK_req req;
-    IK_res res;
-};
-
 #endif
