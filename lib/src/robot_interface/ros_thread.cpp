@@ -1,14 +1,5 @@
 #include "robot_interface/ros_thread.h"
 
-#include <tf/transform_datatypes.h>
-
-using namespace std;
-using namespace baxter_core_msgs;
-using namespace geometry_msgs;
-using namespace sensor_msgs;
-using namespace std_msgs;
-using namespace cv;
-
 /**************************************************************************/
 /*                             ROSThread                                  */
 /**************************************************************************/

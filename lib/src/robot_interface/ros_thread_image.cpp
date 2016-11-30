@@ -1,13 +1,12 @@
 #include "robot_interface/ros_thread_image.h"
-
-using namespace std;
+#include "robot_utils/utils.h"
 
 /**************************************************************************/
 /*                          ROSThreadImage                                */
 /**************************************************************************/
 
-ROSThreadImage::ROSThreadImage(string name) :  ROSThread(), _name(name), _n(name),
-                                               _img_trp(_n), spinner(4), _img_empty(true)
+ROSThreadImage::ROSThreadImage(std::string name) :  ROSThread(), _name(name), _n(name),
+                                            _img_trp(_n), spinner(4), _img_empty(true)
 {
     pthread_mutexattr_t _mutex_attr;
     pthread_mutexattr_init(&_mutex_attr);
@@ -38,7 +37,7 @@ void ROSThreadImage::imageCb(const sensor_msgs::ImageConstPtr& msg)
     }
     catch(cv_bridge::Exception& e)
     {
-        ROS_ERROR("[ROSThreadImage] cv_bridge exception: %s", e.what());
+        ROS_ERROR("cv_bridge exception: %s", e.what());
         return;
     }
 

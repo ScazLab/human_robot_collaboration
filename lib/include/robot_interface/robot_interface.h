@@ -17,6 +17,8 @@
 #include <baxter_core_msgs/EndpointState.h>
 #include <baxter_core_msgs/CollisionAvoidanceState.h>
 #include <baxter_core_msgs/JointCommand.h>
+#include <baxter_core_msgs/SolvePositionIK.h>
+
 #include <geometry_msgs/Point.h>
 #include <sensor_msgs/Range.h>
 #include <std_msgs/Empty.h>

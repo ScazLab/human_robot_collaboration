@@ -1,19 +1,16 @@
 #ifndef __ROS_THREAD_IMAGE_H__
 #define __ROS_THREAD_IMAGE_H__
 
-#include <pthread.h>
-
 #include <image_transport/image_transport.h>
 #include <cv_bridge/cv_bridge.h>
 #include <sensor_msgs/image_encodings.h>
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/highgui/highgui.hpp>
 
-#include "robot_utils/utils.h"
 #include "robot_interface/ros_thread.h"
 
 /**
- * @brief A ROS Thread with an image callbck
+ * @brief A ROS Thread with an image callback
  * @details This class inherits from ROSThread, but it adds also an image callback
  *          to be overwritten by its children. Useful to to visual processing.
  */

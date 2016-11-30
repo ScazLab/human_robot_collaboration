@@ -1,33 +1,14 @@
 #ifndef __ROS_THREAD_H__
 #define __ROS_THREAD_H__
 
-#include <iostream>
-#include <cmath>
-#include <algorithm>
-#include <vector>
 #include <pthread.h>
-
-#include <image_transport/image_transport.h>
-#include <cv_bridge/cv_bridge.h>
-#include <sensor_msgs/image_encodings.h>
-#include <opencv2/imgproc/imgproc.hpp>
-#include <opencv2/highgui/highgui.hpp>
-
-#include <baxter_core_msgs/DigitalIOState.h>
-#include <baxter_core_msgs/EndpointState.h>
-#include <baxter_core_msgs/SolvePositionIK.h>
-#include <baxter_core_msgs/JointCommand.h>
-#include <geometry_msgs/PoseStamped.h>
-#include <geometry_msgs/Point.h>
-#include <sensor_msgs/Range.h>
-#include <std_msgs/Empty.h>
-
-#include "robot_utils/utils.h"
 
 /**
  * @brief A Thread class
- * @details This class initializes overhead functions necessary to start a thread
- *          from within a class
+ * @details This class wraps overhead functions necessary to start a thread
+ * from within a class. It is a virtual class, and  its InternalThreadEntry
+ * method needs to be implemented in its children. Please see ROSThreadImpl
+ * for a class that can be used as an independent object.
  */
 class ROSThread
 {
