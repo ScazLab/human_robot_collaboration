@@ -17,7 +17,7 @@ bool ROSThread::startInternalThread()
     return is_started;
 }
 
-void ROSThread::waitForInternalThreadToExit()
+void ROSThread::joinInternalThread()
 {
     (void) pthread_join(_thread, NULL);
 }

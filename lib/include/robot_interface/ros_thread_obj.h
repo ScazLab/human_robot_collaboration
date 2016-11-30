@@ -1,65 +1,66 @@
-#ifndef __ROS_THREAD_H__
-#define __ROS_THREAD_H__
+#ifndef __ROS_THREAD_OBJ_H__
+#define __ROS_THREAD_OBJ_H__
 
 #include <pthread.h>
+
+#include "robot_utils/utils.h"
 
 /**
  * @brief A Thread class
  * @details This class wraps overhead functions necessary to start a thread
- * from within a class. It is a virtual class, and  its InternalThreadEntry
- * method needs to be implemented in its children. Please see ROSThreadObj
- * for a class that can be used as an independent object.
+ * from within a class. It is not a virtual class, and it can be used as an
+ * an independent object.
  */
-class ROSThread
+class ROSThreadObj
 {
 private:
     pthread_t _thread;
     bool   is_started;
-    static void * InternalThreadEntryFunc(void * obj);
 
-protected:
-    /*
-     * Function that will be spun out as a thread
-     */
-    virtual void InternalThreadEntry() = 0;
+    ros::Rate r;
 
 public:
     /*
      * Constructor
     */
-    ROSThread();
+    ROSThreadObj(double _rate = 100);
+
+    /**
+     * Sleeps the amount of time defined by r (by default, r is set to 100Hz)
+     */
+    void sleep();
 
     /*
      * Starts thread that executes the internal thread entry function
      *
      * @return  true/false if success failure (NOT in the POSIX way)
      */
-    bool startInternalThread();
+    bool start(void *(*ThreadFunction)(void*) );
 
     /*
      * Prevents any following code from being executed before thread is exited
      * @return true/false if success/failure (not in the POSIX way)
      */
-    void joinInternalThread();
+    void join();
 
     /**
      * Closes the internal thread gracefully.
      *
      * @return  true/false if success failure (NOT in the POSIX way)
      */
-    void closeInternalThread();
+    void close();
 
     /**
      * Kills the internal thread.
      *
      * @return true/false if success/failure (NOT in the POSIX way)
      */
-    bool killInternalThread();
+    bool kill();
 
     /*
      * Destructor
     */
-    ~ROSThread();
+    ~ROSThreadObj();
 
 };
 
