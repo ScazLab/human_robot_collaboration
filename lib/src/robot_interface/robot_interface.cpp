@@ -92,7 +92,7 @@ void RobotInterface::ThreadEntry()
 
     while (RobotInterface::ok())
     {
-        ROS_INFO("Time: %g", (ros::Time::now() - initTime).toSec());
+        // ROS_INFO("Time: %g", (ros::Time::now() - initTime).toSec());
         r.sleep();
     }
 
