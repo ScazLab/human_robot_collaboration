@@ -13,6 +13,8 @@
 
 #define SUBSCRIBER_BUFFER 3
 
+#define THREAD_FREQ       100 // [Hz]
+
 // Allowed default states for the system
 #define RECOVER  -4
 #define KILLED   -3

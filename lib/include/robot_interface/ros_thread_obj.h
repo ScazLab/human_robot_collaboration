@@ -17,18 +17,11 @@ private:
     pthread_t _thread;
     bool   is_started;
 
-    ros::Rate r;
-
 public:
     /*
      * Constructor
     */
-    ROSThreadObj(double _rate = 100);
-
-    /**
-     * Sleeps the amount of time defined by r (by default, r is set to 100Hz)
-     */
-    void sleep();
+    ROSThreadObj();
 
     /*
      * Starts thread that executes the internal thread entry function
@@ -48,7 +41,7 @@ public:
      *
      * @return  true/false if success failure (NOT in the POSIX way)
      */
-    void close();
+    bool close();
 
     /**
      * Kills the internal thread.
@@ -56,6 +49,11 @@ public:
      * @return true/false if success/failure (NOT in the POSIX way)
      */
     bool kill();
+
+    /**
+     * @return true/false if the thread is running or not.
+     */
+    bool is_running() { return is_started; };
 
     /*
      * Destructor

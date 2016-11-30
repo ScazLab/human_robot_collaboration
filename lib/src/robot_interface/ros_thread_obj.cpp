@@ -3,7 +3,7 @@
 /**************************************************************************/
 /*                           ROSThreadObj                                 */
 /**************************************************************************/
-ROSThreadObj::ROSThreadObj(double _rate): is_started(false), r(_rate) { }
+ROSThreadObj::ROSThreadObj(): is_started(false) { }
 
 bool ROSThreadObj::start(void *(*ThreadFunction)(void*) )
 {
@@ -11,28 +11,32 @@ bool ROSThreadObj::start(void *(*ThreadFunction)(void*) )
     return is_started;
 }
 
-void ROSThreadObj::sleep()
-{
-    r.sleep();
-    return;
-}
-
 void ROSThreadObj::join()
 {
     (void) pthread_join(_thread, NULL);
 }
 
-void ROSThreadObj::close()
+bool ROSThreadObj::close()
 {
-    pthread_exit(NULL);
-    is_started = false;
-    return;
+    if (is_started)
+    {
+        is_started = false;
+        pthread_exit(NULL);
+        return true;
+    }
+
+    return false;
 }
 
 bool ROSThreadObj::kill()
 {
-    if (is_started) return pthread_cancel(_thread) == 0;
-    else            return false;
+    if (is_started)
+    {
+        is_started = false;
+        return pthread_cancel(_thread) == 0;
+    }
+
+    return false;
 }
 
 ROSThreadObj::~ROSThreadObj() { }

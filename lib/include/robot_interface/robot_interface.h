@@ -1,11 +1,7 @@
 #ifndef __ROBOT_INTERFACE_H__
 #define __ROBOT_INTERFACE_H__
 
-#include <iostream>
-#include <cmath>
-#include <algorithm>
 #include <vector>
-#include <pthread.h>
 
 #include <image_transport/image_transport.h>
 #include <cv_bridge/cv_bridge.h>
@@ -23,8 +19,7 @@
 #include <sensor_msgs/Range.h>
 #include <std_msgs/Empty.h>
 
-#include "robot_utils/utils.h"
-#include "robot_interface/ros_thread.h"
+#include "robot_interface/ros_thread_obj.h"
 #include "robot_interface/baxter_trac_ik.h"
 
 /**
@@ -50,14 +45,18 @@ private:
     ros::Publisher  _joint_cmd_pub; // Publisher to control the robot in joint space
     ros::Publisher    _coll_av_pub; // Publisher to suppress collision avoidance behavior
 
-    // IR Sensor
+    /**
+     * IR Sensor
+     */
     ros::Subscriber _ir_sub;
     bool              ir_ok;
     float       _curr_range;
     float   _curr_min_range;
     float   _curr_max_range;
 
-    // Inverse Kinematics
+    /**
+     * Inverse Kinematics
+     */
     // Default: TRAC IK
     baxterTracIK ik_solver;
 
@@ -65,7 +64,9 @@ private:
     bool             _use_trac_ik;
     ros::ServiceClient _ik_client;
 
-    // End-Effector
+    /**
+     * End-effector state
+     */
     ros::Subscriber            _endpt_sub;
     std::vector<double>       _filt_force;
     double                    force_thres;
@@ -74,18 +75,70 @@ private:
     geometry_msgs::Quaternion   _curr_ori;
     geometry_msgs::Wrench    _curr_wrench;
 
-    // Joint States
+    /**
+     * Joint States
+     */
     ros::Subscriber         _jntstate_sub;
     sensor_msgs::JointState    _curr_jnts;
 
     // Mutex to protect joint state variable
     pthread_mutex_t _mutex_jnts;
 
-    // Collision avoidance State
+    /**
+     * Collision avoidance State
+     */
     ros::Subscriber _coll_av_sub;
     bool            is_colliding;
 
+    /**
+     * Control server
+     */
+    // Internal thread that implements the controller server
+    ROSThreadObj _thread;
+
+
+    /**
+     * Internal thread entry that gets called when the thread is started.
+     * It is used to implement the control server to manage the Baxter's
+     * arm from a separate thread.
+     */
+    static void* ThreadEntryFunc(void *obj);
+
+    /**
+     * Internal thread entry that gets called when the thread is started.
+     * It is used to implement the control server to manage the Baxter's
+     * arm from a separate thread.
+     */
+    void ThreadEntry();
+
 protected:
+
+    /*
+     * Starts thread that executes the control server. For now it is
+     * just a wrapper for _thread.start(), but further functionality
+     * may be added in the future.
+     *
+     * @return  true/false if success failure (NOT in the POSIX way)
+     */
+    bool startThread();
+
+    /**
+     * Closes the control server thread gracefully. For now it is
+     * just a wrapper for _thread.close(), but further functionality
+     * may be added in the future.
+     *
+     * @return  true/false if success failure (NOT in the POSIX way)
+     */
+    bool closeThread();
+
+    /**
+     * Kills the control server thread gracefully. For now it is
+     * just a wrapper for _thread.kill(), but further functionality
+     * may be added in the future.
+     *
+     * @return  true/false if success failure (NOT in the POSIX way)
+     */
+    bool killThread();
 
     // Cuff OK Button (the circular one)
     ros::Subscriber _cuff_sub;

@@ -3,6 +3,7 @@
 
 #include <map>
 
+#include "robot_interface/ros_thread.h"
 #include "robot_interface/robot_interface.h"
 #include "robot_interface/gripper.h"
 

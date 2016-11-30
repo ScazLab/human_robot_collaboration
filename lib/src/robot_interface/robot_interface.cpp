@@ -62,10 +62,48 @@ RobotInterface::RobotInterface(string name, string limb, bool no_robot, bool use
     {
         _n.param<double>("force_threshold_right", force_thres, FORCE_THRES_R);
     }
-
     ROS_INFO("[%s] Force Threshold : %g", getLimb().c_str(), force_thres);
 
     spinner.start();
+    startThread();
+}
+
+bool RobotInterface::startThread()
+{
+    return _thread.start(ThreadEntryFunc);
+}
+
+bool RobotInterface::closeThread()
+{
+    return _thread.close();
+}
+
+bool RobotInterface::killThread()
+{
+    return _thread.kill();
+}
+
+void RobotInterface::ThreadEntry()
+{
+    pthread_setcanceltype(PTHREAD_CANCEL_ASYNCHRONOUS,NULL);
+
+    ros::Rate r(THREAD_FREQ);
+    ros::Time initTime = ros::Time::now();
+
+    while (RobotInterface::ok())
+    {
+        ROS_INFO("Time: %g", (ros::Time::now() - initTime).toSec());
+        r.sleep();
+    }
+
+    closeThread();
+    return;
+}
+
+void * RobotInterface::ThreadEntryFunc(void * obj)
+{
+    ((RobotInterface *)obj)->ThreadEntry();
+    return NULL;
 }
 
 bool RobotInterface::ok()
@@ -522,4 +560,5 @@ void RobotInterface::suppressCollisionAv()
 RobotInterface::~RobotInterface()
 {
     pthread_mutex_destroy(&_mutex_jnts);
+    _thread.kill();
 }

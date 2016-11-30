@@ -47,7 +47,7 @@ public:
      *
      * @return  true/false if success failure (NOT in the POSIX way)
      */
-    void closeInternalThread();
+    bool closeInternalThread();
 
     /**
      * Kills the internal thread.

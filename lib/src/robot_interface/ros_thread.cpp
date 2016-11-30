@@ -22,17 +22,27 @@ void ROSThread::joinInternalThread()
     (void) pthread_join(_thread, NULL);
 }
 
-void ROSThread::closeInternalThread()
+bool ROSThread::closeInternalThread()
 {
-    pthread_exit(NULL);
-    is_started = false;
-    return;
+    if (is_started)
+    {
+        is_started = false;
+        pthread_exit(NULL);
+        return true;
+    }
+
+    return false;
 }
 
 bool ROSThread::killInternalThread()
 {
-    if (is_started) return pthread_cancel(_thread) == 0;
-    else            return false;
+    if (is_started)
+    {
+        is_started = false;
+        return pthread_cancel(_thread) == 0;
+    }
+
+    return false;
 }
 
 ROSThread::~ROSThread() { }
