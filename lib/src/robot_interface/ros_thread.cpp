@@ -14,9 +14,9 @@ using namespace cv;
 /**************************************************************************/
 ROSThread::ROSThread(): is_started(false) { }
 
-void * ROSThread::InternalThreadEntryFunc(void * This)
+void * ROSThread::InternalThreadEntryFunc(void * obj)
 {
-    ((ROSThread *)This)->InternalThreadEntry();
+    ((ROSThread *)obj)->InternalThreadEntry();
     return NULL;
 }
 

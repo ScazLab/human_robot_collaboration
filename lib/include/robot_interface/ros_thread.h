@@ -34,7 +34,7 @@ class ROSThread
 private:
     pthread_t _thread;
     bool   is_started;
-    static void * InternalThreadEntryFunc(void * This);
+    static void * InternalThreadEntryFunc(void * obj);
 
 protected:
     /*
