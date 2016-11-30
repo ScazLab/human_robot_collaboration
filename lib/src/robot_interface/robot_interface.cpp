@@ -14,7 +14,8 @@ using namespace cv;
 /**************************************************************************/
 RobotInterface::RobotInterface(string name, string limb, bool no_robot, bool use_forces, bool use_trac_ik) :
                                _n(name), _name(name), _limb(limb), _state(START), spinner(4), ir_ok(false),
-        _no_robot(no_robot), ik_solver(limb, no_robot), _use_forces(use_forces), _use_trac_ik(use_trac_ik)
+                               _no_robot(no_robot), is_ctrl_running(false), ik_solver(limb, no_robot),
+                               _use_forces(use_forces), _use_trac_ik(use_trac_ik)
 {
     if (no_robot) return;
 
@@ -39,6 +40,9 @@ RobotInterface::RobotInterface(string name, string limb, bool no_robot, bool use
 
     _coll_av_sub   = _n.subscribe("/robot/limb/" + _limb + "/collision_avoidance_state",
                                     SUBSCRIBER_BUFFER, &RobotInterface::collAvCb, this);
+
+    _ctrl_sub      = _n.subscribe("/" + _name + "/limb/" + _limb + "/go_to_pose",
+                                    SUBSCRIBER_BUFFER, &RobotInterface::ctrlMsgCb, this);
 
     if (!_use_trac_ik)
     {
@@ -93,6 +97,11 @@ void RobotInterface::ThreadEntry()
     while (RobotInterface::ok())
     {
         // ROS_INFO("Time: %g", (ros::Time::now() - initTime).toSec());
+
+        if (is_ctrl_running)
+        {
+            /* code */
+        }
         r.sleep();
     }
 
@@ -125,6 +134,28 @@ bool RobotInterface::setIKLimits(KDL::JntArray ll, KDL::JntArray ul)
     return true;
 }
 
+void RobotInterface::ctrlMsgCb(const baxter_collaboration::GoToPose& msg)
+{
+    pose_des.position = msg.pose_stamp.pose.position;
+
+    if (msg.pose_stamp.pose.orientation.x != -100 &&
+        msg.pose_stamp.pose.orientation.y != -100 &&
+        msg.pose_stamp.pose.orientation.z != -100 &&
+        msg.pose_stamp.pose.orientation.w != -100)
+    {
+        pose_des.orientation = msg.pose_stamp.pose.orientation;
+    }
+    else
+    {
+        pose_des.orientation = getOri();
+    }
+
+    ctrl_mode = msg.ctrl_mode;
+
+    is_ctrl_running = true;
+    return;
+}
+
 void RobotInterface::collAvCb(const baxter_core_msgs::CollisionAvoidanceState& msg)
 {
     if (msg.collision_object.size()!=0)
@@ -139,6 +170,8 @@ void RobotInterface::collAvCb(const baxter_core_msgs::CollisionAvoidanceState& m
         ROS_WARN("[%s] Collision detected with: %s", getLimb().c_str(), objects.c_str());
     }
     else is_colliding = false;
+
+    return;
 }
 
 void RobotInterface::jointStatesCb(const sensor_msgs::JointState& msg)
@@ -174,6 +207,8 @@ void RobotInterface::cuffCb(const baxter_core_msgs::DigitalIOState& msg)
     {
         setState(KILLED);
     }
+
+    return;
 }
 
 void RobotInterface::endpointCb(const baxter_core_msgs::EndpointState& msg)
@@ -196,6 +231,8 @@ void RobotInterface::endpointCb(const baxter_core_msgs::EndpointState& msg)
     // printf("\n");
 
     if (_use_forces == true) filterForces();
+
+    return;
 }
 
 void RobotInterface::IRCb(const sensor_msgs::RangeConstPtr& msg)
@@ -209,6 +246,8 @@ void RobotInterface::IRCb(const sensor_msgs::RangeConstPtr& msg)
     {
         ir_ok = true;
     }
+
+    return;
 }
 
 void RobotInterface::filterForces()
@@ -216,11 +255,15 @@ void RobotInterface::filterForces()
     _filt_force[0] = (1 - FORCE_ALPHA) * _filt_force[0] + FORCE_ALPHA * _curr_wrench.force.x;
     _filt_force[1] = (1 - FORCE_ALPHA) * _filt_force[1] + FORCE_ALPHA * _curr_wrench.force.y;
     _filt_force[2] = (1 - FORCE_ALPHA) * _filt_force[2] + FORCE_ALPHA * _curr_wrench.force.z;
+
+    return;
 }
 
 void RobotInterface::hoverAboveTokens(double height)
 {
     goToPose(0.540, 0.570, height, VERTICAL_ORI_L);
+
+    return;
 }
 
 bool RobotInterface::goToPoseNoCheck(double px, double py, double pz,
@@ -539,6 +582,16 @@ bool RobotInterface::waitForForceInteraction(double _wait_time, bool disable_col
     }
 
     return false;
+}
+
+geometry_msgs::Pose RobotInterface::getPose()
+{
+    geometry_msgs::Pose res;
+
+    res.position    = getPos();
+    res.orientation = getOri();
+
+    return res;
 }
 
 void RobotInterface::setState(int state)

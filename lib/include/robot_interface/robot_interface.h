@@ -24,6 +24,8 @@
 #include "robot_interface/ros_thread_obj.h"
 #include "robot_interface/baxter_trac_ik.h"
 
+#include <baxter_collaboration/GoToPose.h>
+
 /**
  * @brief A ROS Thread class
  * @details This class initializes overhead ROS features: subscriber/publishers,
@@ -98,6 +100,28 @@ private:
     // Internal thread that implements the controller server
     ROSThreadObj _thread;
 
+    // Control mode for the controller server. It can be either
+    // baxter_collaboration::GoToPose::POSITION_MODE or
+    // baxter_collaboration::GoToPose::VELOCITY_MODE , but for
+    // now only the former has been implemented.
+    int ctrl_mode;
+
+    // Desired pose to move the arm to
+    geometry_msgs::Pose pose_des;
+
+    // Flag to know if the controller is running
+    bool is_ctrl_running;
+
+    // Subscriber that receives desired poses from other nodes
+    ros::Subscriber _ctrl_sub;
+
+    /**
+     * Callback for the controller server. It receives new poses
+     * to move the arm to.
+     *
+     * @param msg the topic message
+     */
+    void ctrlMsgCb(const baxter_collaboration::GoToPose& msg);
 
     /**
      * Internal thread entry that gets called when the thread is started.
@@ -378,6 +402,8 @@ public:
     geometry_msgs::Point        getPos()    { return    _curr_pos; };
     geometry_msgs::Quaternion   getOri()    { return    _curr_ori; };
     geometry_msgs::Wrench       getWrench() { return _curr_wrench; };
+
+    geometry_msgs::Pose         getPose();
 
     bool getIKLimits(KDL::JntArray &ll, KDL::JntArray &ul);
 
