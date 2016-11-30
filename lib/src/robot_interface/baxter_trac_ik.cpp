@@ -90,7 +90,7 @@ KDL::JntArray baxterTracIK::JointState2JntArray(const sensor_msgs::JointState &j
     return array;
 }
 
-bool baxterTracIK::perform_ik(IK_call &ik)
+bool baxterTracIK::perform_ik(baxter_core_msgs::SolvePositionIK &ik_srv)
 {
     int rc;
     KDL::JntArray result;
@@ -105,20 +105,20 @@ bool baxterTracIK::perform_ik(IK_call &ik)
         }
     }
 
-    bool seeds_provided = ik.req.seed_angles.name.size() == _chain.getNrOfSegments();
+    bool seeds_provided = ik_srv.request.seed_angles[0].name.size() == _chain.getNrOfSegments();
 
     joint_state.position.clear();
-    KDL::Frame ee_pose(KDL::Rotation::Quaternion(ik.req.pose_stamp.pose.orientation.x,
-                                                 ik.req.pose_stamp.pose.orientation.y,
-                                                 ik.req.pose_stamp.pose.orientation.z,
-                                                 ik.req.pose_stamp.pose.orientation.w),
-                       KDL::Vector(ik.req.pose_stamp.pose.position.x,
-                                   ik.req.pose_stamp.pose.position.y,
-                                   ik.req.pose_stamp.pose.position.z));
+    KDL::Frame ee_pose(KDL::Rotation::Quaternion(ik_srv.request.pose_stamp[0].pose.orientation.x,
+                                                 ik_srv.request.pose_stamp[0].pose.orientation.y,
+                                                 ik_srv.request.pose_stamp[0].pose.orientation.z,
+                                                 ik_srv.request.pose_stamp[0].pose.orientation.w),
+                       KDL::Vector(ik_srv.request.pose_stamp[0].pose.position.x,
+                                   ik_srv.request.pose_stamp[0].pose.position.y,
+                                   ik_srv.request.pose_stamp[0].pose.position.z));
 
     KDL::JntArray seed(_chain.getNrOfJoints());
 
-    if(seeds_provided)   seed = JointState2JntArray(ik.req.seed_angles);
+    if(seeds_provided)   seed = JointState2JntArray(ik_srv.request.seed_angles[0]);
 
     for(uint num_attempts=0; num_attempts<_num_steps; ++num_attempts)
     {
@@ -138,8 +138,8 @@ bool baxterTracIK::perform_ik(IK_call &ik)
         joint_state.position.push_back(result(j));
     }
 
-    ik.res.joints  = joint_state;
-    ik.res.isValid = rc>=0;
+    ik_srv.response.joints.push_back(joint_state);
+    ik_srv.response.isValid.push_back(rc>=0);
 
     return true;
 }
