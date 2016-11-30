@@ -19,6 +19,8 @@
 #include <sensor_msgs/Range.h>
 #include <std_msgs/Empty.h>
 
+#include "robot_utils/utils.h"
+
 #include "robot_interface/ros_thread_obj.h"
 #include "robot_interface/baxter_trac_ik.h"
 

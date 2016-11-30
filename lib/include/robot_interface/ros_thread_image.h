@@ -8,6 +8,7 @@
 #include <opencv2/highgui/highgui.hpp>
 
 #include "robot_interface/ros_thread.h"
+#include "robot_utils/utils.h"
 
 /**
  * @brief A ROS Thread with an image callback
