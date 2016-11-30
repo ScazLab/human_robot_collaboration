@@ -13,9 +13,8 @@ using namespace cv;
 /*                         RobotInterface                                 */
 /**************************************************************************/
 RobotInterface::RobotInterface(string name, string limb, bool no_robot, bool use_forces, bool use_trac_ik) :
-        _n(name), _name(name), _limb(limb), _state(START,0), spinner(4),
-        ir_ok(false), _no_robot(no_robot), ik_solver(limb, no_robot),
-        _use_forces(use_forces), _use_trac_ik(use_trac_ik)
+                               _n(name), _name(name), _limb(limb), _state(START), spinner(4), ir_ok(false),
+        _no_robot(no_robot), ik_solver(limb, no_robot), _use_forces(use_forces), _use_trac_ik(use_trac_ik)
 {
     if (no_robot) return;
 
@@ -46,8 +45,6 @@ RobotInterface::RobotInterface(string name, string limb, bool no_robot, bool use
         _ik_client = _n.serviceClient<SolvePositionIK>("/ExternalTools/" + _limb +
                                                        "/PositionKinematicsNode/IKService");
     }
-
-    _init_time = ros::Time::now();
 
     _curr_max_range = 0;
     _curr_min_range = 0;
@@ -508,9 +505,7 @@ bool RobotInterface::waitForForceInteraction(double _wait_time, bool disable_col
 
 void RobotInterface::setState(int state)
 {
-    _state.state = state;
-    // store the time elapsed between object initialization and state change
-    _state.time = (ros::Time::now() - _init_time).toSec();
+    _state.set(state);
 }
 
 void RobotInterface::publish_joint_cmd(baxter_core_msgs::JointCommand _cmd)

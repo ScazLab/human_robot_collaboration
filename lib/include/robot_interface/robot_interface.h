@@ -41,7 +41,6 @@ private:
     std::string    _name;
     std::string    _limb;       // Limb (either left or right)
     State         _state;       // State of the controller
-    ros::Time _init_time;
 
     bool       _no_robot;       // Flag to know if we're going to use the robot or not
     bool     _use_forces;       // Flag to know if we're going to use the force feedback

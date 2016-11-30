@@ -11,15 +11,16 @@
 
 #include <sensor_msgs/JointState.h>
 
-#define RECOVER  -3
-#define KILLED   -2
+#define SUBSCRIBER_BUFFER 3
+
+// Allowed default states for the system
+#define RECOVER  -4
+#define KILLED   -3
+#define STOPPED  -2
 #define ERROR    -1
 #define START     0
 #define WORKING   1
 #define DONE      2
-#define STOPPED   3
-
-#define SUBSCRIBER_BUFFER 3
 
 // Both arms
 #define ACTION_HOME         "home"
@@ -88,17 +89,46 @@ std::string intToString( const int a );
 /**
  * Struct that handles the state of the RobotInterface Class
  */
-struct State {
-    int state;
-    float time;
+struct State
+{
+private:
 
-    State(int _s, float _t) : state(_s), time(_t) { };
+    int       state;
+    ros::Time  time;
 
+public:
+
+    /**
+     * Constructor, with default initializations of the state and time
+     */
+    State(int _s = START, ros::Time _t = ros::Time::now()) : state(_s), time(_t) { };
+
+    /**
+     * Sets the state to a new state. Updates the time accordingly.
+     *
+     * @param _s the new state
+     */
+    void set(int _s);
+
+    /**
+     * Returns the state as an integer
+     */
     operator int ();
 
-    operator std::string();
+    /**
+     * Returns the state as a std::string (i.e. a text description of the state)
+     */
+    operator std::string ();
+
+    /**
+     * Returns the state as a ros::Time object (i.e. when the state was last set)
+     */
+    operator ros::Time ();
 };
 
+/**
+ * Struct that handles the Inverse kinematics call to the baxter IK service
+ */
 struct IK_call
 {
     struct IK_req

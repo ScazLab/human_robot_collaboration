@@ -47,6 +47,14 @@ string intToString( const int a )
 /*                               Utils                                    */
 /**************************************************************************/
 
+void State::set(int _s)
+{
+    state = _s;
+    time  = ros::Time::now();
+
+    return;
+}
+
 State::operator int ()
 {
     return state;
@@ -62,4 +70,9 @@ State::operator std::string()
     else if ( state == RECOVER  ) return "RECOVER";
     else if ( state == STOPPED  ) return "STOPPED";
     else                          return "NONE";
+}
+
+State::operator ros::Time()
+{
+    return time;
 }
