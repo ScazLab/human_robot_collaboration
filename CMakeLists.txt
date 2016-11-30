@@ -56,9 +56,9 @@ catkin_python_setup()
 ##   * add every package in MSG_DEP_SET to generate_messages(DEPENDENCIES ...)
 
 ## Generate messages in the 'msg' folder
-add_message_files(
-  FILES
-  ArmState.msg
+add_message_files(FILES
+                  ArmState.msg
+                  GoToPose.msg
 )
 
 ## Generate services in the 'srv' folder
@@ -76,7 +76,7 @@ add_service_files(FILES
 
 ## Generate added messages and services with any dependencies listed here
 generate_messages(DEPENDENCIES
-                  # std_msgs
+                  geometry_msgs
 )
 
 ################################################
