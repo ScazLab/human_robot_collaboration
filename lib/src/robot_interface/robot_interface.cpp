@@ -168,14 +168,16 @@ void RobotInterface::filterForces()
     std::vector<double> new_filt;
     std::vector<double> predicted_filt;
 
+    // initial attempt to update filter using an EMA
     new_filt.push_back((1 - FORCE_ALPHA) * _filt_force[0] + FORCE_ALPHA * _curr_wrench.force.x);
     new_filt.push_back((1 - FORCE_ALPHA) * _filt_force[1] + FORCE_ALPHA * _curr_wrench.force.y);
     new_filt.push_back((1 - FORCE_ALPHA) * _filt_force[2] + FORCE_ALPHA * _curr_wrench.force.z);
 
-    // if the predicted force is not essentially 0, use it to calculate the
-    // percentage difference between the predicted and the actual filter
-    // if the predicted force is essentially 0, this is most likely the first
-    // calculation, so just set the filter to the new filter value
+    // use the previous rate of change of filt to predict a new filt
+    // if the prediction is 0, this is most likely the first trial so set the filt to the initial attempt
+    // otherwise, compare the prediction to the initial attempt
+    // if the attempt is within a threshold defined in utils.h, set the filt to the initial attempt
+    // this prevents the filter from changing wildly and maintains trends in the data
 
     for (int i = 0; i < 3; ++i)
     {
@@ -474,9 +476,8 @@ void RobotInterface::setJointCommands(double s0, double s1, double e0, double e1
 bool RobotInterface::detectForceInteraction()
 {
     ROS_INFO("Filt Forces: %g, %g, %g", _filt_force[0], _filt_force[1], _filt_force[2]);
-    // compare the current force to the filter force. if the percent difference is above a certain
-    // value, return true
-    // the following is still under construction (by Sarah)
+    // compare the current force to the filter force. if the difference is above a
+    // threshold defined in utils.h, return true
 
     double small_thres = exp (-5);
 
@@ -500,8 +501,8 @@ bool RobotInterface::detectForceInteraction()
         {
             curr_diff[i] = abs((curr_force[i] - _filt_force[i])/(abs(_filt_force[i]) + 0.01));
         }
-
     }
+
     if (curr_diff[0] > rel_force_thres || curr_diff[1] > rel_force_thres || curr_diff[2] > rel_force_thres)
     {
         ROS_INFO("Interaction: %g %g %g", curr_force[0], curr_force[1], curr_force[2]);
