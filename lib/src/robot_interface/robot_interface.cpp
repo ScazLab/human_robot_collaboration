@@ -332,14 +332,14 @@ void RobotInterface::hoverAboveTokens(double height)
     return;
 }
 
-bool goToPoseNoCheck(geometry_msgs::Pose p)
+bool RobotInterface::goToPoseNoCheck(geometry_msgs::Pose p)
 {
-    return true; // goToPoseNoCheck(p.position, p.orientation);
+    return goToPoseNoCheck(p.position, p.orientation);
 }
 
-bool goToPoseNoCheck(geometry_msgs::Point p, geometry_msgs::Quaternion o)
+bool RobotInterface::goToPoseNoCheck(geometry_msgs::Point p, geometry_msgs::Quaternion o)
 {
-    return true; //goToPoseNoCheck(p.x, p.y, p.z, o.x, o.y, o.z, o.w);
+    return goToPoseNoCheck(p.x, p.y, p.z, o.x, o.y, o.z, o.w);
 }
 
 bool RobotInterface::goToPoseNoCheck(double px, double py, double pz,
