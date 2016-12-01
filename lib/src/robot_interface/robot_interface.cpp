@@ -22,7 +22,9 @@ RobotInterface::RobotInterface(string name, string limb, bool no_robot, bool use
     pthread_mutexattr_t _mutex_attr;
     pthread_mutexattr_init(&_mutex_attr);
     pthread_mutexattr_settype(&_mutex_attr, PTHREAD_MUTEX_RECURSIVE_NP);
+
     pthread_mutex_init(&_mutex_jnts, &_mutex_attr);
+    pthread_mutex_init(&_mutex_ctrl, &_mutex_attr);
 
     _joint_cmd_pub = _n.advertise<JointCommand>("/robot/limb/" + _limb + "/joint_command", 1);
     _coll_av_pub   = _n.advertise<Empty>("/robot/limb/" + _limb + "/suppress_collision_avoidance", 1);
@@ -92,15 +94,28 @@ void RobotInterface::ThreadEntry()
     pthread_setcanceltype(PTHREAD_CANCEL_ASYNCHRONOUS,NULL);
 
     ros::Rate r(THREAD_FREQ);
-    ros::Time initTime = ros::Time::now();
 
     while (RobotInterface::ok())
     {
         // ROS_INFO("Time: %g", (ros::Time::now() - initTime).toSec());
 
-        if (is_ctrl_running)
+        if (isCtrlRunning())
         {
-            /* code */
+            double time_elap = (ros::Time::now() - time_start).toSec();
+
+            geometry_msgs::Point      p_d = pose_des.position;
+            geometry_msgs::Quaternion o_d = pose_des.orientation;
+
+            if (!isPoseReached(p_d.x, p_d.y, p_d.z,
+                               o_d.x, o_d.y, o_d.z, o_d.w))
+            {
+                /* code */
+            }
+            else
+            {
+                setCtrlRunning(false);
+            }
+
         }
         r.sleep();
     }
@@ -134,6 +149,12 @@ bool RobotInterface::setIKLimits(KDL::JntArray ll, KDL::JntArray ul)
     return true;
 }
 
+bool RobotInterface::initCtrlParams()
+{
+    time_start = ros::Time::now();
+    pose_start = getPose();
+}
+
 void RobotInterface::ctrlMsgCb(const baxter_collaboration::GoToPose& msg)
 {
     pose_des.position = msg.pose_stamp.pose.position;
@@ -152,8 +173,36 @@ void RobotInterface::ctrlMsgCb(const baxter_collaboration::GoToPose& msg)
 
     ctrl_mode = msg.ctrl_mode;
 
-    is_ctrl_running = true;
+    if (ctrl_mode != baxter_collaboration::GoToPose::POSITION_MODE )
+    {
+        ROS_WARN("As of now, the only accepted control mode is POSITION_MODE");
+        ctrl_mode = baxter_collaboration::GoToPose::POSITION_MODE;
+    }
+
+    setCtrlRunning(true);
+    initCtrlParams();
+
     return;
+}
+
+void RobotInterface::setCtrlRunning(bool _flag)
+{
+    pthread_mutex_lock(&_mutex_ctrl);
+    is_ctrl_running = _flag;
+    pthread_mutex_unlock(&_mutex_ctrl);
+
+    return;
+}
+
+bool RobotInterface::isCtrlRunning()
+{
+    bool res;
+
+    pthread_mutex_lock(&_mutex_ctrl);
+    res = is_ctrl_running;
+    pthread_mutex_unlock(&_mutex_ctrl);
+
+    return res;
 }
 
 void RobotInterface::collAvCb(const baxter_core_msgs::CollisionAvoidanceState& msg)
@@ -604,5 +653,7 @@ void RobotInterface::suppressCollisionAv()
 RobotInterface::~RobotInterface()
 {
     pthread_mutex_destroy(&_mutex_jnts);
+    pthread_mutex_destroy(&_mutex_ctrl);
+
     _thread.kill();
 }

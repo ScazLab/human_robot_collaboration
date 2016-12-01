@@ -115,6 +115,36 @@ private:
     // Subscriber that receives desired poses from other nodes
     ros::Subscriber _ctrl_sub;
 
+    // Mutex to protect the control flag
+    pthread_mutex_t _mutex_ctrl;
+
+    // Time when the controller started
+    ros::Time time_start;
+
+    // Starting pose
+    geometry_msgs::Pose pose_start;
+
+    /**
+     * Initializes some control parameters when the controller starts.
+     *
+     * return       true/false if success/failure
+     */
+    bool initCtrlParams();
+
+    /**
+     * Sets the flag that handles if the controller is running or not.
+     *
+     * @param _flag true/false if the controller is running or not
+     */
+    void setCtrlRunning(bool _flag);
+
+    /**
+     * Return the state of the controller (if it is running or not).
+     *
+     * @return      true/false if the controller is running or not
+     */
+    bool isCtrlRunning();
+
     /**
      * Callback for the controller server. It receives new poses
      * to move the arm to.
