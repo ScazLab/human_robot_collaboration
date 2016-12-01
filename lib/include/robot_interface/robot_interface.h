@@ -263,15 +263,35 @@ protected:
     bool isConfigurationReached(baxter_core_msgs::JointCommand joint_cmd, std::string mode = "loose");
 
     /*
-     * Uses built in IK solver to find joint angles solution for desired pose
+     * Uses IK solver to find joint angles solution for desired pose
      *
-     * @param     requested PoseStamped
-     * @param     array of joint angles solution
-     * @return    true/false if success/failure
+     * @param    p requested Pose
+     * @param    j array of joint angles solution
+     * @return     true/false if success/failure
+     */
+    bool computeIK(geometry_msgs::Pose p, std::vector<double>& j);
+
+    /*
+     * Uses IK solver to find joint angles solution for desired pose
+     *
+     * @param    p requested Position
+     * @param    o requested Orientation
+     * @param    j array of joint angles solution
+     * @return     true/false if success/failure
+     */
+    bool computeIK(geometry_msgs::Point p, geometry_msgs::Quaternion o, std::vector<double>& j);
+
+    /*
+     * Uses IK solver to find joint angles solution for desired pose
+     *
+     * @param    px, py, pz     requested Position as set of doubles
+     * @param    ox, oy, oz, oy requested quaternion orientation as set of doubles
+     * @param    j              array of joint angles solution
+     * @return     true/false if success/failure
      */
     bool computeIK(double px, double py, double pz,
                    double ox, double oy, double oz, double ow,
-                   std::vector<double>& joint_angles);
+                   std::vector<double>& j);
 
     /*
      * Moves arm to the requested pose. This differs from RobotInterface::goToPose because it

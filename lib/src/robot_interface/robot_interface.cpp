@@ -106,10 +106,18 @@ void RobotInterface::ThreadEntry()
             geometry_msgs::Point      p_d = pose_des.position;
             geometry_msgs::Quaternion o_d = pose_des.orientation;
 
+            geometry_msgs::Point      p_s = pose_start.position;
+            geometry_msgs::Quaternion o_s = pose_start.orientation;
+
             if (!isPoseReached(p_d.x, p_d.y, p_d.z,
                                o_d.x, o_d.y, o_d.z, o_d.w))
             {
-                /* code */
+                vector<double> joint_angles;
+
+                geometry_msgs::Point p_c = p_s + (p_d - p_s) / norm(p_d - p_s) * PICK_UP_SPEED * time_elap;
+
+                computeIK(p_c, o_d, joint_angles);
+                goToPoseNoCheck(joint_angles);
             }
             else
             {
@@ -377,9 +385,20 @@ bool RobotInterface::goToPose(double px, double py, double pz,
     return false;
 }
 
+bool RobotInterface::computeIK(geometry_msgs::Pose p, std::vector<double>& j)
+{
+    return computeIK(p.position, p.orientation, j);
+}
+
+bool RobotInterface::computeIK(geometry_msgs::Point p, geometry_msgs::Quaternion o,
+                               std::vector<double>& j)
+{
+    return computeIK(p.x, p.y, p.z, o.x, o.y, o.z, o.w, j);
+}
+
 bool RobotInterface::computeIK(double px, double py, double pz,
-                                   double ox, double oy, double oz, double ow,
-                                   std::vector<double>& joint_angles)
+                               double ox, double oy, double oz, double ow,
+                               std::vector<double>& j)
 {
     PoseStamped pose_stamp;
     pose_stamp.header.frame_id = "base";
@@ -388,7 +407,7 @@ bool RobotInterface::computeIK(double px, double py, double pz,
     setPosition(   pose_stamp.pose, px, py, pz);
     setOrientation(pose_stamp.pose, ox, oy, oz, ow);
 
-    joint_angles.clear();
+    j.clear();
     bool got_solution = false;
     ros::Time start = ros::Time::now();
     float thresh_z = pose_stamp.pose.position.z + 0.01;
@@ -424,7 +443,7 @@ bool RobotInterface::computeIK(double px, double py, double pz,
             if (ik_srv.response.isValid[0])
             {
                 ROS_DEBUG("Got solution!");
-                joint_angles = ik_srv.response.joints[0].position;
+                j = ik_srv.response.joints[0].position;
                 return true;
             }
             else
