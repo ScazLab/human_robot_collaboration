@@ -2,7 +2,6 @@
 
 #include "robot_utils/utils.h"
 
-
 // Declare a test
 TEST(UtilsLib, geometry_msgsPointsOperators)
 {
@@ -20,7 +19,6 @@ TEST(UtilsLib, geometry_msgsPointsOperators)
     EXPECT_EQ(norm(b), norm(a));
 
     a = a + 1;
-
     EXPECT_TRUE((a-b) == (b-a)*(-1.0));
 
     EXPECT_TRUE(a==a);
@@ -29,8 +27,13 @@ TEST(UtilsLib, geometry_msgsPointsOperators)
     EXPECT_TRUE(a==(a / 2 * 2));
     EXPECT_TRUE(a==(a * 2 / 2));
 
+    // Test assignment operator
     a = b;
     EXPECT_TRUE(a==b);
+
+    // Test dot product
+    EXPECT_EQ(dot(a,a)/(norm(a)*norm(a)),1);
+    EXPECT_EQ(dot(a,a*-1)/(norm(a)*norm(a)),-1);
 }
 
 // Run all the tests that were declared with TEST()

@@ -91,7 +91,7 @@ bool RobotInterface::killThread()
 
 void RobotInterface::ThreadEntry()
 {
-    pthread_setcanceltype(PTHREAD_CANCEL_ASYNCHRONOUS,NULL);
+    pthread_setcanceltype(PTHREAD_CANCEL_ASYNCHRONOUS, NULL);
 
     ros::Rate r(THREAD_FREQ);
 

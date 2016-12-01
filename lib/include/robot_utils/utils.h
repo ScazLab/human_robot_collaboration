@@ -106,38 +106,75 @@ double norm(const geometry_msgs::Point & _v);
 
 /**
  * Operator + (sum) between two geometry_msgs::Points
+ *
+ * @param  a the first point
+ * @param  b the second point
+ * @return   the sum of the two
  */
 geometry_msgs::Point operator+ (const geometry_msgs::Point& a, const geometry_msgs::Point& b);
 
 /**
  * Operator - (difference) between two geometry_msgs:Points
+ *
+ * @param  a the first point
+ * @param  b the second point
+ * @return   the difference of the two (i.e. a - b)
  */
 geometry_msgs::Point operator- (const geometry_msgs::Point& a, const geometry_msgs::Point& b);
 
 /**
  * Operator == (equality) between two geometry_msgs::Points
+ *
+ * @param  a the first point
+ * @param  b the second point
+ * @return   true/false if a==b or not
  */
 bool                 operator==(const geometry_msgs::Point& a, const geometry_msgs::Point& b);
 
 /**
  * Operator * (addition)       between a geometry_msgs::Point and a double
+ *
+ * @param  a the first point
+ * @param  b the double to sum a with
+ * @return   the element-by-element sum of a with b
  */
 geometry_msgs::Point operator+ (const geometry_msgs::Point& a, const double& b);
 
 /**
  * Operator - (subtraction)    between a geometry_msgs::Point and a double
+ *
+ * @param  a the first point
+ * @param  b the double to subtract a with
+ * @return   the element-by-element subtraction of a with b
  */
 geometry_msgs::Point operator- (const geometry_msgs::Point& a, const double& b);
 
 /**
  * Operator * (multiplication) between a geometry_msgs::Point and a double
+ *
+ * @param  a the first point
+ * @param  b the double to multiply a with
+ * @return   the element-by-element multiplication of a with b
  */
 geometry_msgs::Point operator* (const geometry_msgs::Point& a, const double& b);
 
 /**
  * Operator / (division)       between a geometry_msgs::Point and a double
+ *
+ * @param  a the first point
+ * @param  b the double to divide a with
+ * @return   the element-by-element division of a with b
  */
 geometry_msgs::Point operator/ (const geometry_msgs::Point& a, const double& b);
+
+/**
+ * Dot, or scalar, product between two geometry_msgs::Points
+ *
+ * @param  a the first point
+ * @param  b the second point
+ * @return   the dot product
+ */
+double dot(const geometry_msgs::Point& a, const geometry_msgs::Point& b);
 
 /**
  * Print function.

@@ -136,6 +136,12 @@ geometry_msgs::Point operator/ (const geometry_msgs::Point& a, const double& b)
     return res;
 }
 
+double dot(const geometry_msgs::Point& a, const geometry_msgs::Point& b)
+{
+    //We don't check for the size because a geometry_msgs::Point has fixed size
+    return a.x * b.x + a.y * b.y + a.z * b.z;
+}
+
 std::string print(geometry_msgs::Point p)
 {
     stringstream res;
