@@ -89,6 +89,14 @@ void setOrientation(geometry_msgs::Pose& pose, float x, float y, float z, float 
 std::string intToString( const int a );
 
 /**
+ * Norm of a vector
+ *
+ * @param  vector<double> the vector
+ * @return                the norm of the vector
+ */
+double norm(std::vector<double> const& _v);
+
+/**
  * Struct that handles the state of the RobotInterface Class
  */
 struct State

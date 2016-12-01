@@ -43,6 +43,17 @@ string intToString( const int a )
     return ss.str();
 }
 
+double norm(vector<double> const& _v)
+{
+    double accum = 0.0;
+
+    for (int i = 0; i < _v.size(); ++i)
+    {
+        accum += _v[i] * _v[i];
+    }
+    return sqrt(accum);
+}
+
 /**************************************************************************/
 /*                               Utils                                    */
 /**************************************************************************/
