@@ -431,7 +431,7 @@ public:
     RobotInterface(std::string name, std::string limb,
                    bool no_robot = false, bool use_forces = true, bool use_trac_ik = true);
 
-    virtual ~RobotInterface();
+    ~RobotInterface();
 
     /*
      * Self-explaining "setters"
