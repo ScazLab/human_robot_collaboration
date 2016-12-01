@@ -120,6 +120,16 @@ geometry_msgs::Point operator- (const geometry_msgs::Point& a, const geometry_ms
 bool                 operator==(const geometry_msgs::Point& a, const geometry_msgs::Point& b);
 
 /**
+ * Operator * (addition)       between a geometry_msgs::Point and a double
+ */
+geometry_msgs::Point operator+ (const geometry_msgs::Point& a, const double& b);
+
+/**
+ * Operator - (subtraction)    between a geometry_msgs::Point and a double
+ */
+geometry_msgs::Point operator- (const geometry_msgs::Point& a, const double& b);
+
+/**
  * Operator * (multiplication) between a geometry_msgs::Point and a double
  */
 geometry_msgs::Point operator* (const geometry_msgs::Point& a, const double& b);

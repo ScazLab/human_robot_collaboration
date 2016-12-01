@@ -92,6 +92,28 @@ bool                 operator==(const geometry_msgs::Point& a, const geometry_ms
     return true;
 }
 
+geometry_msgs::Point operator+ (const geometry_msgs::Point& a, const double& b)
+{
+    geometry_msgs::Point res;
+
+    res.x = a.x + b;
+    res.y = a.y + b;
+    res.z = a.z + b;
+
+    return res;
+}
+
+geometry_msgs::Point operator- (const geometry_msgs::Point& a, const double& b)
+{
+    geometry_msgs::Point res;
+
+    res.x = a.x - b;
+    res.y = a.y - b;
+    res.z = a.z - b;
+
+    return res;
+}
+
 geometry_msgs::Point operator* (const geometry_msgs::Point& a, const double& b)
 {
     geometry_msgs::Point res;
