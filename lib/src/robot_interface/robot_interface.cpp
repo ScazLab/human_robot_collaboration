@@ -116,7 +116,15 @@ void RobotInterface::ThreadEntry()
 
                 geometry_msgs::Point p_c = p_s + (p_d - p_s) / norm(p_d - p_s) * PICK_UP_SPEED * time_elap;
 
-                computeIK(p_c, o_d, joint_angles);
+                if (dot(p_d-p_s, p_d-p_c)/(norm(p_d-p_s)*norm(p_d-p_c)) == 1)
+                {
+                    computeIK(p_c, o_d, joint_angles);
+                }
+                else
+                {
+                    computeIK(p_d, o_d, joint_angles);
+                }
+
                 goToPoseNoCheck(joint_angles);
             }
             else
