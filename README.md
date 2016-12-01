@@ -11,6 +11,8 @@ Yet another repository for the Baxter collaboration task
 
 ## Compilation & Testing
 
+We use the new Catkin Command Line Tools `catkin_tools`, a Python package that provides command line tools for working with the catkin meta-buildsystem and catkin workspaces. This package was announced in March 2015 and is still in beta, but we didn't experience any problem with it. The following instructions apply to this new package, even though the repository can be used and compile with the old `catkin_make` without issues.
+
  1. Compile the repo: `catkin build baxter_collaboration`
  2. Compile tests and run them (to be done after compiling the repo with command #1): `catkin build baxter_collaboration --catkin-make-args run_tests`
  3. Check the results of step #2: `catkin_test_results build/baxter_collaboration/`
