@@ -64,12 +64,12 @@ void ArmCtrl::InternalThreadEntry()
         ROS_ERROR("[%s] Invalid Action %s in state %i", getLimb().c_str(), a.c_str(), s);
     }
 
-    if (getState()==WORKING)
+    if (int(getState())==WORKING)
     {
         setState(ERROR);
     }
 
-    if (getState()==ERROR)
+    if (int(getState())==ERROR)
     {
         ROS_ERROR("[%s] Action %s not successful! State %s %s", getLimb().c_str(), a.c_str(),
                                           string(getState()).c_str(), getSubState().c_str());

@@ -173,30 +173,38 @@ bool RobotInterface::initCtrlParams()
 
 void RobotInterface::ctrlMsgCb(const baxter_collaboration::GoToPose& msg)
 {
-    pose_des.position = msg.pose_stamp.pose.position;
-
-    if (msg.pose_stamp.pose.orientation.x != -100 &&
-        msg.pose_stamp.pose.orientation.y != -100 &&
-        msg.pose_stamp.pose.orientation.z != -100 &&
-        msg.pose_stamp.pose.orientation.w != -100)
+    if (int(getState()) != WORKING)
     {
-        pose_des.orientation = msg.pose_stamp.pose.orientation;
+        pose_des.position = msg.pose_stamp.pose.position;
+
+        if (msg.pose_stamp.pose.orientation.x != -100 &&
+            msg.pose_stamp.pose.orientation.y != -100 &&
+            msg.pose_stamp.pose.orientation.z != -100 &&
+            msg.pose_stamp.pose.orientation.w != -100)
+        {
+            pose_des.orientation = msg.pose_stamp.pose.orientation;
+        }
+        else
+        {
+            pose_des.orientation = getOri();
+        }
+
+        ctrl_mode = msg.ctrl_mode;
+
+        if (ctrl_mode != baxter_collaboration::GoToPose::POSITION_MODE )
+        {
+            ROS_WARN("As of now, the only accepted control mode is POSITION_MODE");
+            ctrl_mode = baxter_collaboration::GoToPose::POSITION_MODE;
+        }
+
+        setCtrlRunning(true);
+        initCtrlParams();
     }
     else
     {
-        pose_des.orientation = getOri();
+        ROS_ERROR_THROTTLE(1,"Received a request on the control topic but the controller"
+                             "is already in use through the high level interface!");
     }
-
-    ctrl_mode = msg.ctrl_mode;
-
-    if (ctrl_mode != baxter_collaboration::GoToPose::POSITION_MODE )
-    {
-        ROS_WARN("As of now, the only accepted control mode is POSITION_MODE");
-        ctrl_mode = baxter_collaboration::GoToPose::POSITION_MODE;
-    }
-
-    setCtrlRunning(true);
-    initCtrlParams();
 
     return;
 }
@@ -664,6 +672,14 @@ geometry_msgs::Pose RobotInterface::getPose()
 void RobotInterface::setState(int state)
 {
     _state.set(state);
+
+    // disable the cartesian controller server
+    if (state == WORKING)
+    {
+        setCtrlRunning(false);
+    }
+
+    return;
 }
 
 void RobotInterface::publish_joint_cmd(baxter_core_msgs::JointCommand _cmd)
