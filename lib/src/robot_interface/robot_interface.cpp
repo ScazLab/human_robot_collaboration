@@ -125,7 +125,7 @@ void RobotInterface::ThreadEntry()
                     computeIK(p_d, o_d, joint_angles);
                 }
 
-                goToPoseNoCheck(joint_angles);
+                goToJointPoseNoCheck(joint_angles);
             }
             else
             {
@@ -345,10 +345,10 @@ bool RobotInterface::goToPoseNoCheck(double px, double py, double pz,
     vector<double> joint_angles;
     if (!computeIK(px, py, pz, ox, oy, oz, ow, joint_angles)) return false;
 
-    return goToPoseNoCheck(joint_angles);
+    return goToJointPoseNoCheck(joint_angles);
 }
 
-bool RobotInterface::goToPoseNoCheck(vector<double> joint_angles)
+bool RobotInterface::goToJointPoseNoCheck(vector<double> joint_angles)
 {
     JointCommand joint_cmd;
     joint_cmd.mode = JointCommand::POSITION_MODE;
@@ -366,8 +366,8 @@ bool RobotInterface::goToPoseNoCheck(vector<double> joint_angles)
 }
 
 bool RobotInterface::goToPose(double px, double py, double pz,
-                         double ox, double oy, double oz, double ow,
-                         std::string mode, bool disable_coll_av)
+                              double ox, double oy, double oz, double ow,
+                              std::string mode, bool disable_coll_av)
 {
     vector<double> joint_angles;
     if (!computeIK(px, py, pz, ox, oy, oz, ow, joint_angles)) return false;
@@ -388,7 +388,7 @@ bool RobotInterface::goToPose(double px, double py, double pz,
             }
         }
 
-        if (!goToPoseNoCheck(joint_angles))   return false;
+        if (!goToJointPoseNoCheck(joint_angles))   return false;
 
         if (isPoseReached(px, py, pz, ox, oy, oz, ow, mode))
         {

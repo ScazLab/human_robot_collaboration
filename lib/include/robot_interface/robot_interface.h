@@ -285,9 +285,9 @@ protected:
      * Uses IK solver to find joint angles solution for desired pose
      *
      * @param    px, py, pz     requested Position as set of doubles
-     * @param    ox, oy, oz, oy requested quaternion orientation as set of doubles
+     * @param    ox, oy, oz, ow requested quaternion orientation as set of doubles
      * @param    j              array of joint angles solution
-     * @return     true/false if success/failure
+     * @return                  true/false if success/failure
      */
     bool computeIK(double px, double py, double pz,
                    double ox, double oy, double oz, double ow,
@@ -295,16 +295,14 @@ protected:
 
     /*
      * Moves arm to the requested pose. This differs from RobotInterface::goToPose because it
-     * does not check if the final pose has been reached, but rather it goes in open-loop
-     * unitil a fisical contact with the table is reached
+     * does not check if the final pose has been reached.
      *
-     * @param  requested pose (3D position + 4D quaternion for the orientation)
-     * @return true/false if success/failure
+     * @param    px, py, pz     requested Position as set of doubles
+     * @param    ox, oy, oz, ow requested quaternion orientation as set of doubles
+     * @return                  true/false if success/failure
      */
     bool goToPoseNoCheck(double px, double py, double pz,
                          double ox, double oy, double oz, double ow);
-
-    bool goToPoseNoCheck(std::vector<double> joint_angles);
 
     /*
      * Moves arm to the requested pose , and checks if the pose has been achieved
@@ -316,6 +314,15 @@ protected:
     bool goToPose(double px, double py, double pz,
                   double ox, double oy, double oz, double ow,
                   std::string mode="loose", bool disable_coll_av = false);
+
+    /**
+     * Moves arm to the requested joint configuration, without checking if the configuration
+     * has been reached or not.
+     *
+     * @param  joint_angles requested joint configuration
+     * @return              true/false if success/failure
+     */
+    bool goToJointPoseNoCheck(std::vector<double> joint_angles);
 
     /*
      * Sets the joint names of a JointCommand
