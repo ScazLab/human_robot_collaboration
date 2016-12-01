@@ -346,30 +346,22 @@ bool RobotInterface::computeIK(double px, double py, double pz,
 
     while (!got_solution)
     {
-        IK_call ik;
         SolvePositionIK ik_srv;
 
-        if (_use_trac_ik)
-        {
-            pose_stamp.header.stamp=ros::Time::now();
-            ik.req.pose_stamp  = pose_stamp;
+        pose_stamp.header.stamp=ros::Time::now();
 
-            pthread_mutex_lock(&_mutex_jnts);
-            ik.req.seed_angles = _curr_jnts;
-            pthread_mutex_unlock(&_mutex_jnts);
-        }
-        else
-        {
-            //ik_srv.request.seed_mode=2;       // i.e. SEED_CURRENT
-            ik_srv.request.seed_mode=0;         // i.e. SEED_AUTO
-            pose_stamp.header.stamp=ros::Time::now();
-            ik_srv.request.pose_stamp.push_back(pose_stamp);
-        }
+        //ik_srv.request.seed_mode=2;       // i.e. SEED_CURRENT
+        ik_srv.request.seed_mode=0;         // i.e. SEED_AUTO
+
+        ik_srv.request.pose_stamp.push_back(pose_stamp);
+        pthread_mutex_lock(&_mutex_jnts);
+        ik_srv.request.seed_angles.push_back(_curr_jnts);
+        pthread_mutex_unlock(&_mutex_jnts);
 
         int cnt = 0;
         ros::Time tn = ros::Time::now();
 
-        bool result = _use_trac_ik?ik_solver.perform_ik(ik):_ik_client.call(ik_srv);
+        bool result = _use_trac_ik?ik_solver.perform_ik(ik_srv):_ik_client.call(ik_srv);
 
         if(result)
         {
@@ -379,12 +371,11 @@ bool RobotInterface::computeIK(double px, double py, double pz,
                 ROS_WARN_ONCE("\t\t\tTime elapsed in computing IK: %g cnt %i",te,cnt);
             }
             cnt++;
-            got_solution = _use_trac_ik?ik.res.isValid:ik_srv.response.isValid[0];
 
-            if (got_solution)
+            if (ik_srv.response.isValid[0])
             {
                 ROS_DEBUG("Got solution!");
-                joint_angles = _use_trac_ik?ik.res.joints.position:ik_srv.response.joints[0].position;
+                joint_angles = ik_srv.response.joints[0].position;
                 return true;
             }
             else
