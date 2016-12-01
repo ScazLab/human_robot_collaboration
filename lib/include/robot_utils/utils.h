@@ -91,10 +91,18 @@ std::string intToString( const int a );
 /**
  * Norm of a vector
  *
- * @param  vector<double> the vector
+ * @param  vector<double> the 3D point as vector
  * @return                the norm of the vector
  */
 double norm(std::vector<double> const& _v);
+
+/**
+ * Norm of a geometry_msgs::Point
+ *
+ * @param  geometry_msgs::Point the 3D point
+ * @return                      the norm of the point
+ */
+double norm(const geometry_msgs::Point & _v);
 
 /**
  * Struct that handles the state of the RobotInterface Class

@@ -54,6 +54,13 @@ double norm(vector<double> const& _v)
     return sqrt(accum);
 }
 
+double norm(const geometry_msgs::Point & _v)
+{
+    double accum = _v.x * _v.x + _v.y * _v.y + _v.z * _v.z;
+
+    return sqrt(accum);
+}
+
 /**************************************************************************/
 /*                               Utils                                    */
 /**************************************************************************/
