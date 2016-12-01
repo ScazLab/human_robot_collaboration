@@ -105,6 +105,28 @@ double norm(std::vector<double> const& _v);
 double norm(const geometry_msgs::Point & _v);
 
 /**
+ * Operator + (sum) between two geometry_msgs::Points
+ */
+geometry_msgs::Point operator+ (const geometry_msgs::Point& a, const geometry_msgs::Point& b);
+
+/**
+ * Operator - (difference) between two geometry_msgs:Points
+ */
+geometry_msgs::Point operator- (const geometry_msgs::Point& a, const geometry_msgs::Point& b);
+
+/**
+ * Operator == (equality) between two geometry_msgs::Points
+ */
+bool                 operator==(const geometry_msgs::Point& a, const geometry_msgs::Point& b);
+
+/**
+ * Print function.
+ *
+ * @return A text description of the Point
+ */
+std::string print(geometry_msgs::Point p);
+
+/**
  * Struct that handles the state of the RobotInterface Class
  */
 struct State

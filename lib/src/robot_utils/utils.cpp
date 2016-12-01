@@ -61,6 +61,46 @@ double norm(const geometry_msgs::Point & _v)
     return sqrt(accum);
 }
 
+geometry_msgs::Point operator+ (const geometry_msgs::Point& a, const geometry_msgs::Point& b)
+{
+    geometry_msgs::Point res;
+
+    res.x = a.x + b.x;
+    res.y = a.y + b.y;
+    res.z = a.z + b.z;
+
+    return res;
+}
+
+geometry_msgs::Point operator- (const geometry_msgs::Point& a, const geometry_msgs::Point& b)
+{
+    geometry_msgs::Point res;
+
+    res.x = a.x - b.x;
+    res.y = a.y - b.y;
+    res.z = a.z - b.z;
+
+    return res;
+}
+
+bool                 operator==(const geometry_msgs::Point& a, const geometry_msgs::Point& b)
+{
+    if (a.x != b.x)     return false;
+    if (a.y != b.y)     return false;
+    if (a.z != b.z)     return false;
+
+    return true;
+}
+
+std::string print(geometry_msgs::Point p)
+{
+    stringstream res;
+
+    res << "[" << p.x << ", " << p.y << ", " << p.z << "]";
+
+    return res.str();
+}
+
 /**************************************************************************/
 /*                               Utils                                    */
 /**************************************************************************/
