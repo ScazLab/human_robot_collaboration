@@ -118,14 +118,12 @@ void RobotInterface::ThreadEntry()
 
                 if (dot(p_d-p_s, p_d-p_c)/(norm(p_d-p_s)*norm(p_d-p_c)) == 1)
                 {
-                    computeIK(p_c, o_d, joint_angles);
+                    goToPoseNoCheck(p_c, o_d);
                 }
                 else
                 {
-                    computeIK(p_d, o_d, joint_angles);
+                    goToPoseNoCheck(p_d, o_d);
                 }
-
-                goToJointPoseNoCheck(joint_angles);
             }
             else
             {
