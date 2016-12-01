@@ -9,7 +9,11 @@ Yet another repository for the Baxter collaboration task
  * `trac_ik` : for the time being, you should use [this version of `trac_ik`](https://bitbucket.org/alecive/trac_ik). It is a fork of [the original `trac_ik`](https://bitbucket.org/traclabs/trac_ik).
  * `svox_tts` : it's a SVOX-PICO based wrapper for text-to-speech. It's not necessary, but recommended. Available [here](https://github.com/ScazLab/svox_tts).
 
-## Installation
+## Compilation & Testing
+
+ 1. Compile the repo: `catkin build baxter_collaboration`
+ 2. Compile tests and run them (to be done after compiling the repo with command #1): `catkin build baxter_collaboration --catkin-make-args run_tests`
+ 3. Check the results of step #2: `catkin_test_results build/baxter_collaboration/`
 
 ## Execution
 
