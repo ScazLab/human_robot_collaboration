@@ -120,6 +120,16 @@ geometry_msgs::Point operator- (const geometry_msgs::Point& a, const geometry_ms
 bool                 operator==(const geometry_msgs::Point& a, const geometry_msgs::Point& b);
 
 /**
+ * Operator * (multiplication) between a geometry_msgs::Point and a double
+ */
+geometry_msgs::Point operator* (const geometry_msgs::Point& a, const double& b);
+
+/**
+ * Operator / (division)       between a geometry_msgs::Point and a double
+ */
+geometry_msgs::Point operator/ (const geometry_msgs::Point& a, const double& b);
+
+/**
  * Print function.
  *
  * @return A text description of the Point
