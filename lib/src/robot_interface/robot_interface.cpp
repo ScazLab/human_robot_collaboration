@@ -286,7 +286,7 @@ void RobotInterface::cuffCb(const baxter_core_msgs::DigitalIOState& msg)
 
 void RobotInterface::endpointCb(const baxter_core_msgs::EndpointState& msg)
 {
-    ROS_DEBUG("endpointCb");
+    // ROS_DEBUG("endpointCb");
     _curr_pos      = msg.pose.position;
     _curr_ori      = msg.pose.orientation;
 
@@ -295,13 +295,6 @@ void RobotInterface::endpointCb(const baxter_core_msgs::EndpointState& msg)
     tf::Quaternion _marker_quat;
     tf::quaternionMsgToTF(_curr_ori, _marker_quat);
     tf::Matrix3x3 _marker_mat(_marker_quat);
-
-    // printf("Endpoint Orientation\n");
-    // for (int j = 0; j < 3; ++j)
-    // {
-    //     printf("%g\t%g\t%g\n", _marker_mat[j][0], _marker_mat[j][1], _marker_mat[j][2]);
-    // }
-    // printf("\n");
 
     if (_use_forces == true) filterForces();
 
