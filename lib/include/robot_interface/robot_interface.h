@@ -294,6 +294,23 @@ protected:
                    std::vector<double>& j);
 
     /*
+     * Uses IK solver to find joint angles solution for desired pose
+     *
+     * @param    p requested Pose
+     * @return     true/false if success/failure
+     */
+    bool goToPoseNoCheck(geometry_msgs::Pose p);
+
+    /*
+     * Uses IK solver to find joint angles solution for desired pose
+     *
+     * @param    p requested Position
+     * @param    o requested Orientation
+     * @return     true/false if success/failure
+     */
+    bool goToPoseNoCheck(geometry_msgs::Point p, geometry_msgs::Quaternion o);
+
+    /*
      * Moves arm to the requested pose. This differs from RobotInterface::goToPose because it
      * does not check if the final pose has been reached.
      *
