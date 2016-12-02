@@ -126,7 +126,7 @@ void RobotInterface::ThreadEntry()
                 }
                 else
                 {
-                    ROS_INFO("p_s       %s\tp_d       %s\tp_c %s", print(p_s).c_str(), print(p_d).c_str(), print(getPose().position).c_str());
+                    // ROS_INFO("p_s       %s\tp_d       %s\tp_c %s", print(p_s).c_str(), print(p_d).c_str(), print(getPose().position).c_str());
                     if (!goToPoseNoCheck(pose_des))     ROS_WARN("[%s] desired configuration could not be reached.", getLimb().c_str());
                 }
             }
@@ -176,8 +176,6 @@ bool RobotInterface::initCtrlParams()
 
 void RobotInterface::ctrlMsgCb(const baxter_collaboration::GoToPose& msg)
 {
-    ROS_INFO("ctrlMsgCb");
-
     if (int(getState()) != WORKING)
     {
         pose_des.position = msg.pose_stamp.pose.position;
@@ -204,11 +202,13 @@ void RobotInterface::ctrlMsgCb(const baxter_collaboration::GoToPose& msg)
 
         setCtrlRunning(true);
         initCtrlParams();
+
+        ROS_INFO("[%s] Received new target pose: %s", getLimb().c_str(), print(pose_des).c_str());
     }
     else
     {
-        ROS_ERROR_THROTTLE(1,"Received a request on the control topic but the controller"
-                             "is already in use through the high level interface!");
+        ROS_ERROR_THROTTLE(1, "[%s] Received new target pose, but the controller is already"
+                              " in use through the high level interface!", getLimb().c_str());
     }
 
     return;
@@ -526,7 +526,7 @@ bool RobotInterface::isPoseReached(double px, double py, double pz,
 
 bool RobotInterface::isPositionReached(double px, double py, double pz, string mode)
 {
-    ROS_INFO("[%s] Checking %s position. Error: %g %g %g", getLimb().c_str(),
+    ROS_DEBUG("[%s] Checking %s position. Error: %g %g %g", getLimb().c_str(),
                    mode.c_str(), px-getPos().x, py-getPos().y, pz-getPos().z);
 
     if (mode == "strict")
@@ -556,7 +556,7 @@ bool RobotInterface::isOrientationReached(double ox, double oy, double oz, doubl
     tf::Quaternion cur;
     tf::quaternionMsgToTF(getOri(), cur);
 
-    ROS_INFO("[%s] Checking    orientation. Current %g %g %g %g Desired %g %g %g %g Dot %g",
+    ROS_DEBUG("[%s] Checking    orientation. Current %g %g %g %g Desired %g %g %g %g Dot %g",
                            getLimb().c_str(), getOri().x, getOri().y, getOri().z, getOri().w,
                                                                   ox,oy,oz,ow, des.dot(cur));
 
