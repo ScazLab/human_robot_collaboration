@@ -5,9 +5,9 @@
 /**************************************************************************/
 ROSThreadObj::ROSThreadObj(): is_started(false) { }
 
-bool ROSThreadObj::start(void *(*ThreadFunction)(void*) )
+bool ROSThreadObj::start(void *(*ThreadFunction)(void*), void *arg)
 {
-    is_started = pthread_create(&_thread, NULL, ThreadFunction, this) == 0;
+    is_started = pthread_create(&_thread, NULL, ThreadFunction, arg) == 0;
     return is_started;
 }
 

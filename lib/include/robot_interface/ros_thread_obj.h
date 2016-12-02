@@ -26,9 +26,17 @@ public:
     /*
      * Starts thread that executes the internal thread entry function
      *
+     * @param ThreadFunction  the function that is going to be run in the thread
+     * @param arg             arg is passed as the sole argument of ThreadFunction.
+     *                        This differs from ROSThread because in there we were
+     *                        ok to use 'this' as arg. In this case, since this class
+     *                        should be used as a member object of another class, we
+     *                        need to explicitly look for an arg that makes sense.
+     *                        Typical use would be start(ThreadEntryFunc, this), so
+     *                        that this class can access the main class members.
      * @return  true/false if success failure (NOT in the POSIX way)
      */
-    bool start(void *(*ThreadFunction)(void*) );
+    bool start(void *(*ThreadFunction)(void*), void *arg);
 
     /*
      * Prevents any following code from being executed before thread is exited
