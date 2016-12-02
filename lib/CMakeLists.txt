@@ -1,5 +1,5 @@
 # Copyright: (C) 2016 Social Robotics Lab - Yale University
-# Authors: Álvaro Castro González, Olivier Mangin, Alessandro Roncone
+# Author: Alessandro Roncone
 # CopyPolicy: Released under the terms of the GNU GPL v3.0.
 
 cmake_minimum_required(VERSION 2.8.3)
@@ -10,15 +10,23 @@ project(baxterCollaboration)
 
 include_directories(${PROJECT_SOURCE_DIR}/include)
 
-## Declare a C++ library
+## Declare the C++ libraries
+# For the record, robot_utils is decoupled from robot_interface
+# so that we can link robot_perception against robot_utils only
+# without the need to link against the full robot_interface lib,
+# which would be an unnecessary overhead.
 add_library(robot_utils     include/robot_utils/utils.h
                             src/robot_utils/utils.cpp)
 
 add_library(robot_interface include/robot_interface/ros_thread.h
+                            include/robot_interface/ros_thread_obj.h
+                            include/robot_interface/ros_thread_image.h
                             include/robot_interface/robot_interface.h
                             include/robot_interface/gripper.h
                             include/robot_interface/arm_ctrl.h
                             src/robot_interface/ros_thread.cpp
+                            src/robot_interface/ros_thread_obj.cpp
+                            src/robot_interface/ros_thread_image.cpp
                             src/robot_interface/baxter_trac_ik.cpp
                             src/robot_interface/robot_interface.cpp
                             src/robot_interface/gripper.cpp
@@ -41,25 +49,25 @@ add_library(tower_building  include/tower_building/cube_picker.h
 add_dependencies(robot_utils        baxter_collaboration_generate_messages_cpp
                                     ${catkin_EXPORTED_TARGETS})
 
-add_dependencies(robot_interface        robot_utils
-                                        ${catkin_EXPORTED_TARGETS})
+add_dependencies(robot_interface    robot_utils
+                                    ${catkin_EXPORTED_TARGETS})
 
-add_dependencies(robot_perception       robot_utils
-                                        ${catkin_EXPORTED_TARGETS})
+add_dependencies(robot_perception   robot_utils
+                                    ${catkin_EXPORTED_TARGETS})
 
-add_dependencies(flatpack_furniture     robot_interface
-                                        robot_perception
-                                        ${catkin_EXPORTED_TARGETS})
+add_dependencies(flatpack_furniture robot_interface
+                                    robot_perception
+                                    ${catkin_EXPORTED_TARGETS})
 
 add_dependencies(tower_building     robot_interface
                                     robot_perception
                                     ${catkin_EXPORTED_TARGETS})
 
 ## Specify libraries to link a library or executable target against
-target_link_libraries(robot_utils       ${catkin_LIBRARIES})
+target_link_libraries(robot_utils           ${catkin_LIBRARIES})
 
-target_link_libraries(robot_interface   robot_utils
-                                        ${catkin_LIBRARIES})
+target_link_libraries(robot_interface       robot_utils
+                                            ${catkin_LIBRARIES})
 
 target_link_libraries(robot_perception      robot_utils
                                             ${OpenCV_LIBS}
@@ -69,12 +77,13 @@ target_link_libraries(flatpack_furniture    robot_interface
                                             robot_perception
                                             ${catkin_LIBRARIES})
 
-target_link_libraries(tower_building    robot_interface
-                                        robot_perception
-                                        ${catkin_LIBRARIES})
+target_link_libraries(tower_building        robot_interface
+                                            robot_perception
+                                            ${catkin_LIBRARIES})
 
 ## Mark libraries for installation
-install (TARGETS robot_utils robot_interface robot_perception flatpack_furniture tower_building
+install (TARGETS robot_utils robot_interface robot_perception
+                 flatpack_furniture tower_building
          ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
          LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
 )

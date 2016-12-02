@@ -5,9 +5,9 @@ using namespace std;
 using namespace geometry_msgs;
 using namespace baxter_core_msgs;
 
-ArmCtrl::ArmCtrl(string _name, string _limb, bool _no_robot) :
-                 RobotInterface(_name,_limb, _no_robot), Gripper(_limb, _no_robot),
-                 object_id(-1), action(""), sub_state("")
+ArmCtrl::ArmCtrl(string _name, string _limb, bool _no_robot, bool _use_forces, bool _use_trac_ik) :
+                 RobotInterface(_name,_limb, _no_robot, _use_forces, _use_trac_ik),
+                 Gripper(_limb, _no_robot), object_id(-1), action(""), sub_state("")
 {
     std::string topic = "/"+getName()+"/state_"+_limb;
     state_pub = _n.advertise<baxter_collaboration::ArmState>(topic,1);
@@ -44,7 +44,12 @@ void ArmCtrl::InternalThreadEntry()
 
     setState(WORKING);
 
-    if (a == ACTION_HOME || a == ACTION_RELEASE)
+    if (is_no_robot())
+    {
+        ros::Duration(2.0).sleep();
+        setState(DONE);
+    }
+    else if (a == ACTION_HOME || a == ACTION_RELEASE)
     {
         if (callAction(a))   setState(DONE);
     }
@@ -59,12 +64,12 @@ void ArmCtrl::InternalThreadEntry()
         ROS_ERROR("[%s] Invalid Action %s in state %i", getLimb().c_str(), a.c_str(), s);
     }
 
-    if (getState()==WORKING)
+    if (int(getState())==WORKING)
     {
         setState(ERROR);
     }
 
-    if (getState()==ERROR)
+    if (int(getState())==ERROR)
     {
         ROS_ERROR("[%s] Action %s not successful! State %s %s", getLimb().c_str(), a.c_str(),
                                           string(getState()).c_str(), getSubState().c_str());
@@ -99,15 +104,6 @@ bool ArmCtrl::serviceCb(baxter_collaboration::DoAction::Request  &req,
         return true;
     }
 
-    if (is_no_robot())
-    {
-        setState(WORKING);
-        ros::Duration(2.0).sleep();
-        setState(DONE);
-        res.success = true;
-        return true;
-    }
-
     res.success = false;
 
     setAction(action);
@@ -119,8 +115,7 @@ bool ArmCtrl::serviceCb(baxter_collaboration::DoAction::Request  &req,
     ros::Rate r(100);
     while( ros::ok() && ( int(getState()) != START   &&
                           int(getState()) != ERROR   &&
-                          int(getState()) != DONE    &&
-                          int(getState()) != PICK_UP   ))
+                          int(getState()) != DONE      ))
     {
         if (ros::isShuttingDown())
         {
@@ -137,8 +132,7 @@ bool ArmCtrl::serviceCb(baxter_collaboration::DoAction::Request  &req,
     }
 
     if ( int(getState()) == START   ||
-         int(getState()) == DONE    ||
-         int(getState()) == PICK_UP   )
+         int(getState()) == DONE      )
     {
         res.success = true;
     }
@@ -395,7 +389,7 @@ bool ArmCtrl::moveArm(string dir, double dist, string mode, bool disable_coll_av
         vector<double> joint_angles;
         if (!computeIK(px, py, pz, ox, oy, oz, ow, joint_angles)) return false;
 
-        if (!goToPoseNoCheck(joint_angles))   return false;
+        if (!goToJointPoseNoCheck(joint_angles))   return false;
 
         if (isPositionReached(final.x, final.y, final.z, mode)) return true;
 

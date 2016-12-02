@@ -3,6 +3,7 @@
 
 #include <map>
 
+#include "robot_interface/ros_thread.h"
 #include "robot_interface/robot_interface.h"
 #include "robot_interface/gripper.h"
 
@@ -15,27 +16,51 @@
 #define HAND_OVER_DONE   "handover_done"
 #define HAND_OVER_WAIT   "handover_wait"
 
-class ArmCtrl : public RobotInterface, public Gripper
+class ArmCtrl : public RobotInterface, public Gripper, public ROSThread
 {
 private:
+    // Substate of the controller (useful to keep track of
+    // long actions that need multiple internal states)
     std::string  sub_state;
 
+    // High level action the controller is engaged in
     std::string     action;
+
+    // Object the controller is acting upon (if the action
+    // is done with respect to an object)
     int          object_id;
 
-    // Flag to know if the robot will recover from an error
+    // Flag to know if the robot will try to recover from an error
     // or will wait the external planner to take care of that
     bool internal_recovery;
 
+    // Service to request actions to
     ros::ServiceServer service;
+
+    // Internal service used for multi-arm actions
     ros::ServiceServer service_other_limb;
 
+    // Publisher to publish the high-level state of the controller
+    // (to be shown in the Baxter display)
     ros::Publisher     state_pub;
 
     // Home configuration. Setting it in any of the children
     // of this class is mandatory (through the virtual method
     // called setHomeConfiguration() )
     baxter_core_msgs::JointCommand home_conf;
+
+    /**
+     * Object database, which pairs an integer key, corresponding to the marker ID
+     * placed on the object and read by ARuco, with a string that describes the object
+     * itself in human terms.
+     */
+    std::map<int, std::string> object_db;
+
+    /**
+     * Provides basic functionalities for the object, such as a goHome and releaseObject.
+     * For deeper, class-specific specialization, please modify doAction() instead.
+     */
+    void InternalThreadEntry();
 
 protected:
 
@@ -58,19 +83,6 @@ protected:
      * is still worth knowing).
      */
     std::map <std::string, f_action> action_db;
-
-    /**
-     * Object database, which pairs an integer key, corresponding to the marker ID
-     * placed on the object and read by ARuco, with a string that describes the object
-     * itself in human terms.
-     */
-    std::map<int, std::string> object_db;
-
-    /**
-     * Provides basic functionalities for the object, such as a goHome and releaseObject.
-     * For deeper, class-specific specialization, please modify doAction() instead.
-     */
-    void InternalThreadEntry();
 
     /**
      * Recovers from errors during execution. It provides a basic interface,
@@ -118,7 +130,8 @@ protected:
     virtual void setHomeConfiguration() = 0;
 
     /**
-     * Goes to the home position
+     * Goes to the home position, and "releases" the gripper
+     *
      * @return        true/false if success/failure
      */
     bool goHome();
@@ -254,7 +267,8 @@ public:
     /**
      * Constructor
      */
-    ArmCtrl(std::string _name, std::string _limb, bool _no_robot = false);
+    ArmCtrl(std::string _name, std::string _limb,
+            bool _no_robot = false, bool _use_forces = true, bool _use_trac_ik = true);
 
     /*
      * Destructor
@@ -279,11 +293,14 @@ public:
     virtual bool serviceOtherLimbCb(baxter_collaboration::AskFeedback::Request  &req,
                                     baxter_collaboration::AskFeedback::Response &res);
 
+    /**
+     * Publishes the high-level state of the controller (to be shown in the baxter display)
+     */
     void publishState();
 
     /* Self-explaining "setters" */
     void setSubState(std::string _state) { sub_state =  _state; };
-    virtual void setObjectID(int _obj)   { object_id =    _obj; };
+    void setObjectID(int _obj)           { object_id =    _obj; };
     void setAction(std::string _action);
 
     void setState(int _state);

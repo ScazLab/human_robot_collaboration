@@ -1,22 +1,13 @@
 #include "robot_interface/ros_thread.h"
 
-#include <tf/transform_datatypes.h>
-
-using namespace std;
-using namespace baxter_core_msgs;
-using namespace geometry_msgs;
-using namespace sensor_msgs;
-using namespace std_msgs;
-using namespace cv;
-
 /**************************************************************************/
 /*                             ROSThread                                  */
 /**************************************************************************/
 ROSThread::ROSThread(): is_started(false) { }
 
-void * ROSThread::InternalThreadEntryFunc(void * This)
+void * ROSThread::InternalThreadEntryFunc(void * obj)
 {
-    ((ROSThread *)This)->InternalThreadEntry();
+    ((ROSThread *)obj)->InternalThreadEntry();
     return NULL;
 }
 
@@ -26,21 +17,32 @@ bool ROSThread::startInternalThread()
     return is_started;
 }
 
-void ROSThread::waitForInternalThreadToExit()
+void ROSThread::joinInternalThread()
 {
     (void) pthread_join(_thread, NULL);
 }
 
-void ROSThread::closeInternalThread()
+bool ROSThread::closeInternalThread()
 {
-    pthread_exit(NULL);
-    return;
+    if (is_started)
+    {
+        is_started = false;
+        pthread_exit(NULL);
+        return true;
+    }
+
+    return false;
 }
 
 bool ROSThread::killInternalThread()
 {
-    if (is_started) return pthread_cancel(_thread) == 0;
-    else            return false;
+    if (is_started)
+    {
+        is_started = false;
+        return pthread_cancel(_thread) == 0;
+    }
+
+    return false;
 }
 
 ROSThread::~ROSThread() { }

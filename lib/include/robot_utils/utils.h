@@ -11,18 +11,18 @@
 
 #include <sensor_msgs/JointState.h>
 
+#define SUBSCRIBER_BUFFER 3
+
+#define THREAD_FREQ       100 // [Hz]
+
+// Allowed default states for the system
 #define RECOVER  -4
-#define WORKING  -3
-#define KILLED   -2
+#define KILLED   -3
+#define STOPPED  -2
 #define ERROR    -1
 #define START     0
-#define REST      1
-#define SCANNED   2
-#define PICK_UP   3
-#define PUT_DOWN  4
-#define DONE      5
-
-#define SUBSCRIBER_BUFFER 3
+#define WORKING   1
+#define DONE      2
 
 // Both arms
 #define ACTION_HOME         "home"
@@ -91,35 +91,152 @@ void setOrientation(geometry_msgs::Pose& pose, float x, float y, float z, float 
 std::string intToString( const int a );
 
 /**
+ * Norm of a vector
+ *
+ * @param  vector<double> the 3D point as vector
+ * @return                the norm of the vector
+ */
+double norm(std::vector<double> const& _v);
+
+/**
+ * Norm of a geometry_msgs::Point
+ *
+ * @param  geometry_msgs::Point the 3D point
+ * @return                      the norm of the point
+ */
+double norm(const geometry_msgs::Point & _v);
+
+/**
+ * Operator + (sum) between two geometry_msgs::Points
+ *
+ * @param  a the first point
+ * @param  b the second point
+ * @return   the sum of the two
+ */
+geometry_msgs::Point operator+ (const geometry_msgs::Point& a, const geometry_msgs::Point& b);
+
+/**
+ * Operator - (difference) between two geometry_msgs:Points
+ *
+ * @param  a the first point
+ * @param  b the second point
+ * @return   the difference of the two (i.e. a - b)
+ */
+geometry_msgs::Point operator- (const geometry_msgs::Point& a, const geometry_msgs::Point& b);
+
+/**
+ * Operator == (equality) between two geometry_msgs::Points
+ *
+ * @param  a the first point
+ * @param  b the second point
+ * @return   true/false if a==b or not
+ */
+bool                 operator==(const geometry_msgs::Point& a, const geometry_msgs::Point& b);
+
+/**
+ * Operator * (addition)       between a geometry_msgs::Point and a double
+ *
+ * @param  a the first point
+ * @param  b the double to sum a with
+ * @return   the element-by-element sum of a with b
+ */
+geometry_msgs::Point operator+ (const geometry_msgs::Point& a, const double& b);
+
+/**
+ * Operator - (subtraction)    between a geometry_msgs::Point and a double
+ *
+ * @param  a the first point
+ * @param  b the double to subtract a with
+ * @return   the element-by-element subtraction of a with b
+ */
+geometry_msgs::Point operator- (const geometry_msgs::Point& a, const double& b);
+
+/**
+ * Operator * (multiplication) between a geometry_msgs::Point and a double
+ *
+ * @param  a the first point
+ * @param  b the double to multiply a with
+ * @return   the element-by-element multiplication of a with b
+ */
+geometry_msgs::Point operator* (const geometry_msgs::Point& a, const double& b);
+
+/**
+ * Operator / (division)       between a geometry_msgs::Point and a double
+ *
+ * @param  a the first point
+ * @param  b the double to divide a with
+ * @return   the element-by-element division of a with b
+ */
+geometry_msgs::Point operator/ (const geometry_msgs::Point& a, const double& b);
+
+/**
+ * Dot, or scalar, product between two geometry_msgs::Points
+ *
+ * @param  a the first point
+ * @param  b the second point
+ * @return   the dot product
+ */
+double dot(const geometry_msgs::Point& a, const geometry_msgs::Point& b);
+
+/**
+ * Print function for a geometry_msgs::Point.
+ *
+ * @return A text description of the Point.
+ */
+std::string print(geometry_msgs::Point p);
+
+/**
+ * Print function for a geometry_msgs::Quaternion.
+ *
+ * @return A text description of the Quaternion.
+ */
+std::string print(geometry_msgs::Quaternion q);
+
+/**
+ * Print function for a geometry_msgs::Pose.
+ *
+ * @return A text description of the Pose.
+ */
+std::string print(geometry_msgs::Pose p);
+
+/**
  * Struct that handles the state of the RobotInterface Class
  */
-struct State {
-    int state;
-    float time;
+struct State
+{
+private:
 
-    State(int _s, float _t) : state(_s), time(_t) { };
+    int       state;
+    ros::Time  time;
 
+public:
+
+    /**
+     * Constructor, with default initializations of the state and time
+     */
+    State(int _s = START, ros::Time _t = ros::Time::now()) : state(_s), time(_t) { };
+
+    /**
+     * Sets the state to a new state. Updates the time accordingly.
+     *
+     * @param _s the new state
+     */
+    void set(int _s);
+
+    /**
+     * Returns the state as an integer
+     */
     operator int ();
 
-    operator std::string();
-};
+    /**
+     * Returns the state as a std::string (i.e. a text description of the state)
+     */
+    operator std::string ();
 
-struct IK_call
-{
-    struct IK_req
-    {
-        geometry_msgs::PoseStamped pose_stamp;
-        sensor_msgs::JointState   seed_angles;
-    };
-
-    struct IK_res
-    {
-        sensor_msgs::JointState joints;
-        bool                   isValid;
-    };
-
-    IK_req req;
-    IK_res res;
+    /**
+     * Returns the state as a ros::Time object (i.e. when the state was last set)
+     */
+    operator ros::Time ();
 };
 
 #endif

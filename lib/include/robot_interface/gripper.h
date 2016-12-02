@@ -28,7 +28,7 @@ private:
     baxter_core_msgs::EndEffectorState _state;  // State of the gripper
 
     // Callback that handles the gripper state messages.
-    void gripperStateCb(const baxter_core_msgs::EndEffectorStateConstPtr& msg);
+    void gripperCb(const baxter_core_msgs::EndEffectorState &msg);
 
     /**
      * @brief Calibrates the gripper

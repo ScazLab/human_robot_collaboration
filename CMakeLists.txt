@@ -56,9 +56,9 @@ catkin_python_setup()
 ##   * add every package in MSG_DEP_SET to generate_messages(DEPENDENCIES ...)
 
 ## Generate messages in the 'msg' folder
-add_message_files(
-  FILES
-  ArmState.msg
+add_message_files(FILES
+                  ArmState.msg
+                  GoToPose.msg
 )
 
 ## Generate services in the 'srv' folder
@@ -76,7 +76,7 @@ add_service_files(FILES
 
 ## Generate added messages and services with any dependencies listed here
 generate_messages(DEPENDENCIES
-                  # std_msgs
+                  geometry_msgs
 )
 
 ################################################
@@ -131,12 +131,16 @@ include_directories(lib/include
 add_subdirectory(lib)
 
 ## Declare a C++ executable
+add_executable(baxter_controller        src/baxter_controller/baxter_controller.cpp)
 add_executable(flatpack_action_provider src/flatpack_furniture/action_provider.cpp)
 add_executable(tower_action_provider    src/tower_building/action_provider.cpp)
 add_executable(baxter_display           src/baxter_display.cpp)
 
 ## Add cmake target dependencies of the executable
 ## same as for the library above
+add_dependencies(baxter_controller        baxter_collaboration_generate_messages_cpp
+                                          ${${PROJECT_NAME}_EXPORTED_TARGETS}
+                                          ${catkin_EXPORTED_TARGETS})
 add_dependencies(flatpack_action_provider baxter_collaboration_generate_messages_cpp
                                           ${${PROJECT_NAME}_EXPORTED_TARGETS}
                                           ${catkin_EXPORTED_TARGETS})
@@ -148,18 +152,17 @@ add_dependencies(baxter_display  baxter_collaboration_generate_messages_cpp
                                  ${catkin_EXPORTED_TARGETS})
 
 ## Specify libraries to link a library or executable target against
-target_link_libraries(flatpack_action_provider  robot_utils
-                                                robot_interface
+target_link_libraries(baxter_controller         robot_interface
+                                                ${catkin_LIBRARIES} )
+target_link_libraries(flatpack_action_provider  robot_interface
                                                 robot_perception
                                                 flatpack_furniture
                                                 ${catkin_LIBRARIES} )
-target_link_libraries(tower_action_provider     robot_utils
-                                                robot_interface
+target_link_libraries(tower_action_provider     robot_interface
                                                 robot_perception
                                                 tower_building
                                                 ${catkin_LIBRARIES} )
-target_link_libraries(baxter_display  robot_utils
-                                      robot_interface
+target_link_libraries(baxter_display  robot_interface
                                       ${OpenCV_LIBS}
                                       ${catkin_LIBRARIES} )
 
@@ -203,10 +206,11 @@ install(PROGRAMS
 #############
 
 ## Add gtest based cpp test target and link libraries
-# catkin_add_gtest(${PROJECT_NAME}-test test/test_baxter_collaboration.cpp)
-# if(TARGET ${PROJECT_NAME}-test)
-#   target_link_libraries(${PROJECT_NAME}-test ${PROJECT_NAME})
-# endif()
+catkin_add_gtest(utils-test test/test_utils_lib.cpp)
+
+if(TARGET utils-test)
+  target_link_libraries(utils-test robot_utils)
+endif()
 
 ## Add folders to be run by python nosetests
 # catkin_add_nosetests(test)

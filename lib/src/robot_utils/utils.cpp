@@ -43,9 +43,143 @@ string intToString( const int a )
     return ss.str();
 }
 
+double norm(vector<double> const& _v)
+{
+    double accum = 0.0;
+
+    for (int i = 0; i < _v.size(); ++i)
+    {
+        accum += _v[i] * _v[i];
+    }
+    return sqrt(accum);
+}
+
+double norm(const geometry_msgs::Point & _v)
+{
+    double accum = _v.x * _v.x + _v.y * _v.y + _v.z * _v.z;
+
+    return sqrt(accum);
+}
+
+geometry_msgs::Point operator+ (const geometry_msgs::Point& a, const geometry_msgs::Point& b)
+{
+    geometry_msgs::Point res;
+
+    res.x = a.x + b.x;
+    res.y = a.y + b.y;
+    res.z = a.z + b.z;
+
+    return res;
+}
+
+geometry_msgs::Point operator- (const geometry_msgs::Point& a, const geometry_msgs::Point& b)
+{
+    geometry_msgs::Point res;
+
+    res.x = a.x - b.x;
+    res.y = a.y - b.y;
+    res.z = a.z - b.z;
+
+    return res;
+}
+
+bool                 operator==(const geometry_msgs::Point& a, const geometry_msgs::Point& b)
+{
+    if (a.x != b.x)     return false;
+    if (a.y != b.y)     return false;
+    if (a.z != b.z)     return false;
+
+    return true;
+}
+
+geometry_msgs::Point operator+ (const geometry_msgs::Point& a, const double& b)
+{
+    geometry_msgs::Point res;
+
+    res.x = a.x + b;
+    res.y = a.y + b;
+    res.z = a.z + b;
+
+    return res;
+}
+
+geometry_msgs::Point operator- (const geometry_msgs::Point& a, const double& b)
+{
+    geometry_msgs::Point res;
+
+    res.x = a.x - b;
+    res.y = a.y - b;
+    res.z = a.z - b;
+
+    return res;
+}
+
+geometry_msgs::Point operator* (const geometry_msgs::Point& a, const double& b)
+{
+    geometry_msgs::Point res;
+
+    res.x = a.x * b;
+    res.y = a.y * b;
+    res.z = a.z * b;
+
+    return res;
+}
+
+geometry_msgs::Point operator/ (const geometry_msgs::Point& a, const double& b)
+{
+    geometry_msgs::Point res;
+
+    res.x = a.x / b;
+    res.y = a.y / b;
+    res.z = a.z / b;
+
+    return res;
+}
+
+double dot(const geometry_msgs::Point& a, const geometry_msgs::Point& b)
+{
+    //We don't check for the size because a geometry_msgs::Point has fixed size
+    return a.x * b.x + a.y * b.y + a.z * b.z;
+}
+
+std::string print(geometry_msgs::Point p)
+{
+    stringstream res;
+
+    res << "[" << p.x << ", " << p.y << ", " << p.z << "]";
+
+    return res.str();
+}
+
+std::string print(geometry_msgs::Quaternion q)
+{
+    stringstream res;
+
+    res << "[" << q.x << ", " << q.y << ", " << q.z << ", " << q.w << "]";
+
+    return res.str();
+}
+
+std::string print(geometry_msgs::Pose p)
+{
+    stringstream res;
+
+    res << "[" << print(p.position) << ", " << print(p.orientation) << "]";
+
+    return res.str();
+}
+
 /**************************************************************************/
 /*                               Utils                                    */
 /**************************************************************************/
+
+void State::set(int _s)
+{
+    state = _s;
+    time  = ros::Time::now();
+
+    return;
+}
 
 State::operator int ()
 {
@@ -57,12 +191,14 @@ State::operator std::string()
     if      ( state == WORKING  ) return "WORKING";
     else if ( state == ERROR    ) return "ERROR";
     else if ( state == START    ) return "START";
-    else if ( state == REST     ) return "REST";
-    else if ( state == SCANNED  ) return "SCANNED";
-    else if ( state == PICK_UP  ) return "PICK_UP";
-    else if ( state == PUT_DOWN ) return "PUT_DOWN";
     else if ( state == DONE     ) return "DONE";
     else if ( state == KILLED   ) return "KILLED";
     else if ( state == RECOVER  ) return "RECOVER";
+    else if ( state == STOPPED  ) return "STOPPED";
     else                          return "NONE";
+}
+
+State::operator ros::Time()
+{
+    return time;
 }

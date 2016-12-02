@@ -12,17 +12,26 @@ using namespace cv;
 /**************************************************************************/
 /*                         RobotInterface                                 */
 /**************************************************************************/
-RobotInterface::RobotInterface(string name, string limb, bool no_robot) :
-        _n(name), _name(name), _limb(limb), _state(START,0), spinner(4),
-        ir_ok(false), _no_robot(no_robot), ik_solver(limb, no_robot)
+RobotInterface::RobotInterface(string name, string limb, bool no_robot, bool use_forces, bool use_trac_ik) :
+                               _n(name), _name(name), _limb(limb), _state(START), spinner(4), ir_ok(false),
+                               _no_robot(no_robot), is_ctrl_running(false), ik_solver(limb, no_robot),
+                               _use_forces(use_forces), _use_trac_ik(use_trac_ik)
 {
     if (no_robot) return;
+
+    pthread_mutexattr_t _mutex_attr;
+    pthread_mutexattr_init(&_mutex_attr);
+    pthread_mutexattr_settype(&_mutex_attr, PTHREAD_MUTEX_RECURSIVE_NP);
+
+    pthread_mutex_init(&_mutex_jnts, &_mutex_attr);
+    pthread_mutex_init(&_mutex_ctrl, &_mutex_attr);
 
     _joint_cmd_pub = _n.advertise<JointCommand>("/robot/limb/" + _limb + "/joint_command", 1);
     _coll_av_pub   = _n.advertise<Empty>("/robot/limb/" + _limb + "/suppress_collision_avoidance", 1);
 
     _endpt_sub     = _n.subscribe("/robot/limb/" + _limb + "/endpoint_state",
-                                    SUBSCRIBER_BUFFER, &RobotInterface::endpointCb, this);
+                                   SUBSCRIBER_BUFFER, &RobotInterface::endpointCb, this);
+
     _ir_sub        = _n.subscribe("/robot/range/" + _limb + "_hand_range/state",
                                     SUBSCRIBER_BUFFER, &RobotInterface::IRCb, this);
     _cuff_sub      = _n.subscribe("/robot/digital_io/" + _limb + "_lower_button/state",
@@ -34,7 +43,14 @@ RobotInterface::RobotInterface(string name, string limb, bool no_robot) :
     _coll_av_sub   = _n.subscribe("/robot/limb/" + _limb + "/collision_avoidance_state",
                                     SUBSCRIBER_BUFFER, &RobotInterface::collAvCb, this);
 
-    _init_time = ros::Time::now();
+    _ctrl_sub      = _n.subscribe("/" + _name + "/limb/" + _limb + "/go_to_pose",
+                                    SUBSCRIBER_BUFFER, &RobotInterface::ctrlMsgCb, this);
+
+    if (!_use_trac_ik)
+    {
+        _ik_client = _n.serviceClient<SolvePositionIK>("/ExternalTools/" + _limb +
+                                                       "/PositionKinematicsNode/IKService");
+    }
 
     _curr_max_range = 0;
     _curr_min_range = 0;
@@ -59,19 +75,174 @@ RobotInterface::RobotInterface(string name, string limb, bool no_robot) :
     {
         _n.param<double>("force_threshold_right", force_thres, FORCE_THRES_R);
     }
-
     ROS_INFO("[%s] Force Threshold : %g", getLimb().c_str(), force_thres);
     ROS_INFO("[%s] Force Filter Variance: %g", getLimb().c_str(), filt_variance);
     ROS_INFO("[%s] Relative Force Threshold: %g", getLimb().c_str(), rel_force_thres);
 
-    pthread_mutex_init(&_mutex_jnts, NULL);
+    ROS_INFO("[%s] Is controller running : %s", getLimb().c_str(), isCtrlRunning()?"yes":"no");
+
     spinner.start();
+    startThread();
+}
+
+bool RobotInterface::startThread()
+{
+    return _thread.start(ThreadEntryFunc, this);
+}
+
+bool RobotInterface::closeThread()
+{
+    return _thread.close();
+}
+
+bool RobotInterface::killThread()
+{
+    return _thread.kill();
+}
+
+void RobotInterface::ThreadEntry()
+{
+    pthread_setcanceltype(PTHREAD_CANCEL_ASYNCHRONOUS, NULL);
+
+    ros::Rate r(THREAD_FREQ);
+
+    while (RobotInterface::ok())
+    {
+        // ROS_INFO("Time: %g", (ros::Time::now() - initTime).toSec());
+
+        if (isCtrlRunning())
+        {
+            double time_elap = (ros::Time::now() - time_start).toSec();
+
+            geometry_msgs::Point      p_d = pose_des.position;
+            geometry_msgs::Quaternion o_d = pose_des.orientation;
+
+            geometry_msgs::Point      p_s = pose_start.position;
+            geometry_msgs::Quaternion o_s = pose_start.orientation;
+
+            if (!isPoseReached(p_d.x, p_d.y, p_d.z,
+                               o_d.x, o_d.y, o_d.z, o_d.w, "strict"))
+            {
+                vector<double> joint_angles;
+
+                geometry_msgs::Point p_c = p_s + (p_d - p_s) / norm(p_d - p_s) * PICK_UP_SPEED * time_elap;
+
+                // This would mean equal to 1 within some small epsilon
+                if (dot(p_d-p_s, p_d-p_c)/(norm(p_d-p_s)*norm(p_d-p_c)) - 1 <  1e-8 &&
+                    dot(p_d-p_s, p_d-p_c)/(norm(p_d-p_s)*norm(p_d-p_c)) - 1 > -1e-8)
+                {
+                    if (!goToPoseNoCheck(p_c, o_d))     ROS_WARN("[%s] desired configuration could not be reached.", getLimb().c_str());
+                }
+                else
+                {
+                    ROS_INFO("p_s       %s\tp_d       %s\tp_c %s", print(p_s).c_str(), print(p_d).c_str(), print(getPose().position).c_str());
+                    if (!goToPoseNoCheck(pose_des))     ROS_WARN("[%s] desired configuration could not be reached.", getLimb().c_str());
+                }
+            }
+            else
+            {
+                setCtrlRunning(false);
+            }
+
+        }
+        r.sleep();
+    }
+
+    closeThread();
+    return;
+}
+
+void * RobotInterface::ThreadEntryFunc(void * obj)
+{
+    ((RobotInterface *)obj)->ThreadEntry();
+    return NULL;
 }
 
 bool RobotInterface::ok()
 {
     bool res = ros::ok();
-    res = res && getState() != KILLED;
+    res = res && getState() != KILLED && getState() != STOPPED;
+
+    return res;
+}
+
+bool RobotInterface::getIKLimits(KDL::JntArray &ll, KDL::JntArray &ul)
+{
+    return ik_solver.getKDLLimits(ll,ul);
+}
+
+bool RobotInterface::setIKLimits(KDL::JntArray ll, KDL::JntArray ul)
+{
+    ik_solver.setKDLLimits(ll,ul);
+    return true;
+}
+
+bool RobotInterface::initCtrlParams()
+{
+    time_start = ros::Time::now();
+    pose_start = getPose();
+}
+
+void RobotInterface::ctrlMsgCb(const baxter_collaboration::GoToPose& msg)
+{
+    ROS_INFO("ctrlMsgCb");
+
+    if (int(getState()) != WORKING)
+    {
+        pose_des.position = msg.pose_stamp.pose.position;
+
+        if (msg.pose_stamp.pose.orientation.x != -100 &&
+            msg.pose_stamp.pose.orientation.y != -100 &&
+            msg.pose_stamp.pose.orientation.z != -100 &&
+            msg.pose_stamp.pose.orientation.w != -100)
+        {
+            pose_des.orientation = msg.pose_stamp.pose.orientation;
+        }
+        else
+        {
+            pose_des.orientation = getOri();
+        }
+
+        ctrl_mode = msg.ctrl_mode;
+
+        if (ctrl_mode != baxter_collaboration::GoToPose::POSITION_MODE )
+        {
+            ROS_WARN("As of now, the only accepted control mode is POSITION_MODE");
+            ctrl_mode = baxter_collaboration::GoToPose::POSITION_MODE;
+        }
+
+        setCtrlRunning(true);
+        initCtrlParams();
+    }
+    else
+    {
+        ROS_ERROR_THROTTLE(1,"Received a request on the control topic but the controller"
+                             "is already in use through the high level interface!");
+    }
+
+    return;
+}
+
+void RobotInterface::setCtrlRunning(bool _flag)
+{
+    // ROS_INFO("[%s] Setting is_ctrl_running to: %i", getLimb().c_str(), _flag);
+
+    pthread_mutex_lock(&_mutex_ctrl);
+    is_ctrl_running = _flag;
+    pthread_mutex_unlock(&_mutex_ctrl);
+
+    return;
+}
+
+bool RobotInterface::isCtrlRunning()
+{
+    bool res;
+
+    pthread_mutex_lock(&_mutex_ctrl);
+    res = is_ctrl_running;
+    pthread_mutex_unlock(&_mutex_ctrl);
+
+    // ROS_INFO("[%s] is_ctrl_running equal to: %i", "left", res);
 
     return res;
 }
@@ -90,6 +261,8 @@ void RobotInterface::collAvCb(const baxter_core_msgs::CollisionAvoidanceState& m
         ROS_WARN("[%s] Collision detected with: %s", getLimb().c_str(), objects.c_str());
     }
     else is_colliding = false;
+
+    return;
 }
 
 void RobotInterface::jointStatesCb(const sensor_msgs::JointState& msg)
@@ -125,27 +298,25 @@ void RobotInterface::cuffCb(const baxter_core_msgs::DigitalIOState& msg)
     {
         setState(KILLED);
     }
+
+    return;
 }
 
 void RobotInterface::endpointCb(const baxter_core_msgs::EndpointState& msg)
 {
-    ROS_DEBUG("endpointCb");
+    // ROS_DEBUG("endpointCb");
     _curr_pos      = msg.pose.position;
     _curr_ori      = msg.pose.orientation;
-    _curr_wrench   = msg.wrench;
+
+    if (_use_forces == true) _curr_wrench   = msg.wrench;
 
     tf::Quaternion _marker_quat;
     tf::quaternionMsgToTF(_curr_ori, _marker_quat);
     tf::Matrix3x3 _marker_mat(_marker_quat);
 
-    // printf("Endpoint Orientation\n");
-    // for (int j = 0; j < 3; ++j)
-    // {
-    //     printf("%g\t%g\t%g\n", _marker_mat[j][0], _marker_mat[j][1], _marker_mat[j][2]);
-    // }
-    // printf("\n");
+    if (_use_forces == true) filterForces();
 
-    filterForces();
+    return;
 }
 
 void RobotInterface::IRCb(const sensor_msgs::RangeConstPtr& msg)
@@ -159,6 +330,8 @@ void RobotInterface::IRCb(const sensor_msgs::RangeConstPtr& msg)
     {
         ir_ok = true;
     }
+
+    return;
 }
 
 void RobotInterface::filterForces()
@@ -203,6 +376,18 @@ void RobotInterface::filterForces()
 void RobotInterface::hoverAboveTokens(double height)
 {
     goToPose(0.540, 0.570, height, VERTICAL_ORI_L);
+
+    return;
+}
+
+bool RobotInterface::goToPoseNoCheck(geometry_msgs::Pose p)
+{
+    return goToPoseNoCheck(p.position, p.orientation);
+}
+
+bool RobotInterface::goToPoseNoCheck(geometry_msgs::Point p, geometry_msgs::Quaternion o)
+{
+    return goToPoseNoCheck(p.x, p.y, p.z, o.x, o.y, o.z, o.w);
 }
 
 bool RobotInterface::goToPoseNoCheck(double px, double py, double pz,
@@ -211,10 +396,10 @@ bool RobotInterface::goToPoseNoCheck(double px, double py, double pz,
     vector<double> joint_angles;
     if (!computeIK(px, py, pz, ox, oy, oz, ow, joint_angles)) return false;
 
-    return goToPoseNoCheck(joint_angles);
+    return goToJointPoseNoCheck(joint_angles);
 }
 
-bool RobotInterface::goToPoseNoCheck(vector<double> joint_angles)
+bool RobotInterface::goToJointPoseNoCheck(vector<double> joint_angles)
 {
     JointCommand joint_cmd;
     joint_cmd.mode = JointCommand::POSITION_MODE;
@@ -232,8 +417,8 @@ bool RobotInterface::goToPoseNoCheck(vector<double> joint_angles)
 }
 
 bool RobotInterface::goToPose(double px, double py, double pz,
-                         double ox, double oy, double oz, double ow,
-                         std::string mode, bool disable_coll_av)
+                              double ox, double oy, double oz, double ow,
+                              std::string mode, bool disable_coll_av)
 {
     vector<double> joint_angles;
     if (!computeIK(px, py, pz, ox, oy, oz, ow, joint_angles)) return false;
@@ -254,7 +439,7 @@ bool RobotInterface::goToPose(double px, double py, double pz,
             }
         }
 
-        if (!goToPoseNoCheck(joint_angles))   return false;
+        if (!goToJointPoseNoCheck(joint_angles))   return false;
 
         if (isPoseReached(px, py, pz, ox, oy, oz, ow, mode))
         {
@@ -267,9 +452,20 @@ bool RobotInterface::goToPose(double px, double py, double pz,
     return false;
 }
 
+bool RobotInterface::computeIK(geometry_msgs::Pose p, std::vector<double>& j)
+{
+    return computeIK(p.position, p.orientation, j);
+}
+
+bool RobotInterface::computeIK(geometry_msgs::Point p, geometry_msgs::Quaternion o,
+                               std::vector<double>& j)
+{
+    return computeIK(p.x, p.y, p.z, o.x, o.y, o.z, o.w, j);
+}
+
 bool RobotInterface::computeIK(double px, double py, double pz,
-                                   double ox, double oy, double oz, double ow,
-                                   std::vector<double>& joint_angles)
+                               double ox, double oy, double oz, double ow,
+                               std::vector<double>& j)
 {
     PoseStamped pose_stamp;
     pose_stamp.header.frame_id = "base";
@@ -278,38 +474,43 @@ bool RobotInterface::computeIK(double px, double py, double pz,
     setPosition(   pose_stamp.pose, px, py, pz);
     setOrientation(pose_stamp.pose, ox, oy, oz, ow);
 
-    joint_angles.clear();
+    j.clear();
     bool got_solution = false;
     ros::Time start = ros::Time::now();
-    float thresh_z = pose_stamp.pose.position.z + 0.012;
+    float thresh_z = pose_stamp.pose.position.z + 0.01;
 
     while (!got_solution)
     {
-        IK_call ik;
+        SolvePositionIK ik_srv;
 
         pose_stamp.header.stamp=ros::Time::now();
-        ik.req.pose_stamp  = pose_stamp;
 
+        //ik_srv.request.seed_mode=2;       // i.e. SEED_CURRENT
+        ik_srv.request.seed_mode=0;         // i.e. SEED_AUTO
+
+        ik_srv.request.pose_stamp.push_back(pose_stamp);
         pthread_mutex_lock(&_mutex_jnts);
-        ik.req.seed_angles = _curr_jnts;
+        ik_srv.request.seed_angles.push_back(_curr_jnts);
         pthread_mutex_unlock(&_mutex_jnts);
 
         int cnt = 0;
         ros::Time tn = ros::Time::now();
-        if (ik_solver.perform_ik(ik))
+
+        bool result = _use_trac_ik?ik_solver.perform_ik(ik_srv):_ik_client.call(ik_srv);
+
+        if(result)
         {
-            double te  = ros::Time::now().toSec()-tn.toSec();
+            double te  = ros::Time::now().toSec()-tn.toSec();;
             if (te>0.010)
             {
-                ROS_ERROR("\t\t\tTime elapsed in computeIK: %g cnt %i",te,cnt);
+                ROS_WARN_ONCE("\t\t\tTime elapsed in computing IK: %g cnt %i",te,cnt);
             }
             cnt++;
-            got_solution = ik.res.isValid;
 
-            if (got_solution)
+            if (ik_srv.response.isValid[0])
             {
                 ROS_DEBUG("Got solution!");
-                joint_angles = ik.res.joints.position;
+                j = ik_srv.response.joints[0].position;
                 return true;
             }
             else
@@ -317,15 +518,15 @@ bool RobotInterface::computeIK(double px, double py, double pz,
                 // if position cannot be reached, try a position with the same x-y coordinates
                 // but higher z (useful when placing tokens)
                 ROS_DEBUG("[%s] IK solution not valid: %g %g %g", getLimb().c_str(),
-                                                       pose_stamp.pose.position.x,
-                                                       pose_stamp.pose.position.y,
-                                                       pose_stamp.pose.position.z);
+                                                         pose_stamp.pose.position.x,
+                                                         pose_stamp.pose.position.y,
+                                                         pose_stamp.pose.position.z);
                 pose_stamp.pose.position.z += 0.001;
             }
         }
 
         // if no solution is found within 50 milliseconds or no solution within the acceptable
-        // z-coordinate threshold is found, then no solution exists and exit oufof loop
+        // z-coordinate threshold is found, then no solution exists and exit out of loop
         if ((ros::Time::now() - start).toSec() > 0.05 || pose_stamp.pose.position.z > thresh_z)
         {
             ROS_WARN("[%s] Did not find a suitable IK solution! Final Position %g %g %g",
@@ -364,7 +565,7 @@ bool RobotInterface::isPoseReached(double px, double py, double pz,
 
 bool RobotInterface::isPositionReached(double px, double py, double pz, string mode)
 {
-    ROS_DEBUG("[%s] Checking %s position. Error: %g %g %g", getLimb().c_str(),
+    ROS_INFO("[%s] Checking %s position. Error: %g %g %g", getLimb().c_str(),
                    mode.c_str(), px-getPos().x, py-getPos().y, pz-getPos().z);
 
     if (mode == "strict")
@@ -394,7 +595,7 @@ bool RobotInterface::isOrientationReached(double ox, double oy, double oz, doubl
     tf::Quaternion cur;
     tf::quaternionMsgToTF(getOri(), cur);
 
-    ROS_DEBUG("[%s] Checking    orientation. Current %g %g %g %g Desired %g %g %g %g Dot %g",
+    ROS_INFO("[%s] Checking    orientation. Current %g %g %g %g Desired %g %g %g %g Dot %g",
                            getLimb().c_str(), getOri().x, getOri().y, getOri().z, getOri().w,
                                                                   ox,oy,oz,ow, des.dot(cur));
 
@@ -532,11 +733,27 @@ bool RobotInterface::waitForForceInteraction(double _wait_time, bool disable_col
     return false;
 }
 
+geometry_msgs::Pose RobotInterface::getPose()
+{
+    geometry_msgs::Pose res;
+
+    res.position    = getPos();
+    res.orientation = getOri();
+
+    return res;
+}
+
 void RobotInterface::setState(int state)
 {
-    _state.state = state;
-    // store the time elapsed between object initialization and state change
-    _state.time = (ros::Time::now() - _init_time).toSec();
+    _state.set(state);
+
+    // disable the cartesian controller server
+    if (state == WORKING)
+    {
+        setCtrlRunning(false);
+    }
+
+    return;
 }
 
 void RobotInterface::publish_joint_cmd(baxter_core_msgs::JointCommand _cmd)
@@ -553,43 +770,7 @@ void RobotInterface::suppressCollisionAv()
 RobotInterface::~RobotInterface()
 {
     pthread_mutex_destroy(&_mutex_jnts);
+    pthread_mutex_destroy(&_mutex_ctrl);
+
+    _thread.kill();
 }
-
-/**************************************************************************/
-/*                          ROSThreadImage                                */
-/**************************************************************************/
-
-ROSThreadImage::ROSThreadImage(string name, string limb): _img_trp(_n), RobotInterface(name, limb)
-{
-    _img_sub = _img_trp.subscribe("/cameras/"+getLimb()+"_hand_camera/image",
-                           SUBSCRIBER_BUFFER, &ROSThreadImage::imageCb, this);
-    pthread_mutex_init(&_mutex_img, NULL);
-}
-
-ROSThreadImage::~ROSThreadImage()
-{
-    pthread_mutex_destroy(&_mutex_img);
-}
-
-void ROSThreadImage::imageCb(const sensor_msgs::ImageConstPtr& msg)
-{
-    ROS_DEBUG("imageCb");
-    cv_bridge::CvImageConstPtr cv_ptr;
-
-    try
-    {
-        cv_ptr = cv_bridge::toCvShare(msg);
-    }
-    catch(cv_bridge::Exception& e)
-    {
-        ROS_ERROR("[Arm Controller] cv_bridge exception: %s", e.what());
-        return;
-    }
-
-    pthread_mutex_lock(&_mutex_img);
-    _curr_img  = cv_ptr->image.clone();
-    _img_size  =      _curr_img.size();
-    _img_empty =     _curr_img.empty();
-    pthread_mutex_unlock(&_mutex_img);
-}
-

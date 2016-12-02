@@ -9,7 +9,13 @@ Yet another repository for the Baxter collaboration task
  * `trac_ik` : for the time being, you should use [this version of `trac_ik`](https://bitbucket.org/alecive/trac_ik). It is a fork of [the original `trac_ik`](https://bitbucket.org/traclabs/trac_ik).
  * `svox_tts` : it's a SVOX-PICO based wrapper for text-to-speech. It's not necessary, but recommended. Available [here](https://github.com/ScazLab/svox_tts).
 
-## Installation
+## Compilation & Testing
+
+We use the new Catkin Command Line Tools `catkin_tools`, a Python package that provides command line tools for working with the catkin meta-buildsystem and catkin workspaces. This package was announced in March 2015 and is still in beta, but we didn't experience any problem with it. The following instructions apply to this new package, even though the repository can be used and compile with the old `catkin_make` without issues.
+
+ 1. Compile the repo: `catkin build baxter_collaboration`
+ 2. Compile tests and run them (to be done after compiling the repo with command #1): `catkin build baxter_collaboration --catkin-make-args run_tests`
+ 3. Check the results of step #2: `catkin_test_results build/baxter_collaboration/`
 
 ## Execution
 
@@ -18,6 +24,7 @@ Yet another repository for the Baxter collaboration task
  3. Request actions to either one of the two arms by using the proper service (`/action_provider/service_left` for left arm, `/action_provider/service_right` for right arm). Here are some examples to make the demo work from terminal:
   * `rosservice call /action_provider/service_right "{action: 'hand_over', object: 17}"`
   * `rosservice call /action_provider/service_left "{action: 'get', object: 17}"`
+ 4. Request 3D points to the cartesian controller server by using the proper topic (`/baxter_controller/limb/left/go_to_pose` for left arm, `/baxter_controller/limb/left/go_to_pose` for right arm). Here is one example: `rostopic pub /baxter_controller/limb/left/go_to_pose baxter_collaboration/GoToPose "{pose_stamp: {header:{seq: 0, stamp: {secs: 0.0, nsecs: 0.0}}, pose:{position:{ x: 0.5, y: 0.5, z: 0.5}, orientation:{ x: -100, y: -100, z: -100, w: -100}}}, ctrl_mode: 0}" --once`
 
 ### Supported actions
 

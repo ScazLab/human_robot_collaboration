@@ -1,11 +1,7 @@
 #ifndef __ROBOT_INTERFACE_H__
 #define __ROBOT_INTERFACE_H__
 
-#include <iostream>
-#include <cmath>
-#include <algorithm>
 #include <vector>
-#include <pthread.h>
 
 #include <image_transport/image_transport.h>
 #include <cv_bridge/cv_bridge.h>
@@ -17,44 +13,64 @@
 #include <baxter_core_msgs/EndpointState.h>
 #include <baxter_core_msgs/CollisionAvoidanceState.h>
 #include <baxter_core_msgs/JointCommand.h>
+#include <baxter_core_msgs/SolvePositionIK.h>
+
 #include <geometry_msgs/Point.h>
 #include <sensor_msgs/Range.h>
 #include <std_msgs/Empty.h>
 
 #include "robot_utils/utils.h"
-#include "robot_interface/ros_thread.h"
+
+#include "robot_interface/ros_thread_obj.h"
 #include "robot_interface/baxter_trac_ik.h"
+
+#include <baxter_collaboration/GoToPose.h>
 
 /**
  * @brief A ROS Thread class
  * @details This class initializes overhead ROS features: subscriber/publishers,
  *          services, callback functions etc.
  */
-class RobotInterface : public ROSThread
+class RobotInterface
 {
+protected:
+    ros::NodeHandle _n;
+
 private:
     std::string    _name;
     std::string    _limb;       // Limb (either left or right)
     State         _state;       // State of the controller
-    ros::Time _init_time;
 
     bool       _no_robot;       // Flag to know if we're going to use the robot or not
+    bool     _use_forces;       // Flag to know if we're going to use the force feedback
 
     ros::AsyncSpinner spinner;  // AsyncSpinner to handle callbacks
 
     ros::Publisher  _joint_cmd_pub; // Publisher to control the robot in joint space
     ros::Publisher    _coll_av_pub; // Publisher to suppress collision avoidance behavior
 
-    // IR Sensor
+    /**
+     * IR Sensor
+     */
     ros::Subscriber _ir_sub;
     bool              ir_ok;
     float       _curr_range;
     float   _curr_min_range;
     float   _curr_max_range;
 
+    /**
+     * Inverse Kinematics
+     */
+    // Default: TRAC IK
     baxterTracIK ik_solver;
 
-    // End-Effector
+    // Alternative IK: baxter-provided IK solver (for the TTT demo)
+    bool             _use_trac_ik;
+    ros::ServiceClient _ik_client;
+
+    /**
+     * End-effector state
+     */
     ros::Subscriber            _endpt_sub;
     std::vector<double>       _filt_force;
     double                    force_thres;
@@ -67,24 +83,122 @@ private:
     geometry_msgs::Quaternion   _curr_ori;
     geometry_msgs::Wrench    _curr_wrench;
 
-    // Joint States
+    /**
+     * Joint States
+     */
     ros::Subscriber         _jntstate_sub;
     sensor_msgs::JointState    _curr_jnts;
 
     // Mutex to protect joint state variable
     pthread_mutex_t _mutex_jnts;
 
-    // Collision avoidance State
+    /**
+     * Collision avoidance State
+     */
     ros::Subscriber _coll_av_sub;
     bool            is_colliding;
 
-protected:
-    /*
-     * Function that will be spun out as a thread
+    /**
+     * Control server
      */
-    virtual void InternalThreadEntry() = 0;
+    // Internal thread that implements the controller server
+    ROSThreadObj _thread;
 
-    ros::NodeHandle _n;
+    // Control mode for the controller server. It can be either
+    // baxter_collaboration::GoToPose::POSITION_MODE or
+    // baxter_collaboration::GoToPose::VELOCITY_MODE , but for
+    // now only the former has been implemented.
+    int ctrl_mode;
+
+    // Desired pose to move the arm to
+    geometry_msgs::Pose pose_des;
+
+    // Flag to know if the controller is running
+    bool is_ctrl_running;
+
+    // Subscriber that receives desired poses from other nodes
+    ros::Subscriber _ctrl_sub;
+
+    // Mutex to protect the control flag
+    pthread_mutex_t _mutex_ctrl;
+
+    // Time when the controller started
+    ros::Time time_start;
+
+    // Starting pose
+    geometry_msgs::Pose pose_start;
+
+    /**
+     * Initializes some control parameters when the controller starts.
+     *
+     * return       true/false if success/failure
+     */
+    bool initCtrlParams();
+
+    /**
+     * Sets the flag that handles if the controller is running or not.
+     *
+     * @param _flag true/false if the controller is running or not
+     */
+    void setCtrlRunning(bool _flag);
+
+    /**
+     * Return the state of the controller (if it is running or not).
+     *
+     * @return      true/false if the controller is running or not
+     */
+    bool isCtrlRunning();
+
+    /**
+     * Callback for the controller server. It receives new poses
+     * to move the arm to.
+     *
+     * @param msg the topic message
+     */
+    void ctrlMsgCb(const baxter_collaboration::GoToPose& msg);
+
+    /**
+     * Internal thread entry that gets called when the thread is started.
+     * It is used to implement the control server to manage the Baxter's
+     * arm from a separate thread.
+     */
+    static void* ThreadEntryFunc(void *obj);
+
+    /**
+     * Internal thread entry that gets called when the thread is started.
+     * It is used to implement the control server to manage the Baxter's
+     * arm from a separate thread.
+     */
+    void ThreadEntry();
+
+protected:
+
+    /*
+     * Starts thread that executes the control server. For now it is
+     * just a wrapper for _thread.start(), but further functionality
+     * may be added in the future.
+     *
+     * @return  true/false if success failure (NOT in the POSIX way)
+     */
+    bool startThread();
+
+    /**
+     * Closes the control server thread gracefully. For now it is
+     * just a wrapper for _thread.close(), but further functionality
+     * may be added in the future.
+     *
+     * @return  true/false if success failure (NOT in the POSIX way)
+     */
+    bool closeThread();
+
+    /**
+     * Kills the control server thread gracefully. For now it is
+     * just a wrapper for _thread.kill(), but further functionality
+     * may be added in the future.
+     *
+     * @return  true/false if success failure (NOT in the POSIX way)
+     */
+    bool killThread();
 
     // Cuff OK Button (the circular one)
     ros::Subscriber _cuff_sub;
@@ -153,28 +267,63 @@ protected:
     bool isConfigurationReached(baxter_core_msgs::JointCommand joint_cmd, std::string mode = "loose");
 
     /*
-     * Uses built in IK solver to find joint angles solution for desired pose
+     * Uses IK solver to find joint angles solution for desired pose
      *
-     * @param     requested PoseStamped
-     * @param     array of joint angles solution
-     * @return    true/false if success/failure
+     * @param    p requested Pose
+     * @param    j array of joint angles solution
+     * @return     true/false if success/failure
+     */
+    bool computeIK(geometry_msgs::Pose p, std::vector<double>& j);
+
+    /*
+     * Uses IK solver to find joint angles solution for desired pose
+     *
+     * @param    p requested Position
+     * @param    o requested Orientation
+     * @param    j array of joint angles solution
+     * @return     true/false if success/failure
+     */
+    bool computeIK(geometry_msgs::Point p, geometry_msgs::Quaternion o, std::vector<double>& j);
+
+    /*
+     * Uses IK solver to find joint angles solution for desired pose
+     *
+     * @param    px, py, pz     requested Position as set of doubles
+     * @param    ox, oy, oz, ow requested quaternion orientation as set of doubles
+     * @param    j              array of joint angles solution
+     * @return                  true/false if success/failure
      */
     bool computeIK(double px, double py, double pz,
                    double ox, double oy, double oz, double ow,
-                   std::vector<double>& joint_angles);
+                   std::vector<double>& j);
+
+    /*
+     * Uses IK solver to find joint angles solution for desired pose
+     *
+     * @param    p requested Pose
+     * @return     true/false if success/failure
+     */
+    bool goToPoseNoCheck(geometry_msgs::Pose p);
+
+    /*
+     * Uses IK solver to find joint angles solution for desired pose
+     *
+     * @param    p requested Position
+     * @param    o requested Orientation
+     * @return     true/false if success/failure
+     */
+    bool goToPoseNoCheck(geometry_msgs::Point p, geometry_msgs::Quaternion o);
 
     /*
      * Moves arm to the requested pose. This differs from RobotInterface::goToPose because it
-     * does not check if the final pose has been reached, but rather it goes in open-loop
-     * unitil a fisical contact with the table is reached
+     * does not check if the final pose has been reached.
      *
-     * @param  requested pose (3D position + 4D quaternion for the orientation)
-     * @return true/false if success/failure
+     * @param    px, py, pz     requested Position as set of doubles
+     * @param    ox, oy, oz, ow requested quaternion orientation as set of doubles
+     * @return                  true/false if success/failure
      */
     bool goToPoseNoCheck(double px, double py, double pz,
                          double ox, double oy, double oz, double ow);
-
-    bool goToPoseNoCheck(std::vector<double> joint_angles);
 
     /*
      * Moves arm to the requested pose , and checks if the pose has been achieved
@@ -186,6 +335,15 @@ protected:
     bool goToPose(double px, double py, double pz,
                   double ox, double oy, double oz, double ow,
                   std::string mode="loose", bool disable_coll_av = false);
+
+    /**
+     * Moves arm to the requested joint configuration, without checking if the configuration
+     * has been reached or not.
+     *
+     * @param  joint_angles requested joint configuration
+     * @return              true/false if success/failure
+     */
+    bool goToJointPoseNoCheck(std::vector<double> joint_angles);
 
     /*
      * Sets the joint names of a JointCommand
@@ -298,15 +456,19 @@ protected:
     void suppressCollisionAv();
 
 public:
-    RobotInterface(std::string name, std::string limb, bool no_robot = false);
+    RobotInterface(std::string name, std::string limb,
+                   bool no_robot = false, bool use_forces = true, bool use_trac_ik = true);
 
-    virtual ~RobotInterface();
+    ~RobotInterface();
 
     /*
      * Self-explaining "setters"
      */
     void setName(std::string name) { _name = name; };
     void setState(int state);
+    void setTracIK(bool use_trac_ik) { _use_trac_ik = use_trac_ik; };
+
+    bool setIKLimits(KDL::JntArray  ll, KDL::JntArray  ul);
 
     /*
      * Self-explaining "getters"
@@ -319,6 +481,10 @@ public:
     geometry_msgs::Quaternion   getOri()    { return    _curr_ori; };
     geometry_msgs::Wrench       getWrench() { return _curr_wrench; };
 
+    geometry_msgs::Pose         getPose();
+
+    bool getIKLimits(KDL::JntArray &ll, KDL::JntArray &ul);
+
     /*
      * Check availability of the infrared data
     */
@@ -328,37 +494,6 @@ public:
      * Checks if the robot has to be used or not
      */
     bool is_no_robot() { return _no_robot; };
-};
-
-/**
- * @brief A ROS Thread with an image callbck
- * @details This class inherits from RobotInterface, but it adds also an image callback
- *          to be overwritten by its children. Useful to to visual processing.
- */
-class ROSThreadImage : public RobotInterface
-{
-private:
-    image_transport::ImageTransport _img_trp;
-    image_transport::Subscriber     _img_sub;
-
-protected:
-    cv::Mat  _curr_img;
-    cv::Size _img_size;
-    bool    _img_empty;
-
-    pthread_mutex_t _mutex_img;
-
-public:
-    ROSThreadImage(std::string name, std::string limb);
-    ~ROSThreadImage();
-
-    /*
-     * image callback function that displays the image stream from the hand camera
-     *
-     * @param      The image
-     * @return     N/A
-     */
-    void imageCb(const sensor_msgs::ImageConstPtr& msg);
 };
 
 #endif

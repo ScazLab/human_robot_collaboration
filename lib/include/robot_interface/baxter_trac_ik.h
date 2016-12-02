@@ -2,8 +2,7 @@
 #include <ros/ros.h>
 #include <kdl/chainiksolverpos_nr_jl.hpp>
 #include <sensor_msgs/JointState.h>
-
-#include "robot_utils/utils.h"
+#include <baxter_core_msgs/SolvePositionIK.h>
 
 class baxterTracIK
 {
@@ -26,7 +25,10 @@ public:
 
     KDL::JntArray JointState2JntArray(const sensor_msgs::JointState &js);
 
-    bool perform_ik(IK_call &ik);
+    bool perform_ik(baxter_core_msgs::SolvePositionIK &ik_srv);
+
+    bool getKDLLimits(KDL::JntArray &ll, KDL::JntArray &ul);
+    bool setKDLLimits(KDL::JntArray  ll, KDL::JntArray  ul);
 
     void computeFwdKin(KDL::JntArray jointpositions);
 };

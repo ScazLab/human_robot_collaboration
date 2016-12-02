@@ -24,7 +24,7 @@ baxterTracIK::baxterTracIK(std::string limb, bool no_robot) : _limb(limb), _urdf
         exit(EXIT_FAILURE);
     }
 
-    if(!(_tracik_solver->getKDLLimits(ll,ul)))
+    if(!(getKDLLimits(ll,ul)))
     {
         ROS_ERROR("There were no valid KDL joint limits found");
         exit(EXIT_FAILURE);
@@ -43,7 +43,7 @@ baxterTracIK::baxterTracIK(std::string limb, bool no_robot) : _limb(limb), _urdf
     ll.data[1] =  s1l;
     ul.data[1] =  s1u;
 
-    _tracik_solver->setKDLLimits(ll,ul);
+    setKDLLimits(ll,ul);
 
     // Create Nominal chain configuration midway between all joint limits
     _nominal = new KDL::JntArray(_chain.getNrOfJoints());
@@ -52,6 +52,17 @@ baxterTracIK::baxterTracIK(std::string limb, bool no_robot) : _limb(limb), _urdf
     {
       _nominal->operator()(j) = (ll(j)+ul(j))/2.0;
     }
+}
+
+bool baxterTracIK::getKDLLimits(KDL::JntArray &ll, KDL::JntArray &ul)
+{
+    return _tracik_solver->getKDLLimits(ll,ul);
+}
+
+bool baxterTracIK::setKDLLimits(KDL::JntArray ll, KDL::JntArray ul)
+{
+    _tracik_solver->setKDLLimits(ll,ul);
+    return true;
 }
 
 baxterTracIK::~baxterTracIK()
@@ -79,7 +90,7 @@ KDL::JntArray baxterTracIK::JointState2JntArray(const sensor_msgs::JointState &j
     return array;
 }
 
-bool baxterTracIK::perform_ik(IK_call &ik)
+bool baxterTracIK::perform_ik(baxter_core_msgs::SolvePositionIK &ik_srv)
 {
     int rc;
     KDL::JntArray result;
@@ -94,26 +105,26 @@ bool baxterTracIK::perform_ik(IK_call &ik)
         }
     }
 
-    bool seeds_provided = ik.req.seed_angles.name.size() == _chain.getNrOfSegments();
+    bool seeds_provided = ik_srv.request.seed_angles[0].name.size() == _chain.getNrOfSegments();
 
     joint_state.position.clear();
-    KDL::Frame ee_pose(KDL::Rotation::Quaternion(ik.req.pose_stamp.pose.orientation.x,
-                                                 ik.req.pose_stamp.pose.orientation.y,
-                                                 ik.req.pose_stamp.pose.orientation.z,
-                                                 ik.req.pose_stamp.pose.orientation.w),
-                       KDL::Vector(ik.req.pose_stamp.pose.position.x,
-                                   ik.req.pose_stamp.pose.position.y,
-                                   ik.req.pose_stamp.pose.position.z));
+    KDL::Frame ee_pose(KDL::Rotation::Quaternion(ik_srv.request.pose_stamp[0].pose.orientation.x,
+                                                 ik_srv.request.pose_stamp[0].pose.orientation.y,
+                                                 ik_srv.request.pose_stamp[0].pose.orientation.z,
+                                                 ik_srv.request.pose_stamp[0].pose.orientation.w),
+                       KDL::Vector(ik_srv.request.pose_stamp[0].pose.position.x,
+                                   ik_srv.request.pose_stamp[0].pose.position.y,
+                                   ik_srv.request.pose_stamp[0].pose.position.z));
 
     KDL::JntArray seed(_chain.getNrOfJoints());
 
-    if(seeds_provided)   seed = JointState2JntArray(ik.req.seed_angles);
+    if(seeds_provided)   seed = JointState2JntArray(ik_srv.request.seed_angles[0]);
 
     for(uint num_attempts=0; num_attempts<_num_steps; ++num_attempts)
     {
         if (num_attempts>0)
         {
-            ROS_INFO("Attempt num %i with tolerance %g", num_attempts, _eps);
+            ROS_DEBUG("Attempt num %i with tolerance %g", num_attempts, _eps);
         }
 
         rc = _tracik_solver->CartToJnt(seeds_provided? seed: *(_nominal), ee_pose, result);
@@ -127,8 +138,8 @@ bool baxterTracIK::perform_ik(IK_call &ik)
         joint_state.position.push_back(result(j));
     }
 
-    ik.res.joints  = joint_state;
-    ik.res.isValid = rc>=0;
+    ik_srv.response.joints.push_back(joint_state);
+    ik_srv.response.isValid.push_back(rc>=0);
 
     return true;
 }
