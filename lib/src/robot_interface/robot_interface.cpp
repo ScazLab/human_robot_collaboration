@@ -198,11 +198,6 @@ void RobotInterface::filterForces()
 
     _filt_updated = ros::Time::now().toSec();
 
-    // the old way...
-    // _filt_force[0] = (1 - FORCE_ALPHA) * _filt_force[0] + FORCE_ALPHA * _curr_wrench.force.x;
-    // _filt_force[1] = (1 - FORCE_ALPHA) * _filt_force[0] + FORCE_ALPHA * _curr_wrench.force.y;
-    // _filt_force[2] = (1 - FORCE_ALPHA) * _filt_force[0] + FORCE_ALPHA * _curr_wrench.force.z;
-
 }
 
 void RobotInterface::hoverAboveTokens(double height)
@@ -475,7 +470,7 @@ void RobotInterface::setJointCommands(double s0, double s1, double e0, double e1
 
 bool RobotInterface::detectForceInteraction()
 {
-    ROS_INFO("Filt Forces: %g, %g, %g", _filt_force[0], _filt_force[1], _filt_force[2]);
+    // ROS_INFO("Filt Forces: %g, %g, %g", _filt_force[0], _filt_force[1], _filt_force[2]);
     // compare the current force to the filter force. if the difference is above a
     // threshold defined in utils.h, return true
 
@@ -511,20 +506,8 @@ bool RobotInterface::detectForceInteraction()
     }
     else
     {
-        // ROS_INFO("Difference relative to filter of force element %g %g %g", curr_diff[0], curr_diff[1], curr_diff[2]);
         return false;
     }
-
-    // the old way...
-    // if (abs(_curr_wrench.force.x - _filt_force[0]) > force_thres || abs(_curr_wrench.force.y - _filt_force[1]) > force_thres || abs(_curr_wrench.force.z - _filt_force[2]) > force_thres)
-    // {
-    //     ROS_INFO("Interaction: %g %g %g", _curr_wrench.force.x, _curr_wrench.force.y, _curr_wrench.force.z);
-    //     return true;
-    // }
-    // else
-    // {
-    //     return false;
-    // }
 }
 
 bool RobotInterface::waitForForceInteraction(double _wait_time, bool disable_coll_av)
