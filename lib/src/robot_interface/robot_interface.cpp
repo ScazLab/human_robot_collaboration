@@ -70,13 +70,15 @@ RobotInterface::RobotInterface(string name, string limb, bool no_robot, bool use
     }
     ROS_INFO("[%s] Force Threshold : %g", getLimb().c_str(), force_thres);
 
+    ROS_INFO("[%s] Is controller running : %s", getLimb().c_str(), isCtrlRunning()?"yes":"no");
+
     spinner.start();
     startThread();
 }
 
 bool RobotInterface::startThread()
 {
-    return _thread.start(ThreadEntryFunc);
+    return _thread.start(ThreadEntryFunc, this);
 }
 
 bool RobotInterface::closeThread()
@@ -110,19 +112,22 @@ void RobotInterface::ThreadEntry()
             geometry_msgs::Quaternion o_s = pose_start.orientation;
 
             if (!isPoseReached(p_d.x, p_d.y, p_d.z,
-                               o_d.x, o_d.y, o_d.z, o_d.w))
+                               o_d.x, o_d.y, o_d.z, o_d.w, "strict"))
             {
                 vector<double> joint_angles;
 
                 geometry_msgs::Point p_c = p_s + (p_d - p_s) / norm(p_d - p_s) * PICK_UP_SPEED * time_elap;
 
-                if (dot(p_d-p_s, p_d-p_c)/(norm(p_d-p_s)*norm(p_d-p_c)) == 1)
+                // This would mean equal to 1 within some small epsilon
+                if (dot(p_d-p_s, p_d-p_c)/(norm(p_d-p_s)*norm(p_d-p_c)) - 1 <  1e-8 &&
+                    dot(p_d-p_s, p_d-p_c)/(norm(p_d-p_s)*norm(p_d-p_c)) - 1 > -1e-8)
                 {
-                    goToPoseNoCheck(p_c, o_d);
+                    if (!goToPoseNoCheck(p_c, o_d))     ROS_WARN("[%s] desired configuration could not be reached.", getLimb().c_str());
                 }
                 else
                 {
-                    goToPoseNoCheck(p_d, o_d);
+                    ROS_INFO("p_s       %s\tp_d       %s\tp_c %s", print(p_s).c_str(), print(p_d).c_str(), print(getPose().position).c_str());
+                    if (!goToPoseNoCheck(pose_des))     ROS_WARN("[%s] desired configuration could not be reached.", getLimb().c_str());
                 }
             }
             else
@@ -171,6 +176,8 @@ bool RobotInterface::initCtrlParams()
 
 void RobotInterface::ctrlMsgCb(const baxter_collaboration::GoToPose& msg)
 {
+    ROS_INFO("ctrlMsgCb");
+
     if (int(getState()) != WORKING)
     {
         pose_des.position = msg.pose_stamp.pose.position;
@@ -209,6 +216,8 @@ void RobotInterface::ctrlMsgCb(const baxter_collaboration::GoToPose& msg)
 
 void RobotInterface::setCtrlRunning(bool _flag)
 {
+    // ROS_INFO("[%s] Setting is_ctrl_running to: %i", getLimb().c_str(), _flag);
+
     pthread_mutex_lock(&_mutex_ctrl);
     is_ctrl_running = _flag;
     pthread_mutex_unlock(&_mutex_ctrl);
@@ -223,6 +232,8 @@ bool RobotInterface::isCtrlRunning()
     pthread_mutex_lock(&_mutex_ctrl);
     res = is_ctrl_running;
     pthread_mutex_unlock(&_mutex_ctrl);
+
+    // ROS_INFO("[%s] is_ctrl_running equal to: %i", "left", res);
 
     return res;
 }
@@ -515,7 +526,7 @@ bool RobotInterface::isPoseReached(double px, double py, double pz,
 
 bool RobotInterface::isPositionReached(double px, double py, double pz, string mode)
 {
-    ROS_DEBUG("[%s] Checking %s position. Error: %g %g %g", getLimb().c_str(),
+    ROS_INFO("[%s] Checking %s position. Error: %g %g %g", getLimb().c_str(),
                    mode.c_str(), px-getPos().x, py-getPos().y, pz-getPos().z);
 
     if (mode == "strict")
@@ -545,7 +556,7 @@ bool RobotInterface::isOrientationReached(double ox, double oy, double oz, doubl
     tf::Quaternion cur;
     tf::quaternionMsgToTF(getOri(), cur);
 
-    ROS_DEBUG("[%s] Checking    orientation. Current %g %g %g %g Desired %g %g %g %g Dot %g",
+    ROS_INFO("[%s] Checking    orientation. Current %g %g %g %g Desired %g %g %g %g Dot %g",
                            getLimb().c_str(), getOri().x, getOri().y, getOri().z, getOri().w,
                                                                   ox,oy,oz,ow, des.dot(cur));
 
