@@ -151,6 +151,24 @@ std::string print(geometry_msgs::Point p)
     return res.str();
 }
 
+std::string print(geometry_msgs::Quaternion q)
+{
+    stringstream res;
+
+    res << "[" << q.x << ", " << q.y << ", " << q.z << ", " << q.w << "]";
+
+    return res.str();
+}
+
+std::string print(geometry_msgs::Pose p)
+{
+    stringstream res;
+
+    res << "[" << print(p.position) << ", " << print(p.orientation) << "]";
+
+    return res.str();
+}
+
 /**************************************************************************/
 /*                               Utils                                    */
 /**************************************************************************/

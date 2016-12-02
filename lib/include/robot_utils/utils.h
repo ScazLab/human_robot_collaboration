@@ -177,11 +177,25 @@ geometry_msgs::Point operator/ (const geometry_msgs::Point& a, const double& b);
 double dot(const geometry_msgs::Point& a, const geometry_msgs::Point& b);
 
 /**
- * Print function.
+ * Print function for a geometry_msgs::Point.
  *
- * @return A text description of the Point
+ * @return A text description of the Point.
  */
 std::string print(geometry_msgs::Point p);
+
+/**
+ * Print function for a geometry_msgs::Quaternion.
+ *
+ * @return A text description of the Quaternion.
+ */
+std::string print(geometry_msgs::Quaternion q);
+
+/**
+ * Print function for a geometry_msgs::Pose.
+ *
+ * @return A text description of the Pose.
+ */
+std::string print(geometry_msgs::Pose p);
 
 /**
  * Struct that handles the state of the RobotInterface Class
