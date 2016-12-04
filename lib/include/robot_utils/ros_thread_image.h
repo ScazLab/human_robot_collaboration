@@ -7,7 +7,7 @@
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/highgui/highgui.hpp>
 
-#include "robot_interface/ros_thread.h"
+#include "robot_utils/ros_thread.h"
 #include "robot_utils/utils.h"
 
 /**

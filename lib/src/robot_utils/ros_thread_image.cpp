@@ -1,4 +1,4 @@
-#include "robot_interface/ros_thread_image.h"
+#include "robot_utils/ros_thread_image.h"
 
 /**************************************************************************/
 /*                          ROSThreadImage                                */
