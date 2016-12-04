@@ -1,4 +1,4 @@
-#include "robot_interface/baxter_trac_ik.h"
+#include "robot_utils/baxter_trac_ik.h"
 
 baxterTracIK::baxterTracIK(std::string limb, bool no_robot) : _limb(limb), _urdf_param("/robot_description"),
                                                               _timeout(0.005), _eps(1e-6), _num_steps(4)

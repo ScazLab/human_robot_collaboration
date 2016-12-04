@@ -21,8 +21,7 @@
 
 #include "robot_utils/utils.h"
 #include "robot_utils/ros_thread_obj.h"
-
-#include "robot_interface/baxter_trac_ik.h"
+#include "robot_utils/baxter_trac_ik.h"
 
 #include <baxter_collaboration/GoToPose.h>
 
