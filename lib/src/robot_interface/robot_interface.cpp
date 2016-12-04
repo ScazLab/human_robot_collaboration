@@ -132,6 +132,7 @@ void RobotInterface::ThreadEntry()
             }
             else
             {
+                ROS_INFO("[%s] Pose reached", getLimb().c_str());
                 setCtrlRunning(false);
             }
 
