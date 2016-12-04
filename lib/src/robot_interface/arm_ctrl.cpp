@@ -334,7 +334,7 @@ bool ArmCtrl::moveArm(string dir, double dist, string mode, bool disable_coll_av
             if (dir == "backward" | dir == "forward")
             {
                 int sgn = dir=="backward"?-1:+1;
-                px = px + sgn * PICK_UP_SPEED * t_elap;
+                px = px + sgn * ARM_SPEED * t_elap;
 
                 if (dir == "backward")
                 {
@@ -348,7 +348,7 @@ bool ArmCtrl::moveArm(string dir, double dist, string mode, bool disable_coll_av
             if (dir == "right" | dir == "left")
             {
                 int sgn = dir=="right"?-1:+1;
-                py = py + sgn * PICK_UP_SPEED * t_elap;
+                py = py + sgn * ARM_SPEED * t_elap;
 
                 if (dir == "right")
                 {
@@ -362,7 +362,7 @@ bool ArmCtrl::moveArm(string dir, double dist, string mode, bool disable_coll_av
             if (dir == "down" | dir == "up")
             {
                 int sgn = dir=="down"?-1:+1;
-                pz = pz + sgn * PICK_UP_SPEED * t_elap;
+                pz = pz + sgn * ARM_SPEED * t_elap;
 
                 if (dir == "down")
                 {

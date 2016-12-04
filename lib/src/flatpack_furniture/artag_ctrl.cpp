@@ -211,7 +211,7 @@ bool ARTagCtrl::pickARTag()
 
         double x = getMarkerPos().x;
         double y = getMarkerPos().y;
-        double z = z_start - PICK_UP_SPEED * new_elap_time;
+        double z = z_start - ARM_SPEED * new_elap_time;
 
         ROS_DEBUG("Time %g Going to: %g %g %g", new_elap_time, x, y, z);
 

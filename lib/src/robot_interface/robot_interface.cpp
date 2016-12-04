@@ -116,7 +116,7 @@ void RobotInterface::ThreadEntry()
             {
                 vector<double> joint_angles;
 
-                geometry_msgs::Point p_c = p_s + (p_d - p_s) / norm(p_d - p_s) * PICK_UP_SPEED * time_elap;
+                geometry_msgs::Point p_c = p_s + (p_d - p_s) / norm(p_d - p_s) * ARM_SPEED * time_elap;
 
                 // This would mean equal to 1 within some small epsilon (1e-8)
                 if (dot(p_d-p_s, p_d-p_c)/(norm(p_d-p_s)*norm(p_d-p_c)) - 1 <  EPSILON &&
