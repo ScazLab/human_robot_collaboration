@@ -61,6 +61,8 @@
 #define HOME_POS_L   0.65,  0.45
 #define HOME_POS_R   0.65, -0.25
 
+#define EPSILON         1e-8
+
 /*
  * sets the position of a pose
  *

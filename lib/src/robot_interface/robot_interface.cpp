@@ -118,9 +118,9 @@ void RobotInterface::ThreadEntry()
 
                 geometry_msgs::Point p_c = p_s + (p_d - p_s) / norm(p_d - p_s) * PICK_UP_SPEED * time_elap;
 
-                // This would mean equal to 1 within some small epsilon
-                if (dot(p_d-p_s, p_d-p_c)/(norm(p_d-p_s)*norm(p_d-p_c)) - 1 <  1e-8 &&
-                    dot(p_d-p_s, p_d-p_c)/(norm(p_d-p_s)*norm(p_d-p_c)) - 1 > -1e-8)
+                // This would mean equal to 1 within some small epsilon (1e-8)
+                if (dot(p_d-p_s, p_d-p_c)/(norm(p_d-p_s)*norm(p_d-p_c)) - 1 <  EPSILON &&
+                    dot(p_d-p_s, p_d-p_c)/(norm(p_d-p_s)*norm(p_d-p_c)) - 1 > -EPSILON)
                 {
                     if (!goToPoseNoCheck(p_c, o_d))     ROS_WARN("[%s] desired configuration could not be reached.", getLimb().c_str());
                 }
