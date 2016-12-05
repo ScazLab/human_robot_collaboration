@@ -60,6 +60,7 @@ env:
     - ROSINSTALL_FILE=$CI_SOURCE_PATH/dependencies.rosinstall
     - CATKIN_OPTIONS=$CI_SOURCE_PATH/catkin.options
     - ROS_PARALLEL_JOBS='-j8 -l6'
+    - REPO_NAME=$(echo $TRAVIS_REPO_SLUG | cut -d"/" -f2)
 
 ################################################################################
 
@@ -73,6 +74,7 @@ before_install:
   # Prepare rosdep to install dependencies.
   - sudo rosdep init
   - rosdep update
+  - echo $REPO_NAME
 
 # Create a catkin workspace with the package under integration.
 install:
