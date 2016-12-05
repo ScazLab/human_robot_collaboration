@@ -70,8 +70,6 @@ before_install:
   - sudo apt-get update -qq
   - sudo apt-get install -y python-catkin-pkg python-rosdep python-wstool ros-$ROS_DISTRO-catkin ros-$ROS_DISTRO-desktop-full libnlopt-dev
   - source /opt/ros/$ROS_DISTRO/setup.bash
-  - aptitude search opencv | grep ^i
-  - aptitude search opencv | grep indigo
   # Prepare rosdep to install dependencies.
   - sudo rosdep init
   - rosdep update
