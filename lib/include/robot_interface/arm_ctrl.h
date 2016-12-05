@@ -267,8 +267,8 @@ public:
     /**
      * Constructor
      */
-    ArmCtrl(std::string _name, std::string _limb,
-            bool _no_robot = false, bool _use_forces = true, bool _use_trac_ik = true);
+    ArmCtrl(std::string _name, std::string _limb, bool _no_robot = false,
+            bool _use_forces = true, bool _use_trac_ik = true, bool _use_cart_ctrl = false);
 
     /*
      * Destructor

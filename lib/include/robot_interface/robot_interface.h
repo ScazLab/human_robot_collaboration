@@ -99,6 +99,9 @@ private:
     // Internal thread that implements the controller server
     ROSThreadObj _thread;
 
+    // Flag to know if we're using the cartesian controller or not
+    bool _use_cart_ctrl;
+
     // Control mode for the controller server. It can be either
     // baxter_collaboration::GoToPose::POSITION_MODE or
     // baxter_collaboration::GoToPose::VELOCITY_MODE , but for
@@ -451,8 +454,8 @@ protected:
     void suppressCollisionAv();
 
 public:
-    RobotInterface(std::string name, std::string limb,
-                   bool no_robot = false, bool use_forces = true, bool use_trac_ik = true);
+    RobotInterface(std::string name, std::string limb, bool no_robot = false,
+                   bool use_forces = true, bool use_trac_ik = true, bool use_cart_ctrl = true);
 
     ~RobotInterface();
 

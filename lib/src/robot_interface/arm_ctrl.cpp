@@ -5,8 +5,8 @@ using namespace std;
 using namespace geometry_msgs;
 using namespace baxter_core_msgs;
 
-ArmCtrl::ArmCtrl(string _name, string _limb, bool _no_robot, bool _use_forces, bool _use_trac_ik) :
-                 RobotInterface(_name,_limb, _no_robot, _use_forces, _use_trac_ik),
+ArmCtrl::ArmCtrl(string _name, string _limb, bool _no_robot, bool _use_forces, bool _use_trac_ik, bool _use_cart_ctrl) :
+                 RobotInterface(_name,_limb, _no_robot, _use_forces, _use_trac_ik, _use_cart_ctrl),
                  Gripper(_limb, _no_robot), object_id(-1), action(""), sub_state("")
 {
     std::string topic = "/"+getName()+"/state_"+_limb;

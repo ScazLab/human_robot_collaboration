@@ -12,10 +12,11 @@ using namespace cv;
 /**************************************************************************/
 /*                         RobotInterface                                 */
 /**************************************************************************/
-RobotInterface::RobotInterface(string name, string limb, bool no_robot, bool use_forces, bool use_trac_ik) :
-                               _n(name), _name(name), _limb(limb), _state(START), spinner(4), ir_ok(false),
-                               _no_robot(no_robot), is_ctrl_running(false), ik_solver(limb, no_robot),
-                               _use_forces(use_forces), _use_trac_ik(use_trac_ik)
+RobotInterface::RobotInterface(string name, string limb, bool no_robot, bool use_forces,
+                               bool use_trac_ik, bool use_cart_ctrl) : _n(name), _name(name), _limb(limb),
+                               _state(START), spinner(4), ir_ok(false), _no_robot(no_robot),
+                               is_ctrl_running(false), ik_solver(limb, no_robot), _use_forces(use_forces),
+                               _use_trac_ik(use_trac_ik), _use_cart_ctrl(use_cart_ctrl)
 {
     if (no_robot) return;
 
@@ -43,8 +44,12 @@ RobotInterface::RobotInterface(string name, string limb, bool no_robot, bool use
     _coll_av_sub   = _n.subscribe("/robot/limb/" + _limb + "/collision_avoidance_state",
                                     SUBSCRIBER_BUFFER, &RobotInterface::collAvCb, this);
 
-    _ctrl_sub      = _n.subscribe("/" + _name + "/limb/" + _limb + "/go_to_pose",
-                                    SUBSCRIBER_BUFFER, &RobotInterface::ctrlMsgCb, this);
+    if (_use_cart_ctrl)
+    {
+        std::string topic = "/" + _name + "/" + _limb + "/go_to_pose";
+        _ctrl_sub      = _n.subscribe(topic, SUBSCRIBER_BUFFER, &RobotInterface::ctrlMsgCb, this);
+        ROS_INFO("[%s] Created cartesian controller that listens to : %s", getLimb().c_str(), topic.c_str());
+    }
 
     if (!_use_trac_ik)
     {
@@ -73,7 +78,8 @@ RobotInterface::RobotInterface(string name, string limb, bool no_robot, bool use
     ROS_INFO("[%s] Is controller running : %s", getLimb().c_str(), isCtrlRunning()?"yes":"no");
 
     spinner.start();
-    startThread();
+
+    if (_use_cart_ctrl)     startThread();
 }
 
 bool RobotInterface::startThread()
