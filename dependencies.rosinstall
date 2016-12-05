@@ -12,6 +12,6 @@
     local-name: aruco_ros
     uri: https://github.com/scazlab/aruco_ros.git
 
-- bitbucket:
+- git:
     local-name: trac_ik
     uri: https://bitbucket.org/alecive/trac_ik
