@@ -111,29 +111,30 @@ void RobotInterface::ThreadEntry()
         {
             double time_elap = (ros::Time::now() - time_start).toSec();
 
-            geometry_msgs::Point      p_d = pose_des.position;
-            geometry_msgs::Quaternion o_d = pose_des.orientation;
+            geometry_msgs::Point      p_d =      pose_des.position;
+            geometry_msgs::Quaternion o_d =   pose_des.orientation;
 
-            geometry_msgs::Point      p_s = pose_start.position;
+            geometry_msgs::Point      p_s =    pose_start.position;
             geometry_msgs::Quaternion o_s = pose_start.orientation;
 
             if (!isPoseReached(p_d.x, p_d.y, p_d.z,
                                o_d.x, o_d.y, o_d.z, o_d.w, "strict"))
             {
-                vector<double> joint_angles;
-
                 geometry_msgs::Point p_c = p_s + (p_d - p_s) / norm(p_d - p_s) * ARM_SPEED * time_elap;
 
                 // This would mean equal to 1 within some small epsilon (1e-8)
                 if (dot(p_d-p_s, p_d-p_c)/(norm(p_d-p_s)*norm(p_d-p_c)) - 1 <  EPSILON &&
                     dot(p_d-p_s, p_d-p_c)/(norm(p_d-p_s)*norm(p_d-p_c)) - 1 > -EPSILON)
                 {
-                    if (!goToPoseNoCheck(p_c, o_d))     ROS_WARN("[%s] desired configuration could not be reached.", getLimb().c_str());
+                    if (!goToPoseNoCheck(p_c, o_d)) ROS_WARN("[%s] desired configuration could "
+                                                             "not be reached.", getLimb().c_str());
                 }
                 else
                 {
-                    // ROS_INFO("p_s       %s\tp_d       %s\tp_c %s", print(p_s).c_str(), print(p_d).c_str(), print(getPose().position).c_str());
-                    if (!goToPoseNoCheck(pose_des))     ROS_WARN("[%s] desired configuration could not be reached.", getLimb().c_str());
+                    // ROS_INFO("p_s %s\tp_d %s\tp_c %s", print(p_s).c_str(), print(p_d).c_str(),
+                    //                                        print(getPose().position).c_str());
+                    if (!goToPoseNoCheck(pose_des)) ROS_WARN("[%s] desired configuration could "
+                                                             "not be reached.", getLimb().c_str());
                 }
             }
             else
@@ -143,6 +144,7 @@ void RobotInterface::ThreadEntry()
             }
 
         }
+
         r.sleep();
     }
 
