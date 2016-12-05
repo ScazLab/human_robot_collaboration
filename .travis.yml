@@ -47,6 +47,9 @@ dist: trusty
 sudo: required
 language:
   - generic
+compiler:
+  - clang
+  - gcc
 cache:
   - apt
 
