@@ -75,7 +75,7 @@ private:
     std::vector<double>       _filt_force;
     double                    force_thres;
     std::vector<double>      _filt_change;
-    double                  _filt_updated;
+    ros::Time     _time_filt_last_updated;
     double                rel_force_thres;
     double                  filt_variance;
 
@@ -367,6 +367,14 @@ protected:
     void setJointCommands(double s0, double s1, double e0, double e1,
                                      double w0, double w1, double w2,
                           baxter_core_msgs::JointCommand& joint_cmd);
+
+    /*
+     * Finds the relative difference of a to b
+     * @param  a  first value
+     * @param  b  value to compare the first value to
+     * @return value of the relative difference
+     */
+    double findRelativeDifference(double a, double b);
 
     /*
      * Detects if the force overcame a set threshold in either one of its three axis

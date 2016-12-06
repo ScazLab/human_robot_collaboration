@@ -5,19 +5,24 @@
 
     <arg name="forceThresholdL"      default="2.75"/>    <!-- [N] -->
     <arg name="forceThresholdR"      default="2.0"/>    <!-- [N] -->
-    <arg name="forceFiltVarianceL"   default="0.001"/>
-    <arg name="relForceThresholdL"   default="65.0"/>
+    <arg name="forceFilterVarianceL" default="0.001"/>
+    <arg name="forceFilterVarianceR" default="0.001"/>
+    <arg name="relativeForceThresholdL"   default="65.0"/>
+    <arg name="relativeForceThresholdR"   default="65.0"/>
     <arg name="speechPopUpDuration"  default="20.0"/>    <!-- [s] -->
 
     <!-- If the robot will recover from an error or will wait the external planner's decisions -->
-    <arg name="internalRecovery"    default="false"/>
+    <arg name="internalRecovery"    default="true"/>
     <!-- If the system should use the robot or not (useful for debugging) -->
     <arg name="useRobot"            default="true"/>
 
-    <param name="action_provider/force_threshold_left"  value="$(arg forceThresholdL)"/>
-    <param name="action_provider/force_threshold_right" value="$(arg forceThresholdR)"/>
-    <param name="action_provider/force_filt_variance_left" value="$(arg forceFiltVarianceL)"/>
-    <param name="action_provider/rel_force_threshold_left" value="$(arg relForceThresholdL)"/>
+    <param name="action_provider/force_threshold_left"              value="$(arg forceThresholdL)"/>
+    <param name="action_provider/force_threshold_right"             value="$(arg forceThresholdR)"/>
+    <param name="action_provider/force_filter_variance_left"        value="$(arg forceFilterVarianceL)"/>
+    <param name="action_provider/force_filter_variance_right"       value="$(arg forceFilterVarianceR)"/>
+    <param name="action_provider/relative_force_threshold_left"     value="$(arg relativeForceThresholdL)"/>
+    <param name="action_provider/relative_force_threshold_right"    value="$(arg relativeForceThresholdR)"/>
+
     <param name="action_provider/internal_recovery"     value="$(arg internalRecovery)"/>
     <param name="action_provider/use_robot"             value="$(arg useRobot)"/>
     <param name="baxter_display/speech_duration"        value="$(arg speechPopUpDuration)"/>
