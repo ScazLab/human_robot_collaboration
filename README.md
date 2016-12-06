@@ -20,12 +20,13 @@ We use the new Catkin Command Line Tools `catkin_tools`, a Python package that p
 
 ## Execution
 
- 1. On one terminal, launch the `ARuco` software: `roslaunch baxter_collaboration baxter_marker_publisher.launch`
- 2. On another terminal, launch the Baxter Collaboration software, e.g. `roslaunch baxter_collaboration flatpack_furniture.launch` (these two launch files should be in the same launch file, but for development purposes it is much better to separate development code and production-ready code)
- 3. Request actions to either one of the two arms by using the proper service (`/action_provider/service_left` for left arm, `/action_provider/service_right` for right arm). Here are some examples to make the demo work from terminal:
+ 1. Be sure that the system you're running the code has access to the Baxter robot. This is usually done by running the `baxter.sh` script that should be provided in your Baxter installation. See [here](http://sdk.rethinkrobotics.com/wiki/Hello_Baxter#Source_ROS_Environment_Setup_Script) for more info.
+ 2. On one terminal, launch the `ARuco` software: `roslaunch baxter_collaboration baxter_marker_publisher.launch`
+ 3. On another terminal, launch the Baxter Collaboration software, e.g. `roslaunch baxter_collaboration flatpack_furniture.launch` (these two launch files should be in the same launch file, but for development purposes it is much better to separate development code and production-ready code)
+ 4. Request actions to either one of the two arms by using the proper service (`/action_provider/service_left` for left arm, `/action_provider/service_right` for right arm). Here are some examples to make the demo work from terminal:
   * `rosservice call /action_provider/service_right "{action: 'hand_over', object: 17}"`
   * `rosservice call /action_provider/service_left "{action: 'get', object: 17}"`
- 4. Request 3D points to the cartesian controller server by using the proper topic (`/baxter_controller/limb/left/go_to_pose` for left arm, `/baxter_controller/limb/left/go_to_pose` for right arm). Here is one example: `rostopic pub /baxter_controller/limb/left/go_to_pose baxter_collaboration/GoToPose "{pose_stamp: {header:{seq: 0, stamp: {secs: 0.0, nsecs: 0.0}}, pose:{position:{ x: 0.5, y: 0.5, z: 0.5}, orientation:{ x: -100, y: -100, z: -100, w: -100}}}, ctrl_mode: 0}" --once`
+ 5. Request 3D points to the cartesian controller server by using the proper topic (`/baxter_controller/limb/left/go_to_pose` for left arm, `/baxter_controller/limb/left/go_to_pose` for right arm). Here is one example: `rostopic pub /baxter_controller/limb/left/go_to_pose baxter_collaboration/GoToPose "{pose_stamp: {header:{seq: 0, stamp: {secs: 0.0, nsecs: 0.0}}, pose:{position:{ x: 0.5, y: 0.5, z: 0.5}, orientation:{ x: -100, y: -100, z: -100, w: -100}}}, ctrl_mode: 0}" --once`
 
 ### Supported actions
 
