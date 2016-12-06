@@ -20,13 +20,20 @@ We use the new Catkin Command Line Tools `catkin_tools`, a Python package that p
 
 ## Execution
 
- 1. Be sure that the system you're running the code has access to the Baxter robot. This is usually done by running the `baxter.sh` script that should be provided in your Baxter installation. See [here](http://sdk.rethinkrobotics.com/wiki/Hello_Baxter#Source_ROS_Environment_Setup_Script) for more info.
- 2. On one terminal, launch the `ARuco` software: `roslaunch baxter_collaboration baxter_marker_publisher.launch`
- 3. On another terminal, launch the Baxter Collaboration software, e.g. `roslaunch baxter_collaboration flatpack_furniture.launch` (these two launch files should be in the same launch file, but for development purposes it is much better to separate development code and production-ready code)
- 4. Request actions to either one of the two arms by using the proper service (`/action_provider/service_left` for left arm, `/action_provider/service_right` for right arm). Here are some examples to make the demo work from terminal:
+ 0. Turn on the robot. Wait for the robot to finish its start-up phase.
+ 1. Be sure that the system you're running the code has access to the Baxter robot. This is usually done by running the `baxter.sh` script that should be provided in your Baxter installation. See [here](http://sdk.rethinkrobotics.com/wiki/Hello_Baxter#Source_ROS_Environment_Setup_Script) for more info. **@ScazLab students** → for what concerns the Baxter robot on the ScazLab, this means that every time you have to run some ROS software to be used on the robot you should open a new terminal, and do the following:
+ ```
+ cd ros_devel_ws
+ ./baxter.sh
+ ```
+ A change in the terminal prompt should acknowledge that you now have access to `baxter.local`
+ 2. Untuck the robot. **@ScazLab students** → we have an alias for this, so you just have to type `untuck`
+ 3. On one terminal (after doing step 1), launch the `ARuco` software: `roslaunch baxter_collaboration baxter_marker_publisher.launch`
+ 4. On another terminal (after doing step 1), launch the Baxter Collaboration software, e.g. `roslaunch baxter_collaboration flatpack_furniture.launch` or `roslaunch baxter_collaboration tower_building.launch` (these two launch files should be in the same launch file, but for development purposes it is much better to separate development code and production-ready code)
+ 5. Request actions to either one of the two arms by using the proper service (`/action_provider/service_left` for left arm, `/action_provider/service_right` for right arm). Here are some examples to make the demo work from terminal:
   * `rosservice call /action_provider/service_right "{action: 'hand_over', object: 17}"`
   * `rosservice call /action_provider/service_left "{action: 'get', object: 17}"`
- 5. Request 3D points to the cartesian controller server by using the proper topic (`/baxter_controller/left/go_to_pose` for left arm, `/baxter_controller/left/go_to_pose` for right arm). Here is one example: `rostopic pub /baxter_controller/left/go_to_pose baxter_collaboration/GoToPose "{pose_stamp: {header:{seq: 0, stamp: {secs: 0.0, nsecs: 0.0}}, pose:{position:{ x: 0.55, y: 0.55, z: 0.2}, orientation:{ x: 0, y: 1, z: 0, w: 0}}}, ctrl_mode: 0}" --once`
+ 6. Request 3D points to the cartesian controller server by using the proper topic (`/baxter_controller/left/go_to_pose` for left arm, `/baxter_controller/left/go_to_pose` for right arm). Here is one example: `rostopic pub /baxter_controller/left/go_to_pose baxter_collaboration/GoToPose "{pose_stamp: {header:{seq: 0, stamp: {secs: 0.0, nsecs: 0.0}}, pose:{position:{ x: 0.55, y: 0.55, z: 0.2}, orientation:{ x: 0, y: 1, z: 0, w: 0}}}, ctrl_mode: 0}" --once`
 
 ### Supported actions
 
