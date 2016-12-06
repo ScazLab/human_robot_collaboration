@@ -41,7 +41,9 @@
 
 #define Z_HIGH         0.400
 #define Z_LOW          0.200
+
 #define ARM_SPEED      0.120    // [m/s]
+#define ARM_ROT_SPEED  0.010    // [rad/s]
 
 #define FORCE_THRES_R   2.0  // [N]
 #define FORCE_THRES_L   2.0  // [N]
