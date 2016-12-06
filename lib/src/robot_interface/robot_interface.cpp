@@ -75,7 +75,7 @@ RobotInterface::RobotInterface(string name, string limb, bool no_robot, bool use
     }
     ROS_INFO("[%s] Force Threshold : %g", getLimb().c_str(), force_thres);
 
-    ROS_INFO("[%s] Is controller running : %s", getLimb().c_str(), isCtrlRunning()?"yes":"no");
+    ROS_INFO("[%s] Cartesian Controller %s enabled", getLimb().c_str(), _use_cart_ctrl?"is":"is NOT");
 
     spinner.start();
 
@@ -119,22 +119,12 @@ void RobotInterface::ThreadEntry()
 
             if (!isPoseReached(p_d, o_d, "strict"))
             {
-                // For the position, we model the end effector as a 3D point that moves toward the
+                geometry_msgs::Pose pose_curr = pose_des;
+
+                /* POSITIONAL PART */
+                // We model the end effector as a 3D point that moves toward the
                 // target with a straight trajectory and constant speed.
                 geometry_msgs::Point p_c = p_s + (p_d - p_s) / norm(p_d - p_s) * ARM_SPEED * time_elap;
-
-                // For the orientation, we use a spherical linear interpolation between o_s and o_d.
-                // The rate of the change is going to be dependent on the value of ARM_ROT_SPEED,
-                // which is fixed and predefined.
-                tf::Quaternion o_d_TF, o_s_TF;
-                tf::quaternionMsgToTF(o_d, o_d_TF);
-                tf::quaternionMsgToTF(o_s, o_s_TF);
-                double angle     = o_s_TF.angleShortestPath(o_d_TF);
-                double traj_time =            angle / ARM_ROT_SPEED;
-
-                tf::Quaternion o_c_TF = o_s_TF.slerp(o_d_TF, time_elap / traj_time);
-                geometry_msgs::Quaternion o_c;
-                tf::quaternionTFToMsg(o_c_TF, o_c);
 
                 // Check if the current position is overshooting the desired position
                 // By checking the sign of the cosine of the angle between p_d-p_s and p_d-p_c
@@ -142,16 +132,33 @@ void RobotInterface::ThreadEntry()
                 if (dot(p_d-p_s, p_d-p_c)/(norm(p_d-p_s)*norm(p_d-p_c)) - 1 <  EPSILON &&
                     dot(p_d-p_s, p_d-p_c)/(norm(p_d-p_s)*norm(p_d-p_c)) - 1 > -EPSILON)
                 {
-                    if (!goToPoseNoCheck(p_c, o_d)) ROS_WARN("[%s] desired configuration could "
-                                                             "not be reached.", getLimb().c_str());
+                    pose_curr.position    = p_c;
                 }
-                else
+
+                /* ORIENTATIONAL PART */
+                // We use a spherical linear interpolation between o_s and o_d. The speed of the interpolation
+                // depends on ARM_ROT_SPEED, which is fixed and defined in utils.h
+                tf::Quaternion o_d_TF, o_s_TF;
+                tf::quaternionMsgToTF(o_d, o_d_TF);
+                tf::quaternionMsgToTF(o_s, o_s_TF);
+                double angle     = o_s_TF.angleShortestPath(o_d_TF);
+                double traj_time =            angle / ARM_ROT_SPEED;
+
+                if (time_elap < traj_time)
                 {
-                    // ROS_INFO("p_s %s\tp_d %s\tp_c %s", print(p_s).c_str(), print(p_d).c_str(),
-                    //                                        print(getPose().position).c_str());
-                    if (!goToPoseNoCheck(pose_des)) ROS_WARN("[%s] desired configuration could "
-                                                             "not be reached.", getLimb().c_str());
+                    tf::Quaternion o_c_TF = o_s_TF.slerp(o_d_TF, time_elap / traj_time);
+                    o_c_TF.normalize();
+                    geometry_msgs::Quaternion o_c;
+                    tf::quaternionTFToMsg(o_c_TF, o_c);
+
+                    pose_curr.orientation = o_c;
                 }
+
+                // ROS_INFO("[%s] Executing trajectory: time %g/%g pose_curr %s", getLimb.c_str(), time_elap,
+                //                                                      traj_time, print(pose_curr).c_str());
+
+                if (!goToPoseNoCheck(pose_curr)) ROS_WARN("[%s] desired configuration could not be reached.",
+                                                                                          getLimb().c_str());
             }
             else if (hasCollided("strict"))
             {
@@ -277,7 +284,9 @@ void RobotInterface::collAvCb(const baxter_core_msgs::CollisionAvoidanceState& m
         string objects = "";
         for (int i = 0; i < msg.collision_object.size(); ++i)
         {
-            objects = objects + " " + msg.collision_object[i];
+            // Let's remove the first part of the collision object name for visualization
+            // purposes, i.e. the part that says "collision_"
+            objects = objects + " " + std::string(msg.collision_object[i]).erase(0,10);
         }
         ROS_WARN_THROTTLE(1, "[%s] Collision detected with: %s", getLimb().c_str(), objects.c_str());
     }
