@@ -136,6 +136,11 @@ void RobotInterface::ThreadEntry()
                                                              "not be reached.", getLimb().c_str());
                 }
             }
+            else if (hasCollided("strict"))
+            {
+                ROS_INFO("[%s] Collision! Stopping.", getLimb().c_str());
+                setCtrlRunning(false);
+            }
             else
             {
                 ROS_INFO("[%s] Pose reached", getLimb().c_str());
@@ -512,15 +517,16 @@ bool RobotInterface::computeIK(double px, double py, double pz,
 
 bool RobotInterface::hasCollided(string mode)
 {
-    float thres;
+    double thres;
 
-    if     (mode == "strict") thres = 0.050;
+    if      (mode == "strict") thres = 0.050;
     else if (mode ==  "loose") thres = 0.067;
 
     if (_curr_range <= _curr_max_range &&
-       _curr_range >= _curr_min_range &&
-       _curr_range <= thres) return true;
-    else return false;
+        _curr_range >= _curr_min_range &&
+        _curr_range <= thres             ) return true;
+
+    return false;
 }
 
 bool RobotInterface::isPoseReached(geometry_msgs::Pose p, std::string mode)
