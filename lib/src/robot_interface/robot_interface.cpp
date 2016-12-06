@@ -111,14 +111,17 @@ void RobotInterface::ThreadEntry()
         {
             double time_elap = (ros::Time::now() - time_start).toSec();
 
-            geometry_msgs::Point      p_d =      pose_des.position;
-            geometry_msgs::Quaternion o_d =   pose_des.orientation;
-
+            // Starting pose in terms of position and orientation
             geometry_msgs::Point      p_s =    pose_start.position;
             geometry_msgs::Quaternion o_s = pose_start.orientation;
 
+            // Desired  pose in terms of position and orientation
+            geometry_msgs::Point      p_d =      pose_des.position;
+            geometry_msgs::Quaternion o_d =   pose_des.orientation;
+
             if (!isPoseReached(p_d, o_d, "strict"))
             {
+                // Current pose to send to the IK solver.
                 geometry_msgs::Pose pose_curr = pose_des;
 
                 /* POSITIONAL PART */
@@ -159,18 +162,14 @@ void RobotInterface::ThreadEntry()
 
                 if (!goToPoseNoCheck(pose_curr)) ROS_WARN("[%s] desired configuration could not be reached.",
                                                                                           getLimb().c_str());
-            }
-            else if (hasCollided("strict"))
-            {
-                ROS_INFO("[%s] Collision! Stopping.", getLimb().c_str());
-                setCtrlRunning(false);
+
+                if (hasCollided("strict")) ROS_INFO_THROTTLE(2, "[%s] is colliding!", getLimb().c_str());
             }
             else
             {
                 ROS_INFO("[%s] Pose reached", getLimb().c_str());
                 setCtrlRunning(false);
             }
-
         }
 
         r.sleep();
