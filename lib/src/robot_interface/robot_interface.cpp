@@ -117,8 +117,7 @@ void RobotInterface::ThreadEntry()
             geometry_msgs::Point      p_s =    pose_start.position;
             geometry_msgs::Quaternion o_s = pose_start.orientation;
 
-            if (!isPoseReached(p_d.x, p_d.y, p_d.z,
-                               o_d.x, o_d.y, o_d.z, o_d.w, "strict"))
+            if (!isPoseReached(p_d, o_d, "strict"))
             {
                 geometry_msgs::Point p_c = p_s + (p_d - p_s) / norm(p_d - p_s) * ARM_SPEED * time_elap;
 
@@ -524,13 +523,29 @@ bool RobotInterface::hasCollided(string mode)
     else return false;
 }
 
+bool RobotInterface::isPoseReached(geometry_msgs::Pose p, std::string mode)
+{
+    return isPoseReached(p.position, p.orientation, mode);
+}
+
+bool RobotInterface::isPoseReached(geometry_msgs::Point p,
+                                   geometry_msgs::Quaternion o, std::string mode)
+{
+    return isPoseReached(p.x, p.y, p.z, o.x, o.y, o.z, o.w, mode);
+}
+
 bool RobotInterface::isPoseReached(double px, double py, double pz,
                                    double ox, double oy, double oz, double ow, string mode)
 {
-    if (!isPositionReached(px, py, pz, mode))         return false;
+    if (!   isPositionReached(px, py, pz,     mode))  return false;
     if (!isOrientationReached(ox, oy, oz, ow, mode))  return false;
 
     return true;
+}
+
+bool RobotInterface::isPositionReached(geometry_msgs::Point p, std::string mode)
+{
+    return isPositionReached(p.x, p.y, p.z, mode);
 }
 
 bool RobotInterface::isPositionReached(double px, double py, double pz, string mode)
@@ -546,9 +561,9 @@ bool RobotInterface::isPositionReached(double px, double py, double pz, string m
     }
     else if (mode == "loose")
     {
-        if (abs(getPos().x-px) > 0.01) return false;
-        if (abs(getPos().y-py) > 0.01) return false;
-        if (abs(getPos().z-pz) > 0.01) return false;
+        if (abs(getPos().x-px) >  0.01) return false;
+        if (abs(getPos().y-py) >  0.01) return false;
+        if (abs(getPos().z-pz) >  0.01) return false;
     }
     else
     {
@@ -559,15 +574,20 @@ bool RobotInterface::isPositionReached(double px, double py, double pz, string m
     return true;
 }
 
+bool RobotInterface::isOrientationReached(geometry_msgs::Quaternion q, std::string mode)
+{
+    return isOrientationReached(q.x, q.y, q.z, q.w, mode);
+}
+
 bool RobotInterface::isOrientationReached(double ox, double oy, double oz, double ow, string mode)
 {
-    tf::Quaternion des(ox,oy,oz,ow);
+    tf::Quaternion des(ox, oy, oz, ow);
     tf::Quaternion cur;
     tf::quaternionMsgToTF(getOri(), cur);
 
     ROS_DEBUG("[%s] Checking    orientation. Current %g %g %g %g Desired %g %g %g %g Dot %g",
                            getLimb().c_str(), getOri().x, getOri().y, getOri().z, getOri().w,
-                                                                  ox,oy,oz,ow, des.dot(cur));
+                                                               ox, oy, oz, ow, des.dot(cur));
 
     if (abs(des.dot(cur)) < 0.985)  return false;
 
@@ -585,8 +605,8 @@ bool RobotInterface::isConfigurationReached(baxter_core_msgs::JointCommand joint
                                                                                       getLimb().c_str(),
          _curr_jnts.position[0], _curr_jnts.position[1], _curr_jnts.position[2], _curr_jnts.position[3],
                                  _curr_jnts.position[4], _curr_jnts.position[5], _curr_jnts.position[6],
-                 joint_cmd.command[0], joint_cmd.command[1], joint_cmd.command[2], joint_cmd.command[3],
-                                       joint_cmd.command[4], joint_cmd.command[5], joint_cmd.command[6]);
+           joint_cmd.command[0],   joint_cmd.command[1],   joint_cmd.command[2],   joint_cmd.command[3],
+                                   joint_cmd.command[4],   joint_cmd.command[5],   joint_cmd.command[6]);
 
     bool result = false;
     for (int i = 0; i < joint_cmd.names.size(); ++i)
