@@ -91,7 +91,12 @@ private:
      * Collision avoidance State
      */
     ros::Subscriber _coll_av_sub;
-    bool            is_colliding;
+    bool           is_coll_av_on;
+
+    /**
+     * Cuff buttons
+     */
+    ros::Subscriber _cuff_sub;
 
     /**
      * Control server
@@ -169,7 +174,55 @@ private:
      */
     void ThreadEntry();
 
-protected:
+    /**
+     * @brief Publishes the desired joint configuration
+     * @details Publishes the desired joint configuration in the proper topic
+     *
+     * @param _cmd The desired joint configuration
+     */
+    void publish_joint_cmd(baxter_core_msgs::JointCommand _cmd);
+
+    /*
+     * Callback function that sets the current pose to the pose received from
+     * the endpoint state topic
+     *
+     * @param msg the topic message
+     */
+    void endpointCb(const baxter_core_msgs::EndpointState& msg);
+
+    /*
+     * Callback function for the CUFF OK button
+     *
+     * @param msg the topic message
+     */
+    void cuffCb(const baxter_core_msgs::DigitalIOState& msg);
+
+    /**
+     * Callback for the joint states. Used to seed the
+     * inverse kinematics solver
+     *
+     * @param msg the topic message
+     */
+    void jointStatesCb(const sensor_msgs::JointState& msg);
+
+    /**
+     * Callback for the collision avoidance state. Used to detect
+     * if the robot is currently pushed back by the collision avoidance
+     * software which is embedded into the Baxter robot and we don't have
+     * access to.
+     *
+     * @param msg the topic message
+     */
+    void collAvCb(const baxter_core_msgs::CollisionAvoidanceState& msg);
+
+    /*
+     * Infrared sensor callback function that sets the current range to the range received
+     * from the left hand range state topic
+     *
+     * @param      The message
+     * @return     N/A
+     */
+    void IRCb(const sensor_msgs::RangeConstPtr& msg);
 
     /*
      * Starts thread that executes the control server. For now it is
@@ -198,9 +251,8 @@ protected:
      */
     bool killThread();
 
-    // Cuff OK Button (the circular one)
-    ros::Subscriber _cuff_sub;
 
+protected:
     /*
      * Checks for if the system is ok. To be called inside every thread execution,
      * in order to make it exit gracefully if there is any problem.
@@ -210,7 +262,7 @@ protected:
     bool ok();
 
     /*
-     * checks if end effector has made contact with a token by checking if
+     * Checks if end effector has made contact with a token by checking if
      * the range of the infrared sensor has fallen below the threshold value
      *
      * @param      current range values of the IR sensor, and a string
@@ -299,11 +351,23 @@ protected:
      * Checks if the arm has reached its intended joint configuration by comparing
      * the requested and the current joint configurations
      *
-     * @param  j     requested joint configuration
-     * @param  mode  (strict/loose) the desired level of precision
-     * @return       true/false if success/failure
+     * @param  des_jnts     requested joint configuration as a set of doubles. It is
+     *                      assumed to be populated as in the setJointCommands method, i.e.
+     *                      in the order s0, s1, e0, e1, w0, w1, w2.
+     * @param  mode         (strict/loose) the desired level of precision
+     * @return              true/false if success/failure
      */
-    bool isConfigurationReached(baxter_core_msgs::JointCommand joint_cmd, std::string mode = "loose");
+    bool isConfigurationReached(std::vector<double> des_jnts, std::string mode = "loose");
+
+    /*
+     * Checks if the arm has reached its intended joint configuration by comparing
+     * the requested and the current joint configurations
+     *
+     * @param  des_jnts     requested joint configuration
+     * @param  mode         (strict/loose) the desired level of precision
+     * @return              true/false if success/failure
+     */
+    bool isConfigurationReached(baxter_core_msgs::JointCommand des_jnts, std::string mode = "loose");
 
     /*
      * Uses IK solver to find joint angles solution for desired pose
@@ -382,7 +446,7 @@ protected:
      * @param  joint_angles requested joint configuration
      * @return              true/false if success/failure
      */
-    bool goToJointPoseNoCheck(std::vector<double> joint_angles);
+    bool goToJointConfNoCheck(std::vector<double> joint_angles);
 
     /*
      * Sets the joint names of a JointCommand
@@ -423,67 +487,9 @@ protected:
     bool waitForForceInteraction(double _wait_time = 20.0, bool disable_coll_av = false);
 
     /*
-     * Callback function that sets the current pose to the pose received from
-     * the endpoint state topic
-     *
-     * @param msg the topic message
-     */
-    void endpointCb(const baxter_core_msgs::EndpointState& msg);
-
-    /*
-     * Callback function for the CUFF OK button
-     *
-     * @param msg the topic message
-     */
-    void cuffCb(const baxter_core_msgs::DigitalIOState& msg);
-
-    /**
-     * Callback for the joint states. Used to seed the
-     * inverse kinematics solver
-     *
-     * @param msg the topic message
-     */
-    void jointStatesCb(const sensor_msgs::JointState& msg);
-
-    /**
-     * Callback for the collision avoidance state. Used to detect
-     * if the robot is currently pushed back by the collision avoidance
-     * software which is embedded into the Baxter robot and we don't have
-     * access to.
-     *
-     * @param msg the topic message
-     */
-    void collAvCb(const baxter_core_msgs::CollisionAvoidanceState& msg);
-
-    /*
-     * Infrared sensor callback function that sets the current range to the range received
-     * from the left hand range state topic
-     *
-     * @param      The message
-     * @return     N/A
-     */
-    void IRCb(const sensor_msgs::RangeConstPtr& msg);
-
-    /*
      * Filters the forces with a very simple low pass filter
      */
     void filterForces();
-
-    /*
-     * hover arm above tokens
-     *
-     * @param      double indicating requested height of arm (z-axis)
-     * return     N/A
-     */
-    void hoverAboveTokens(double height);
-
-    /**
-     * @brief Publishes the desired joint configuration
-     * @details Publishes the desired joint configuration in the proper topic
-     *
-     * @param _cmd The desired joint configuration
-     */
-    void publish_joint_cmd(baxter_core_msgs::JointCommand _cmd);
 
     /**
      * @brief Suppresses the collision avoidance for this arm
@@ -503,9 +509,9 @@ public:
     /*
      * Self-explaining "setters"
      */
-    void setName(std::string name) { _name = name; };
     void setState(int state);
-    void setTracIK(bool use_trac_ik) { _use_trac_ik = use_trac_ik; };
+    void setName(std::string name)          {        _name = name;        };
+    void setTracIK(bool use_trac_ik)        { _use_trac_ik = use_trac_ik; };
 
     bool setIKLimits(KDL::JntArray  ll, KDL::JntArray  ul);
 
@@ -530,7 +536,7 @@ public:
     bool    is_ir_ok() { return ir_ok; };
 
     /*
-     * Checks if the robot has to be used or not
+     * Checks if the robot is used or not
      */
     bool is_no_robot() { return _no_robot; };
 };

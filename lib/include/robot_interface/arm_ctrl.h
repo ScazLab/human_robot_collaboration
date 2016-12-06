@@ -47,7 +47,7 @@ private:
     // Home configuration. Setting it in any of the children
     // of this class is mandatory (through the virtual method
     // called setHomeConfiguration() )
-    baxter_core_msgs::JointCommand home_conf;
+    std::vector<double> home_conf;
 
     /**
      * Object database, which pairs an integer key, corresponding to the marker ID

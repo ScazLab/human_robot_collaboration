@@ -14,7 +14,7 @@ using namespace cv;
 /**************************************************************************/
 RobotInterface::RobotInterface(string name, string limb, bool no_robot, bool use_forces,
                                bool use_trac_ik, bool use_cart_ctrl) : _n(name), _name(name), _limb(limb),
-                               _state(START), spinner(4), ir_ok(false), _no_robot(no_robot),
+                               _state(START), spinner(4), ir_ok(false), _no_robot(no_robot), is_coll_av_on(false),
                                is_ctrl_running(false), ik_solver(limb, no_robot), _use_forces(use_forces),
                                _use_trac_ik(use_trac_ik), _use_cart_ctrl(use_cart_ctrl)
 {
@@ -272,16 +272,16 @@ void RobotInterface::collAvCb(const baxter_core_msgs::CollisionAvoidanceState& m
 {
     if (msg.collision_object.size()!=0)
     {
-        is_colliding =  true;
+        is_coll_av_on =  true;
 
         string objects = "";
         for (int i = 0; i < msg.collision_object.size(); ++i)
         {
             objects = objects + " " + msg.collision_object[i];
         }
-        ROS_WARN("[%s] Collision detected with: %s", getLimb().c_str(), objects.c_str());
+        ROS_WARN_THROTTLE(1, "[%s] Collision detected with: %s", getLimb().c_str(), objects.c_str());
     }
-    else is_colliding = false;
+    else is_coll_av_on = false;
 
     return;
 }
@@ -364,13 +364,6 @@ void RobotInterface::filterForces()
     return;
 }
 
-void RobotInterface::hoverAboveTokens(double height)
-{
-    goToPose(0.540, 0.570, height, VERTICAL_ORI_L);
-
-    return;
-}
-
 bool RobotInterface::goToPoseNoCheck(geometry_msgs::Pose p)
 {
     return goToPoseNoCheck(p.position, p.orientation);
@@ -387,10 +380,10 @@ bool RobotInterface::goToPoseNoCheck(double px, double py, double pz,
     vector<double> joint_angles;
     if (!computeIK(px, py, pz, ox, oy, oz, ow, joint_angles)) return false;
 
-    return goToJointPoseNoCheck(joint_angles);
+    return goToJointConfNoCheck(joint_angles);
 }
 
-bool RobotInterface::goToJointPoseNoCheck(vector<double> joint_angles)
+bool RobotInterface::goToJointConfNoCheck(vector<double> joint_angles)
 {
     JointCommand joint_cmd;
     joint_cmd.mode = JointCommand::POSITION_MODE;
@@ -423,14 +416,14 @@ bool RobotInterface::goToPose(double px, double py, double pz,
         }
         else
         {
-            if (is_colliding == true)
+            if (is_coll_av_on == true)
             {
                 ROS_ERROR("Collision Occurred! Stopping.");
                 return false;
             }
         }
 
-        if (!goToJointPoseNoCheck(joint_angles))   return false;
+        if (!goToJointConfNoCheck(joint_angles))   return false;
 
         if (isPoseReached(px, py, pz, ox, oy, oz, ow, mode))
         {
@@ -617,7 +610,22 @@ bool RobotInterface::isOrientationReached(double ox, double oy, double oz, doubl
     return true;
 }
 
-bool RobotInterface::isConfigurationReached(baxter_core_msgs::JointCommand joint_cmd, std::string mode)
+bool RobotInterface::isConfigurationReached(std::vector<double> des_jnts, std::string mode)
+{
+    if (_curr_jnts.position.size() < 7 || des_jnts.size() < 7)
+    {
+        return false;
+    }
+
+    baxter_core_msgs::JointCommand dj;
+    setJointNames(dj);
+    setJointCommands(des_jnts[0], des_jnts[1], des_jnts[2],
+                     des_jnts[3], des_jnts[4], des_jnts[5], des_jnts[6], dj);
+
+    return isConfigurationReached(dj, mode);
+}
+
+bool RobotInterface::isConfigurationReached(baxter_core_msgs::JointCommand des_jnts, std::string mode)
 {
     if (_curr_jnts.position.size() < 7)
     {
@@ -628,26 +636,25 @@ bool RobotInterface::isConfigurationReached(baxter_core_msgs::JointCommand joint
                                                                                       getLimb().c_str(),
          _curr_jnts.position[0], _curr_jnts.position[1], _curr_jnts.position[2], _curr_jnts.position[3],
                                  _curr_jnts.position[4], _curr_jnts.position[5], _curr_jnts.position[6],
-           joint_cmd.command[0],   joint_cmd.command[1],   joint_cmd.command[2],   joint_cmd.command[3],
-                                   joint_cmd.command[4],   joint_cmd.command[5],   joint_cmd.command[6]);
+            des_jnts.command[0],    des_jnts.command[1],    des_jnts.command[2],    des_jnts.command[3],
+                                    des_jnts.command[4],    des_jnts.command[5],    des_jnts.command[6]);
 
-    bool result = false;
-    for (int i = 0; i < joint_cmd.names.size(); ++i)
+    for (int i = 0; i < des_jnts.names.size(); ++i)
     {
         bool res = false;
         for (int j = 0; j < _curr_jnts.name.size(); ++j)
         {
-            if (joint_cmd.names[i] == _curr_jnts.name[j])
+            if (des_jnts.names[i] == _curr_jnts.name[j])
             {
                 if (mode == "strict")
                 {
                     // It's approximatively half a degree
-                    if (abs(joint_cmd.command[i]-_curr_jnts.position[j]) > 0.010) return false;
+                    if (abs(des_jnts.command[i]-_curr_jnts.position[j]) > 0.010) return false;
                 }
                 else if (mode == "loose")
                 {
                     // It's approximatively a degree
-                    if (abs(joint_cmd.command[i]-_curr_jnts.position[j]) > 0.020) return false;
+                    if (abs(des_jnts.command[i]-_curr_jnts.position[j]) > 0.020) return false;
                 }
                 res = true;
             }

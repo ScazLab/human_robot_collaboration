@@ -301,102 +301,88 @@ string ArmCtrl::actionDBToString()
 
 bool ArmCtrl::moveArm(string dir, double dist, string mode, bool disable_coll_av)
 {
-    Point start = getPos();
-    Point final = getPos();
+    Point p_s = getPos();
+    Point p_c = getPos();
+    Point p_f = getPos();
 
-    Quaternion ori = getOri();
+    Quaternion o_f = getOri();
 
-    if      (dir == "backward") final.x -= dist;
-    else if (dir == "forward")  final.x += dist;
-    else if (dir == "right")    final.y -= dist;
-    else if (dir == "left")     final.y += dist;
-    else if (dir == "down")     final.z -= dist;
-    else if (dir == "up")       final.z += dist;
-    else                               return false;
+    if      (dir == "backward") p_f.x -= dist;
+    else if (dir == "forward")  p_f.x += dist;
+    else if (dir == "right")    p_f.y -= dist;
+    else if (dir == "left")     p_f.y += dist;
+    else if (dir == "down")     p_f.z -= dist;
+    else if (dir == "up")       p_f.z += dist;
+    else                         return false;
 
     ros::Time t_start = ros::Time::now();
 
     bool finish = false;
 
     ros::Rate r(100);
-    while(RobotInterface::ok())
+    while(RobotInterface::ok() && !isPositionReached(p_f, mode))
     {
         if (disable_coll_av)    suppressCollisionAv();
 
         double t_elap = (ros::Time::now() - t_start).toSec();
-
-        double px = start.x;
-        double py = start.y;
-        double pz = start.z;
+        p_c = p_s;
 
         if (!finish)
         {
             if (dir == "backward" | dir == "forward")
             {
                 int sgn = dir=="backward"?-1:+1;
-                px = px + sgn * ARM_SPEED * t_elap;
+                p_c.x = p_c.x + sgn * ARM_SPEED * t_elap;
 
                 if (dir == "backward")
                 {
-                    if (px < final.x) finish = true;
+                    if (p_c.x < p_f.x) finish = true;
                 }
                 else if (dir == "forward")
                 {
-                    if (px > final.x) finish = true;
+                    if (p_c.x > p_f.x) finish = true;
                 }
             }
             if (dir == "right" | dir == "left")
             {
                 int sgn = dir=="right"?-1:+1;
-                py = py + sgn * ARM_SPEED * t_elap;
+                p_c.y = p_c.y + sgn * ARM_SPEED * t_elap;
 
                 if (dir == "right")
                 {
-                    if (py < final.y) finish = true;
+                    if (p_c.y < p_f.y) finish = true;
                 }
                 else if (dir == "left")
                 {
-                    if (py > final.y) finish = true;
+                    if (p_c.y > p_f.y) finish = true;
                 }
             }
             if (dir == "down" | dir == "up")
             {
                 int sgn = dir=="down"?-1:+1;
-                pz = pz + sgn * ARM_SPEED * t_elap;
+                p_c.z = p_c.z + sgn * ARM_SPEED * t_elap;
 
                 if (dir == "down")
                 {
-                    if (pz < final.z) finish = true;
+                    if (p_c.z < p_f.z) finish = true;
                 }
                 else if (dir == "up")
                 {
-                    if (pz > final.z) finish = true;
+                    if (p_c.z > p_f.z) finish = true;
                 }
             }
         }
         else
         {
-            px = final.x;
-            py = final.y;
-            pz = final.z;
+            p_c = p_f;
         }
 
-        double ox = ori.x;
-        double oy = ori.y;
-        double oz = ori.z;
-        double ow = ori.w;
-
-        vector<double> joint_angles;
-        if (!computeIK(px, py, pz, ox, oy, oz, ow, joint_angles)) return false;
-
-        if (!goToJointPoseNoCheck(joint_angles))   return false;
-
-        if (isPositionReached(final.x, final.y, final.z, mode)) return true;
+        if (!goToPoseNoCheck(p_c, o_f)) return false;
 
         r.sleep();
     }
 
-    return false;
+    return true;
 }
 
 bool ArmCtrl::hoverAboveTable(double height, string mode, bool disable_coll_av)
@@ -419,32 +405,31 @@ bool ArmCtrl::homePoseStrict(bool disable_coll_av)
     ROS_INFO("[%s] Going to home position strict..", getLimb().c_str());
 
     ros::Rate r(100);
-    while(ros::ok())
+    while(RobotInterface::ok() && !isConfigurationReached(home_conf))
     {
         if (disable_coll_av)    suppressCollisionAv();
 
-        JointCommand joint_cmd;
-        joint_cmd.mode = JointCommand::POSITION_MODE;
-        setJointNames(joint_cmd);
-
-        joint_cmd.command = home_conf.command;
-
-        publish_joint_cmd(joint_cmd);
+        goToJointConfNoCheck(home_conf);
 
         r.sleep();
-
-        if(isConfigurationReached(joint_cmd))
-        {
-            return true;
-        }
     }
-    ROS_INFO("[%s] Done", getLimb().c_str());
+
+    return true;
 }
 
 void ArmCtrl::setHomeConf(double s0, double s1, double e0, double e1,
                                      double w0, double w1, double w2)
 {
-    setJointCommands( s0, s1, e0, e1, w0, w1, w2, home_conf);
+    home_conf.clear();
+    home_conf.push_back(s0);
+    home_conf.push_back(s1);
+    home_conf.push_back(e0);
+    home_conf.push_back(e1);
+    home_conf.push_back(w0);
+    home_conf.push_back(w1);
+    home_conf.push_back(w2);
+
+    return;
 }
 
 bool ArmCtrl::goHome()
