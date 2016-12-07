@@ -20,22 +20,39 @@ We use the new Catkin Command Line Tools `catkin_tools`, a Python package that p
 
 ## Execution
 
- 0. Turn on the robot. Wait for the robot to finish its start-up phase.
- 1. Be sure that the system you're running the code has access to the Baxter robot. This is usually done by running the `baxter.sh` script that should be provided in your Baxter installation. See [here](http://sdk.rethinkrobotics.com/wiki/Hello_Baxter#Source_ROS_Environment_Setup_Script) for more info. **@ScazLab students** → for what concerns the Baxter robot on the ScazLab, this means that every time you have to run some ROS software to be used on the robot you should open a new terminal, and do the following:
- ```
- cd ros_devel_ws
- ./baxter.sh
- ```
- A change in the terminal prompt should acknowledge that you now have access to `baxter.local`
- 2. Untuck the robot. **@ScazLab students** → we have an alias for this, so you just have to type `untuck`
- 3. On one terminal (after doing step 1), launch the `ARuco` software: `roslaunch baxter_collaboration baxter_marker_publisher.launch`
- 4. On another terminal (after doing step 1), launch the Baxter Collaboration software, e.g. `roslaunch baxter_collaboration flatpack_furniture.launch` or `roslaunch baxter_collaboration tower_building.launch` (these two launch files should be in the same launch file, but for development purposes it is much better to separate development code and production-ready code)
- 5. Request actions to either one of the two arms by using the proper service (`/action_provider/service_left` for left arm, `/action_provider/service_right` for right arm). Here are some examples to make the demo work from terminal:
-  * `rosservice call /action_provider/service_right "{action: 'hand_over', object: 17}"`
-  * `rosservice call /action_provider/service_left "{action: 'get', object: 17}"`
- 6. Request 3D points to the cartesian controller server by using the proper topic (`/baxter_controller/left/go_to_pose` for left arm, `/baxter_controller/left/go_to_pose` for right arm). Here is one example: `rostopic pub /baxter_controller/left/go_to_pose baxter_collaboration/GoToPose "{pose_stamp: {header:{seq: 0, stamp: {secs: 0.0, nsecs: 0.0}}, pose:{position:{ x: 0.55, y: 0.55, z: 0.2}, orientation:{ x: 0, y: 1, z: 0, w: 0}}}, ctrl_mode: 0}" --once`
+### Initial steps (mainly for Scazlab students)
 
-### Supported actions
+ 0. Turn on the robot. Wait for the robot to finish its start-up phase.
+ 1. Be sure that the system you're running the code has access to the Baxter robot. This is usually done by running the `baxter.sh` script that should be provided in your Baxter installation. See [here](http://sdk.rethinkrobotics.com/wiki/Hello_Baxter#Source_ROS_Environment_Setup_Script) for more info. **@ScazLab students** → for what concerns the Baxter robot on the ScazLab, this means that every time you have to run some ROS software to be used on the robot you should open a new terminal, and do the following: ` cd ros_devel_ws && ./baxter.sh `. A change in the terminal prompt should acknowledge that you now have access to `baxter.local`. __Please be aware of this issue when you operate the robot__.
+ 2. Untuck the robot. **@ScazLab students** → we have an alias for this, so you just have to type `untuck`
+
+This repository currently allows for two modes of operation:
+
+ A. **Cartesian Controller server** → It allows for controlling each of the arms in operational space.
+ B. **High-level actions** → It enables some high-level actions to be asked to the robot, such has `hold` or `pick object`.
+
+These two modes can be enabled concurrently, but this feature is disabled by default: in order to be able to communicate with the robot both in the high-level interface and the low-level controller, you need to create your own `action_provider`. See the `src` folder for more information on that.
+
+### Mode A. Cartesian Controller Server
+
+In this mode, the user can ask the robot to go to a specific _3D Position_ or _6D Pose_ (position + orientation), and the robot will simply go there (if physically possible). To guarantee safety, the robot still has the standard safety systems enabled by default. More advanced uses are allowed, but not exposed to the user: if you want to tinker with advanced features, we recommend to specialize the [RobotInterface class](https://github.com/ScazLab/baxter_collaboration/blob/master/lib/include/robot_interface/robot_interface.h).
+
+In order to use the Cartesian Controller Server, you have to launch it with:
+
+```
+roslaunch baxter_collaboration baxter_controller.launch
+```
+
+This should create two topics (`/baxter_controller/left/go_to_pose` for left arm, `/baxter_controller/left/go_to_pose` for right arm) the user can request operational space configurations to. In the following, there are some examples on how to require them from terminal (e.g. for the left arm):
+
+ * _[6D Pose]_ : `rostopic pub /baxter_controller/left/go_to_pose baxter_collaboration/GoToPose "{pose_stamp: {pose:{position:{ x: 0.55, y: 0.55, z: 0.2}, orientation:{ x: 0, y: 1, z: 0, w: 0}}}, ctrl_mode: 0}" --once`
+ * _[3D Position]_ : `rostopic pub /baxter_controller/left/go_to_pose baxter_collaboration/GoToPose "{pose_stamp: {pose:{position:{ x: 0.55, y: 0.55, z: 0.2}, orientation:{ x: -100, y: -100, z: -100, w: -100}}}, ctrl_mode: 0}" --once`. This differs from the previous case since now every value of the orientation quaternion is set to -100. This is to communicate the Cartesian Controller to reach the desired position _while maintaining the current orientation_.
+
+Obviously, these same messages can be sent directly _within_ your code. Please take a look at the [GoToPose.msg file](https://github.com/ScazLab/baxter_collaboration/blob/master/msg/GoToPose.msg) for further info.
+
+
+
+#### Supported actions
 
  * `home` (both arms): moves the arm to a specific joint configuration (i.e. it does not use IK).
  * `release` (both arms): opens the gripper (or releases the vacuum gripper).
