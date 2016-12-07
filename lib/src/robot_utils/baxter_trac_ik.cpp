@@ -105,7 +105,7 @@ bool baxterTracIK::perform_ik(baxter_core_msgs::SolvePositionIK &ik_srv)
         }
     }
 
-    bool seeds_provided = ik_srv.request.seed_angles[0].name.size() == _chain.getNrOfSegments();
+    bool seeds_provided = ik_srv.request.seed_angles[0].name.size() == joint_state.name.size();
 
     joint_state.position.clear();
     KDL::Frame ee_pose(KDL::Rotation::Quaternion(ik_srv.request.pose_stamp[0].pose.orientation.x,
