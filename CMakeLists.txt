@@ -119,7 +119,7 @@ catkin_package(
 ## Build ##
 ###########
 
-ADD_DEFINITIONS ( -Wall)
+ADD_DEFINITIONS ( -Wall -Wextra -Wno-unused-parameter -Werror)
 
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
