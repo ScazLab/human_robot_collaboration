@@ -47,7 +47,7 @@ double norm(vector<double> const& _v)
 {
     double accum = 0.0;
 
-    for (int i = 0; i < _v.size(); ++i)
+    for (size_t i = 0; i < _v.size(); ++i)
     {
         accum += _v[i] * _v[i];
     }

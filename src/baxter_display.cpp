@@ -17,9 +17,10 @@ using namespace baxter_collaboration;
 class BaxterDisplay
 {
 private:
+    ros::NodeHandle    nh;
+
     std::string name;
 
-    ros::NodeHandle    nh;
     ros::Subscriber l_sub;  // Subscriber for the left  arm state
     ros::Subscriber r_sub;  // Subscriber for the right arm state
     ros::Subscriber s_sub;  // Subscriber for the speech output
@@ -194,7 +195,7 @@ private:
 
 public:
 
-    BaxterDisplay(string _name) : name(_name), it(nh), speech("")
+    BaxterDisplay(string _name) : name(_name), speech(""), it(nh)
     {
         im_pub = it.advertise("/robot/xdisplay", 1);
 

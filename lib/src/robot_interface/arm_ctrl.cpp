@@ -7,7 +7,7 @@ using namespace baxter_core_msgs;
 
 ArmCtrl::ArmCtrl(string _name, string _limb, bool _no_robot, bool _use_forces, bool _use_trac_ik, bool _use_cart_ctrl) :
                  RobotInterface(_name,_limb, _no_robot, _use_forces, _use_trac_ik, _use_cart_ctrl),
-                 Gripper(_limb, _no_robot), object_id(-1), action(""), sub_state("")
+                 Gripper(_limb, _no_robot), sub_state(""), action(""), object_id(-1)
 {
     std::string topic = "/"+getName()+"/state_"+_limb;
     state_pub = _n.advertise<baxter_collaboration::ArmState>(topic,1);
@@ -329,7 +329,7 @@ bool ArmCtrl::moveArm(string dir, double dist, string mode, bool disable_coll_av
 
         if (!finish)
         {
-            if (dir == "backward" | dir == "forward")
+            if (dir == "backward" || dir == "forward")
             {
                 int sgn = dir=="backward"?-1:+1;
                 p_c.x = p_c.x + sgn * ARM_SPEED * t_elap;
@@ -343,7 +343,7 @@ bool ArmCtrl::moveArm(string dir, double dist, string mode, bool disable_coll_av
                     if (p_c.x > p_f.x) finish = true;
                 }
             }
-            if (dir == "right" | dir == "left")
+            if (dir == "right" || dir == "left")
             {
                 int sgn = dir=="right"?-1:+1;
                 p_c.y = p_c.y + sgn * ARM_SPEED * t_elap;
@@ -357,7 +357,7 @@ bool ArmCtrl::moveArm(string dir, double dist, string mode, bool disable_coll_av
                     if (p_c.y > p_f.y) finish = true;
                 }
             }
-            if (dir == "down" | dir == "up")
+            if (dir == "down" || dir == "up")
             {
                 int sgn = dir=="down"?-1:+1;
                 p_c.z = p_c.z + sgn * ARM_SPEED * t_elap;

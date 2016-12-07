@@ -7,7 +7,7 @@ using namespace baxter_collaboration;
 using namespace baxter_core_msgs;
 
 ARTagCtrl::ARTagCtrl(std::string _name, std::string _limb, bool _no_robot) :
-                     ARucoClient(_name, _limb), ArmCtrl(_name,_limb, _no_robot)
+                     ArmCtrl(_name,_limb, _no_robot), ARucoClient(_name, _limb)
 {
     setHomeConfiguration();
 

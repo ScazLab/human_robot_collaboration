@@ -40,10 +40,10 @@ private:
     std::string    _limb;       // Limb (either left or right)
     State         _state;       // State of the controller
 
+    ros::AsyncSpinner spinner;  // AsyncSpinner to handle callbacks
+
     bool       _no_robot;       // Flag to know if we're going to use the robot or not
     bool     _use_forces;       // Flag to know if we're going to use the force feedback
-
-    ros::AsyncSpinner spinner;  // AsyncSpinner to handle callbacks
 
     ros::Publisher  _joint_cmd_pub; // Publisher to control the robot in joint space
     ros::Publisher    _coll_av_pub; // Publisher to suppress collision avoidance behavior

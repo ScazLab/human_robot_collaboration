@@ -48,7 +48,7 @@ baxterTracIK::baxterTracIK(std::string limb, bool no_robot) : _limb(limb), _urdf
     // Create Nominal chain configuration midway between all joint limits
     _nominal = new KDL::JntArray(_chain.getNrOfJoints());
 
-    for (uint j=0; j < _nominal->data.size(); j++)
+    for (int j=0; j < _nominal->data.size(); j++)
     {
       _nominal->operator()(j) = (ll(j)+ul(j))/2.0;
     }
@@ -83,7 +83,7 @@ baxterTracIK::~baxterTracIK()
 KDL::JntArray baxterTracIK::JointState2JntArray(const sensor_msgs::JointState &js)
 {
     KDL::JntArray array(_chain.getNrOfJoints());
-    for(uint joint=0; joint<js.position.size(); ++joint)
+    for(size_t joint=0; joint<js.position.size(); ++joint)
     {
         array(joint) = js.position[joint];
     }
@@ -96,7 +96,7 @@ bool baxterTracIK::perform_ik(baxter_core_msgs::SolvePositionIK &ik_srv)
     KDL::JntArray result;
     sensor_msgs::JointState joint_state;
 
-    for(uint i=0; i<_chain.getNrOfSegments(); ++i)
+    for(size_t i=0; i<_chain.getNrOfSegments(); ++i)
     {
         KDL::Joint joint = _chain.getSegment(i).getJoint();
         if(joint.getType()!=KDL::Joint::None)
@@ -120,7 +120,7 @@ bool baxterTracIK::perform_ik(baxter_core_msgs::SolvePositionIK &ik_srv)
 
     if(seeds_provided)   seed = JointState2JntArray(ik_srv.request.seed_angles[0]);
 
-    for(uint num_attempts=0; num_attempts<_num_steps; ++num_attempts)
+    for(int num_attempts=0; num_attempts<_num_steps; ++num_attempts)
     {
         if (num_attempts>0)
         {
@@ -133,7 +133,7 @@ bool baxterTracIK::perform_ik(baxter_core_msgs::SolvePositionIK &ik_srv)
         if(rc>=0) break;
     }
 
-    for(uint j=0; j<_chain.getNrOfJoints(); ++j)
+    for(size_t j=0; j<_chain.getNrOfJoints(); ++j)
     {
         joint_state.position.push_back(result(j));
     }
@@ -152,7 +152,7 @@ bool baxterTracIK::perform_ik(baxter_core_msgs::SolvePositionIK &ik_srv)
 void baxterTracIK::computeFwdKin(KDL::JntArray jointpositions)
 {
     printf("joints:\t");
-    for(uint j=0; j<_chain.getNrOfJoints(); ++j)
+    for(size_t j=0; j<_chain.getNrOfJoints(); ++j)
     {
         printf("\t%g",jointpositions(j));
     }

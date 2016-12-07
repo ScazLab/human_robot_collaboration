@@ -14,9 +14,9 @@ using namespace cv;
 /**************************************************************************/
 RobotInterface::RobotInterface(string name, string limb, bool no_robot, bool use_forces,
                                bool use_trac_ik, bool use_cart_ctrl) : _n(name), _name(name), _limb(limb),
-                               _state(START), spinner(4), ir_ok(false), _no_robot(no_robot), is_coll_av_on(false),
-                               is_ctrl_running(false), ik_solver(limb, no_robot), _use_forces(use_forces),
-                               _use_trac_ik(use_trac_ik), _use_cart_ctrl(use_cart_ctrl)
+                               _state(START), spinner(4), _no_robot(no_robot), _use_forces(use_forces), ir_ok(false),
+                               ik_solver(limb, no_robot), _use_trac_ik(use_trac_ik), is_coll_av_on(false),
+                               _use_cart_ctrl(use_cart_ctrl), is_ctrl_running(false)
 {
     if (no_robot) return;
 
@@ -208,6 +208,7 @@ bool RobotInterface::initCtrlParams()
 {
     time_start = ros::Time::now();
     pose_start = getPose();
+    return true;
 }
 
 void RobotInterface::ctrlMsgCb(const baxter_collaboration::GoToPose& msg)
@@ -281,7 +282,7 @@ void RobotInterface::collAvCb(const baxter_core_msgs::CollisionAvoidanceState& m
         is_coll_av_on =  true;
 
         string objects = "";
-        for (int i = 0; i < msg.collision_object.size(); ++i)
+        for (size_t i = 0; i < msg.collision_object.size(); ++i)
         {
             // Let's remove the first part of the collision object name for visualization
             // purposes, i.e. the part that says "collision_"
@@ -304,9 +305,9 @@ void RobotInterface::jointStatesCb(const sensor_msgs::JointState& msg)
         pthread_mutex_lock(&_mutex_jnts);
         _curr_jnts.name.clear();
         _curr_jnts.position.clear();
-        for (int i = 0; i < joint_cmd.names.size(); ++i)
+        for (size_t i = 0; i < joint_cmd.names.size(); ++i)
         {
-            for (int j = 0; j < msg.name.size(); ++j)
+            for (size_t j = 0; j < msg.name.size(); ++j)
             {
                 if (joint_cmd.names[i] == msg.name[j])
                 {
@@ -398,7 +399,7 @@ bool RobotInterface::goToJointConfNoCheck(vector<double> joint_angles)
 
     setJointNames(joint_cmd);
 
-    for (int i = 0; i < joint_angles.size(); i++)
+    for (size_t i = 0; i < joint_angles.size(); i++)
     {
         joint_cmd.command.push_back(joint_angles[i]);
     }
@@ -647,10 +648,10 @@ bool RobotInterface::isConfigurationReached(baxter_core_msgs::JointCommand des_j
             des_jnts.command[0],    des_jnts.command[1],    des_jnts.command[2],    des_jnts.command[3],
                                     des_jnts.command[4],    des_jnts.command[5],    des_jnts.command[6]);
 
-    for (int i = 0; i < des_jnts.names.size(); ++i)
+    for (size_t i = 0; i < des_jnts.names.size(); ++i)
     {
         bool res = false;
-        for (int j = 0; j < _curr_jnts.name.size(); ++j)
+        for (size_t j = 0; j < _curr_jnts.name.size(); ++j)
         {
             if (des_jnts.names[i] == _curr_jnts.name[j])
             {
