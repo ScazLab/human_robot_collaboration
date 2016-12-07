@@ -50,10 +50,24 @@ This should create two topics (`/baxter_controller/left/go_to_pose` for left arm
 
 Obviously, these same messages can be sent directly _within_ your code. Please take a look at the [GoToPose.msg file](https://github.com/ScazLab/baxter_collaboration/blob/master/msg/GoToPose.msg) for further info.
 
+### Mode B. High-Level Actions
 
+We implemented a low-level, state-less controller able to operate each of the arms independently (and communicate with the other one if needed). A library of high-level predefined actions (in the form of ROS services) is available for the user to choose from; such actions range from the simple, single arm `pick object` to the more complex `hold object` (which requires a physical collaboration with the human partner) or `hand over` (which demands a bi-manual interaction between the two arms).
 
-#### Supported actions
+To enable this mode, run this in two separate terminals:
 
+ 1. `roslaunch baxter_collaboration baxter_marker_publisher.launch`
+ 2. `roslaunch baxter_collaboration flatpack_furniture.launch` or `roslaunch baxter_collaboration tower_building.launch`. These are two predefined launch files that we use for two different experiments we ran in the lab. If you would like to create and use your own high-level actions, we suggest you to specialize the [ArmCtrl class](https://github.com/ScazLab/baxter_collaboration/blob/master/lib/include/robot_interface/arm_ctrl.h). See the [`flatpack_furniture`](https://github.com/ScazLab/baxter_collaboration/tree/master/lib/include/flatpack_furniture) or the [`tower_building`](https://github.com/ScazLab/baxter_collaboration/tree/master/lib/include/tower_building) library for inspiration on how to do it.
+
+Now, the user should be able to request actions to either one of the two arms by using the proper service (`/action_provider/service_left` for left arm, `/action_provider/service_right` for right arm). Here are some examples to make the demo work from terminal:
+  * `rosservice call /action_provider/service_right "{action: 'hold'}"`
+  * `rosservice call /action_provider/service_left "{action: 'get', object: 17}"`
+
+Similarly to Mode A, these same services can be requested directly _within_ your code. Please take a look at the [DoAction.srv file](https://github.com/ScazLab/baxter_collaboration/blob/master/srv/DoAction.srv) for further info.
+
+#### Non-exhaustive list of supported actions
+
+ * `list_actions`: it returns a list of the available actions for the specific arm.
  * `home` (both arms): moves the arm to a specific joint configuration (i.e. it does not use IK).
  * `release` (both arms): opens the gripper (or releases the vacuum gripper).
  * `hand_over` (both arms): performs an handover from the left to the right hand. The left arm picks an object up at a specific orientation (for now it works only with the central frame, ID number `24`), and passes it to the right arm, which then holds it until further notice.
@@ -65,5 +79,7 @@ Obviously, these same messages can be sent directly _within_ your code. Please t
 
  * To kill an action from the terminal, you can simulate a button press on the arm's cuff: `rostopic pub --once /robot/digital_io/left_lower_button/state baxter_core_msgs/DigitalIOState "{state: 1, isInputOnly: true}"`.
  * You can also kill an action from the web interface, by pressing the ERROR button. It writes to the same topic and achieves the same behavior.
- * To go **robot-less**, simply call the `action_provider` with the argument `--no_robot`: `rosrun baxter_collaboration action_provider --no_robot`. In this mode, only the service to request actions is enabled. It will always return with a 2s delay and it will always succeed.
- * To be robot-less, add `--no_robot` to the `args` in the `baxter_collaboration.launch` file.
+ * To go **robot-less** (that is try to execute the software without the robot, for testing purposes), you can choose one of the following options:
+  * Call the `action_provider` with the argument `--no_robot`, e.g. `rosrun baxter_collaboration baxter_controller --no_robot`. In this mode, only the service to request actions is enabled. It will always return with a 2s delay and it will always succeed.
+  * Change the `useRobot` flag to `false` in the `launch` file.
+  * Launch the `launch` file with the argument `useRobot:=false`, e.g. `roslaunch baxter_collaboration baxter_controller.launch useRobot:=false`
