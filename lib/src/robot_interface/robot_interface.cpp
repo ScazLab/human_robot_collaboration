@@ -572,7 +572,7 @@ bool RobotInterface::isPoseReached(double px, double py, double pz,
 
 bool RobotInterface::isPositionReached(double px, double py, double pz, string mode)
 {
-    ROS_INFO("[%s] Checking %s position. Error: %g %g %g", getLimb().c_str(),
+    ROS_DEBUG("[%s] Checking %s position. Error: %g %g %g", getLimb().c_str(),
                    mode.c_str(), px-getPos().x, py-getPos().y, pz-getPos().z);
 
     if (mode == "strict")
@@ -602,7 +602,7 @@ bool RobotInterface::isOrientationReached(double ox, double oy, double oz, doubl
     tf::Quaternion cur;
     tf::quaternionMsgToTF(getOri(), cur);
 
-    ROS_INFO("[%s] Checking    orientation. Current %g %g %g %g Desired %g %g %g %g Dot %g",
+    ROS_DEBUG("[%s] Checking    orientation. Current %g %g %g %g Desired %g %g %g %g Dot %g",
                            getLimb().c_str(), getOri().x, getOri().y, getOri().z, getOri().w,
                                                                   ox,oy,oz,ow, des.dot(cur));
 

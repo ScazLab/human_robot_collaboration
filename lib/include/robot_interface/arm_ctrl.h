@@ -300,7 +300,7 @@ public:
 
     /* Self-explaining "setters" */
     void setSubState(std::string _state) { sub_state =  _state; };
-    void setObjectID(int _obj)           { object_id =    _obj; };
+    virtual void setObjectID(int _obj)   { object_id =    _obj; };
     void setAction(std::string _action);
 
     void setState(int _state);

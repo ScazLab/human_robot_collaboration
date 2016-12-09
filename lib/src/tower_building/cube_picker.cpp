@@ -177,7 +177,6 @@ void CubePicker::setHomeConfiguration()
 
 void CubePicker::setObjectID(int _obj)
 {
-    ROS_INFO("setObjectID");
     ArmCtrl::setObjectID(_obj);
     ARucoClient::setMarkerID(_obj);
 }
