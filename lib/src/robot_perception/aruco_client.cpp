@@ -4,7 +4,7 @@ using namespace std;
 
 ARucoClient::ARucoClient(string name, string limb) :
                         _nh(name), _limb(limb), aruco_ok(false),
-                        marker_id(-1), marker_found(false)
+                        marker_found(false), marker_id(-1)
 {
     _aruco_sub = _nh.subscribe("/aruco_marker_publisher/markers",
                                SUBSCRIBER_BUFFER, &ARucoClient::ARucoCb, this);
@@ -18,11 +18,11 @@ void ARucoClient::clearMarkerPose()
 
 void ARucoClient::ARucoCb(const aruco_msgs::MarkerArray& msg)
 {
-    for (int i = 0; i < msg.markers.size(); ++i)
+    for (size_t i = 0; i < msg.markers.size(); ++i)
     {
         // ROS_DEBUG("Processing marker with id %i",msg.markers[i].id);
 
-        if (msg.markers[i].id == getMarkerID())
+        if (int(msg.markers[i].id) == getMarkerID())
         {
             _curr_marker_pos = msg.markers[i].pose.pose.position;
             _curr_marker_ori = msg.markers[i].pose.pose.orientation;

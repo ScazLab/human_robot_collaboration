@@ -7,7 +7,7 @@
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/highgui/highgui.hpp>
 
-#include "robot_interface/ros_thread.h"
+#include "robot_utils/ros_thread.h"
 #include "robot_utils/utils.h"
 
 /**
@@ -20,15 +20,15 @@ class ROSThreadImage : public ROSThread
 protected:
     ros::NodeHandle _n;
 
-    image_transport::ImageTransport _img_trp;
-    image_transport::Subscriber     _img_sub;
-
 private:
     std::string    _name;
 
     ros::AsyncSpinner spinner;  // AsyncSpinner to handle callbacks
 
 protected:
+    image_transport::ImageTransport _img_trp;
+    image_transport::Subscriber     _img_sub;
+
     pthread_mutex_t _mutex_img;
 
     cv::Mat  _curr_img;

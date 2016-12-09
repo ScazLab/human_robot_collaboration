@@ -3,7 +3,7 @@
 
 #include <map>
 
-#include "robot_interface/ros_thread.h"
+#include "robot_utils/ros_thread.h"
 #include "robot_interface/robot_interface.h"
 #include "robot_interface/gripper.h"
 
@@ -47,7 +47,7 @@ private:
     // Home configuration. Setting it in any of the children
     // of this class is mandatory (through the virtual method
     // called setHomeConfiguration() )
-    baxter_core_msgs::JointCommand home_conf;
+    std::vector<double> home_conf;
 
     /**
      * Object database, which pairs an integer key, corresponding to the marker ID
@@ -267,8 +267,8 @@ public:
     /**
      * Constructor
      */
-    ArmCtrl(std::string _name, std::string _limb,
-            bool _no_robot = false, bool _use_forces = true, bool _use_trac_ik = true);
+    ArmCtrl(std::string _name, std::string _limb, bool _no_robot = false,
+            bool _use_forces = true, bool _use_trac_ik = true, bool _use_cart_ctrl = false);
 
     /*
      * Destructor

@@ -1,11 +1,11 @@
-#include "robot_interface/ros_thread_image.h"
+#include "robot_utils/ros_thread_image.h"
 
 /**************************************************************************/
 /*                          ROSThreadImage                                */
 /**************************************************************************/
 
-ROSThreadImage::ROSThreadImage(std::string name) :  ROSThread(), _name(name), _n(name),
-                                            _img_trp(_n), spinner(4), _img_empty(true)
+ROSThreadImage::ROSThreadImage(std::string name) :  ROSThread(), _n(name), _name(name),
+                                            spinner(4), _img_trp(_n), _img_empty(true)
 {
     pthread_mutexattr_t _mutex_attr;
     pthread_mutexattr_init(&_mutex_attr);

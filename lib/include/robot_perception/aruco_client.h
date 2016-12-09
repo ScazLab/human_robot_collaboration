@@ -11,6 +11,8 @@
 class ARucoClient
 {
 private:
+    ros::NodeHandle _nh;
+
     std::string _limb; // Limb of the gripper: left or right
 
     // Subscriber to the ARuco detector,
@@ -24,8 +26,6 @@ private:
     // Marker position and orientation
     geometry_msgs::Point        _curr_marker_pos;
     geometry_msgs::Quaternion   _curr_marker_ori;
-
-    ros::NodeHandle _nh;
 
 protected:
 

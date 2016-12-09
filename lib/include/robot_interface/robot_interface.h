@@ -20,9 +20,8 @@
 #include <std_msgs/Empty.h>
 
 #include "robot_utils/utils.h"
-
-#include "robot_interface/ros_thread_obj.h"
-#include "robot_interface/baxter_trac_ik.h"
+#include "robot_utils/ros_thread_obj.h"
+#include "robot_utils/baxter_trac_ik.h"
 
 #include <baxter_collaboration/GoToPose.h>
 
@@ -41,10 +40,10 @@ private:
     std::string    _limb;       // Limb (either left or right)
     State         _state;       // State of the controller
 
+    ros::AsyncSpinner spinner;  // AsyncSpinner to handle callbacks
+
     bool       _no_robot;       // Flag to know if we're going to use the robot or not
     bool     _use_forces;       // Flag to know if we're going to use the force feedback
-
-    ros::AsyncSpinner spinner;  // AsyncSpinner to handle callbacks
 
     ros::Publisher  _joint_cmd_pub; // Publisher to control the robot in joint space
     ros::Publisher    _coll_av_pub; // Publisher to suppress collision avoidance behavior
@@ -96,13 +95,21 @@ private:
      * Collision avoidance State
      */
     ros::Subscriber _coll_av_sub;
-    bool            is_colliding;
+    bool           is_coll_av_on;
+
+    /**
+     * Cuff buttons
+     */
+    ros::Subscriber _cuff_sub;
 
     /**
      * Control server
      */
     // Internal thread that implements the controller server
     ROSThreadObj _thread;
+
+    // Flag to know if we're using the cartesian controller or not
+    bool _use_cart_ctrl;
 
     // Control mode for the controller server. It can be either
     // baxter_collaboration::GoToPose::POSITION_MODE or
@@ -171,7 +178,55 @@ private:
      */
     void ThreadEntry();
 
-protected:
+    /**
+     * @brief Publishes the desired joint configuration
+     * @details Publishes the desired joint configuration in the proper topic
+     *
+     * @param _cmd The desired joint configuration
+     */
+    void publish_joint_cmd(baxter_core_msgs::JointCommand _cmd);
+
+    /*
+     * Callback function that sets the current pose to the pose received from
+     * the endpoint state topic
+     *
+     * @param msg the topic message
+     */
+    void endpointCb(const baxter_core_msgs::EndpointState& msg);
+
+    /*
+     * Callback function for the CUFF OK button
+     *
+     * @param msg the topic message
+     */
+    void cuffCb(const baxter_core_msgs::DigitalIOState& msg);
+
+    /**
+     * Callback for the joint states. Used to seed the
+     * inverse kinematics solver
+     *
+     * @param msg the topic message
+     */
+    void jointStatesCb(const sensor_msgs::JointState& msg);
+
+    /**
+     * Callback for the collision avoidance state. Used to detect
+     * if the robot is currently pushed back by the collision avoidance
+     * software which is embedded into the Baxter robot and we don't have
+     * access to.
+     *
+     * @param msg the topic message
+     */
+    void collAvCb(const baxter_core_msgs::CollisionAvoidanceState& msg);
+
+    /*
+     * Infrared sensor callback function that sets the current range to the range received
+     * from the left hand range state topic
+     *
+     * @param      The message
+     * @return     N/A
+     */
+    void IRCb(const sensor_msgs::RangeConstPtr& msg);
 
     /*
      * Starts thread that executes the control server. For now it is
@@ -200,9 +255,8 @@ protected:
      */
     bool killThread();
 
-    // Cuff OK Button (the circular one)
-    ros::Subscriber _cuff_sub;
 
+protected:
     /*
      * Checks for if the system is ok. To be called inside every thread execution,
      * in order to make it exit gracefully if there is any problem.
@@ -212,7 +266,7 @@ protected:
     bool ok();
 
     /*
-     * checks if end effector has made contact with a token by checking if
+     * Checks if end effector has made contact with a token by checking if
      * the range of the infrared sensor has fallen below the threshold value
      *
      * @param      current range values of the IR sensor, and a string
@@ -227,10 +281,32 @@ protected:
      * Checks if the arm has reached its intended pose by comparing
      * the requested and the current poses
      *
-     * @param  p     requested position
-     * @param  o     requested orientation quaterion
+     * @param  p     requested Pose
      * @param  mode  (strict/loose) the desired level of precision
      * @return       true/false if success/failure
+     */
+    bool isPoseReached(geometry_msgs::Pose p, std::string mode = "loose");
+
+    /*
+     * Checks if the arm has reached its intended pose by comparing
+     * the requested and the current poses
+     *
+     * @param  p     requested Position
+     * @param  o     requested Orientation quaternion
+     * @param  mode  (strict/loose) the desired level of precision
+     * @return       true/false if success/failure
+     */
+    bool isPoseReached(geometry_msgs::Point p,
+                       geometry_msgs::Quaternion o, std::string mode = "loose");
+
+    /*
+     * Checks if the arm has reached its intended pose by comparing
+     * the requested and the current poses
+     *
+     * @param  px, py, pz     requested Position as set of doubles
+     * @param  ox, oy, oz, ow requested Orientation quaternion as set of doubles
+     * @param  mode           (strict/loose) the desired level of precision
+     * @return                true/false if success/failure
      */
     bool isPoseReached(double px, double py, double pz,
                        double ox, double oy, double oz, double ow, std::string mode = "loose");
@@ -239,9 +315,19 @@ protected:
      * Checks if the arm has reached its intended position by comparing
      * the requested and the current positions
      *
-     * @param  p     requested position
+     * @param  p     requested Position
      * @param  mode  (strict/loose) the desired level of precision
      * @return       true/false if success/failure
+     */
+    bool isPositionReached(geometry_msgs::Point p, std::string mode = "loose");
+
+    /*
+     * Checks if the arm has reached its intended position by comparing
+     * the requested and the current positions
+     *
+     * @param  px, py, pz  requested Position as set of doubles
+     * @param  mode        (strict/loose) the desired level of precision
+     * @return             true/false if success/failure
      */
     bool isPositionReached(double px, double py, double pz, std::string mode = "loose");
 
@@ -249,10 +335,19 @@ protected:
      * Checks if the arm has reached its intended orientation by comparing
      * the requested and the current orientations
      *
-     * @param  o     requested orientation quaterion
-     * @param  mode  (strict/loose) the desired level of precision
-     *               (currently not implemented)
+     * @param  o     requested Orientation quaternion
+     * @param  mode  (strict/loose) desired level of precision (currently not implemented)
      * @return       true/false if success/failure
+     */
+    bool isOrientationReached(geometry_msgs::Quaternion q, std::string mode = "loose");
+
+    /*
+     * Checks if the arm has reached its intended orientation by comparing
+     * the requested and the current orientations
+     *
+     * @param  ox, oy, oz, ow requested Orientation quaternion as set of doubles
+     * @param  mode           (strict/loose) desired level of precision (currently not implemented)
+     * @return                true/false if success/failure
      */
     bool isOrientationReached(double ox, double oy, double oz, double ow, std::string mode = "loose");
 
@@ -260,11 +355,23 @@ protected:
      * Checks if the arm has reached its intended joint configuration by comparing
      * the requested and the current joint configurations
      *
-     * @param  j     requested joint configuration
-     * @param  mode  (strict/loose) the desired level of precision
-     * @return       true/false if success/failure
+     * @param  des_jnts     requested joint configuration as a set of doubles. It is
+     *                      assumed to be populated as in the setJointCommands method, i.e.
+     *                      in the order s0, s1, e0, e1, w0, w1, w2.
+     * @param  mode         (strict/loose) the desired level of precision
+     * @return              true/false if success/failure
      */
-    bool isConfigurationReached(baxter_core_msgs::JointCommand joint_cmd, std::string mode = "loose");
+    bool isConfigurationReached(std::vector<double> des_jnts, std::string mode = "loose");
+
+    /*
+     * Checks if the arm has reached its intended joint configuration by comparing
+     * the requested and the current joint configurations
+     *
+     * @param  des_jnts     requested joint configuration
+     * @param  mode         (strict/loose) the desired level of precision
+     * @return              true/false if success/failure
+     */
+    bool isConfigurationReached(baxter_core_msgs::JointCommand des_jnts, std::string mode = "loose");
 
     /*
      * Uses IK solver to find joint angles solution for desired pose
@@ -279,7 +386,7 @@ protected:
      * Uses IK solver to find joint angles solution for desired pose
      *
      * @param    p requested Position
-     * @param    o requested Orientation
+     * @param    o requested Orientation quaternion
      * @param    j array of joint angles solution
      * @return     true/false if success/failure
      */
@@ -289,7 +396,7 @@ protected:
      * Uses IK solver to find joint angles solution for desired pose
      *
      * @param    px, py, pz     requested Position as set of doubles
-     * @param    ox, oy, oz, ow requested quaternion orientation as set of doubles
+     * @param    ox, oy, oz, ow requested Orientation quaternion as set of doubles
      * @param    j              array of joint angles solution
      * @return                  true/false if success/failure
      */
@@ -319,7 +426,7 @@ protected:
      * does not check if the final pose has been reached.
      *
      * @param    px, py, pz     requested Position as set of doubles
-     * @param    ox, oy, oz, ow requested quaternion orientation as set of doubles
+     * @param    ox, oy, oz, ow requested Orientation quaternion as set of doubles
      * @return                  true/false if success/failure
      */
     bool goToPoseNoCheck(double px, double py, double pz,
@@ -343,7 +450,7 @@ protected:
      * @param  joint_angles requested joint configuration
      * @return              true/false if success/failure
      */
-    bool goToJointPoseNoCheck(std::vector<double> joint_angles);
+    bool goToJointConfNoCheck(std::vector<double> joint_angles);
 
     /*
      * Sets the joint names of a JointCommand
@@ -392,67 +499,9 @@ protected:
     bool waitForForceInteraction(double _wait_time = 20.0, bool disable_coll_av = false);
 
     /*
-     * Callback function that sets the current pose to the pose received from
-     * the endpoint state topic
-     *
-     * @param msg the topic message
-     */
-    void endpointCb(const baxter_core_msgs::EndpointState& msg);
-
-    /*
-     * Callback function for the CUFF OK button
-     *
-     * @param msg the topic message
-     */
-    void cuffCb(const baxter_core_msgs::DigitalIOState& msg);
-
-    /**
-     * Callback for the joint states. Used to seed the
-     * inverse kinematics solver
-     *
-     * @param msg the topic message
-     */
-    void jointStatesCb(const sensor_msgs::JointState& msg);
-
-    /**
-     * Callback for the collision avoidance state. Used to detect
-     * if the robot is currently pushed back by the collision avoidance
-     * software which is embedded into the Baxter robot and we don't have
-     * access to.
-     *
-     * @param msg the topic message
-     */
-    void collAvCb(const baxter_core_msgs::CollisionAvoidanceState& msg);
-
-    /*
-     * Infrared sensor callback function that sets the current range to the range received
-     * from the left hand range state topic
-     *
-     * @param      The message
-     * @return     N/A
-     */
-    void IRCb(const sensor_msgs::RangeConstPtr& msg);
-
-    /*
      * Filters the forces using a low pass filter and testing against predicted trends in filter values
      */
     void filterForces();
-
-    /*
-     * hover arm above tokens
-     *
-     * @param      double indicating requested height of arm (z-axis)
-     * return     N/A
-     */
-    void hoverAboveTokens(double height);
-
-    /**
-     * @brief Publishes the desired joint configuration
-     * @details Publishes the desired joint configuration in the proper topic
-     *
-     * @param _cmd The desired joint configuration
-     */
-    void publish_joint_cmd(baxter_core_msgs::JointCommand _cmd);
 
     /**
      * @brief Suppresses the collision avoidance for this arm
@@ -464,17 +513,17 @@ protected:
     void suppressCollisionAv();
 
 public:
-    RobotInterface(std::string name, std::string limb,
-                   bool no_robot = false, bool use_forces = true, bool use_trac_ik = true);
+    RobotInterface(std::string name, std::string limb, bool no_robot = false,
+                   bool use_forces = true, bool use_trac_ik = true, bool use_cart_ctrl = true);
 
     ~RobotInterface();
 
     /*
      * Self-explaining "setters"
      */
-    void setName(std::string name) { _name = name; };
     void setState(int state);
-    void setTracIK(bool use_trac_ik) { _use_trac_ik = use_trac_ik; };
+    void setName(std::string name)          {        _name = name;        };
+    void setTracIK(bool use_trac_ik)        { _use_trac_ik = use_trac_ik; };
 
     bool setIKLimits(KDL::JntArray  ll, KDL::JntArray  ul);
 
@@ -499,7 +548,7 @@ public:
     bool    is_ir_ok() { return ir_ok; };
 
     /*
-     * Checks if the robot has to be used or not
+     * Checks if the robot is used or not
      */
     bool is_no_robot() { return _no_robot; };
 };

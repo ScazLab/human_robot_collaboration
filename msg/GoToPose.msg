@@ -3,7 +3,6 @@
 # be moved to the desired position with the current orientation.
 geometry_msgs/PoseStamped pose_stamp
 
-
 # Control mode to control the robot with. For now, only position mode is
 # allowed. In the near future, also velocity mode will be allowed, in order
 # to directly control the robot's joints in velocity.

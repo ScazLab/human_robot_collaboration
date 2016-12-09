@@ -41,7 +41,9 @@
 
 #define Z_HIGH         0.400
 #define Z_LOW          0.200
-#define PICK_UP_SPEED  0.120    // [m/s]
+
+#define ARM_SPEED      0.120    // [m/s]
+#define ARM_ROT_SPEED  1.000    // [rad/s] ?
 
 #define FORCE_THRES_R   2.0  // [N]
 #define FORCE_THRES_L   2.0  // [N]
@@ -65,6 +67,8 @@
 
 #define HOME_POS_L   0.65,  0.45
 #define HOME_POS_R   0.65, -0.25
+
+#define EPSILON         1e-8
 
 /*
  * sets the position of a pose

@@ -16,18 +16,19 @@ include_directories(${PROJECT_SOURCE_DIR}/include)
 # without the need to link against the full robot_interface lib,
 # which would be an unnecessary overhead.
 add_library(robot_utils     include/robot_utils/utils.h
-                            src/robot_utils/utils.cpp)
+                            include/robot_utils/baxter_trac_ik.h
+                            include/robot_utils/ros_thread.h
+                            include/robot_utils/ros_thread_obj.h
+                            include/robot_utils/ros_thread_image.h
+                            src/robot_utils/utils.cpp
+                            src/robot_utils/baxter_trac_ik.cpp
+                            src/robot_utils/ros_thread.cpp
+                            src/robot_utils/ros_thread_obj.cpp
+                            src/robot_utils/ros_thread_image.cpp)
 
-add_library(robot_interface include/robot_interface/ros_thread.h
-                            include/robot_interface/ros_thread_obj.h
-                            include/robot_interface/ros_thread_image.h
-                            include/robot_interface/robot_interface.h
+add_library(robot_interface include/robot_interface/robot_interface.h
                             include/robot_interface/gripper.h
                             include/robot_interface/arm_ctrl.h
-                            src/robot_interface/ros_thread.cpp
-                            src/robot_interface/ros_thread_obj.cpp
-                            src/robot_interface/ros_thread_image.cpp
-                            src/robot_interface/baxter_trac_ik.cpp
                             src/robot_interface/robot_interface.cpp
                             src/robot_interface/gripper.cpp
                             src/robot_interface/arm_ctrl.cpp)
