@@ -14,15 +14,36 @@
 class CartesianEstimator : public ROSThreadImage
 {
 private:
+    image_transport::Publisher      img_pub;
+
+    // Segmented object as a rotated rectangle
     cv::RotatedRect          obj_segm;
+
+    // Camera parameters
     aruco::CameraParameters cam_param;
 
     std::vector<double> obj_size;
 
-    //matrices of rotation and translation respect to the camera
+    // Rotation and translation matrices with respect to the camera
     cv::Mat Rvec,Tvec;
 
 protected:
+    /*
+     * Function that will be spun out as a thread
+     */
+    void InternalThreadEntry();
+
+    /**
+     * Detects the object in the image
+     */
+    virtual void detectObject(cv::Mat _in, cv::Mat _out) = 0;
+
+    /**
+     * Calculates the cartesian position of the segmented object given the rotated bounding box,
+     * the camera parameters and the real physical size of the object.
+     *
+     * @return true/false if success/failure
+     */
     bool calculateCartesianPosition();
 
 public:
