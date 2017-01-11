@@ -25,7 +25,7 @@ private:
     std::vector<double> obj_size;
 
     // Rotation and translation matrices with respect to the camera
-    cv::Mat Rvec,Tvec;
+    cv::Mat Rvec, Tvec;
 
 protected:
     /*
@@ -45,6 +45,13 @@ protected:
      * @return true/false if success/failure
      */
     bool calculateCartesianPosition();
+
+    /**
+     * Draws a 3D axis in the object
+     *
+     * @param _in [description]
+     */
+    void draw3dAxis(cv::Mat &_in);
 
 public:
     CartesianEstimator(std::string name, std::vector<double> _obj_size);

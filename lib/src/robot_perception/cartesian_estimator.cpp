@@ -92,6 +92,35 @@ bool CartesianEstimator::calculateCartesianPosition()
     return true;
 }
 
+void CartesianEstimator::draw3dAxis(cv::Mat &_in)
+{
+    float size=0.2;
+
+    cv::Mat objectPoints (4,3,CV_32FC1);
+    objectPoints.at<float>(0,0)=0;
+    objectPoints.at<float>(0,1)=0;
+    objectPoints.at<float>(0,2)=0;
+    objectPoints.at<float>(1,0)=size;
+    objectPoints.at<float>(1,1)=0;
+    objectPoints.at<float>(1,2)=0;
+    objectPoints.at<float>(2,0)=0;
+    objectPoints.at<float>(2,1)=size;
+    objectPoints.at<float>(2,2)=0;
+    objectPoints.at<float>(3,0)=0;
+    objectPoints.at<float>(3,1)=0;
+    objectPoints.at<float>(3,2)=size;
+
+    vector<cv::Point2f> imagePoints;
+    cv::projectPoints( objectPoints, Rvec, Tvec, cam_param.CameraMatrix, cam_param.Distorsion, imagePoints);
+    //draw lines of different colours
+    cv::line(_in,imagePoints[0],imagePoints[1],cv::Scalar(255,0,0,255),1,CV_AA);
+    cv::line(_in,imagePoints[0],imagePoints[2],cv::Scalar(0,255,0,255),1,CV_AA);
+    cv::line(_in,imagePoints[0],imagePoints[3],cv::Scalar(0,0,255,255),1,CV_AA);
+    cv::putText(_in,"x", imagePoints[1], cv::FONT_HERSHEY_SIMPLEX, 0.6, cv::Scalar(255,0,0,255),2);
+    cv::putText(_in,"y", imagePoints[2], cv::FONT_HERSHEY_SIMPLEX, 0.6, cv::Scalar(0,255,0,255),2);
+    cv::putText(_in,"z", imagePoints[3], cv::FONT_HERSHEY_SIMPLEX, 0.6, cv::Scalar(0,0,255,255),2);
+}
+
 CartesianEstimator::~CartesianEstimator()
 {
 

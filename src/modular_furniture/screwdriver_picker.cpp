@@ -32,6 +32,9 @@ void ScrewDriverPicker::detectObject(const cv::Mat& _in, cv::Mat& _out)
     for (int i = 0; i < 4; ++i) dilate(img_thres, img_thres, cv::Mat());
     for (int i = 0; i < 2; ++i) erode(img_thres, img_thres, cv::Mat());
 
+    cv::imshow("Test", img_thres);
+    cv::waitKey(3);
+
     // Find contours
     cv::findContours(img_thres, contours, hierarchy, CV_RETR_TREE, CV_CHAIN_APPROX_SIMPLE, cv::Point(0, 0) );
 
@@ -53,10 +56,8 @@ void ScrewDriverPicker::detectObject(const cv::Mat& _in, cv::Mat& _out)
         cv::line( _out, rect_points[j], rect_points[(j+1)%4], color, 1, 8 );
     }
 
-    cv::imshow("Test", img_thres);
-    cv::waitKey(3);
-
     calculateCartesianPosition();
+    draw3dAxis(_out);
 
     return;
 }
