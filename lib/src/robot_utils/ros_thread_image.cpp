@@ -5,7 +5,7 @@
 /**************************************************************************/
 
 ROSThreadImage::ROSThreadImage(std::string name) :  ROSThread(), _n(name), _name(name),
-                                            spinner(4), _img_trp(_n), _img_empty(true)
+                                     spinner(4), _img_trp(_n), _img_empty(true), r(30) // 30Hz
 {
     pthread_mutexattr_t _mutex_attr;
     pthread_mutexattr_init(&_mutex_attr);
