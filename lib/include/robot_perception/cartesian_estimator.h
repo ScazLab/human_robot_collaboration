@@ -17,6 +17,9 @@ private:
     cv::RotatedRect          obj_segm;
     aruco::CameraParameters cam_param;
 
+    //matrices of rotation and translation respect to the camera
+    cv::Mat Rvec,Tvec;
+
 protected:
     void calculateCartesianPosition();
 
