@@ -12,7 +12,7 @@ ScrewDriverPicker::ScrewDriverPicker(std::string name, std::vector<double> _obj_
 
 void ScrewDriverPicker::detectObject(const cv::Mat& _in, cv::Mat& _out)
 {
-    ROS_INFO("[detectObject]");
+    ROS_INFO_THROTTLE(1, "[detectObject]");
 
     cv::Mat img_hsv;
     cv::cvtColor(_in, img_hsv, CV_BGR2HSV); //Convert the captured frame from BGR to HSV
@@ -32,8 +32,8 @@ void ScrewDriverPicker::detectObject(const cv::Mat& _in, cv::Mat& _out)
     for (int i = 0; i < 4; ++i) dilate(img_thres, img_thres, cv::Mat());
     for (int i = 0; i < 2; ++i) erode(img_thres, img_thres, cv::Mat());
 
-    cv::imshow("Test", img_thres);
-    cv::waitKey(3);
+    // cv::imshow("Test", img_thres);
+    // cv::waitKey(3);
 
     // Find contours
     cv::findContours(img_thres, contours, hierarchy, CV_RETR_TREE, CV_CHAIN_APPROX_SIMPLE, cv::Point(0, 0) );
@@ -45,15 +45,14 @@ void ScrewDriverPicker::detectObject(const cv::Mat& _in, cv::Mat& _out)
 
     cv::RNG rng(ros::Time::now().toNSec());
     cv::Scalar color = cv::Scalar( rng.uniform(0, 255), rng.uniform(0,255), rng.uniform(0,255) );
-    // contour
-    drawContours( img_thres, contours, 0, color, 1, 8, vector<cv::Vec4i>(), 0, cv::Point() );
-    // rotated rectangle
+
     cv::Point2f rect_points[4];
-    getSegmentedObject().points( rect_points );
+    getSegmentedObject().points(rect_points);
 
     for( int j = 0; j < 4; j++ )
     {
-        cv::line( _out, rect_points[j], rect_points[(j+1)%4], color, 1, 8 );
+        cv::line   ( _out, rect_points[j], rect_points[(j+1)%4], color, 1, 8 );
+        cv::putText(_out, intToString(j), rect_points[j], cv::FONT_HERSHEY_SIMPLEX, 1.6, cv::Scalar::all(255), 3, CV_AA);
     }
 
     calculateCartesianPosition();

@@ -14,8 +14,8 @@ int main(int argc, char ** argv)
     ROS_INFO("use_robot flag set to %s", use_robot==true?"true":"false");
 
     std::vector<double> size;
-    size.push_back(0.082);
-    size.push_back(0.082);
+    size.push_back(0.087);
+    size.push_back(0.077);
 
     printf("\n");
     ScrewDriverPicker test("screwdriver_picker", size);

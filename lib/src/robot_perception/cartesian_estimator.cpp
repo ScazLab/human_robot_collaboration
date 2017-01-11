@@ -60,7 +60,26 @@ void CartesianEstimator::InternalThreadEntry()
 
 bool CartesianEstimator::calculateCartesianPosition()
 {
+    // Set image points from the rotated rectangle that defines the segmented object
+    cv::Mat ImgPoints(4,2,CV_32FC1);
+
+    cv::Point2f obj_segm_pts[4];
+    obj_segm.points(obj_segm_pts);
+
+    for (int i=0; i<4; i++)
+    {
+        ImgPoints.at<float>(i,0)=obj_segm_pts[i].x;
+        ImgPoints.at<float>(i,1)=obj_segm_pts[i].y;
+    }
+
+    cv::Point2f rect_center = obj_segm.center;
+
+    // Matrix representing the points relative to the objects.
+    // The convention used is to have 0 in the bottom left, with the others organized in a clockwise manner
     cv::Mat ObjPoints(4,3,CV_32FC1);
+    ObjPoints.at<float>(0,0)=-obj_size[0];
+    ObjPoints.at<float>(0,1)=-obj_size[1];
+    ObjPoints.at<float>(0,2)=0;
     ObjPoints.at<float>(1,0)=-obj_size[0];
     ObjPoints.at<float>(1,1)=+obj_size[1];
     ObjPoints.at<float>(1,2)=0;
@@ -70,20 +89,6 @@ bool CartesianEstimator::calculateCartesianPosition()
     ObjPoints.at<float>(3,0)=+obj_size[0];
     ObjPoints.at<float>(3,1)=-obj_size[1];
     ObjPoints.at<float>(3,2)=0;
-    ObjPoints.at<float>(0,0)=-obj_size[0];
-    ObjPoints.at<float>(0,1)=-obj_size[1];
-    ObjPoints.at<float>(0,2)=0;
-
-    cv::Mat ImgPoints(4,2,CV_32FC1);
-    //Set image points from the rotated rectangle that defines the segmented object
-    cv::Point2f obj_segm_pts[4];
-    obj_segm.points(obj_segm_pts);
-
-    for (int i=0; i<4; i++)
-    {
-        ImgPoints.at<float>(i,0)=obj_segm_pts[i].x;
-        ImgPoints.at<float>(i,1)=obj_segm_pts[i].y;
-    }
 
     cv::Mat raux,taux;
     cv::solvePnP(ObjPoints, ImgPoints, cam_param.CameraMatrix, cv::Mat(), raux, taux);
