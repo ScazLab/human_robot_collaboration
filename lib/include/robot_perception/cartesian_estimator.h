@@ -36,7 +36,7 @@ protected:
     /**
      * Detects the object in the image
      */
-    virtual void detectObject(cv::Mat _in, cv::Mat _out) = 0;
+    virtual void detectObject(const cv::Mat& _in, cv::Mat& _out) { return; };
 
     /**
      * Calculates the cartesian position of the segmented object given the rotated bounding box,
@@ -50,6 +50,11 @@ public:
     CartesianEstimator(std::string name, std::vector<double> _obj_size);
     ~CartesianEstimator();
 
+    /** GETTERS **/
+    cv::RotatedRect getSegmentedObject() { return obj_segm; };
+
+    /** SETTERS **/
+    void setSegmentedObject(cv::RotatedRect _os) { obj_segm = _os; return; };
 };
 
 #endif

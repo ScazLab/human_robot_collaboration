@@ -4,9 +4,9 @@ using namespace std;
 
 CartesianEstimator::CartesianEstimator(string name, std::vector<double> _obj_size) : ROSThreadImage(name)
 {
-    img_pub = _img_trp.advertise("/baxter_collaboration/cartesian_estimator", 1);
+    img_pub = _img_trp.advertise("/"+getName()+"/result", 1);
 
-    sensor_msgs::CameraInfoConstPtr msg = ros::topic::waitForMessage<sensor_msgs::CameraInfo>("/camera_info", _n);//, 10.0);
+    sensor_msgs::CameraInfoConstPtr msg = ros::topic::waitForMessage<sensor_msgs::CameraInfo>("/"+getName()+"/camera_info", _n);//, 10.0);
     cam_param = aruco_ros::rosCameraInfo2ArucoCamParams(*msg, true);    // For now, we'll assume images that are always rectified
 
     Rvec.create(3,1,CV_32FC1);
@@ -48,12 +48,9 @@ void CartesianEstimator::InternalThreadEntry()
             img_in=_curr_img;
             pthread_mutex_unlock(&_mutex_img);
             img_out = img_in.clone();
-        }
 
-        detectObject(img_in, img_out);
+            detectObject(img_in, img_out);
 
-        if (!_img_empty)
-        {
             sensor_msgs::ImagePtr msg = cv_bridge::CvImage(std_msgs::Header(), "bgr8", img_out).toImageMsg();
             img_pub.publish(msg);
         }
