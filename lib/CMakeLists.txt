@@ -34,7 +34,9 @@ add_library(robot_interface include/robot_interface/robot_interface.h
                             src/robot_interface/arm_ctrl.cpp)
 
 add_library(robot_perception    include/robot_perception/aruco_client.h
-                                src/robot_perception/aruco_client.cpp)
+                                include/robot_perception/cartesian_estimator.h
+                                src/robot_perception/aruco_client.cpp
+                                src/robot_perception/cartesian_estimator.cpp)
 
 add_library(flatpack_furniture  include/flatpack_furniture/artag_ctrl.h
                                 include/flatpack_furniture/hold_ctrl.h

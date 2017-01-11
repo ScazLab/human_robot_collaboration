@@ -19,6 +19,8 @@ find_package(catkin REQUIRED COMPONENTS
              image_transport
              trac_ik_lib
              eigen_conversions
+             aruco
+             aruco_ros
              )
 
 find_package(OpenCV 2.4 REQUIRED)
