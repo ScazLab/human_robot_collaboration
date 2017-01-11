@@ -35,6 +35,8 @@ protected:
     cv::Size _img_size;
     bool    _img_empty;
 
+    ros::Rate r;
+
     /*
      * Function that will be spun out as a thread
      */
