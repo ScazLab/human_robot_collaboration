@@ -17,14 +17,16 @@ private:
     cv::RotatedRect          obj_segm;
     aruco::CameraParameters cam_param;
 
+    std::vector<double> obj_size;
+
     //matrices of rotation and translation respect to the camera
     cv::Mat Rvec,Tvec;
 
 protected:
-    void calculateCartesianPosition();
+    bool calculateCartesianPosition();
 
 public:
-    CartesianEstimator(std::string name);
+    CartesianEstimator(std::string name, std::vector<double> _obj_size);
     ~CartesianEstimator();
 
 };
