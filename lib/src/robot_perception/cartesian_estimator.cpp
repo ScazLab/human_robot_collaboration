@@ -58,8 +58,18 @@ void CartesianEstimator::InternalThreadEntry()
     }
 }
 
-bool CartesianEstimator::calculateCartesianPosition()
+bool CartesianEstimator::calculateCartesianPose()
 {
+    // Let's be sure that the width of the rotated rect is the longest,
+    // in order to ensure consistency in the computatino of the orientation
+    if (obj_segm.size.height > obj_segm.size.width)
+    {
+        float tmp = obj_segm.size.height;
+
+        obj_segm.size.height = obj_segm.size.width;
+        obj_segm.size.width  = tmp;
+    }
+
     // Set image points from the rotated rectangle that defines the segmented object
     cv::Mat ImgPoints(4,2,CV_32FC1);
 
@@ -71,8 +81,6 @@ bool CartesianEstimator::calculateCartesianPosition()
         ImgPoints.at<float>(i,0)=obj_segm_pts[i].x;
         ImgPoints.at<float>(i,1)=obj_segm_pts[i].y;
     }
-
-    cv::Point2f rect_center = obj_segm.center;
 
     // Matrix representing the points relative to the objects.
     // The convention used is to have 0 in the bottom left, with the others organized in a clockwise manner

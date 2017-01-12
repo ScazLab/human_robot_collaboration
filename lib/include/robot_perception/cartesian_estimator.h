@@ -44,7 +44,7 @@ protected:
      *
      * @return true/false if success/failure
      */
-    bool calculateCartesianPosition();
+    bool calculateCartesianPose();
 
     /**
      * Draws a 3D axis in the object
