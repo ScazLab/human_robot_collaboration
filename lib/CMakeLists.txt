@@ -33,7 +33,9 @@ add_library(robot_interface include/robot_interface/robot_interface.h
                             src/robot_interface/gripper.cpp
                             src/robot_interface/arm_ctrl.cpp)
 
-add_library(robot_perception    include/robot_perception/aruco_client.h
+add_library(robot_perception    include/robot_perception/hsv_detection.h
+                                include/robot_perception/aruco_client.h
+                                src/robot_perception/hsv_detection.cpp
                                 src/robot_perception/aruco_client.cpp)
 
 add_library(flatpack_furniture  include/flatpack_furniture/artag_ctrl.h
