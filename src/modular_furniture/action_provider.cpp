@@ -14,12 +14,12 @@ int main(int argc, char ** argv)
     ROS_INFO("use_robot flag set to %s", use_robot==true?"true":"false");
 
     std::vector<double> size;
-    size.push_back(0.112);
-    size.push_back(0.049);
+    size.push_back(0.080);
+    size.push_back(0.020);
 
-    printf("\n");
+    // printf("\n");
     ScrewDriverPicker test("screwdriver_picker", size);
-    printf("\n");
+    // printf("\n");
     // HoldCtrl  right_ctrl("action_provider","right", !use_robot);
     printf("\n");
     ROS_INFO("READY! Waiting for service messages..\n");

@@ -4,10 +4,10 @@
         <param name="autosize" value="true" />
     </node>
 
-    <param name="screwdriver_picker/reference_frame"    value="/base"/>
-    <param name="screwdriver_picker/camera_frame"       value="/right_hand_camera"/>
+    <param name="screwdriver_picker/reference_frame" value="/base"/>
+    <param name="screwdriver_picker/camera_frame"    value="/right_hand_camera"/>
 
-    <node pkg="baxter_collaboration" type="tool_action_provider" name="tool_action_provider">
+    <node pkg="baxter_collaboration" type="tool_action_provider" name="tool_action_provider" output="screen">
         <remap from="screwdriver_picker/image" to="/cameras/right_hand_camera/image"/>
         <remap from="screwdriver_picker/camera_info" to="/cameras/right_hand_camera/camera_info"/>
     </node>

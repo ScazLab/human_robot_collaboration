@@ -1,6 +1,3 @@
-#include <stdio.h>
-
-#include <ros/ros.h>
 #include "screwdriver_picker.h"
 
 using namespace std;
@@ -10,41 +7,44 @@ ScrewDriverPicker::ScrewDriverPicker(std::string name, std::vector<double> _obj_
 
 }
 
-void ScrewDriverPicker::detectObject(const cv::Mat& _in, cv::Mat& _out)
+bool ScrewDriverPicker::detectObject(const cv::Mat& _in, cv::Mat& _out)
 {
     ROS_INFO_THROTTLE(1, "[detectObject]");
 
     cv::Mat img_hsv;
     cv::cvtColor(_in, img_hsv, CV_BGR2HSV); //Convert the captured frame from BGR to HSV
 
-    cv::Mat img_thres;
+
     vector<vector<cv::Point> > contours;
     vector<cv::Vec4i> hierarchy;
 
-    int h_min = 60, h_max = 130;
-    int s_min = 90, s_max = 256;
-    int v_min = 10, v_max = 256;
+    hsvColorRange   blue(colorRange( 60, 130), colorRange(90, 256), colorRange( 10,256));
+    hsvColorRange yellow(colorRange( 10,  60), colorRange(50, 116), colorRange(120,146));
+    hsvColorRange    red(colorRange(160,  10), colorRange(70, 166), colorRange( 10, 66));
 
-    inRange(img_hsv, cv::Scalar(h_min, s_min, v_min), cv::Scalar(h_max, s_max, v_max), img_thres);
+    cv::Mat img_thres = hsvThreshold(img_hsv, red);
 
     // Some morphological operations to remove noise and clean up the image
     for (int i = 0; i < 2; ++i) erode(img_thres, img_thres, cv::Mat());
     for (int i = 0; i < 4; ++i) dilate(img_thres, img_thres, cv::Mat());
     for (int i = 0; i < 2; ++i) erode(img_thres, img_thres, cv::Mat());
 
-    // cv::imshow("Test", img_thres);
-    // cv::waitKey(3);
+    cv::imshow("Test", img_thres);
+    cv::waitKey(3);
 
     // Find contours
     cv::findContours(img_thres, contours, hierarchy, CV_RETR_TREE, CV_CHAIN_APPROX_SIMPLE, cv::Point(0, 0) );
 
-    if (contours.size() ==1)
+    if (contours.size() == 1)
     {
         setSegmentedObject(minAreaRect(cv::Mat(contours[0])));
     }
+    else
+    {
+        return false;
+    }
 
-    cv::RNG rng(ros::Time::now().toNSec());
-    cv::Scalar color = cv::Scalar( rng.uniform(0, 255), rng.uniform(0,255), rng.uniform(0,255) );
+    cv::Scalar color = cv::Scalar::all(255);
 
     cv::Point2f rect_points[4];
     getSegmentedObject().points(rect_points);
@@ -52,11 +52,12 @@ void ScrewDriverPicker::detectObject(const cv::Mat& _in, cv::Mat& _out)
     for( int j = 0; j < 4; j++ )
     {
         cv::line   ( _out, rect_points[j], rect_points[(j+1)%4], color, 1, 8 );
-        cv::putText(_out, intToString(j), rect_points[j], cv::FONT_HERSHEY_SIMPLEX, 1.6, cv::Scalar::all(255), 3, CV_AA);
+        cv::putText(_out, intToString(j), rect_points[j], cv::FONT_HERSHEY_SIMPLEX, 1.2, cv::Scalar::all(255), 3, CV_AA);
     }
 
     calcPoseCameraFrame();
+    cameraToRootFramePose();
     draw3dAxis(_out);
 
-    return;
+    return true;
 }

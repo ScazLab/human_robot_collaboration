@@ -67,7 +67,7 @@ protected:
     /**
      * Detects the object in the image
      */
-    virtual void detectObject(const cv::Mat& _in, cv::Mat& _out) { return; };
+    virtual bool detectObject(const cv::Mat& _in, cv::Mat& _out) { return false; };
 
     /**
      * Calculates the cartesian pose of the segmented object in the camera frame
