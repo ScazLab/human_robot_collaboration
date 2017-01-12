@@ -55,7 +55,7 @@ void ScrewDriverPicker::detectObject(const cv::Mat& _in, cv::Mat& _out)
         cv::putText(_out, intToString(j), rect_points[j], cv::FONT_HERSHEY_SIMPLEX, 1.6, cv::Scalar::all(255), 3, CV_AA);
     }
 
-    calculateCartesianPose();
+    calcPoseCameraFrame();
     draw3dAxis(_out);
 
     return;

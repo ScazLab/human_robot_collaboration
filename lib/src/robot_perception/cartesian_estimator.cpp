@@ -58,7 +58,7 @@ void CartesianEstimator::InternalThreadEntry()
     }
 }
 
-bool CartesianEstimator::calculateCartesianPose()
+bool CartesianEstimator::calcPoseCameraFrame()
 {
     // Let's be sure that the width of the rotated rect is the longest,
     // in order to ensure consistency in the computatino of the orientation
@@ -102,6 +102,11 @@ bool CartesianEstimator::calculateCartesianPose()
     cv::solvePnP(ObjPoints, ImgPoints, cam_param.CameraMatrix, cv::Mat(), raux, taux);
     raux.convertTo(Rvec, CV_32F);
     taux.convertTo(Tvec, CV_32F);
+    return true;
+}
+
+bool CartesianEstimator::cameraToRootFramePose()
+{
     return true;
 }
 

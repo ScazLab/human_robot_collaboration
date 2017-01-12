@@ -39,17 +39,25 @@ protected:
     virtual void detectObject(const cv::Mat& _in, cv::Mat& _out) { return; };
 
     /**
-     * Calculates the cartesian position of the segmented object given the rotated bounding box,
-     * the camera parameters and the real physical size of the object.
+     * Calculates the cartesian pose of the segmented object in the camera frame
+     * given the rotated bounding box, the camera parameters and the real physical size of the object.
      *
      * @return true/false if success/failure
      */
-    bool calculateCartesianPose();
+    bool calcPoseCameraFrame();
+
+    /**
+     * Projects the cartesian pose of the segmented object from the camera frame to the root frame,
+     * given the kinematics of the robot, and the pose in the camera frame
+     *
+     * @return true/false if success/failure
+     */
+    bool cameraToRootFramePose();
 
     /**
      * Draws a 3D axis in the object
      *
-     * @param _in [description]
+     * @param _in Image to draw the 3D axis into
      */
     void draw3dAxis(cv::Mat &_in);
 
