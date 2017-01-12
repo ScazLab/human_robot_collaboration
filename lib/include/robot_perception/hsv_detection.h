@@ -5,8 +5,6 @@
 #include <sensor_msgs/image_encodings.h>
 #include <opencv2/core/core.hpp>
 
-#include "baxter_tictactoe/MsgBoard.h"
-
 namespace enc = sensor_msgs::image_encodings;
 
 struct colorRange
