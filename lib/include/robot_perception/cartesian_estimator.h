@@ -4,6 +4,9 @@
 #include <ros/ros.h>
 #include <ros/console.h>
 
+#include <tf/transform_listener.h>
+#include <tf/transform_broadcaster.h>
+
 #include <opencv2/opencv.hpp>
 
 #include <aruco/cameraparameters.h>
@@ -22,10 +25,38 @@ private:
     // Camera parameters
     aruco::CameraParameters cam_param;
 
+    // Real size of the object in meters. We consider only rectangular shapes
     std::vector<double> obj_size;
+
+    // Name of the reference frame to transform the camera poses to
+    std::string reference_frame_;
+
+    // Name of the camera frame to refer the object poses to
+    std::string camera_frame_;
 
     // Rotation and translation matrices with respect to the camera
     cv::Mat Rvec, Tvec;
+
+    // Transform listener to convert reference frames
+    tf::TransformListener tfListener_;
+
+    /**
+     * [getTransform description]
+     * @param  refFrame   [description]
+     * @param  childFrame [description]
+     * @param  transform  [description]
+     * @return            true/false if success/failure
+     */
+    bool getTransform(const std::string& refFrame,
+                      const std::string& childFrame, tf::StampedTransform& transform);
+
+
+    /**
+     * Converts the detected object's pose into a TF transform object
+     *
+     * @return the converted TF Transform object
+     */
+    tf::Transform object2Tf();
 
 protected:
     /*
