@@ -19,7 +19,7 @@ bool SegmentedObjHSV::detectObject(const cv::Mat& _in, cv::Mat& _out, cv::Mat& _
     cv::Mat img_hsv;
     cv::cvtColor(_in, img_hsv, CV_BGR2HSV); //Convert the captured frame from BGR to HSV
 
-    vector<vector<cv::Point> > contours;
+    Contours contours;
     vector<cv::Vec4i> hierarchy;
 
     cv::Mat img_thres = hsvThreshold(img_hsv, col);
@@ -33,16 +33,27 @@ bool SegmentedObjHSV::detectObject(const cv::Mat& _in, cv::Mat& _out, cv::Mat& _
 
     // Find contours
     cv::findContours(img_thres, contours, hierarchy, CV_RETR_TREE,
-                        CV_CHAIN_APPROX_SIMPLE, cv::Point(0, 0) );
+                     CV_CHAIN_APPROX_SIMPLE, cv::Point(0, 0));
 
-    if (contours.size() == 1)
+    if (contours.size() == 0) return false;
+
+    // At this stage, there should be only a contour in the vector of contours.
+    // If this is not the case, let's pick the contour with the biggest area
+    int largest_area=0;
+    int largest_contour_idx=-1;
+
+    for( size_t i = 0; i< contours.size(); i++ )
     {
-        rect = minAreaRect(cv::Mat(contours[0]));
+        double a = contourArea( contours[i],false);  //  Find the area of contour
+
+        if( a > largest_area )
+        {
+            largest_area = a;
+            largest_contour_idx = i;                //Store the index of largest contour
+        }
     }
-    else
-    {
-        return false;
-    }
+
+    rect = minAreaRect(cv::Mat(contours[largest_contour_idx]));
 
     cv::Scalar color = cv::Scalar::all(255);
 
@@ -52,7 +63,8 @@ bool SegmentedObjHSV::detectObject(const cv::Mat& _in, cv::Mat& _out, cv::Mat& _
     for( int j = 0; j < 4; j++ )
     {
         cv::line   (_out, rect_points[j], rect_points[(j+1)%4], color, 1, 8 );
-        cv::putText(_out, intToString(j), rect_points[j], cv::FONT_HERSHEY_SIMPLEX, 1.2, cv::Scalar::all(255), 3, CV_AA);
+        cv::putText(_out, intToString(j), rect_points[j],
+                     cv::FONT_HERSHEY_SIMPLEX, 1.2, cv::Scalar::all(255), 3, CV_AA);
     }
 
     return true;

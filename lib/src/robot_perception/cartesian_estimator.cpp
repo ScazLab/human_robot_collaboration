@@ -133,8 +133,8 @@ bool CartesianEstimator::detectObjects(const cv::Mat& _in, cv::Mat& _out)
         res = res && objs[i]->detectObject(_in, _out, out_thres);
     }
 
-    cv::imshow("Thres", out_thres);
-    cv::waitKey(3);
+    // cv::imshow("Thres", out_thres);
+    // cv::waitKey(3);
 
     return res;
 }

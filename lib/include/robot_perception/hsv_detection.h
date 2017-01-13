@@ -7,6 +7,9 @@
 
 namespace enc = sensor_msgs::image_encodings;
 
+typedef std::vector<cv::Point>   Contour;
+typedef std::vector<Contour>    Contours;
+
 struct colorRange
 {
     int min;
