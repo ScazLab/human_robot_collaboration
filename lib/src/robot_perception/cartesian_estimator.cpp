@@ -14,6 +14,16 @@ SegmentedObj::SegmentedObj(std::vector<double> _size) :
     }
 }
 
+bool SegmentedObj::detectObject(const cv::Mat& _in, cv::Mat& _out)
+{
+    return false;
+}
+
+bool SegmentedObj::detectObject(const cv::Mat& _in, cv::Mat& _out, cv::Mat& _out_thres)
+{
+    return false;
+}
+
 SegmentedObj::~SegmentedObj()
 {
 
@@ -24,7 +34,8 @@ CartesianEstimator::CartesianEstimator(std::string _name) : ROSThreadImage(_name
     init();
 }
 
-CartesianEstimator::CartesianEstimator(std::string _name, cv::Mat _objs_size) : ROSThreadImage(_name)
+CartesianEstimator::CartesianEstimator(std::string _name,
+                                       cv::Mat _objs_size) : ROSThreadImage(_name)
 {
     ROS_ASSERT_MSG(_objs_size.cols == 2, "Objects' sizes should have two columns. "
                    "%i found instead", _objs_size.cols);
@@ -113,12 +124,17 @@ bool CartesianEstimator::objsFromMat(cv::Mat _o)
 
 bool CartesianEstimator::detectObjects(const cv::Mat& _in, cv::Mat& _out)
 {
+    cv::Mat out_thres(_in.rows, _in.cols, CV_8U, 0.0);
+
     bool res = true;
 
     for (size_t i = 0; i < objs.size(); ++i)
     {
-        res = res && objs[i]->detectObject(_in, _out);
+        res = res && objs[i]->detectObject(_in, _out, out_thres);
     }
+
+    cv::imshow("Thres", out_thres);
+    cv::waitKey(3);
 
     return res;
 }
@@ -306,8 +322,8 @@ bool CartesianEstimator::draw3dAxis(cv::Mat &_img, int idx)
     objectPoints.at<float>(3,2)=size;
 
     vector<cv::Point2f> imagePoints;
-    cv::projectPoints( objectPoints, objs[idx]->Rvec, objs[idx]->Tvec, cam_param.CameraMatrix,
-                                     cam_param.Distorsion, imagePoints);
+    cv::projectPoints( objectPoints, objs[idx]->Rvec, objs[idx]->Tvec,
+                       cam_param.CameraMatrix, cam_param.Distorsion, imagePoints);
     //draw lines of different colours
     cv::line(_img,imagePoints[0],imagePoints[1],cv::Scalar(255,0,0,255),1,CV_AA);
     cv::line(_img,imagePoints[0],imagePoints[2],cv::Scalar(0,255,0,255),1,CV_AA);

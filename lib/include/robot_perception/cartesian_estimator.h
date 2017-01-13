@@ -35,8 +35,24 @@ public:
 
     /**
      * Detects the object in the image
+     *
+     * @param _in        Input image to detect objects from
+     * @param _out       Output image to show the result of the segmentation
+     *
+     * @return true/false if success/failure
      */
-    virtual bool detectObject(const cv::Mat& _in, cv::Mat& _out) { return false; };
+    virtual bool detectObject(const cv::Mat& _in, cv::Mat& _out);
+
+    /**
+     * Detects the object in the image
+     *
+     * @param _in        Input image to detect objects from
+     * @param _out       Output image to show the result of the segmentation
+     * @param _out_thres Optional output image to show the thresholded image
+     *
+     * @return true/false if success/failure
+     */
+    virtual bool detectObject(const cv::Mat& _in, cv::Mat& _out, cv::Mat& _out_thres);
 };
 
 /**

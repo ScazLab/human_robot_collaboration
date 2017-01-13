@@ -10,6 +10,12 @@ SegmentedObjHSV::SegmentedObjHSV(std::vector<double> _size, hsvColorRange _col) 
 
 bool SegmentedObjHSV::detectObject(const cv::Mat& _in, cv::Mat& _out)
 {
+    cv::Mat out_thres(_in.rows, _in.cols, CV_32FC1, 0.0);
+    return detectObject(_in, _out, out_thres);
+}
+
+bool SegmentedObjHSV::detectObject(const cv::Mat& _in, cv::Mat& _out, cv::Mat& _out_thres)
+{
     cv::Mat img_hsv;
     cv::cvtColor(_in, img_hsv, CV_BGR2HSV); //Convert the captured frame from BGR to HSV
 
@@ -23,8 +29,7 @@ bool SegmentedObjHSV::detectObject(const cv::Mat& _in, cv::Mat& _out)
     for (int i = 0; i < 4; ++i) dilate(img_thres, img_thres, cv::Mat());
     for (int i = 0; i < 2; ++i) erode(img_thres, img_thres, cv::Mat());
 
-    cv::imshow("Test", img_thres);
-    cv::waitKey(3);
+    cv::bitwise_or(_out_thres, img_thres.clone(), _out_thres);
 
     // Find contours
     cv::findContours(img_thres, contours, hierarchy, CV_RETR_TREE,
