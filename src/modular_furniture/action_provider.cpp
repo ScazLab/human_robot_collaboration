@@ -13,9 +13,13 @@ int main(int argc, char ** argv)
     printf("\n");
     ROS_INFO("use_robot flag set to %s", use_robot==true?"true":"false");
 
-    cv::Mat sizes(1, 2, CV_32FC1);
+    cv::Mat sizes(2, 2, CV_32FC1);
+    // screwdriver
     sizes.at<float>(0,0) = 0.080;
     sizes.at<float>(0,1) = 0.020;
+    // blue cube
+    sizes.at<float>(1,0) = 0.111;
+    sizes.at<float>(1,1) = 0.052;
 
     hsvColorRange   blue(colorRange( 60, 130), colorRange(90, 256), colorRange( 10,256));
     hsvColorRange yellow(colorRange( 10,  60), colorRange(50, 116), colorRange(120,146));
@@ -23,6 +27,7 @@ int main(int argc, char ** argv)
 
     std::vector<hsvColorRange> colors;
     colors.push_back(red);
+    colors.push_back(blue);
 
     // printf("\n");
     CartesianEstimatorHSV ce_hsv("screwdriver_picker", sizes, colors);
