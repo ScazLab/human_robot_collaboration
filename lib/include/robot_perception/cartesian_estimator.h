@@ -14,8 +14,10 @@
 
 #include "robot_utils/ros_thread_image.h"
 
-struct SegmentedObj
+class SegmentedObj
 {
+public:
+
     // Segmented objects as a rotated rectangle
     cv::RotatedRect     rect;
 
@@ -27,11 +29,24 @@ struct SegmentedObj
 
     /* CONSTRUCTOR */
     SegmentedObj(std::vector<double> _size);
+
+    /* DESTRUCTOR */
+    virtual ~SegmentedObj();
+
+    /**
+     * Detects the object in the image
+     */
+    virtual bool detectObject(const cv::Mat& _in, cv::Mat& _out) { return false; };
 };
 
+/**
+ * Generic helper class to estimate the cartesian position of a blob in the camera
+ * reference frame (RF) and project it into any other RF (usually the base RF).
+ */
 class CartesianEstimator : public ROSThreadImage
 {
 private:
+    // Image publisher
     image_transport::Publisher  img_pub;
 
     // Camera parameters
@@ -101,7 +116,7 @@ protected:
     /**
      * Detects the object in the image
      */
-    virtual bool detectObject(const cv::Mat& _in, cv::Mat& _out) { return false; };
+    virtual bool detectObjects(const cv::Mat& _in, cv::Mat& _out) { return false; };
 
     /**
      * Calculates the cartesian pose of the segmented object in the camera frame

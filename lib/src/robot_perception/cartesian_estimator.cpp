@@ -14,6 +14,11 @@ SegmentedObj::SegmentedObj(std::vector<double> _size) :
     }
 }
 
+SegmentedObj::~SegmentedObj()
+{
+
+}
+
 CartesianEstimator::CartesianEstimator(std::string _name) : ROSThreadImage(_name)
 {
     init();
@@ -59,7 +64,7 @@ void CartesianEstimator::InternalThreadEntry()
             pthread_mutex_unlock(&_mutex_img);
             img_out = img_in.clone();
 
-            detectObject(img_in, img_out);
+            detectObjects(img_in, img_out);
 
             sensor_msgs::ImagePtr msg = cv_bridge::CvImage(std_msgs::Header(),
                                                 "bgr8", img_out).toImageMsg();

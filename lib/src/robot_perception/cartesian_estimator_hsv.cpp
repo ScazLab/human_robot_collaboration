@@ -8,13 +8,25 @@ SegmentedObjHSV::SegmentedObjHSV(std::vector<double> _size, hsvColorRange _col) 
 
 }
 
-CartesianEstimatorHSV::CartesianEstimatorHSV(std::string _name, cv::Mat _objs_size,
-                                             std::vector<hsvColorRange> _objs_col) :
-                                             CartesianEstimator(_name)
+bool SegmentedObjHSV::detectObject(const cv::Mat& _in, cv::Mat& _out)
+{
+    return true;
+}
+
+SegmentedObjHSV::~SegmentedObjHSV()
 {
 
 }
 
+CartesianEstimatorHSV::CartesianEstimatorHSV(std::string _name, cv::Mat _objs_size,
+                                             std::vector<hsvColorRange> _objs_col) :
+                                             CartesianEstimator(_name)
+{
+    ROS_ASSERT_MSG(_objs_size.cols == 2, "Objects' sizes should have two columns. "
+                   "%i found instead", _objs_size.cols);
+
+    objsFromMat(_objs_size, _objs_col);
+}
 
 bool CartesianEstimatorHSV::addObject(double _h, double _w, hsvColorRange _hsv)
 {

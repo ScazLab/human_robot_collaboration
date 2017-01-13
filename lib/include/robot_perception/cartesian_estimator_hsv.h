@@ -4,14 +4,29 @@
 #include "robot_perception/hsv_detection.h"
 #include "robot_perception/cartesian_estimator.h"
 
-struct SegmentedObjHSV: public SegmentedObj
+class SegmentedObjHSV: public SegmentedObj
 {
+public:
+
     // Color of the object to segment
     hsvColorRange col;
 
+    /* CONSTRUCTOR */
     SegmentedObjHSV(std::vector<double> _size, hsvColorRange _col);
+
+    /* DESTRUCTOR */
+    ~SegmentedObjHSV();
+
+    /**
+     * Detects the object in the image
+     */
+    bool detectObject(const cv::Mat& _in, cv::Mat& _out);
 };
 
+/**
+ * Class that is able to detect objects from a range of HSV colors that
+ * define their color.
+ */
 class CartesianEstimatorHSV : public CartesianEstimator
 {
 protected:
@@ -33,6 +48,12 @@ protected:
      * @return true/false if success/failure
      */
     bool objsFromMat(cv::Mat _o, std::vector<hsvColorRange> _hsvs);
+
+    /**
+     * Detects the object in the image
+     */
+    bool detectObjects(const cv::Mat& _in, cv::Mat& _out) { return false; };
+
 
 public:
     /* CONSTRUCTORS */
