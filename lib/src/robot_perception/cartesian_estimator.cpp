@@ -65,6 +65,8 @@ void CartesianEstimator::InternalThreadEntry()
             img_out = img_in.clone();
 
             detectObjects(img_in, img_out);
+            poseRootRFAll();
+            draw3dAxisAll(img_out);
 
             sensor_msgs::ImagePtr msg = cv_bridge::CvImage(std_msgs::Header(),
                                                 "bgr8", img_out).toImageMsg();
@@ -104,6 +106,30 @@ bool CartesianEstimator::objsFromMat(cv::Mat _o)
     for (int i = 0; i < _o.rows; ++i)
     {
         res = res && addObject(_o.at<float>(i, 0), _o.at<float>(i, 1));
+    }
+
+    return res;
+}
+
+bool CartesianEstimator::detectObjects(const cv::Mat& _in, cv::Mat& _out)
+{
+    bool res = true;
+
+    for (size_t i = 0; i < objs.size(); ++i)
+    {
+        res = res && objs[i]->detectObject(_in, _out);
+    }
+
+    return res;
+}
+
+bool CartesianEstimator::poseRootRFAll()
+{
+    bool res = true;
+
+    for (size_t i = 0; i < objs.size(); ++i)
+    {
+        res = res && poseRootRF(i);
     }
 
     return res;
@@ -248,7 +274,19 @@ tf::Transform CartesianEstimator::object2Tf(int idx)
     return tf::Transform(tf_rot, tf_orig);
 }
 
-bool CartesianEstimator::draw3dAxis(cv::Mat &_in, int idx)
+bool CartesianEstimator::draw3dAxisAll(cv::Mat &_img)
+{
+    bool res = true;
+
+    for (size_t i = 0; i < objs.size(); ++i)
+    {
+        res = res && draw3dAxis(_img, i);
+    }
+
+    return res;
+}
+
+bool CartesianEstimator::draw3dAxis(cv::Mat &_img, int idx)
 {
     int fFace  = cv::FONT_HERSHEY_SIMPLEX;
     float size=0.2;
@@ -271,12 +309,12 @@ bool CartesianEstimator::draw3dAxis(cv::Mat &_in, int idx)
     cv::projectPoints( objectPoints, objs[idx]->Rvec, objs[idx]->Tvec, cam_param.CameraMatrix,
                                      cam_param.Distorsion, imagePoints);
     //draw lines of different colours
-    cv::line(_in,imagePoints[0],imagePoints[1],cv::Scalar(255,0,0,255),1,CV_AA);
-    cv::line(_in,imagePoints[0],imagePoints[2],cv::Scalar(0,255,0,255),1,CV_AA);
-    cv::line(_in,imagePoints[0],imagePoints[3],cv::Scalar(0,0,255,255),1,CV_AA);
-    cv::putText(_in,"x", imagePoints[1], fFace, 0.6, cv::Scalar(255,0,0,255),2);
-    cv::putText(_in,"y", imagePoints[2], fFace, 0.6, cv::Scalar(0,255,0,255),2);
-    cv::putText(_in,"z", imagePoints[3], fFace, 0.6, cv::Scalar(0,0,255,255),2);
+    cv::line(_img,imagePoints[0],imagePoints[1],cv::Scalar(255,0,0,255),1,CV_AA);
+    cv::line(_img,imagePoints[0],imagePoints[2],cv::Scalar(0,255,0,255),1,CV_AA);
+    cv::line(_img,imagePoints[0],imagePoints[3],cv::Scalar(0,0,255,255),1,CV_AA);
+    cv::putText(_img,"x", imagePoints[1], fFace, 0.6, cv::Scalar(255,0,0,255),2);
+    cv::putText(_img,"y", imagePoints[2], fFace, 0.6, cv::Scalar(0,255,0,255),2);
+    cv::putText(_img,"z", imagePoints[3], fFace, 0.6, cv::Scalar(0,0,255,255),2);
 
     return true;
 }

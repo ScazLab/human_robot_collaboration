@@ -1,7 +1,7 @@
 #include <stdio.h>
 
 #include <ros/ros.h>
-#include "screwdriver_picker.h"
+#include "robot_perception/cartesian_estimator_hsv.h"
 
 int main(int argc, char ** argv)
 {
@@ -25,7 +25,7 @@ int main(int argc, char ** argv)
     colors.push_back(red);
 
     // printf("\n");
-    ScrewDriverPicker test("screwdriver_picker", sizes, colors);
+    CartesianEstimatorHSV ce_hsv("screwdriver_picker", sizes, colors);
     // printf("\n");
     // HoldCtrl  right_ctrl("action_provider","right", !use_robot);
     printf("\n");

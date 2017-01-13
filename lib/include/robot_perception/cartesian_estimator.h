@@ -116,7 +116,7 @@ protected:
     /**
      * Detects the object in the image
      */
-    virtual bool detectObjects(const cv::Mat& _in, cv::Mat& _out) { return false; };
+    bool detectObjects(const cv::Mat& _in, cv::Mat& _out);
 
     /**
      * Calculates the cartesian pose of the segmented object in the camera frame
@@ -139,6 +139,13 @@ protected:
     bool cameraRFtoRootRF(int idx);
 
     /**
+     * Calculates the cartesian pose of all the segmented objects in the root frame
+     *
+     * @return true/false if success/failure
+     */
+    bool poseRootRFAll();
+
+    /**
      * Calculates the cartesian pose of the segmented object in the root frame
      * given the rotated bounding box, the camera parameters, the real physical
      * size of the object, and the kinematics of the robot
@@ -150,14 +157,24 @@ protected:
     bool poseRootRF(int idx);
 
     /**
-     * Draws a 3D axis in the object
+     * Draws a 3D axis in the image where the object is located
      *
-     * @param _in Image to draw the 3D axis into
-     * @param idx The object's index
+     * @param _img Image to draw the 3D axis into
+     * @param  idx The object's index
      *
      * @return true/false if success/failure
      */
-    bool draw3dAxis(cv::Mat &_in, int idx);
+    bool draw3dAxisAll(cv::Mat &_img);
+
+    /**
+     * Draws a 3D axis in the object
+     *
+     * @param _img Image to draw the 3D axis into
+     * @param  idx The object's index
+     *
+     * @return true/false if success/failure
+     */
+    bool draw3dAxis(cv::Mat &_img, int idx);
 
     /**
      * Clears the array of objects and properly deallocates memory by

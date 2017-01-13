@@ -138,9 +138,7 @@ add_subdirectory(lib)
 add_executable(baxter_controller        src/baxter_controller/baxter_controller.cpp)
 add_executable(flatpack_action_provider src/flatpack_furniture/action_provider.cpp)
 add_executable(tower_action_provider    src/tower_building/action_provider.cpp)
-add_executable(tool_action_provider     src/modular_furniture/screwdriver_picker.h
-                                        src/modular_furniture/screwdriver_picker.cpp
-                                        src/modular_furniture/action_provider.cpp)
+add_executable(tool_action_provider     src/modular_furniture/action_provider.cpp)
 add_executable(baxter_display           src/baxter_display.cpp)
 
 ## Add cmake target dependencies of the executable

@@ -10,6 +10,46 @@ SegmentedObjHSV::SegmentedObjHSV(std::vector<double> _size, hsvColorRange _col) 
 
 bool SegmentedObjHSV::detectObject(const cv::Mat& _in, cv::Mat& _out)
 {
+    cv::Mat img_hsv;
+    cv::cvtColor(_in, img_hsv, CV_BGR2HSV); //Convert the captured frame from BGR to HSV
+
+    vector<vector<cv::Point> > contours;
+    vector<cv::Vec4i> hierarchy;
+
+    cv::Mat img_thres = hsvThreshold(img_hsv, col);
+
+    // Some morphological operations to remove noise and clean up the image
+    for (int i = 0; i < 2; ++i) erode(img_thres, img_thres, cv::Mat());
+    for (int i = 0; i < 4; ++i) dilate(img_thres, img_thres, cv::Mat());
+    for (int i = 0; i < 2; ++i) erode(img_thres, img_thres, cv::Mat());
+
+    cv::imshow("Test", img_thres);
+    cv::waitKey(3);
+
+    // Find contours
+    cv::findContours(img_thres, contours, hierarchy, CV_RETR_TREE,
+                        CV_CHAIN_APPROX_SIMPLE, cv::Point(0, 0) );
+
+    if (contours.size() == 1)
+    {
+        rect = minAreaRect(cv::Mat(contours[0]));
+    }
+    else
+    {
+        return false;
+    }
+
+    cv::Scalar color = cv::Scalar::all(255);
+
+    cv::Point2f rect_points[4];
+    rect.points(rect_points);
+
+    for( int j = 0; j < 4; j++ )
+    {
+        cv::line   (_out, rect_points[j], rect_points[(j+1)%4], color, 1, 8 );
+        cv::putText(_out, intToString(j), rect_points[j], cv::FONT_HERSHEY_SIMPLEX, 1.2, cv::Scalar::all(255), 3, CV_AA);
+    }
+
     return true;
 }
 
