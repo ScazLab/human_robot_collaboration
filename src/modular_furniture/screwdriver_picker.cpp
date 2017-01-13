@@ -2,7 +2,8 @@
 
 using namespace std;
 
-ScrewDriverPicker::ScrewDriverPicker(std::string _name, cv::Mat _objs_size) : CartesianEstimator(_name, _objs_size)
+ScrewDriverPicker::ScrewDriverPicker(std::string _name, cv::Mat _objs_size, std::vector<hsvColorRange> _objs_col) :
+                                     CartesianEstimatorHSV(_name, _objs_size, _objs_col)
 {
 
 }
@@ -17,10 +18,6 @@ bool ScrewDriverPicker::detectObject(const cv::Mat& _in, cv::Mat& _out)
 
     // vector<vector<cv::Point> > contours;
     // vector<cv::Vec4i> hierarchy;
-
-    // hsvColorRange   blue(colorRange( 60, 130), colorRange(90, 256), colorRange( 10,256));
-    // hsvColorRange yellow(colorRange( 10,  60), colorRange(50, 116), colorRange(120,146));
-    // hsvColorRange    red(colorRange(160,  10), colorRange(70, 166), colorRange( 10, 66));
 
     // cv::Mat img_thres = hsvThreshold(img_hsv, red);
 

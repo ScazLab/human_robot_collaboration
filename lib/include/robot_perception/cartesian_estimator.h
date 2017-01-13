@@ -34,9 +34,6 @@ class CartesianEstimator : public ROSThreadImage
 private:
     image_transport::Publisher  img_pub;
 
-    // Vector of segmented objects to track
-    std::vector<SegmentedObj>  objs;
-
     // Camera parameters
     aruco::CameraParameters cam_param;
 
@@ -74,6 +71,10 @@ private:
     void init();
 
 protected:
+
+    // Vector of segmented objects to track
+    std::vector<SegmentedObj*>  objs;
+
     /*
      * Function that will be spun out as a thread
      */
@@ -142,6 +143,12 @@ protected:
      * @return true/false if success/failure
      */
     bool draw3dAxis(cv::Mat &_in, int idx);
+
+    /**
+     * Clears the array of objects and properly deallocates memory by
+     * destroying its elements one by one
+     */
+    void clearObjs();
 
 public:
     /* CONSTRUCTORS */

@@ -1,10 +1,9 @@
 #include <stdio.h>
 
 #include <ros/ros.h>
-#include "robot_perception/hsv_detection.h"
-#include "robot_perception/cartesian_estimator.h"
+#include "robot_perception/cartesian_estimator_hsv.h"
 
-class ScrewDriverPicker : public CartesianEstimator
+class ScrewDriverPicker : public CartesianEstimatorHSV
 {
 protected:
     /**
@@ -13,5 +12,5 @@ protected:
     bool detectObject(const cv::Mat& _in, cv::Mat& _out);
 
 public:
-    ScrewDriverPicker(std::string _name, cv::Mat _objs_size);
+    ScrewDriverPicker(std::string _name, cv::Mat _objs_size, std::vector<hsvColorRange> _objs_col);
 };

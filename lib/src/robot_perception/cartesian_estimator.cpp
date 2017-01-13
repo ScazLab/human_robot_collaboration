@@ -85,14 +85,14 @@ bool CartesianEstimator::addObject(double _h, double _w)
         size.push_back(_h);
     }
 
-    objs.push_back(SegmentedObj(size));
+    objs.push_back(new SegmentedObj(size));
 
     return true;
 }
 
 bool CartesianEstimator::objsFromMat(cv::Mat _o)
 {
-    objs.clear();
+    clearObjs();
 
     bool res = true;
 
@@ -118,19 +118,19 @@ bool CartesianEstimator::poseCameraRF(int idx)
 {
     // Let's be sure that the width of the RotatedRect is the longest,
     // in order to ensure consistency in the computation of the orientation
-    if (objs[idx].rect.size.height > objs[idx].rect.size.width)
+    if (objs[idx]->rect.size.height > objs[idx]->rect.size.width)
     {
-        float tmp = objs[idx].rect.size.height;
+        float tmp = objs[idx]->rect.size.height;
 
-        objs[idx].rect.size.height = objs[idx].rect.size.width;
-        objs[idx].rect.size.width  = tmp;
+        objs[idx]->rect.size.height = objs[idx]->rect.size.width;
+        objs[idx]->rect.size.width  = tmp;
     }
 
     // Set image points from the rotated rectangle that defines the segmented object
     cv::Mat ImgPoints(4,2,CV_32FC1);
 
     cv::Point2f obj_segm_pts[4];
-    objs[idx].rect.points(obj_segm_pts);
+    objs[idx]->rect.points(obj_segm_pts);
 
     for (int j=0; j<4; j++)
     {
@@ -142,23 +142,23 @@ bool CartesianEstimator::poseCameraRF(int idx)
     // The convention used is to have 0 in the bottom left,
     // with the others organized in a clockwise manner
     cv::Mat ObjPoints(4,3,CV_32FC1);
-    ObjPoints.at<float>(0,0)=-objs[idx].size[0];
-    ObjPoints.at<float>(0,1)=-objs[idx].size[1];
+    ObjPoints.at<float>(0,0)=-objs[idx]->size[0];
+    ObjPoints.at<float>(0,1)=-objs[idx]->size[1];
     ObjPoints.at<float>(0,2)=0;
-    ObjPoints.at<float>(1,0)=-objs[idx].size[0];
-    ObjPoints.at<float>(1,1)=+objs[idx].size[1];
+    ObjPoints.at<float>(1,0)=-objs[idx]->size[0];
+    ObjPoints.at<float>(1,1)=+objs[idx]->size[1];
     ObjPoints.at<float>(1,2)=0;
-    ObjPoints.at<float>(2,0)=+objs[idx].size[0];
-    ObjPoints.at<float>(2,1)=+objs[idx].size[1];
+    ObjPoints.at<float>(2,0)=+objs[idx]->size[0];
+    ObjPoints.at<float>(2,1)=+objs[idx]->size[1];
     ObjPoints.at<float>(2,2)=0;
-    ObjPoints.at<float>(3,0)=+objs[idx].size[0];
-    ObjPoints.at<float>(3,1)=-objs[idx].size[1];
+    ObjPoints.at<float>(3,0)=+objs[idx]->size[0];
+    ObjPoints.at<float>(3,1)=-objs[idx]->size[1];
     ObjPoints.at<float>(3,2)=0;
 
     cv::Mat raux,taux;
     cv::solvePnP(ObjPoints, ImgPoints, cam_param.CameraMatrix, cv::Mat(), raux, taux);
-    raux.convertTo(objs[idx].Rvec, CV_32F);
-    taux.convertTo(objs[idx].Tvec, CV_32F);
+    raux.convertTo(objs[idx]->Rvec, CV_32F);
+    taux.convertTo(objs[idx]->Tvec, CV_32F);
 
     return true;
 }
@@ -216,8 +216,8 @@ bool CartesianEstimator::getTransform(const std::string& refFrame,
 tf::Transform CartesianEstimator::object2Tf(int idx)
 {
     cv::Mat rot(3, 3, CV_32FC1);
-    cv::Rodrigues(objs[idx].Rvec, rot);
-    cv::Mat tran = objs[idx].Tvec;
+    cv::Rodrigues(objs[idx]->Rvec, rot);
+    cv::Mat tran = objs[idx]->Tvec;
 
     cv::Mat rotate_to_ros(3, 3, CV_32FC1);
     // -1 0 0
@@ -263,7 +263,7 @@ bool CartesianEstimator::draw3dAxis(cv::Mat &_in, int idx)
     objectPoints.at<float>(3,2)=size;
 
     vector<cv::Point2f> imagePoints;
-    cv::projectPoints( objectPoints, objs[idx].Rvec, objs[idx].Tvec, cam_param.CameraMatrix,
+    cv::projectPoints( objectPoints, objs[idx]->Rvec, objs[idx]->Tvec, cam_param.CameraMatrix,
                                      cam_param.Distorsion, imagePoints);
     //draw lines of different colours
     cv::line(_in,imagePoints[0],imagePoints[1],cv::Scalar(255,0,0,255),1,CV_AA);
@@ -276,7 +276,18 @@ bool CartesianEstimator::draw3dAxis(cv::Mat &_in, int idx)
     return true;
 }
 
+void CartesianEstimator::clearObjs()
+{
+    for (size_t i = 0; i < objs.size(); ++i)
+    {
+        delete objs[i];
+    }
+
+    objs.clear();
+    return;
+}
+
 CartesianEstimator::~CartesianEstimator()
 {
-
+    clearObjs();
 }
