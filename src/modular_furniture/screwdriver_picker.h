@@ -13,5 +13,5 @@ protected:
     bool detectObject(const cv::Mat& _in, cv::Mat& _out);
 
 public:
-    ScrewDriverPicker(std::string name, std::vector<double> _obj_size);
+    ScrewDriverPicker(std::string _name, cv::Mat _objs_size);
 };
