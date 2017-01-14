@@ -5,8 +5,14 @@ using namespace std;
 /************************************************************************************/
 /*                               SEGMENTED OBJECT HSV                               */
 /************************************************************************************/
-SegmentedObjHSV::SegmentedObjHSV(std::vector<double> _size, hsvColorRange _col) :
-                                 SegmentedObj(_size), col(_col)
+SegmentedObjHSV::SegmentedObjHSV(vector<double> _size,
+                                 hsvColorRange _col) : SegmentedObj(_size), col(_col)
+{
+
+}
+
+SegmentedObjHSV::SegmentedObjHSV(string _name, vector<double> _size,
+                                 hsvColorRange _col) : SegmentedObj(_name, _size), col(_col)
 {
 
 }
@@ -67,7 +73,7 @@ bool SegmentedObjHSV::detectObject(const cv::Mat& _in, cv::Mat& _out, cv::Mat& _
     {
         cv::line   (_out, rect_points[j], rect_points[(j+1)%4], color, 1, 8 );
         cv::putText(_out, intToString(j), rect_points[j],
-                     cv::FONT_HERSHEY_SIMPLEX, 1.2, cv::Scalar::all(255), 3, CV_AA);
+                     cv::FONT_HERSHEY_SIMPLEX, 1, cv::Scalar::all(255), 2, CV_AA);
     }
 
     return true;
@@ -81,19 +87,19 @@ SegmentedObjHSV::~SegmentedObjHSV()
 /************************************************************************************/
 /*                             CARTESIAN ESTIMATOR HSV                              */
 /************************************************************************************/
-CartesianEstimatorHSV::CartesianEstimatorHSV(std::string _name, cv::Mat _objs_size,
-                                             std::vector<hsvColorRange> _objs_col) :
+CartesianEstimatorHSV::CartesianEstimatorHSV(string  _name, vector<string> _objs_name,
+                                             cv::Mat _objs_size, vector<hsvColorRange> _objs_col) :
                                              CartesianEstimator(_name)
 {
     ROS_ASSERT_MSG(_objs_size.cols == 2, "Objects' sizes should have two columns. "
                    "%i found instead", _objs_size.cols);
 
-    objsFromMat(_objs_size, _objs_col);
+    objsFromMat(_objs_name, _objs_size, _objs_col);
 }
 
-bool CartesianEstimatorHSV::addObject(double _h, double _w, hsvColorRange _hsv)
+bool CartesianEstimatorHSV::addObject(string _name, double _h, double _w, hsvColorRange _hsv)
 {
-    std::vector<double> size;
+    vector<double> size;
 
     // Let's put the longer size first
     if (_h > _w)
@@ -107,25 +113,27 @@ bool CartesianEstimatorHSV::addObject(double _h, double _w, hsvColorRange _hsv)
         size.push_back(_h);
     }
 
-    objs.push_back(new SegmentedObjHSV(size, _hsv));
+    objs.push_back(new SegmentedObjHSV(_name, size, _hsv));
 
     return true;
 }
 
-bool CartesianEstimatorHSV::objsFromMat(cv::Mat _o, std::vector<hsvColorRange> _hsvs)
+bool CartesianEstimatorHSV::objsFromMat(vector<string> _names, cv::Mat _o,
+                                        vector<hsvColorRange> _hsvs)
 {
     if (_o.rows != int(_hsvs.size()))
     {
         ROS_ERROR("Rows of the matrix should be equal to the size of the hsv color vector!");
         return false;
     }
+
     clearObjs();
 
     bool res = true;
 
     for (int i = 0; i < _o.rows; ++i)
     {
-        res = res && addObject(_o.at<float>(i, 0), _o.at<float>(i, 1), _hsvs[i]);
+        res = res && addObject(_names[i], _o.at<float>(i, 0), _o.at<float>(i, 1), _hsvs[i]);
     }
 
     return res;

@@ -13,6 +13,7 @@ public:
 
     /* CONSTRUCTOR */
     SegmentedObjHSV(std::vector<double> _size, hsvColorRange _col);
+    SegmentedObjHSV(std::string _name, std::vector<double> _size, hsvColorRange _col);
 
     /* DESTRUCTOR */
     ~SegmentedObjHSV();
@@ -55,7 +56,7 @@ protected:
      *
      * @return true/false if success/failure
      */
-    bool addObject(double _h, double _w, hsvColorRange _hsv);
+    bool addObject(std::string _name, double _h, double _w, hsvColorRange _hsv);
 
     /**
      * Adds the full database of objects from a cv::Mat
@@ -63,7 +64,8 @@ protected:
      * @param _o the database of objects
      * @return true/false if success/failure
      */
-    bool objsFromMat(cv::Mat _o, std::vector<hsvColorRange> _hsvs);
+    bool objsFromMat(std::vector<std::string> _names, cv::Mat _o,
+                     std::vector<hsvColorRange> _hsvs);
 
     /**
      * Detects the object in the image
@@ -73,7 +75,8 @@ protected:
 
 public:
     /* CONSTRUCTORS */
-    CartesianEstimatorHSV(std::string _name, cv::Mat _objs_size, std::vector<hsvColorRange> _objs_col);
+    CartesianEstimatorHSV(std::string  _name, std::vector<std::string> _objs_name,
+                          cv::Mat _objs_size, std::vector<hsvColorRange> _objs_col);
 };
 
 #endif

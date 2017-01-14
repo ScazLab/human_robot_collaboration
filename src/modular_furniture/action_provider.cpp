@@ -29,8 +29,12 @@ int main(int argc, char ** argv)
     colors.push_back(red);
     colors.push_back(blue);
 
+    std::vector<std::string> names;
+    names.push_back("screwdriver");
+    names.push_back("blue box");
+
     // printf("\n");
-    CartesianEstimatorHSV ce_hsv("screwdriver_picker", sizes, colors);
+    CartesianEstimatorHSV ce_hsv("screwdriver_picker", names, sizes, colors);
     // printf("\n");
     // HoldCtrl  right_ctrl("action_provider","right", !use_robot);
     printf("\n");

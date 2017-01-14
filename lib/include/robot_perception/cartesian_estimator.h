@@ -16,9 +16,15 @@
 
 #include "baxter_collaboration/ObjectsArray.h"
 
+/**
+ * Generic class for representing a segmented object. It is a virtual class,
+ * and needs to be specified in its derived children.
+ */
 class SegmentedObj
 {
 public:
+    // Name of the object (for future reference)
+    std::string         name;
 
     // Segmented objects as a rotated rectangle
     cv::RotatedRect     rect;
@@ -34,9 +40,15 @@ public:
 
     /* CONSTRUCTOR */
     SegmentedObj(std::vector<double> _size);
+    SegmentedObj(std::string _name, std::vector<double> _size);
 
     /* DESTRUCTOR */
     virtual ~SegmentedObj();
+
+    /**
+     * Class initializer
+     */
+    void init();
 
     /**
      * Detects the object in the image
@@ -137,7 +149,7 @@ protected:
      *
      * @return true/false if success/failure
      */
-    bool addObject(double _h, double _w);
+    bool addObject(std::string _name, double _h, double _w);
 
     /**
      * Adds the full database of objects from a cv::Mat
@@ -145,7 +157,7 @@ protected:
      * @param _o the database of objects
      * @return true/false if success/failure
      */
-    bool objsFromMat(cv::Mat _o);
+    bool objsFromMat(std::vector<std::string> _names, cv::Mat _o);
 
     /**
      * Detects the object in the image
@@ -219,7 +231,8 @@ protected:
 public:
     /* CONSTRUCTORS */
     CartesianEstimator(std::string _name);
-    CartesianEstimator(std::string _name, cv::Mat _objs_size);
+    CartesianEstimator(std::string _name,
+                       std::vector<std::string> _objs_name, cv::Mat _objs_size);
 
     /* DESTRUCTOR */
     ~CartesianEstimator();

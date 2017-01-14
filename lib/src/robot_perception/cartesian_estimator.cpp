@@ -5,8 +5,19 @@ using namespace std;
 /************************************************************************************/
 /*                                 SEGMENTED OBJECT                                 */
 /************************************************************************************/
-SegmentedObj::SegmentedObj(std::vector<double> _size) :
+SegmentedObj::SegmentedObj(vector<double> _size) : name(""),
                            rect(cv::Point2f(0,0), cv::Size2f(0,0), 0.0), size(_size)
+{
+    init();
+}
+
+SegmentedObj::SegmentedObj(string _name, vector<double> _size) : name(_name),
+                           rect(cv::Point2f(0,0), cv::Size2f(0,0), 0.0), size(_size)
+{
+    init();
+}
+
+void SegmentedObj::init()
 {
     Rvec.create(3,1,CV_32FC1);
     Tvec.create(3,1,CV_32FC1);
@@ -35,18 +46,18 @@ SegmentedObj::~SegmentedObj()
 /************************************************************************************/
 /*                               CARTESIAN ESTIMATOR                                */
 /************************************************************************************/
-CartesianEstimator::CartesianEstimator(std::string _name) : ROSThreadImage(_name)
+CartesianEstimator::CartesianEstimator(string _name) : ROSThreadImage(_name)
 {
     init();
 }
 
-CartesianEstimator::CartesianEstimator(std::string _name,
+CartesianEstimator::CartesianEstimator(string _name, vector<string> _objs_name,
                                        cv::Mat _objs_size) : ROSThreadImage(_name)
 {
     ROS_ASSERT_MSG(_objs_size.cols == 2, "Objects' sizes should have two columns. "
                    "%i found instead", _objs_size.cols);
 
-    objsFromMat(_objs_size);
+    objsFromMat(_objs_name, _objs_size);
 
     init();
 }
@@ -56,8 +67,8 @@ void CartesianEstimator::init()
     img_pub  = _img_trp.advertise("/"+getName()+"/result", 1);
     objs_pub = _n.advertise<baxter_collaboration::ObjectsArray>("/"+getName()+"/objects", 1);
 
-    _n.param<std::string>("/"+getName()+"/reference_frame", reference_frame_, "");
-    _n.param<std::string>("/"+getName()+   "/camera_frame",    camera_frame_, "");
+    _n.param<string>("/"+getName()+"/reference_frame", reference_frame_, "");
+    _n.param<string>("/"+getName()+   "/camera_frame",    camera_frame_, "");
 
     ROS_ASSERT_MSG(not camera_frame_.empty(), "Camera frame is empty!");
 
@@ -88,6 +99,7 @@ bool CartesianEstimator::publishObjects()
         baxter_collaboration::Object & object_i = objects_msg->objects.at(i);
         object_i.pose = objs[i]->pose;
         object_i.id   = i;
+        object_i.name = objs[i]->name;
     }
 
     objs_pub.publish(objects_msg);
@@ -125,9 +137,9 @@ void CartesianEstimator::InternalThreadEntry()
     }
 }
 
-bool CartesianEstimator::addObject(double _h, double _w)
+bool CartesianEstimator::addObject(std::string _name, double _h, double _w)
 {
-    std::vector<double> size;
+    vector<double> size;
 
     // Let's put the longer size first
     if (_h > _w)
@@ -141,12 +153,12 @@ bool CartesianEstimator::addObject(double _h, double _w)
         size.push_back(_h);
     }
 
-    objs.push_back(new SegmentedObj(size));
+    objs.push_back(new SegmentedObj(_name, size));
 
     return true;
 }
 
-bool CartesianEstimator::objsFromMat(cv::Mat _o)
+bool CartesianEstimator::objsFromMat(std::vector<std::string> _names, cv::Mat _o)
 {
     clearObjs();
 
@@ -154,7 +166,7 @@ bool CartesianEstimator::objsFromMat(cv::Mat _o)
 
     for (int i = 0; i < _o.rows; ++i)
     {
-        res = res && addObject(_o.at<float>(i, 0), _o.at<float>(i, 1));
+        res = res && addObject(_names[i], _o.at<float>(i, 0), _o.at<float>(i, 1));
     }
 
     return res;
@@ -271,11 +283,11 @@ bool CartesianEstimator::cameraRFtoRootRF(int idx)
     return true;
 }
 
-bool CartesianEstimator::getTransform(const std::string& refFrame,
-                                      const std::string& childFrame,
+bool CartesianEstimator::getTransform(const string& refFrame,
+                                      const string& childFrame,
                                       tf::StampedTransform& transform)
 {
-    std::string errMsg;
+    string errMsg;
 
     if(!tfListener_.waitForTransform(refFrame, childFrame, ros::Time(0),
                                      ros::Duration(0.5), ros::Duration(0.01), &errMsg))
