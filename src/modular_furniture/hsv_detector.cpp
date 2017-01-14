@@ -5,13 +5,8 @@
 
 int main(int argc, char ** argv)
 {
-    ros::init(argc, argv, "action_provider");
-    ros::NodeHandle _n("action_provider");
-
-    bool use_robot;
-    _n.param<bool>("use_robot", use_robot, true);
-    printf("\n");
-    ROS_INFO("use_robot flag set to %s", use_robot==true?"true":"false");
+    ros::init(argc, argv, "hsv_detector");
+    ros::NodeHandle _n("hsv_detector");
 
     cv::Mat sizes(2, 2, CV_32FC1);
     // screwdriver
@@ -33,12 +28,9 @@ int main(int argc, char ** argv)
     names.push_back("screwdriver");
     names.push_back("blue box");
 
-    // printf("\n");
-    CartesianEstimatorHSV ce_hsv("hsv_detector", names, sizes, colors);
-    // printf("\n");
-    // HoldCtrl  right_ctrl("action_provider","right", !use_robot);
     printf("\n");
-    ROS_INFO("READY! Waiting for service messages..\n");
+    CartesianEstimatorHSV ce_hsv("hsv_detector", names, sizes, colors);
+    ROS_INFO("READY!\n");
 
     ros::spin();
     return 0;

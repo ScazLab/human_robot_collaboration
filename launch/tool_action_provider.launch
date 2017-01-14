@@ -12,7 +12,7 @@
     <param name="hsv_detector/reference_frame" value="/base"/>
     <param name="hsv_detector/camera_frame"    value="/right_hand_camera"/>
 
-    <node pkg="baxter_collaboration" type="tool_action_provider" name="tool_action_provider" output="screen">
+    <node pkg="baxter_collaboration" type="hsv_detector" name="hsv_detector" output="screen">
         <remap from="hsv_detector/image" to="/cameras/right_hand_camera/image"/>
         <remap from="hsv_detector/camera_info" to="/cameras/right_hand_camera/camera_info"/>
     </node>
