@@ -34,7 +34,7 @@ int main(int argc, char ** argv)
     names.push_back("blue box");
 
     // printf("\n");
-    CartesianEstimatorHSV ce_hsv("screwdriver_picker", names, sizes, colors);
+    CartesianEstimatorHSV ce_hsv("hsv_detector", names, sizes, colors);
     // printf("\n");
     // HoldCtrl  right_ctrl("action_provider","right", !use_robot);
     printf("\n");

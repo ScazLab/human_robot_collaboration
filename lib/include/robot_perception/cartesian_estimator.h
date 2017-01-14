@@ -82,6 +82,9 @@ private:
     // Image publisher
     image_transport::Publisher  img_pub;
 
+    // Image publisher for the thresholded image
+    image_transport::Publisher  img_pub_thres;
+
     // Publisher of objects' info
     ros::Publisher objs_pub;
 

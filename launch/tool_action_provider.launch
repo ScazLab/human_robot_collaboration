@@ -1,15 +1,20 @@
 <launch>
     <node name="image_view" pkg="image_view" type="image_view" respawn="false" output="log">
-        <remap from="image" to="/screwdriver_picker/result"/>
+        <remap from="image" to="/hsv_detector/image_result"/>
         <param name="autosize" value="true" />
     </node>
 
-    <param name="screwdriver_picker/reference_frame" value="/base"/>
-    <param name="screwdriver_picker/camera_frame"    value="/right_hand_camera"/>
+    <node name="image_view2" pkg="image_view" type="image_view" respawn="false" output="log">
+        <remap from="image" to="/hsv_detector/image_result_thres"/>
+        <param name="autosize" value="true" />
+    </node>
+
+    <param name="hsv_detector/reference_frame" value="/base"/>
+    <param name="hsv_detector/camera_frame"    value="/right_hand_camera"/>
 
     <node pkg="baxter_collaboration" type="tool_action_provider" name="tool_action_provider" output="screen">
-        <remap from="screwdriver_picker/image" to="/cameras/right_hand_camera/image"/>
-        <remap from="screwdriver_picker/camera_info" to="/cameras/right_hand_camera/camera_info"/>
+        <remap from="hsv_detector/image" to="/cameras/right_hand_camera/image"/>
+        <remap from="hsv_detector/camera_info" to="/cameras/right_hand_camera/camera_info"/>
     </node>
 </launch>
 

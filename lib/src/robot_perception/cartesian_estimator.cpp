@@ -64,8 +64,9 @@ CartesianEstimator::CartesianEstimator(string _name, vector<string> _objs_name,
 
 void CartesianEstimator::init()
 {
-    img_pub  = _img_trp.advertise("/"+getName()+"/result", 1);
-    objs_pub = _n.advertise<baxter_collaboration::ObjectsArray>("/"+getName()+"/objects", 1);
+    img_pub        = _img_trp.advertise(      "/"+getName()+"/image_result", SUBSCRIBER_BUFFER);
+    img_pub_thres  = _img_trp.advertise("/"+getName()+"/image_result_thres", SUBSCRIBER_BUFFER);
+    objs_pub       = _n.advertise<baxter_collaboration::ObjectsArray>("/"+getName()+"/objects", 1);
 
     _n.param<string>("/"+getName()+"/reference_frame", reference_frame_, "");
     _n.param<string>("/"+getName()+   "/camera_frame",    camera_frame_, "");
@@ -183,8 +184,12 @@ bool CartesianEstimator::detectObjects(const cv::Mat& _in, cv::Mat& _out)
         res = res && objs[i]->detectObject(_in, _out, out_thres);
     }
 
-    // cv::imshow("Thres", out_thres);
-    // cv::waitKey(3);
+    if (img_pub_thres.getNumSubscribers() > 0)
+    {
+        sensor_msgs::ImagePtr msg = cv_bridge::CvImage(std_msgs::Header(),
+                                          "mono8", out_thres).toImageMsg();
+        img_pub_thres.publish(msg);
+    }
 
     return res;
 }
