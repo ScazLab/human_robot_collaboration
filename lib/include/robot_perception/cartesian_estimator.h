@@ -14,6 +14,8 @@
 
 #include "robot_utils/ros_thread_image.h"
 
+#include "baxter_collaboration/ObjectsArray.h"
+
 class SegmentedObj
 {
 public:
@@ -26,6 +28,9 @@ public:
 
     // Rotation and translation matrices with respect to the camera
     cv::Mat Rvec, Tvec;
+
+    // Pose of the object in the root reference frame
+    geometry_msgs::Pose pose;
 
     /* CONSTRUCTOR */
     SegmentedObj(std::vector<double> _size);
@@ -65,6 +70,12 @@ private:
     // Image publisher
     image_transport::Publisher  img_pub;
 
+    // Publisher of objects' info
+    ros::Publisher objs_pub;
+
+    // Message to send through objs_pub
+    baxter_collaboration::ObjectsArray::Ptr objects_msg;
+
     // Camera parameters
     aruco::CameraParameters cam_param;
 
@@ -100,6 +111,13 @@ private:
      * Class initializer
      */
     void init();
+
+    /**
+     * Publishes the array of objects on the proper topic
+     *
+     * @return true/false if success/failure
+     */
+    bool publishObjects();
 
 protected:
 

@@ -2,6 +2,9 @@
 
 using namespace std;
 
+/************************************************************************************/
+/*                               SEGMENTED OBJECT HSV                               */
+/************************************************************************************/
 SegmentedObjHSV::SegmentedObjHSV(std::vector<double> _size, hsvColorRange _col) :
                                  SegmentedObj(_size), col(_col)
 {
@@ -75,6 +78,9 @@ SegmentedObjHSV::~SegmentedObjHSV()
 
 }
 
+/************************************************************************************/
+/*                             CARTESIAN ESTIMATOR HSV                              */
+/************************************************************************************/
 CartesianEstimatorHSV::CartesianEstimatorHSV(std::string _name, cv::Mat _objs_size,
                                              std::vector<hsvColorRange> _objs_col) :
                                              CartesianEstimator(_name)

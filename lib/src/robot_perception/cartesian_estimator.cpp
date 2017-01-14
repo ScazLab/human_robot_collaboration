@@ -2,6 +2,9 @@
 
 using namespace std;
 
+/************************************************************************************/
+/*                                 SEGMENTED OBJECT                                 */
+/************************************************************************************/
 SegmentedObj::SegmentedObj(std::vector<double> _size) :
                            rect(cv::Point2f(0,0), cv::Size2f(0,0), 0.0), size(_size)
 {
@@ -29,6 +32,9 @@ SegmentedObj::~SegmentedObj()
 
 }
 
+/************************************************************************************/
+/*                               CARTESIAN ESTIMATOR                                */
+/************************************************************************************/
 CartesianEstimator::CartesianEstimator(std::string _name) : ROSThreadImage(_name)
 {
     init();
@@ -47,7 +53,8 @@ CartesianEstimator::CartesianEstimator(std::string _name,
 
 void CartesianEstimator::init()
 {
-    img_pub = _img_trp.advertise("/"+getName()+"/result", 1);
+    img_pub  = _img_trp.advertise("/"+getName()+"/result", 1);
+    objs_pub = _n.advertise<baxter_collaboration::ObjectsArray>("/"+getName()+"/objects", 1);
 
     _n.param<std::string>("/"+getName()+"/reference_frame", reference_frame_, "");
     _n.param<std::string>("/"+getName()+   "/camera_frame",    camera_frame_, "");
@@ -60,6 +67,32 @@ void CartesianEstimator::init()
                                                            ("/"+getName()+"/camera_info", _n);//, 10.0);
     // For now, we'll assume images that are always rectified
     cam_param = aruco_ros::rosCameraInfo2ArucoCamParams(*msg, true);
+
+    objects_msg = baxter_collaboration::ObjectsArray::Ptr(
+              new baxter_collaboration::ObjectsArray());
+    objects_msg->header.frame_id = reference_frame_;
+    objects_msg->header.seq = 0;
+}
+
+bool CartesianEstimator::publishObjects()
+{
+    ros::Time curr_stamp(ros::Time::now());
+
+    objects_msg->objects.clear();
+    objects_msg->objects.resize(objs.size());
+    objects_msg->header.stamp = curr_stamp;
+    objects_msg->header.seq++;
+
+    for(size_t i = 0; i < objs.size(); ++i)
+    {
+        baxter_collaboration::Object & object_i = objects_msg->objects.at(i);
+        object_i.pose = objs[i]->pose;
+        object_i.id   = i;
+    }
+
+    objs_pub.publish(objects_msg);
+
+    return true;
 }
 
 void CartesianEstimator::InternalThreadEntry()
@@ -79,9 +112,14 @@ void CartesianEstimator::InternalThreadEntry()
             poseRootRFAll();
             draw3dAxisAll(img_out);
 
-            sensor_msgs::ImagePtr msg = cv_bridge::CvImage(std_msgs::Header(),
-                                                "bgr8", img_out).toImageMsg();
-            img_pub.publish(msg);
+            if (objs_pub.getNumSubscribers() > 0)    publishObjects();
+
+            if (img_pub.getNumSubscribers() > 0)
+            {
+                sensor_msgs::ImagePtr msg = cv_bridge::CvImage(std_msgs::Header(),
+                                                    "bgr8", img_out).toImageMsg();
+                img_pub.publish(msg);
+            }
         }
         r.sleep();
     }
@@ -226,6 +264,7 @@ bool CartesianEstimator::cameraRFtoRootRF(int idx)
     tf::Transform transform = object2Tf(idx);
     transform = static_cast<tf::Transform>(cameraToReference) * transform;
     tf::TransformBroadcaster br;
+    tf::poseTFToMsg(transform, objs[idx]->pose);
     br.sendTransform(tf::StampedTransform(transform, ros::Time::now(),
                                           reference_frame_, getName()+"/obj_"+intToString(idx)));
 
