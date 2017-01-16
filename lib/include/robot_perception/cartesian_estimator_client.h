@@ -11,21 +11,21 @@
 class CartesianEstimatorClient
 {
 private:
-    ros::NodeHandle _nh;
+    ros::NodeHandle  nh;
 
-    std::string _limb; // Limb of the gripper: left or right
+    std::string    limb; // Limb of the gripper: left or right
 
     // Subscriber to the CartesianEstimator detector,
     // plus some flags related to it
-    ros::Subscriber _cartest_sub;
+    ros::Subscriber  cartest_sub;
     bool              cartest_ok;
-    bool          object_found;
+    bool            object_found;
 
-    int          object_id;
+    std::string      object_name;
 
     // Marker position and orientation
-    geometry_msgs::Point        _curr_object_pos;
-    geometry_msgs::Quaternion   _curr_object_ori;
+    geometry_msgs::Point        curr_object_pos;
+    geometry_msgs::Quaternion   curr_object_ori;
 
 protected:
 
@@ -38,7 +38,7 @@ protected:
      * Callback function for the CartesianEstimator topic
      * @param msg the topic message
      */
-    void ObjectCb(const baxter_collaboration::ObjectsArray& msg);
+    void ObjectCb(const baxter_collaboration::ObjectsArray& _msg);
 
     /**
      * Waits for useful data coming from CartesianEstimator
@@ -52,17 +52,17 @@ protected:
     bool is_cartesian_estimator_ok() { return cartest_ok; };
 
     /* Self-explaining "setters" */
-    void setMarkerID(int _id)            { object_id =     _id; };
+    void setObjectName(std::string _name)    { object_name =     _name; };
 
     /* Self-explaining "getters" */
-    geometry_msgs::Point      getMarkerPos() { return _curr_object_pos; };
-    geometry_msgs::Quaternion getMarkerOri() { return _curr_object_ori; };
+    geometry_msgs::Point      getMarkerPos() { return curr_object_pos; };
+    geometry_msgs::Quaternion getMarkerOri() { return curr_object_ori; };
 
-    std::string getCartesianEstimatorLimb() { return     _limb; };
-    int         getMarkerID()  { return object_id; };
+    std::string getCartesianEstimatorLimb() { return        limb; };
+    std::string getObjectName()             { return object_name; };
 
 public:
-    CartesianEstimatorClient(std::string name, std::string limb);
+    CartesianEstimatorClient(std::string _name, std::string _limb);
     ~CartesianEstimatorClient();
 
 };

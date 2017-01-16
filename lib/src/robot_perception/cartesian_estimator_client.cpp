@@ -2,38 +2,38 @@
 
 using namespace std;
 
-CartesianEstimatorClient::CartesianEstimatorClient(string name, string limb) :
-                        _nh(name), _limb(limb), cartest_ok(false),
-                        object_found(false), object_id(-1)
+CartesianEstimatorClient::CartesianEstimatorClient(string _name, string _limb) :
+                        nh(_name), limb(_limb), cartest_ok(false),
+                        object_found(false), object_name("")
 {
-    _cartest_sub = _nh.subscribe("/hsv_detector/objects", SUBSCRIBER_BUFFER,
-                                  &CartesianEstimatorClient::ObjectCb, this);
+    cartest_sub = nh.subscribe("/hsv_detector/objects", SUBSCRIBER_BUFFER,
+                                &CartesianEstimatorClient::ObjectCb, this);
 }
 
 void CartesianEstimatorClient::clearMarkerPose()
 {
-    cartest_ok     = false;
+    cartest_ok   = false;
     object_found = false;
 }
 
-void CartesianEstimatorClient::ObjectCb(const baxter_collaboration::ObjectsArray& msg)
+void CartesianEstimatorClient::ObjectCb(const baxter_collaboration::ObjectsArray& _msg)
 {
-    for (size_t i = 0; i < msg.objects.size(); ++i)
+    for (size_t i = 0; i < _msg.objects.size(); ++i)
     {
-        // ROS_DEBUG("Processing object with id %i",msg.objects[i].id);
+        // ROS_DEBUG("Processing object with id %i",_msg.objects[i].id);
 
-        if (int(msg.objects[i].id) == getMarkerID())
+        if (_msg.objects[i].name == getObjectName())
         {
-            _curr_object_pos = msg.objects[i].pose.position;
-            _curr_object_ori = msg.objects[i].pose.orientation;
+            curr_object_pos = _msg.objects[i].pose.position;
+            curr_object_ori = _msg.objects[i].pose.orientation;
 
-            ROS_DEBUG("Marker is in: %g %g %g", _curr_object_pos.x,
-                                                _curr_object_pos.y,
-                                                _curr_object_pos.z);
-            // ROS_INFO("Marker is in: %g %g %g %g", _curr_object_ori.x,
-            //                                       _curr_object_ori.y,
-            //                                       _curr_object_ori.z,
-            //                                       _curr_object_ori.w);
+            ROS_DEBUG("Marker is in: %g %g %g", curr_object_pos.x,
+                                                curr_object_pos.y,
+                                                curr_object_pos.z);
+            // ROS_INFO("Marker is in: %g %g %g %g", curr_object_ori.x,
+            //                                       curr_object_ori.y,
+            //                                       curr_object_ori.z,
+            //                                       curr_object_ori.w);
 
             if (!object_found)
             {
@@ -77,13 +77,13 @@ bool CartesianEstimatorClient::waitForARucoData()
     {
         if (cnt!=0) // let's skip the first one since it is very likely to occurr
         {
-            ROS_WARN("Object with ID %i not found. Is the object there?", getMarkerID());
+            ROS_WARN("Object with name %s not found. Is the object there?", getObjectName().c_str());
         }
         ++cnt;
 
         if (cnt == 10)
         {
-            ROS_ERROR("Object with ID %i not found! Stopping.", getMarkerID());
+            ROS_ERROR("Object with name %s not found! Stopping.", getObjectName().c_str());
             return false;
         }
 
