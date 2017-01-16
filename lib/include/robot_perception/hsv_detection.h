@@ -2,10 +2,7 @@
 #define __HSV_DETECTION_H__
 
 #include <ros/ros.h>
-#include <sensor_msgs/image_encodings.h>
 #include <opencv2/core/core.hpp>
-
-namespace enc = sensor_msgs::image_encodings;
 
 typedef std::vector<cv::Point>   Contour;
 typedef std::vector<Contour>    Contours;
