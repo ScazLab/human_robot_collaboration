@@ -143,6 +143,9 @@ add_executable(tower_action_provider    src/tower_building/cube_picker.h
                                         src/tower_building/cube_picker.cpp
                                         src/tower_building/action_provider.cpp)
 add_executable(hsv_detector             src/modular_furniture/hsv_detector.cpp)
+add_executable(modular_action_provider  src/modular_furniture/tool_picker.h
+                                        src/modular_furniture/tool_picker.cpp
+                                        src/modular_furniture/action_provider.cpp)
 add_executable(baxter_display           src/baxter_display.cpp)
 
 ## Add cmake target dependencies of the executable
@@ -157,6 +160,9 @@ add_dependencies(tower_action_provider    baxter_collaboration_generate_messages
                                           ${${PROJECT_NAME}_EXPORTED_TARGETS}
                                           ${catkin_EXPORTED_TARGETS})
 add_dependencies(hsv_detector             baxter_collaboration_generate_messages_cpp
+                                          ${${PROJECT_NAME}_EXPORTED_TARGETS}
+                                          ${catkin_EXPORTED_TARGETS})
+add_dependencies(modular_action_provider  baxter_collaboration_generate_messages_cpp
                                           ${${PROJECT_NAME}_EXPORTED_TARGETS}
                                           ${catkin_EXPORTED_TARGETS})
 add_dependencies(baxter_display           baxter_collaboration_generate_messages_cpp
@@ -174,6 +180,8 @@ target_link_libraries(tower_action_provider     robot_interface
                                                 robot_perception
                                                 ${catkin_LIBRARIES} )
 target_link_libraries(hsv_detector              robot_perception
+                                                ${catkin_LIBRARIES} )
+target_link_libraries(modular_action_provider   robot_interface
                                                 ${catkin_LIBRARIES} )
 target_link_libraries(baxter_display            robot_interface
                                                 ${OpenCV_LIBS}
