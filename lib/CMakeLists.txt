@@ -37,10 +37,12 @@ add_library(robot_perception    include/robot_perception/hsv_detection.h
                                 include/robot_perception/aruco_client.h
                                 include/robot_perception/cartesian_estimator.h
                                 include/robot_perception/cartesian_estimator_hsv.h
+                                include/robot_perception/cartesian_estimator_client.h
                                 src/robot_perception/hsv_detection.cpp
                                 src/robot_perception/aruco_client.cpp
                                 src/robot_perception/cartesian_estimator.cpp
-                                src/robot_perception/cartesian_estimator_hsv.cpp)
+                                src/robot_perception/cartesian_estimator_hsv.cpp
+                                src/robot_perception/cartesian_estimator_client.cpp)
 
 add_library(flatpack_furniture  include/flatpack_furniture/artag_ctrl.h
                                 include/flatpack_furniture/hold_ctrl.h
