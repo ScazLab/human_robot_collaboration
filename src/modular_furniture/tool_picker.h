@@ -2,12 +2,12 @@
 #define __TOOL_PICKER_H__
 
 #include <robot_interface/arm_ctrl.h>
+#include <robot_perception/cartesian_estimator_client.h>
+#include <baxter_collaboration/ObjectsArray.h>
 
-class ToolPicker : public ArmCtrl
+class ToolPicker : public ArmCtrl, public CartesianEstimatorClient
 {
 private:
-    double elap_time;
-
     /**
      * [moveObjectTowardHuman description]
      * @return true/false if success/failure

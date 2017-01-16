@@ -4,7 +4,7 @@ using namespace std;
 using namespace baxter_core_msgs;
 
 ToolPicker::ToolPicker(std::string _name, std::string _limb, bool _no_robot) :
-                       ArmCtrl(_name,_limb, _no_robot)
+                       ArmCtrl(_name,_limb, _no_robot), CartesianEstimatorClient(_name, _limb)
 {
     setHomeConfiguration();
 

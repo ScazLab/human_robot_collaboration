@@ -6,8 +6,8 @@ CartesianEstimatorClient::CartesianEstimatorClient(string name, string limb) :
                         _nh(name), _limb(limb), cartest_ok(false),
                         object_found(false), object_id(-1)
 {
-    _cartest_sub = _nh.subscribe("/aruco_marker_publisher/markers",
-                               SUBSCRIBER_BUFFER, &CartesianEstimatorClient::ObjectCb, this);
+    _cartest_sub = _nh.subscribe("/hsv_detector/objects", SUBSCRIBER_BUFFER,
+                                  &CartesianEstimatorClient::ObjectCb, this);
 }
 
 void CartesianEstimatorClient::clearMarkerPose()
