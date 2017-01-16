@@ -10,7 +10,7 @@ CartesianEstimatorClient::CartesianEstimatorClient(string _name, string _limb) :
                                 &CartesianEstimatorClient::ObjectCb, this);
 }
 
-void CartesianEstimatorClient::clearMarkerPose()
+void CartesianEstimatorClient::clearObjectPose()
 {
     cartest_ok   = false;
     object_found = false;
@@ -27,10 +27,10 @@ void CartesianEstimatorClient::ObjectCb(const baxter_collaboration::ObjectsArray
             curr_object_pos = _msg.objects[i].pose.position;
             curr_object_ori = _msg.objects[i].pose.orientation;
 
-            ROS_DEBUG("Marker is in: %g %g %g", curr_object_pos.x,
+            ROS_DEBUG("Object is in: %g %g %g", curr_object_pos.x,
                                                 curr_object_pos.y,
                                                 curr_object_pos.z);
-            // ROS_INFO("Marker is in: %g %g %g %g", curr_object_ori.x,
+            // ROS_INFO("Object is in: %g %g %g %g", curr_object_ori.x,
             //                                       curr_object_ori.y,
             //                                       curr_object_ori.z,
             //                                       curr_object_ori.w);
@@ -48,9 +48,9 @@ void CartesianEstimatorClient::ObjectCb(const baxter_collaboration::ObjectsArray
     }
 }
 
-bool CartesianEstimatorClient::waitForARucoData()
+bool CartesianEstimatorClient::waitForCartEstData()
 {
-    clearMarkerPose();
+    clearObjectPose();
     ROS_INFO("[%s] Waiting for ARuco data..", getCartesianEstimatorLimb().c_str());
     int cnt=0;
 

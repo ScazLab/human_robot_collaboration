@@ -8,6 +8,8 @@
 class ToolPicker : public ArmCtrl, public CartesianEstimatorClient
 {
 private:
+    double elap_time;
+
     /**
      * [moveObjectTowardHuman description]
      * @return true/false if success/failure
@@ -33,6 +35,12 @@ private:
     bool getPassObject();
 
     /**
+     * Picks up the selected object by using the cartesian estimator's info
+     * @return true/false if success/failure
+     */
+    bool pickUpObject();
+
+    /**
      * Sets the joint-level configuration for the home position
      */
     void setHomeConfiguration();
@@ -47,6 +55,9 @@ public:
      * Destructor
      */
     ~ToolPicker();
+
+    /* SETTERS */
+    void setObjectID(int _obj);
 };
 
 #endif

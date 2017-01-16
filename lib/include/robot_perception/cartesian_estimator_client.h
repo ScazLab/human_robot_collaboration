@@ -23,7 +23,7 @@ private:
 
     std::string      object_name;
 
-    // Marker position and orientation
+    // Object position and orientation
     geometry_msgs::Point        curr_object_pos;
     geometry_msgs::Quaternion   curr_object_ori;
 
@@ -32,7 +32,7 @@ protected:
     /**
      * Clears the object pose to reset its state internally
      */
-    void clearMarkerPose();
+    void clearObjectPose();
 
     /**
      * Callback function for the CartesianEstimator topic
@@ -44,7 +44,7 @@ protected:
      * Waits for useful data coming from CartesianEstimator
      * @return true/false if success/failure
      */
-    bool waitForARucoData();
+    bool waitForCartEstData();
 
     /*
      * Check availability of the CartesianEstimator data
@@ -55,8 +55,8 @@ protected:
     void setObjectName(std::string _name)    { object_name =     _name; };
 
     /* Self-explaining "getters" */
-    geometry_msgs::Point      getMarkerPos() { return curr_object_pos; };
-    geometry_msgs::Quaternion getMarkerOri() { return curr_object_ori; };
+    geometry_msgs::Point      getObjectPos() { return curr_object_pos; };
+    geometry_msgs::Quaternion getObjectOri() { return curr_object_ori; };
 
     std::string getCartesianEstimatorLimb() { return        limb; };
     std::string getObjectName()             { return object_name; };
