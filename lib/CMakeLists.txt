@@ -47,9 +47,6 @@ add_library(flatpack_furniture  include/flatpack_furniture/artag_ctrl.h
                                 src/flatpack_furniture/artag_ctrl.cpp
                                 src/flatpack_furniture/hold_ctrl.cpp)
 
-add_library(tower_building  include/tower_building/cube_picker.h
-                            src/tower_building/cube_picker.cpp)
-
 ## Add cmake target dependencies of the library
 ## as an example, code may need to be generated before libraries
 ## either from message generation or dynamic reconfigure
@@ -63,10 +60,6 @@ add_dependencies(robot_perception   robot_utils
                                     ${catkin_EXPORTED_TARGETS})
 
 add_dependencies(flatpack_furniture robot_interface
-                                    robot_perception
-                                    ${catkin_EXPORTED_TARGETS})
-
-add_dependencies(tower_building     robot_interface
                                     robot_perception
                                     ${catkin_EXPORTED_TARGETS})
 
@@ -84,13 +77,9 @@ target_link_libraries(flatpack_furniture    robot_interface
                                             robot_perception
                                             ${catkin_LIBRARIES})
 
-target_link_libraries(tower_building        robot_interface
-                                            robot_perception
-                                            ${catkin_LIBRARIES})
-
 ## Mark libraries for installation
 install (TARGETS robot_utils robot_interface robot_perception
-                 flatpack_furniture tower_building
+                 flatpack_furniture
          ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
          LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
 )
@@ -100,7 +89,6 @@ install(DIRECTORY   ${PROJECT_SOURCE_DIR}/include/robot_utils
                     ${PROJECT_SOURCE_DIR}/include/robot_interface
                     ${PROJECT_SOURCE_DIR}/include/robot_perception
                     ${PROJECT_SOURCE_DIR}/include/flatpack_furniture
-                    ${PROJECT_SOURCE_DIR}/include/tower_building
         DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
         FILES_MATCHING PATTERN "*.h"
 )

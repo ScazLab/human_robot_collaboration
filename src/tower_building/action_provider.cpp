@@ -1,8 +1,7 @@
 #include <stdio.h>
 
 #include <ros/ros.h>
-#include "tower_building/cube_picker.h"
-// #include "flatpack_furniture/hold_ctrl.h"
+#include "cube_picker.h"
 
 using namespace std;
 

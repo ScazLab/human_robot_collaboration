@@ -1,4 +1,4 @@
-#include "tower_building/cube_picker.h"
+#include "cube_picker.h"
 
 using namespace std;
 using namespace baxter_core_msgs;
