@@ -5,14 +5,15 @@ using namespace std;
 /************************************************************************************/
 /*                               SEGMENTED OBJECT HSV                               */
 /************************************************************************************/
-SegmentedObjHSV::SegmentedObjHSV(vector<double> _size,
-                                 hsvColorRange _col) : SegmentedObj(_size), col(_col)
+SegmentedObjHSV::SegmentedObjHSV(vector<double> _size, hsvColorRange _col) :
+                                 SegmentedObj(_size), col(_col)
 {
 
 }
 
-SegmentedObjHSV::SegmentedObjHSV(string _name, vector<double> _size,
-                                 hsvColorRange _col) : SegmentedObj(_name, _size), col(_col)
+SegmentedObjHSV::SegmentedObjHSV(string _name, vector<double> _size, int _area_thres,
+                                 hsvColorRange _col) :
+                                 SegmentedObj(_name, _size, _area_thres), col(_col)
 {
 
 }
@@ -28,7 +29,8 @@ bool SegmentedObjHSV::detectObject(const cv::Mat& _in, cv::Mat& _out, cv::Mat& _
     cv::Mat img_hsv;
     cv::cvtColor(_in, img_hsv, CV_BGR2HSV); //Convert the captured frame from BGR to HSV
 
-    Contours contours;
+    Contours           contours;
+    Contours      filt_contours;
     vector<cv::Vec4i> hierarchy;
 
     cv::Mat img_thres = hsvThreshold(img_hsv, col);
@@ -44,25 +46,41 @@ bool SegmentedObjHSV::detectObject(const cv::Mat& _in, cv::Mat& _out, cv::Mat& _
     cv::findContours(img_thres, contours, hierarchy, CV_RETR_TREE,
                      CV_CHAIN_APPROX_SIMPLE, cv::Point(0, 0));
 
-    if (contours.size() == 0) return false;
+    // Let's filter out contours that are too small to be an object
+    for( size_t i = 0; i < contours.size(); i++ )
+    {
+        // ROS_INFO("IDX %lu Col %s Contour area %g", i, col.toString().c_str(),
+        //                                            contourArea(contours[i], false));
+        if( int(contourArea(contours[i], false)) > area_threshold )
+        {
+            filt_contours.push_back(contours[i]);
+        }
+    }
+
+    // If there no contours any more, the object is not there
+    if (filt_contours.size() == 0)
+    {
+        is_there = false;
+        return false;
+    }
 
     // At this stage, there should be only a contour in the vector of contours.
     // If this is not the case, let's pick the contour with the biggest area
     int largest_area=0;
     int largest_contour_idx=-1;
 
-    for( size_t i = 0; i< contours.size(); i++ )
+    for( size_t i = 0; i< filt_contours.size(); i++ )
     {
-        double a = contourArea( contours[i],false);  //  Find the area of contour
+        double a = contourArea(filt_contours[i], false);  //  Find the area of contour
 
         if( a > largest_area )
         {
             largest_area = a;
-            largest_contour_idx = i;                //Store the index of largest contour
+            largest_contour_idx = i;                // Store the index of largest contour
         }
     }
 
-    rect = minAreaRect(cv::Mat(contours[largest_contour_idx]));
+    rect = minAreaRect(cv::Mat(filt_contours[largest_contour_idx]));
 
     cv::Scalar color = cv::Scalar::all(255);
 
@@ -76,6 +94,7 @@ bool SegmentedObjHSV::detectObject(const cv::Mat& _in, cv::Mat& _out, cv::Mat& _
                      cv::FONT_HERSHEY_SIMPLEX, 1, cv::Scalar::all(255), 2, CV_AA);
     }
 
+    is_there = true;
     return true;
 }
 
@@ -113,7 +132,7 @@ bool CartesianEstimatorHSV::addObject(string _name, double _h, double _w, hsvCol
         size.push_back(_h);
     }
 
-    objs.push_back(new SegmentedObjHSV(_name, size, _hsv));
+    objs.push_back(new SegmentedObjHSV(_name, size, getAreaThreshold(), _hsv));
 
     return true;
 }

@@ -16,6 +16,8 @@
 
 #include "baxter_collaboration/ObjectsArray.h"
 
+#define AREA_THRES  50      // px
+
 /**
  * Generic class for representing a segmented object. It is a virtual class,
  * and needs to be specified in its derived children.
@@ -26,11 +28,17 @@ public:
     // Name of the object (for future reference)
     std::string         name;
 
-    // Segmented objects as a rotated rectangle
-    cv::RotatedRect     rect;
-
     // Real size of the object in meters. We consider only rectangular shapes.
     std::vector<double> size;
+
+    // Minimum area in pixel for a blob to be considered worth evaluating.
+    int area_threshold;
+
+    // Flag to know if the object is there or not
+    bool is_there;
+
+    // Segmented objects as a rotated rectangle
+    cv::RotatedRect     rect;
 
     // Rotation and translation matrices with respect to the camera
     cv::Mat Rvec, Tvec;
@@ -40,7 +48,7 @@ public:
 
     /* CONSTRUCTOR */
     SegmentedObj(std::vector<double> _size);
-    SegmentedObj(std::string _name, std::vector<double> _size);
+    SegmentedObj(std::string _name, std::vector<double> _size, int _area_thres);
 
     /* DESTRUCTOR */
     virtual ~SegmentedObj();
@@ -70,6 +78,9 @@ public:
      * @return true/false if success/failure
      */
     virtual bool detectObject(const cv::Mat& _in, cv::Mat& _out, cv::Mat& _out_thres);
+
+    /* GETTERS */
+    bool isThere() { return is_there; };
 };
 
 /**
@@ -79,6 +90,7 @@ public:
 class CartesianEstimator : public ROSThreadImage
 {
 private:
+	/** INTERNAL PARAMETERS **/
     // Image publisher
     image_transport::Publisher  img_pub;
 
@@ -89,19 +101,24 @@ private:
     ros::Publisher objs_pub;
 
     // Message to send through objs_pub
-    baxter_collaboration::ObjectsArray::Ptr objects_msg;
+    baxter_collaboration::ObjectsArray objects_msg;
 
     // Camera parameters
     aruco::CameraParameters cam_param;
 
-    // Name of the reference frame to transform the camera poses to
-    std::string reference_frame_;
-
-    // Name of the camera frame to refer the object poses to
-    std::string camera_frame_;
-
     // Transform listener to convert reference frames
     tf::TransformListener tfListener_;
+
+    /** EXTERNAL PARAMETERS **/
+    // Name of the reference frame to transform the camera poses to
+    std::string reference_frame;
+
+    // Name of the camera frame to refer the object poses to
+    std::string camera_frame;
+
+    // Minimum area threshold in pixel for an object to be considered valid.
+    // Used to avoid having erroneous detections due to noise or whatnot.
+    int area_threshold;
 
     /**
      * [getTransform description]
@@ -226,6 +243,13 @@ protected:
     bool draw3dAxis(cv::Mat &_img, int idx);
 
     /**
+     * Computes the number of valid objects visible on the current frame
+     *
+     * @return the number of valid objects
+     */
+    int getNumValidObjects();
+
+    /**
      * Clears the array of objects and properly deallocates memory by
      * destroying its elements one by one
      */
@@ -241,10 +265,10 @@ public:
     ~CartesianEstimator();
 
     /** GETTERS **/
-    // cv::RotatedRect getSegmentedObject() { return obj_segm; };
+    int getAreaThreshold() { return area_threshold; };
 
     /** SETTERS **/
-    // void setSegmentedObject(cv::RotatedRect _os) { obj_segm = _os; return; };
+
 };
 
 #endif

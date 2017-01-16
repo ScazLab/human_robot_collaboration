@@ -13,7 +13,7 @@ public:
 
     /* CONSTRUCTOR */
     SegmentedObjHSV(std::vector<double> _size, hsvColorRange _col);
-    SegmentedObjHSV(std::string _name, std::vector<double> _size, hsvColorRange _col);
+    SegmentedObjHSV(std::string _name, std::vector<double> _size, int _area_thres, hsvColorRange _col);
 
     /* DESTRUCTOR */
     ~SegmentedObjHSV();

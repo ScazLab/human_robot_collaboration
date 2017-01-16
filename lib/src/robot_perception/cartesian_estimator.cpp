@@ -5,14 +5,16 @@ using namespace std;
 /************************************************************************************/
 /*                                 SEGMENTED OBJECT                                 */
 /************************************************************************************/
-SegmentedObj::SegmentedObj(vector<double> _size) : name(""),
-                           rect(cv::Point2f(0,0), cv::Size2f(0,0), 0.0), size(_size)
+SegmentedObj::SegmentedObj(vector<double> _size) :
+                           name(""), size(_size), area_threshold(AREA_THRES),
+                           is_there(false), rect(cv::Point2f(0,0), cv::Size2f(0,0), 0.0)
 {
     init();
 }
 
-SegmentedObj::SegmentedObj(string _name, vector<double> _size) : name(_name),
-                           rect(cv::Point2f(0,0), cv::Size2f(0,0), 0.0), size(_size)
+SegmentedObj::SegmentedObj(string _name, vector<double> _size, int _area_thres) :
+                           name(_name), size(_size), area_threshold(_area_thres),
+                           is_there(false), rect(cv::Point2f(0,0), cv::Size2f(0,0), 0.0)
 {
     init();
 }
@@ -68,39 +70,46 @@ void CartesianEstimator::init()
     img_pub_thres  = _img_trp.advertise("/"+getName()+"/image_result_thres", SUBSCRIBER_BUFFER);
     objs_pub       = _n.advertise<baxter_collaboration::ObjectsArray>("/"+getName()+"/objects", 1);
 
-    _n.param<string>("/"+getName()+"/reference_frame", reference_frame_, "");
-    _n.param<string>("/"+getName()+   "/camera_frame",    camera_frame_, "");
+    _n.param<string>("/"+getName()+"/reference_frame", reference_frame,         "");
+    _n.param<string>("/"+getName()+   "/camera_frame",    camera_frame,         "");
+    _n.param<int>   ("/"+getName()+ "/area_threshold",  area_threshold, AREA_THRES);
 
-    ROS_ASSERT_MSG(not camera_frame_.empty(), "Camera frame is empty!");
+    ROS_INFO("Reference Frame: %s", reference_frame.c_str());
+    ROS_INFO("Camera Frame   : %s",    camera_frame.c_str());
+    ROS_INFO("Area Threshold : %i",  area_threshold        );
 
-    if(reference_frame_.empty()) reference_frame_ = camera_frame_;
+    ROS_ASSERT_MSG(not camera_frame.empty(), "Camera frame is empty!");
+
+    if(reference_frame.empty()) reference_frame = camera_frame;
 
     sensor_msgs::CameraInfoConstPtr msg = ros::topic::waitForMessage<sensor_msgs::CameraInfo>
                                                            ("/"+getName()+"/camera_info", _n);//, 10.0);
+
     // For now, we'll assume images that are always rectified
     cam_param = aruco_ros::rosCameraInfo2ArucoCamParams(*msg, true);
 
-    objects_msg = baxter_collaboration::ObjectsArray::Ptr(
-              new baxter_collaboration::ObjectsArray());
-    objects_msg->header.frame_id = reference_frame_;
-    objects_msg->header.seq = 0;
+    objects_msg.header.frame_id = reference_frame;
+    objects_msg.header.seq = 0;
 }
 
 bool CartesianEstimator::publishObjects()
 {
     ros::Time curr_stamp(ros::Time::now());
 
-    objects_msg->objects.clear();
-    objects_msg->objects.resize(objs.size());
-    objects_msg->header.stamp = curr_stamp;
-    objects_msg->header.seq++;
+    objects_msg.objects.clear();
+    objects_msg.objects.resize(getNumValidObjects());
+    objects_msg.header.stamp = curr_stamp;
+    objects_msg.header.seq++;
 
-    for(size_t i = 0; i < objs.size(); ++i)
+    for(size_t i = 0; i < objects_msg.objects.size(); ++i)
     {
-        baxter_collaboration::Object & object_i = objects_msg->objects.at(i);
-        object_i.pose = objs[i]->pose;
-        object_i.id   = i;
-        object_i.name = objs[i]->name;
+        if (objs[i]->isThere())
+        {
+            baxter_collaboration::Object & object_i = objects_msg.objects.at(i);
+            object_i.pose = objs[i]->pose;
+            object_i.id   = i;
+            object_i.name = objs[i]->name;
+        }
     }
 
     objs_pub.publish(objects_msg);
@@ -154,7 +163,7 @@ bool CartesianEstimator::addObject(std::string _name, double _h, double _w)
         size.push_back(_h);
     }
 
-    objs.push_back(new SegmentedObj(_name, size));
+    objs.push_back(new SegmentedObj(_name, size, getAreaThreshold()));
 
     return true;
 }
@@ -271,9 +280,9 @@ bool CartesianEstimator::cameraRFtoRootRF(int idx)
     tf::StampedTransform cameraToReference;
     cameraToReference.setIdentity();
 
-    if ( reference_frame_ != camera_frame_ )
+    if ( reference_frame != camera_frame )
     {
-        getTransform(reference_frame_, camera_frame_, cameraToReference);
+        getTransform(reference_frame, camera_frame, cameraToReference);
     }
 
     // Now find the transform the detected object
@@ -283,7 +292,7 @@ bool CartesianEstimator::cameraRFtoRootRF(int idx)
     tf::TransformBroadcaster br;
     tf::poseTFToMsg(transform, objs[idx]->pose);
     br.sendTransform(tf::StampedTransform(transform, ros::Time::now(),
-                                          reference_frame_, getName()+"/obj_"+intToString(idx)));
+                                          reference_frame, getName()+"/obj_"+intToString(idx)));
 
     return true;
 }
@@ -352,7 +361,10 @@ bool CartesianEstimator::draw3dAxisAll(cv::Mat &_img)
 
     for (size_t i = 0; i < objs.size(); ++i)
     {
-        res = res && draw3dAxis(_img, i);
+        if (objs[i]->isThere())
+        {
+            res = res && draw3dAxis(_img, i);
+        }
     }
 
     return res;
@@ -389,6 +401,18 @@ bool CartesianEstimator::draw3dAxis(cv::Mat &_img, int idx)
     cv::putText(_img,"z", imagePoints[3], fFace, 0.6, cv::Scalar(0,0,255,255),2);
 
     return true;
+}
+
+int CartesianEstimator::getNumValidObjects()
+{
+    int res = 0;
+
+    for(size_t i = 0; i < objs.size(); ++i)
+    {
+        if (objs[i]->isThere())     res++;
+    }
+
+    return res;
 }
 
 void CartesianEstimator::clearObjs()
