@@ -1,5 +1,5 @@
-#ifndef __CUBE_PICKER_H__
-#define __CUBE_PICKER_H__
+#ifndef __TOOL_PICKER_H__
+#define __TOOL_PICKER_H__
 
 #include <robot_interface/arm_ctrl.h>
 

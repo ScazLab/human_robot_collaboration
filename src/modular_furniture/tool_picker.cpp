@@ -65,8 +65,8 @@ bool ToolPicker::moveObjectTowardHuman()
 
 void ToolPicker::setHomeConfiguration()
 {
-    setHomeConf(0.7060, -1.2717, 0.3846,  1.5405,
-                        -0.1273, 1.3135,  0.3206);
+    setHomeConf(-1.6801, -1.0500, 1.1693, 1.9762,
+                         -0.5722, 1.0205, 0.5430);
 }
 
 ToolPicker::~ToolPicker()
