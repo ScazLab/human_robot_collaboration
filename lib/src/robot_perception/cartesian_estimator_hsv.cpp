@@ -60,7 +60,7 @@ bool SegmentedObjHSV::detectObject(const cv::Mat& _in, cv::Mat& _out, cv::Mat& _
     // If there no contours any more, the object is not there
     if (filt_contours.size() == 0)
     {
-        is_there = false;
+        setIsThere(false);
         return false;
     }
 
@@ -94,7 +94,7 @@ bool SegmentedObjHSV::detectObject(const cv::Mat& _in, cv::Mat& _out, cv::Mat& _
                      cv::FONT_HERSHEY_SIMPLEX, 1, cv::Scalar::all(255), 2, CV_AA);
     }
 
-    is_there = true;
+    setIsThere(true);
     return true;
 }
 

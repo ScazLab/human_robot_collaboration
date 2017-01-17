@@ -26,7 +26,7 @@ int main(int argc, char ** argv)
 
     std::vector<std::string> names;
     names.push_back("screwdriver");
-    names.push_back("blue box");
+    names.push_back("blue_box");
 
     printf("\n");
     CartesianEstimatorHSV ce_hsv("hsv_detector", names, sizes, colors);

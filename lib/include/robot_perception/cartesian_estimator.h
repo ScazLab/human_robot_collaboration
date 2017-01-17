@@ -24,18 +24,19 @@
  */
 class SegmentedObj
 {
-public:
+private:
     // Name of the object (for future reference)
     std::string         name;
 
+    // Flag to know if the object is there or not
+    bool is_there;
+
+public:
     // Real size of the object in meters. We consider only rectangular shapes.
     std::vector<double> size;
 
     // Minimum area in pixel for a blob to be considered worth evaluating.
     int area_threshold;
-
-    // Flag to know if the object is there or not
-    bool is_there;
 
     // Segmented objects as a rotated rectangle
     cv::RotatedRect     rect;
@@ -81,6 +82,11 @@ public:
 
     /* GETTERS */
     bool isThere() { return is_there; };
+    std::string getName() { return name; };
+
+    /* SETTERS */
+    void setIsThere(bool _it)           { is_there = _it; };
+    void setName(const std::string &_s) {     name =  _s; };
 };
 
 /**

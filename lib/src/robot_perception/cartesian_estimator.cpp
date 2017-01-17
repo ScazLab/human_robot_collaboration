@@ -6,15 +6,15 @@ using namespace std;
 /*                                 SEGMENTED OBJECT                                 */
 /************************************************************************************/
 SegmentedObj::SegmentedObj(vector<double> _size) :
-                           name(""), size(_size), area_threshold(AREA_THRES),
-                           is_there(false), rect(cv::Point2f(0,0), cv::Size2f(0,0), 0.0)
+                           name(""), is_there(false), size(_size), area_threshold(AREA_THRES),
+                           rect(cv::Point2f(0,0), cv::Size2f(0,0), 0.0)
 {
     init();
 }
 
 SegmentedObj::SegmentedObj(string _name, vector<double> _size, int _area_thres) :
-                           name(_name), size(_size), area_threshold(_area_thres),
-                           is_there(false), rect(cv::Point2f(0,0), cv::Size2f(0,0), 0.0)
+                           name(_name), is_there(false), size(_size), area_threshold(_area_thres),
+                           rect(cv::Point2f(0,0), cv::Size2f(0,0), 0.0)
 {
     init();
 }
@@ -108,7 +108,7 @@ bool CartesianEstimator::publishObjects()
             baxter_collaboration::Object & object_i = objects_msg.objects.at(i);
             object_i.pose = objs[i]->pose;
             object_i.id   = i;
-            object_i.name = objs[i]->name;
+            object_i.name = objs[i]->getName();
         }
     }
 
@@ -292,7 +292,7 @@ bool CartesianEstimator::cameraRFtoRootRF(int idx)
     tf::TransformBroadcaster br;
     tf::poseTFToMsg(transform, objs[idx]->pose);
     br.sendTransform(tf::StampedTransform(transform, ros::Time::now(),
-                                          reference_frame, getName()+"/obj_"+intToString(idx)));
+                                          reference_frame, getName()+"/obj_"+objs[idx]->getName().c_str()));
 
     return true;
 }
