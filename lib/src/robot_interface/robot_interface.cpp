@@ -538,8 +538,20 @@ bool RobotInterface::hasCollided(string mode)
 {
     double thres;
 
-    if      (mode == "strict") thres = 0.050;
-    else if (mode ==  "loose") thres = 0.067;
+    if (getLimb() == "left")
+    {
+        if      (mode == "strict") thres = 0.050;
+        else if (mode ==  "loose") thres = 0.067;
+    }
+    else if (getLimb() == "right")
+    {
+        if      (mode == "strict") thres = 0.09;
+        else if (mode ==  "loose") thres = 0.11;
+    }
+    else
+    {
+        return false;
+    }
 
     if (_curr_range <= _curr_max_range &&
         _curr_range >= _curr_min_range &&

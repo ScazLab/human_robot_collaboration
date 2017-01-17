@@ -60,6 +60,8 @@
 #define POOL_POS_L  -0.05, 0.85, 0.30
 #define POOL_ORI_L   -0.7,  0.7, 0.0, 0.0
 
+#define POOL_ORI_R    0.7,  0.7, 0.0, 0.0
+
 #define HOME_POS_L   0.65,  0.45
 #define HOME_POS_R   0.65, -0.25
 
