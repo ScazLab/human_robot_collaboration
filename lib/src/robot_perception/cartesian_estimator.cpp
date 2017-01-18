@@ -341,21 +341,6 @@ tf::Transform CartesianEstimator::object2Tf(int idx)
     cv::Rodrigues(objs[idx]->Rvec, rot);
     cv::Mat tran = objs[idx]->Tvec;
 
-    cv::Mat rotate_to_ros(3, 3, CV_32FC1);
-    // -1 0 0
-    // 0 0 1
-    // 0 1 0
-    rotate_to_ros.at<float>(0,0) = -1.0;
-    rotate_to_ros.at<float>(0,1) = 0.0;
-    rotate_to_ros.at<float>(0,2) = 0.0;
-    rotate_to_ros.at<float>(1,0) = 0.0;
-    rotate_to_ros.at<float>(1,1) = 0.0;
-    rotate_to_ros.at<float>(1,2) = 1.0;
-    rotate_to_ros.at<float>(2,0) = 0.0;
-    rotate_to_ros.at<float>(2,1) = 1.0;
-    rotate_to_ros.at<float>(2,2) = 0.0;
-    rot = rot*rotate_to_ros.t();
-
     tf::Matrix3x3 tf_rot(rot.at<float>(0,0), rot.at<float>(0,1), rot.at<float>(0,2),
                          rot.at<float>(1,0), rot.at<float>(1,1), rot.at<float>(1,2),
                          rot.at<float>(2,0), rot.at<float>(2,1), rot.at<float>(2,2));
@@ -402,13 +387,14 @@ bool CartesianEstimator::draw3dAxis(cv::Mat &_img, int idx)
     vector<cv::Point2f> imagePoints;
     cv::projectPoints( objectPoints, objs[idx]->Rvec, objs[idx]->Tvec,
                        cam_param.CameraMatrix, cam_param.Distorsion, imagePoints);
+
     //draw lines of different colours
-    cv::line(_img,imagePoints[0],imagePoints[1],cv::Scalar(255,0,0,255),1,CV_AA);
-    cv::line(_img,imagePoints[0],imagePoints[2],cv::Scalar(0,255,0,255),1,CV_AA);
-    cv::line(_img,imagePoints[0],imagePoints[3],cv::Scalar(0,0,255,255),1,CV_AA);
-    cv::putText(_img,"x", imagePoints[1], fFace, 0.6, cv::Scalar(255,0,0,255),2);
-    cv::putText(_img,"y", imagePoints[2], fFace, 0.6, cv::Scalar(0,255,0,255),2);
-    cv::putText(_img,"z", imagePoints[3], fFace, 0.6, cv::Scalar(0,0,255,255),2);
+    cv::line(_img, imagePoints[0], imagePoints[1], cv::Scalar(0,0,255,255), 1, CV_AA);
+    cv::line(_img, imagePoints[0], imagePoints[2], cv::Scalar(0,255,0,255), 1, CV_AA);
+    cv::line(_img, imagePoints[0], imagePoints[3], cv::Scalar(255,0,0,255), 1, CV_AA);
+    cv::putText(_img, "x", imagePoints[1], fFace, 0.6, cv::Scalar(0,0,255,255), 2);
+    cv::putText(_img, "y", imagePoints[2], fFace, 0.6, cv::Scalar(0,255,0,255), 2);
+    cv::putText(_img, "z", imagePoints[3], fFace, 0.6, cv::Scalar(255,0,0,255), 2);
 
     return true;
 }

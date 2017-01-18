@@ -70,8 +70,19 @@ bool ToolPicker::pickUpObject()
         // p_d.y -= 0.02;
         // geometry_msgs::Point p_c = p_n + (p_d - p_n) / norm(p_d - p_n) * ARM_SPEED * (1/period);
 
-        x = getObjectPos().x + 0.02;
-        y = getObjectPos().y - 0.02;
+        // The offsets are for gripping the screwdriver not in its center
+        // but where the screwdriver is thinner
+        double offs_x = 0.0;
+        double offs_y = 0.0;
+
+        if (CartesianEstimatorClient::getObjectName() == "screwdriver")
+        {
+            offs_x = +0.015;
+            offs_y = -0.020;
+        }
+
+        x = getObjectPos().x + offs_x;
+        y = getObjectPos().y + offs_y;
         z = z_start - ARM_SPEED * new_elap_time / 1.3;
 
         ROS_DEBUG("Time %g Going to: %g %g %g Position: %g %g %g", new_elap_time, x, y, z,
