@@ -74,8 +74,8 @@ bool ToolPicker::pickUpObject()
         y = getObjectPos().y - 0.02;
         z = z_start - ARM_SPEED * new_elap_time / 1.3;
 
-        ROS_INFO("Time %g Going to: %g %g %g Position: %g %g %g", new_elap_time, x, y, z,
-                                                      getPos().x, getPos().y, getPos().z);
+        ROS_DEBUG("Time %g Going to: %g %g %g Position: %g %g %g", new_elap_time, x, y, z,
+                                                       getPos().x, getPos().y, getPos().z);
 
         if (goToPoseNoCheck(x,y,z,POOL_ORI_R))
         {

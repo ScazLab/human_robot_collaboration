@@ -83,7 +83,8 @@ void CartesianEstimator::init()
     if(reference_frame.empty()) reference_frame = camera_frame;
 
     sensor_msgs::CameraInfoConstPtr msg = ros::topic::waitForMessage<sensor_msgs::CameraInfo>
-                                                           ("/"+getName()+"/camera_info", _n);//, 10.0);
+                                                           ("/"+getName()+"/camera_info", _n);
+                                                           // ("/cameras/right_hand_camera/camera_info", _n);
 
     // For now, we'll assume images that are always rectified
     cam_param = aruco_ros::rosCameraInfo2ArucoCamParams(*msg, true);
