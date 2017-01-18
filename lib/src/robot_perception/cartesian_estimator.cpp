@@ -119,8 +119,14 @@ bool CartesianEstimator::publishObjects()
 
 void CartesianEstimator::InternalThreadEntry()
 {
+    // This is introduced to avoid starting the execution of the thread
+    // before the derived class finishes initialization
+    ros::Duration(0.2).sleep();
+
     while(ros::ok())
     {
+        ROS_INFO_THROTTLE(10, "I'm running, and everything is fine..."
+                              " Number of objects: %i", getNumValidObjects());
         cv::Mat img_in;
         cv::Mat img_out;
         if (!_img_empty)
@@ -209,7 +215,10 @@ bool CartesianEstimator::poseRootRFAll()
 
     for (size_t i = 0; i < objs.size(); ++i)
     {
-        res = res && poseRootRF(i);
+        if (objs[i]->isThere())
+        {
+            res = res && poseRootRF(i);
+        }
     }
 
     return res;
@@ -291,8 +300,8 @@ bool CartesianEstimator::cameraRFtoRootRF(int idx)
     transform = static_cast<tf::Transform>(cameraToReference) * transform;
     tf::TransformBroadcaster br;
     tf::poseTFToMsg(transform, objs[idx]->pose);
-    br.sendTransform(tf::StampedTransform(transform, ros::Time::now(),
-                                          reference_frame, getName()+"/obj_"+objs[idx]->getName().c_str()));
+    br.sendTransform(tf::StampedTransform(transform, ros::Time::now(), reference_frame,
+                                          getName()+"/obj_"+objs[idx]->getName().c_str()));
 
     return true;
 }
