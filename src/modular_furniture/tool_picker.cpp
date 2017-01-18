@@ -41,12 +41,12 @@ bool ToolPicker::pickUpObject()
 
     geometry_msgs::Quaternion q;
 
-    double x = getObjectPos().x;
-    double y = getObjectPos().y + 0.04;
+    double x = getObjectPos().x+0.02;
+    double y = getObjectPos().y-0.02;
     double z =       getPos().z;
 
-    ROS_DEBUG("Going to: %g %g %g", x, y, z);
-    if (!goToPose(x, y, z, POOL_ORI_L,"loose"))
+    ROS_INFO("Going to: %g %g %g", x, y, z);
+    if (!goToPose(x, y, z, POOL_ORI_R,"loose"))
     {
         return false;
     }
@@ -57,18 +57,27 @@ bool ToolPicker::pickUpObject()
     double z_start       =       getPos().z;
     int cnt_ik_fail      =                0;
 
-    ros::Rate r(100);
+    double period = 100.0;
+    ros::Rate r(period);
+
     while(RobotInterface::ok())
     {
         double new_elap_time = (ros::Time::now() - start_time).toSec();
 
-        double x = getObjectPos().x;
-        double y = getObjectPos().y;
-        double z = z_start - ARM_SPEED * new_elap_time;
+        // geometry_msgs::Point p_n = getPos();
+        // geometry_msgs::Point p_d = getObjectPos();
+        // p_d.x += 0.02;
+        // p_d.y -= 0.02;
+        // geometry_msgs::Point p_c = p_n + (p_d - p_n) / norm(p_d - p_n) * ARM_SPEED * (1/period);
 
-        ROS_DEBUG("Time %g Going to: %g %g %g", new_elap_time, x, y, z);
+        x = getObjectPos().x + 0.02;
+        y = getObjectPos().y - 0.02;
+        z = z_start - ARM_SPEED * new_elap_time / 1.3;
 
-        if (goToPoseNoCheck(x,y,z,POOL_ORI_L))
+        ROS_INFO("Time %g Going to: %g %g %g Position: %g %g %g", new_elap_time, x, y, z,
+                                                      getPos().x, getPos().y, getPos().z);
+
+        if (goToPoseNoCheck(x,y,z,POOL_ORI_R))
         {
             cnt_ik_fail = 0;
             if (new_elap_time - elap_time > 0.02)
@@ -79,7 +88,7 @@ bool ToolPicker::pickUpObject()
 
             if(hasCollided("strict"))
             {
-                ROS_DEBUG("Collision!");
+                ROS_INFO("Collision!");
                 setSubState(ACTION_GET);
                 return true;
             }
@@ -104,10 +113,13 @@ bool ToolPicker::getObject()
 {
     if (!homePoseStrict())          return false;
     ros::Duration(0.05).sleep();
-    if (!pickUpObject())               return false;
+    if (!pickUpObject())            return false;
     if (!gripObject())              return false;
-    if (!moveArm("up", 0.3))        return false;
-    if (!hoverAboveTable(Z_LOW))    return false;
+    // if (!moveArm("up", 0.3))        return false;
+    // if (!hoverAboveTable(Z_LOW))    return false;
+    ros::Duration(0.8).sleep();
+    if (!releaseObject())               return false;
+    if (!homePoseStrict())              return false;
 
     return true;
 }
@@ -135,7 +147,7 @@ bool ToolPicker::getPassObject()
 bool ToolPicker::moveObjectTowardHuman()
 {
     ROS_INFO("[%s] Moving object toward human..", getLimb().c_str());
-    return goToPose(0.80, 0.26, 0.32, VERTICAL_ORI_L);
+    return goToPose(0.80, -0.26, 0.32, VERTICAL_ORI_L);
 }
 
 void ToolPicker::setHomeConfiguration()
@@ -149,7 +161,6 @@ void ToolPicker::setObjectID(int _obj)
     ArmCtrl::setObjectID(_obj);
     CartesianEstimatorClient::setObjectName(ArmCtrl::getObjectName(_obj));
 }
-
 
 ToolPicker::~ToolPicker()
 {
