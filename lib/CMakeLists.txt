@@ -33,16 +33,21 @@ add_library(robot_interface include/robot_interface/robot_interface.h
                             src/robot_interface/gripper.cpp
                             src/robot_interface/arm_ctrl.cpp)
 
-add_library(robot_perception    include/robot_perception/aruco_client.h
-                                src/robot_perception/aruco_client.cpp)
+add_library(robot_perception    include/robot_perception/hsv_detection.h
+                                include/robot_perception/aruco_client.h
+                                include/robot_perception/cartesian_estimator.h
+                                include/robot_perception/cartesian_estimator_hsv.h
+                                include/robot_perception/cartesian_estimator_client.h
+                                src/robot_perception/hsv_detection.cpp
+                                src/robot_perception/aruco_client.cpp
+                                src/robot_perception/cartesian_estimator.cpp
+                                src/robot_perception/cartesian_estimator_hsv.cpp
+                                src/robot_perception/cartesian_estimator_client.cpp)
 
 add_library(flatpack_furniture  include/flatpack_furniture/artag_ctrl.h
                                 include/flatpack_furniture/hold_ctrl.h
                                 src/flatpack_furniture/artag_ctrl.cpp
                                 src/flatpack_furniture/hold_ctrl.cpp)
-
-add_library(tower_building  include/tower_building/cube_picker.h
-                            src/tower_building/cube_picker.cpp)
 
 ## Add cmake target dependencies of the library
 ## as an example, code may need to be generated before libraries
@@ -60,10 +65,6 @@ add_dependencies(flatpack_furniture robot_interface
                                     robot_perception
                                     ${catkin_EXPORTED_TARGETS})
 
-add_dependencies(tower_building     robot_interface
-                                    robot_perception
-                                    ${catkin_EXPORTED_TARGETS})
-
 ## Specify libraries to link a library or executable target against
 target_link_libraries(robot_utils           ${catkin_LIBRARIES})
 
@@ -78,13 +79,9 @@ target_link_libraries(flatpack_furniture    robot_interface
                                             robot_perception
                                             ${catkin_LIBRARIES})
 
-target_link_libraries(tower_building        robot_interface
-                                            robot_perception
-                                            ${catkin_LIBRARIES})
-
 ## Mark libraries for installation
 install (TARGETS robot_utils robot_interface robot_perception
-                 flatpack_furniture tower_building
+                 flatpack_furniture
          ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
          LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
 )
@@ -94,7 +91,6 @@ install(DIRECTORY   ${PROJECT_SOURCE_DIR}/include/robot_utils
                     ${PROJECT_SOURCE_DIR}/include/robot_interface
                     ${PROJECT_SOURCE_DIR}/include/robot_perception
                     ${PROJECT_SOURCE_DIR}/include/flatpack_furniture
-                    ${PROJECT_SOURCE_DIR}/include/tower_building
         DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
         FILES_MATCHING PATTERN "*.h"
 )

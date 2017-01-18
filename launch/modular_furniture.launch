@@ -1,0 +1,26 @@
+<launch>
+    <!-- PERCEPTION -->
+    <node name="image_view" pkg="image_view" type="image_view" respawn="false" output="log">
+        <remap from="image" to="/hsv_detector/image_result"/>
+        <param name="autosize" value="true" />
+    </node>
+
+    <!-- <node name="image_view2" pkg="image_view" type="image_view" respawn="false" output="log">
+        <remap from="image" to="/hsv_detector/image_result_thres"/>
+        <param name="autosize" value="true" />
+    </node> -->
+
+    <param name="hsv_detector/reference_frame" value="/torso"/>
+    <param name="hsv_detector/camera_frame"    value="/right_hand_camera"/>
+    <param name="hsv_detector/area_threshold"  value="250"/>
+
+    <node pkg="baxter_collaboration" type="hsv_detector" name="hsv_detector" output="screen">
+        <remap from="hsv_detector/image" to="/cameras/right_hand_camera/image"/>
+        <remap from="hsv_detector/camera_info" to="/cameras/right_hand_camera/camera_info"/>
+    </node>
+
+    <!-- CONTROL -->
+    <node pkg="baxter_collaboration" type="modular_action_provider" name="modular_action_provider" output="screen">
+    </node>
+</launch>
+

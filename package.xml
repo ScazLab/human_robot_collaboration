@@ -36,6 +36,8 @@
   <depend>rosconsole</depend>
   <depend>baxter_core_msgs</depend>
   <depend>aruco_msgs</depend>
+  <depend>aruco</depend>
+  <depend>aruco_ros</depend>
   <depend>cv_bridge</depend>
   <depend>image_transport</depend>
   <depend>trac_ik_lib</depend>

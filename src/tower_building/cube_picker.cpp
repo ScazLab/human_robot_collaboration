@@ -1,10 +1,10 @@
-#include "tower_building/cube_picker.h"
+#include "cube_picker.h"
 
 using namespace std;
 using namespace baxter_core_msgs;
 
 CubePicker::CubePicker(std::string _name, std::string _limb, bool _no_robot) :
-                       ArmCtrl(_name,_limb, _no_robot), ARucoClient(_name, _limb)
+                       ArmCtrl(_name,_limb, _no_robot), ARucoClient(_name, _limb), elap_time(0)
 {
     setHomeConfiguration();
 
