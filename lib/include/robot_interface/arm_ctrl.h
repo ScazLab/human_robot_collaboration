@@ -164,6 +164,23 @@ protected:
     bool insertObject(int id, const std::string &n);
 
     /**
+     * Adds an array of objects from an XmlRpcValue read from the parameter server.
+     * It is encoded as an entire namespace of parameters using a YAML dictionary.
+     * This is a valid parameter to set in your launch file:
+     *
+     * <rosparam param = "action_provider/objects_left">
+     *   "left leg":      17
+     *   "top":           21
+     *   "central frame": 24
+     *   "right leg":     26
+     * </rosparam>
+     *
+     * @param  _param the XmlRpcValue read from the parameter server.
+     * @return        true/false if the insertion was successful or not
+     */
+    bool insertObjects(XmlRpc::XmlRpcValue _params);
+
+    /**
      * Removes an object from the database. If the object is not in the
      * database, the return value will be false.
      *

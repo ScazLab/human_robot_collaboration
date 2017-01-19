@@ -18,6 +18,14 @@
     <param name="action_provider/use_robot"             value="$(arg useRobot)"/>
     <param name="baxter_display/speech_duration"        value="$(arg speechPopUpDuration)"/>
 
+    <!-- Objects database for the left arm -->
+    <rosparam param = "action_provider/objects_left">
+        "left leg":      17
+        "top":           21
+        "central frame": 24
+        "right leg":     26
+    </rosparam>
+
     <node pkg="baxter_collaboration" type="baxter_display"  name="baxter_display"  output="screen"/>
     <node pkg="baxter_collaboration" type="flatpack_action_provider" name="flatpack_action_provider" output="screen"/>
 

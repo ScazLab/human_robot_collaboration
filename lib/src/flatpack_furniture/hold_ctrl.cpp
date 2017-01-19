@@ -22,8 +22,6 @@ HoldCtrl::HoldCtrl(std::string _name, std::string _limb, bool _no_robot) :
 
     printActionDB();
 
-    printObjectDB();
-
     if (_no_robot) return;
 
     if (!callAction(ACTION_HOME)) setState(ERROR);

@@ -33,13 +33,6 @@ ARTagCtrl::ARTagCtrl(std::string _name, std::string _limb, bool _no_robot) :
 
     printActionDB();
 
-    insertObject(17, "left leg");
-    insertObject(21, "top");
-    insertObject(24, "central frame");
-    insertObject(26, "right leg");
-
-    printObjectDB();
-
     if (_no_robot) return;
 
     if (!callAction(ACTION_HOME)) setState(ERROR);
@@ -67,13 +60,13 @@ bool ARTagCtrl::pickObject()
 
 bool ARTagCtrl::recoverRelease()
 {
-    if (getSubState() != ACTION_RELEASE) return false;
-    if(!homePoseStrict())         return false;
+    if (getSubState() != ACTION_RELEASE)    return false;
+    if(!homePoseStrict())                   return false;
     ros::Duration(0.05).sleep();
-    if (!pickARTag())                    return false;
-    if (!gripObject())                   return false;
-    if (!moveArm("up", 0.2))             return false;
-    if (!homePoseStrict())        return false;
+    if (!pickARTag())                       return false;
+    if (!gripObject())                      return false;
+    if (!moveArm("up", 0.2))                return false;
+    if (!homePoseStrict())                  return false;
 
     return true;
 }
@@ -82,7 +75,7 @@ bool ARTagCtrl::recoverGet()
 {
     if (!hoverAbovePool())          return false;
     if (!releaseObject())           return false;
-    if (!homePoseStrict())   return false;
+    if (!homePoseStrict())          return false;
 
     return true;
 }
@@ -94,21 +87,21 @@ bool ARTagCtrl::passObject()
     ros::Duration(1.0).sleep();
     if (!waitForForceInteraction())     return false;
     if (!releaseObject())               return false;
-    if (!homePoseStrict())       return false;
+    if (!homePoseStrict())              return false;
 
     return true;
 }
 
 bool ARTagCtrl::handOver()
 {
-    if (getSubState() != ACTION_GET)  return false;
-    if (!prepare4HandOver())          return false;
+    if (getSubState() != ACTION_GET)    return false;
+    if (!prepare4HandOver())            return false;
     ros::Duration(0.2).sleep();
-    if (!waitForOtherArm(30.0, true)) return false;
+    if (!waitForOtherArm(30.0, true))   return false;
     ros::Duration(0.8).sleep();
-    if (!releaseObject())             return false;
-    if (!moveArm("up", 0.05))         return false;
-    if (!homePoseStrict())     return false;
+    if (!releaseObject())               return false;
+    if (!moveArm("up", 0.05))           return false;
+    if (!homePoseStrict())              return false;
     setSubState("");
 
     return true;

@@ -17,18 +17,6 @@ CubePicker::CubePicker(std::string _name, std::string _limb, bool _no_robot) :
 
     printActionDB();
 
-    insertObject(1, "wood very bottom");
-    insertObject(2, "wood bottom");
-    insertObject(3, "wood top");
-    insertObject(4, "white very bottom");
-    insertObject(5, "white bottom");
-    insertObject(6, "white top");
-    insertObject(7, "blue very bottom");
-    insertObject(8, "blue bottom");
-    insertObject(9, "blue top");
-
-    printObjectDB();
-
     if (_no_robot) return;
 
     if (!callAction(ACTION_HOME)) setState(ERROR);

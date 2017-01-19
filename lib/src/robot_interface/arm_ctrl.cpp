@@ -32,6 +32,18 @@ ArmCtrl::ArmCtrl(string _name, string _limb, bool _no_robot, bool _use_forces, b
     _n.param<bool>("internal_recovery",  internal_recovery, true);
     ROS_INFO("[%s] Internal_recovery flag set to %s", getLimb().c_str(),
                                 internal_recovery==true?"true":"false");
+
+    XmlRpc::XmlRpcValue objects_db;
+    if(!_n.getParam("objects_"+getLimb(), objects_db))
+    {
+        ROS_INFO("No objects' database found in the parameter server. "
+                 "Looked up param is %s", ("objects_"+getLimb()).c_str());
+    }
+    else
+    {
+        insertObjects(objects_db);
+        printObjectDB();
+    }
 }
 
 void ArmCtrl::InternalThreadEntry()
@@ -160,6 +172,21 @@ bool ArmCtrl::insertObject(int id, const std::string &n)
     return true;
 }
 
+bool ArmCtrl::insertObjects(XmlRpc::XmlRpcValue _params)
+{
+    ROS_ASSERT(_params.getType()==XmlRpc::XmlRpcValue::TypeStruct);
+
+    bool res = true;
+
+    for (XmlRpc::XmlRpcValue::iterator i=_params.begin(); i!=_params.end(); ++i)
+    {
+        ROS_ASSERT(i->second.getType()==XmlRpc::XmlRpcValue::TypeInt);
+        res = res && insertObject(static_cast<int>(i->second), i->first.c_str());
+    }
+
+    return res;
+}
+
 bool ArmCtrl::removeObject(int id)
 {
     if (isObjectInDB(id))
@@ -206,7 +233,7 @@ string ArmCtrl::objectDBToString()
 
     for ( it = object_db.begin(); it != object_db.end(); it++ )
     {
-        res = res + it->second + ", ";
+        res = res + "[" + intToString(it->first) + "] " + it->second + ", ";
     }
     res = res.substr(0, res.size()-2); // Remove the last ", "
     return res;
