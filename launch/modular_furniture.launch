@@ -21,7 +21,12 @@
 
     <!-- Objects database for the left arm -->
     <rosparam param = "action_provider/objects_left">
-        "table_top"  : 200
+        "table_top"   : 200
+    </rosparam>
+
+    <!-- Objects database for the right arm -->
+    <rosparam param = "action_provider/objects_right">
+        "screwdriver" : 1
     </rosparam>
 
     <!-- Objects database for the right arm -->
