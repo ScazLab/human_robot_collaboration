@@ -43,6 +43,13 @@ string intToString( const int a )
     return ss.str();
 }
 
+string doubleToString( const double a )
+{
+    stringstream ss;
+    ss << a;
+    return ss.str();
+}
+
 double norm(vector<double> const& _v)
 {
     double accum = 0.0;

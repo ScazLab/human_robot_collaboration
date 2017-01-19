@@ -99,6 +99,15 @@ void setOrientation(geometry_msgs::Pose& pose, float x, float y, float z, float 
  */
 std::string intToString( const int a );
 
+/*
+ * converts an double to a string
+ *
+ * @param      double to be converted
+ *
+ * return     converted string
+ */
+std::string doubleToString( const double a );
+
 /**
  * Norm of a vector
  *
