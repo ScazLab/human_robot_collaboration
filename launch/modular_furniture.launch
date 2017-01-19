@@ -19,6 +19,17 @@
         <remap from="hsv_detector/camera_info" to="/cameras/right_hand_camera/camera_info"/>
     </node>
 
+    <!-- Objects database for the left arm -->
+    <rosparam param = "action_provider/objects_left">
+        "table_top"  : 200
+    </rosparam>
+
+    <!-- Objects database for the right arm -->
+    <rosparam param = "hsv_detector/objects_db">
+        [["screwdriver", [0.0525, 0.015], [160,  10], [70, 166], [10,  66]],
+         ["blue_box"   ,  [0.111, 0.052], [ 60, 130], [90, 256], [10, 256]]]
+    </rosparam>
+
     <!-- CONTROL -->
     <node pkg="baxter_collaboration" type="modular_action_provider" name="modular_action_provider" output="screen">
     </node>

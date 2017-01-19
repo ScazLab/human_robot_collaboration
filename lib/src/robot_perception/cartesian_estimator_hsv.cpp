@@ -98,6 +98,18 @@ bool SegmentedObjHSV::detectObject(const cv::Mat& _in, cv::Mat& _out, cv::Mat& _
     return true;
 }
 
+string SegmentedObjHSV::toString()
+{
+    return std::string(getName() + " [" + doubleToString(  size[0]) + " "
+                                        + doubleToString(  size[1]) + "],"
+                                   " [" + doubleToString(col.H.min) + " "
+                                        + doubleToString(col.H.max) + "],"
+                                   " [" + doubleToString(col.S.min) + " "
+                                        + doubleToString(col.S.max) + "],"
+                                   " [" + doubleToString(col.V.min) + " "
+                                        + doubleToString(col.V.max) + "]");
+}
+
 SegmentedObjHSV::~SegmentedObjHSV()
 {
 
@@ -106,14 +118,19 @@ SegmentedObjHSV::~SegmentedObjHSV()
 /************************************************************************************/
 /*                             CARTESIAN ESTIMATOR HSV                              */
 /************************************************************************************/
-CartesianEstimatorHSV::CartesianEstimatorHSV(string  _name, vector<string> _objs_name,
-                                             cv::Mat _objs_size, vector<hsvColorRange> _objs_col) :
-                                             CartesianEstimator(_name)
+CartesianEstimatorHSV::CartesianEstimatorHSV(string  _name) : CartesianEstimator(_name)
 {
-    ROS_ASSERT_MSG(_objs_size.cols == 2, "Objects' sizes should have two columns. "
-                   "%i found instead", _objs_size.cols);
-
-    objsFromMat(_objs_name, _objs_size, _objs_col);
+    XmlRpc::XmlRpcValue objects_db;
+    if(!_n.getParam("/"+getName()+"/objects_db", objects_db))
+    {
+        ROS_INFO("No objects' database found in the parameter server. "
+                 "Looked up param is %s", ("/"+getName()+"/objects_db").c_str());
+    }
+    else
+    {
+        addObjects(objects_db);
+        printObjectDB();
+    }
 }
 
 bool CartesianEstimatorHSV::addObject(string _name, double _h, double _w, hsvColorRange _hsv)
@@ -137,8 +154,8 @@ bool CartesianEstimatorHSV::addObject(string _name, double _h, double _w, hsvCol
     return true;
 }
 
-bool CartesianEstimatorHSV::objsFromMat(vector<string> _names, cv::Mat _o,
-                                        vector<hsvColorRange> _hsvs)
+bool CartesianEstimatorHSV::addObjects(vector<string> _names, cv::Mat _o,
+                                       vector<hsvColorRange> _hsvs)
 {
     if (_o.rows != int(_hsvs.size()))
     {
@@ -153,6 +170,44 @@ bool CartesianEstimatorHSV::objsFromMat(vector<string> _names, cv::Mat _o,
     for (int i = 0; i < _o.rows; ++i)
     {
         res = res && addObject(_names[i], _o.at<float>(i, 0), _o.at<float>(i, 1), _hsvs[i]);
+    }
+
+    return res;
+}
+
+bool CartesianEstimatorHSV::addObjects(XmlRpc::XmlRpcValue _params)
+{
+    ROS_ASSERT(_params.getType()==XmlRpc::XmlRpcValue::TypeArray);
+    ROS_ASSERT(_params.size()>=0);
+    // printf("_params.size() %i\n", _params.size());
+
+    bool res = true;
+
+    for (int i = 0; i < _params.size(); ++i)
+    {
+        ROS_ASSERT(_params[i].getType()==XmlRpc::XmlRpcValue::TypeArray);
+
+        ROS_ASSERT(_params[i].size()>=4);
+        // printf("_params[%i].size() %i\n", i, _params[i].size());
+
+        ROS_ASSERT(_params[i][0].getType()==XmlRpc::XmlRpcValue::TypeString);
+        ROS_ASSERT(_params[i][1].getType()==XmlRpc::XmlRpcValue::TypeArray);
+        ROS_ASSERT(_params[i][1][0].getType()==XmlRpc::XmlRpcValue::TypeDouble);
+        ROS_ASSERT(_params[i][1][1].getType()==XmlRpc::XmlRpcValue::TypeDouble);
+        ROS_ASSERT(_params[i][2].getType()==XmlRpc::XmlRpcValue::TypeArray);
+        ROS_ASSERT(_params[i][2][0].getType()==XmlRpc::XmlRpcValue::TypeInt);
+        ROS_ASSERT(_params[i][2][1].getType()==XmlRpc::XmlRpcValue::TypeInt);
+        ROS_ASSERT(_params[i][3].getType()==XmlRpc::XmlRpcValue::TypeArray);
+        ROS_ASSERT(_params[i][3][0].getType()==XmlRpc::XmlRpcValue::TypeInt);
+        ROS_ASSERT(_params[i][3][1].getType()==XmlRpc::XmlRpcValue::TypeInt);
+        ROS_ASSERT(_params[i][4].getType()==XmlRpc::XmlRpcValue::TypeArray);
+        ROS_ASSERT(_params[i][4][0].getType()==XmlRpc::XmlRpcValue::TypeInt);
+        ROS_ASSERT(_params[i][4][1].getType()==XmlRpc::XmlRpcValue::TypeInt);
+
+        res = res && addObject(static_cast<string>(_params[i][0]),
+                               static_cast<double>(_params[i][1][0]),
+                               static_cast<double>(_params[i][1][1]),
+                               hsvColorRange(_params[i][2], _params[i][3], _params[i][4]));
     }
 
     return res;

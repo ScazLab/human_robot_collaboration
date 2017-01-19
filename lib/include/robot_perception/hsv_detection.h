@@ -17,6 +17,13 @@ struct colorRange
     colorRange(const colorRange &_cr): min(_cr.min), max(_cr.max) {};
 
     /**
+     * Reads the colorRange values as an XmlRpcValue::TypeArray from the parameter server.
+     *
+     * @param  _cR the TypeArray read from the parameter server.
+     */
+    colorRange(XmlRpc::XmlRpcValue _cR);
+
+    /**
     * Copy Operator
     **/
     colorRange &operator=(const colorRange &);
@@ -28,10 +35,34 @@ struct hsvColorRange
     colorRange S;
     colorRange V;
 
+    /* CONSTRUCTORS */
     hsvColorRange(): H(0,180), S(0,256), V(0,256) {};
     hsvColorRange(const colorRange &_H, const colorRange &_S,
-                 const colorRange &_V) : H(_H), S(_S), V(_V) {};
-    hsvColorRange(XmlRpc::XmlRpcValue);
+                  const colorRange &_V) : H(_H), S(_S), V(_V) {};
+
+    /**
+     * Reads the HSV values as an XmlRpcValue::TypeArray from the parameter server.
+     *
+     * @param  _H the H TypeArray read from the parameter server.
+     * @param  _S the S TypeArray read from the parameter server.
+     * @param  _V the V TypeArray read from the parameter server.
+     */
+    hsvColorRange(XmlRpc::XmlRpcValue _H, XmlRpc::XmlRpcValue _S, XmlRpc::XmlRpcValue _V);
+
+    /**
+     * Reads the HSV values as an XmlRpcValue::TypeStruct from the parameter server.
+     * It is encoded as an entire namespace of parameters using a YAML dictionary.
+     * This is a valid parameter to set in your launch file:
+     *
+     * <rosparam param = "ttt_controller/hsv_red">
+     *   H: [160,  20]
+     *   S: [ 40, 196]
+     *   V: [ 50, 196]
+     * </rosparam>
+     *
+     * @param  _param the XmlRpcValue read from the parameter server.
+     */
+    hsvColorRange(XmlRpc::XmlRpcValue _params);
 
     cv::Scalar get_hsv_min() { return cv::Scalar(H.min, S.min, V.min); };
     cv::Scalar get_hsv_max() { return cv::Scalar(H.max, S.max, V.max); };

@@ -26,7 +26,7 @@ class SegmentedObj
 {
 private:
     // Name of the object (for future reference)
-    std::string         name;
+    std::string name;
 
     // Flag to know if the object is there or not
     bool is_there;
@@ -79,6 +79,12 @@ public:
      * @return true/false if success/failure
      */
     virtual bool detectObject(const cv::Mat& _in, cv::Mat& _out, cv::Mat& _out_thres);
+
+    /**
+     * Converts the segmented object to a string.
+     * @return the segmented object as a string
+     */
+    virtual std::string toString();
 
     /* GETTERS */
     bool isThere() { return is_there; };
@@ -183,12 +189,40 @@ protected:
      * @param _o the database of objects
      * @return true/false if success/failure
      */
-    bool objsFromMat(std::vector<std::string> _names, cv::Mat _o);
+    bool addObjects(std::vector<std::string> _names, cv::Mat _o);
+
+    /**
+     * Creates the objects database from an XmlRpcValue::TypeStruct in the parameter server.
+     * It is encoded as an entire namespace of parameters using a YAML dictionary.
+     * The format is an array of arrays composed of a string (the name of the obejct),
+     * and the width and heigth of the object as another array.
+     * This is a valid parameter to set in your launch file:
+     *
+     * <rosparam param = "cartesian_estimator/objects">
+     *    [["screwdriver", [0.0525, 0.015]],
+     *     ["blue_box"   ,  [0.111, 0.052]]]
+     * </rosparam>
+     *
+     * @param  _param the XmlRpcValue read from the parameter server.
+     * @return        true/false if the insertion was successful or not
+     */
+    bool addObjects(XmlRpc::XmlRpcValue _params);
 
     /**
      * Detects the object in the image
      */
     bool detectObjects(const cv::Mat& _in, cv::Mat& _out);
+
+    /**
+     * Prints the object database to screen.
+     */
+    void printObjectDB();
+
+    /**
+     * Converts the action database to a string.
+     * @return the list of allowed actions, separated by a comma.
+     */
+    std::string objectDBToString();
 
     /**
      * Calculates the cartesian pose of the segmented object in the camera frame

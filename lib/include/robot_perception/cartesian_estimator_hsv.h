@@ -38,6 +38,12 @@ public:
      * @return true/false if success/failure
      */
     bool detectObject(const cv::Mat& _in, cv::Mat& _out, cv::Mat& _out_thres);
+
+    /**
+     * Converts the segmented object to a string.
+     * @return the segmented object as a string
+     */
+    std::string toString();
 };
 
 /**
@@ -64,8 +70,25 @@ protected:
      * @param _o the database of objects
      * @return true/false if success/failure
      */
-    bool objsFromMat(std::vector<std::string> _names, cv::Mat _o,
-                     std::vector<hsvColorRange> _hsvs);
+    bool addObjects(std::vector<std::string> _names, cv::Mat _o,
+                    std::vector<hsvColorRange> _hsvs);
+
+    /**
+     * Creates the objects database from an XmlRpcValue::TypeStruct in the parameter server.
+     * It is encoded as an entire namespace of parameters using a YAML dictionary.
+     * The format is an array of arrays composed of a string (the name of the obejct),
+     * and the width and heigth of the object, H, S, V as other nested arrays.
+     * This is a valid parameter to set in your launch file:
+     *
+     * <rosparam param = "cartesian_estimator/objects">
+     *    [["screwdriver", [0.0525, 0.015], [160,  10], [70, 166], [10,  66]],
+     *     ["blue_box"   ,  [0.111, 0.052], [ 60, 130], [90, 256], [10, 256]]]
+     * </rosparam>
+     *
+     * @param  _param the XmlRpcValue read from the parameter server.
+     * @return        true/false if the insertion was successful or not
+     */
+    bool addObjects(XmlRpc::XmlRpcValue _params);
 
     /**
      * Detects the object in the image
@@ -75,8 +98,7 @@ protected:
 
 public:
     /* CONSTRUCTORS */
-    CartesianEstimatorHSV(std::string  _name, std::vector<std::string> _objs_name,
-                          cv::Mat _objs_size, std::vector<hsvColorRange> _objs_col);
+    CartesianEstimatorHSV(std::string  _name);
 };
 
 #endif

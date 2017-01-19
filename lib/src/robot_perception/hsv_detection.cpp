@@ -38,6 +38,12 @@ cv::Mat hsvThreshold(const cv::Mat& _src, hsvColorRange _hsv)
 /**                        COLOR_RANGE                                   **/
 /**************************************************************************/
 
+colorRange::colorRange(XmlRpc::XmlRpcValue _cR)
+{
+    min = static_cast<int>(_cR[0]);
+    max = static_cast<int>(_cR[1]);
+}
+
 colorRange & colorRange::operator=(const colorRange &_cr)
 {
     min=_cr.min;
@@ -48,6 +54,14 @@ colorRange & colorRange::operator=(const colorRange &_cr)
 /**************************************************************************/
 /**                         HSV_COLOR                                    **/
 /**************************************************************************/
+
+hsvColorRange::hsvColorRange(XmlRpc::XmlRpcValue _H,
+                             XmlRpc::XmlRpcValue _S, XmlRpc::XmlRpcValue _V)
+{
+    H = colorRange(_H);
+    S = colorRange(_S);
+    V = colorRange(_V);
+}
 
 hsvColorRange::hsvColorRange(XmlRpc::XmlRpcValue _params)
 {
@@ -60,10 +74,11 @@ hsvColorRange::hsvColorRange(XmlRpc::XmlRpcValue _params)
         {
             ROS_ASSERT(i->second[j].getType()==XmlRpc::XmlRpcValue::TypeInt);
         }
-        // printf("%s %i %i\n", i->first.c_str(), static_cast<int>(i->second[0]), static_cast<int>(i->second[1]));
-        if (i->first == "H") H=colorRange(static_cast<int>(i->second[0]),static_cast<int>(i->second[1]));
-        if (i->first == "S") S=colorRange(static_cast<int>(i->second[0]),static_cast<int>(i->second[1]));
-        if (i->first == "V") V=colorRange(static_cast<int>(i->second[0]),static_cast<int>(i->second[1]));
+        // printf("%s %i %i\n", i->first.c_str(), static_cast<int>(i->second[0]),
+        //                                        static_cast<int>(i->second[1]));
+        if (i->first == "H") H = colorRange(i->second);
+        if (i->first == "S") S = colorRange(i->second);
+        if (i->first == "V") V = colorRange(i->second);
     }
 }
 

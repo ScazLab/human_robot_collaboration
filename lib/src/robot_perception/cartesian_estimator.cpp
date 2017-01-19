@@ -40,6 +40,12 @@ bool SegmentedObj::detectObject(const cv::Mat& _in, cv::Mat& _out, cv::Mat& _out
     return false;
 }
 
+string SegmentedObj::toString()
+{
+    return std::string(name + " [" + doubleToString(size[0]) + " "
+                                   + doubleToString(size[1]) + "]");
+}
+
 SegmentedObj::~SegmentedObj()
 {
 
@@ -59,7 +65,7 @@ CartesianEstimator::CartesianEstimator(string _name, vector<string> _objs_name,
     ROS_ASSERT_MSG(_objs_size.cols == 2, "Objects' sizes should have two columns. "
                    "%i found instead", _objs_size.cols);
 
-    objsFromMat(_objs_name, _objs_size);
+    addObjects(_objs_name, _objs_size);
 
     init();
 }
@@ -175,7 +181,7 @@ bool CartesianEstimator::addObject(std::string _name, double _h, double _w)
     return true;
 }
 
-bool CartesianEstimator::objsFromMat(std::vector<std::string> _names, cv::Mat _o)
+bool CartesianEstimator::addObjects(std::vector<std::string> _names, cv::Mat _o)
 {
     clearObjs();
 
@@ -184,6 +190,34 @@ bool CartesianEstimator::objsFromMat(std::vector<std::string> _names, cv::Mat _o
     for (int i = 0; i < _o.rows; ++i)
     {
         res = res && addObject(_names[i], _o.at<float>(i, 0), _o.at<float>(i, 1));
+    }
+
+    return res;
+}
+
+bool CartesianEstimator::addObjects(XmlRpc::XmlRpcValue _params)
+{
+    ROS_ASSERT(_params.getType()==XmlRpc::XmlRpcValue::TypeArray);
+    ROS_ASSERT(_params.size()>=0);
+    // printf("_params.size() %i\n", _params.size());
+
+    bool res = true;
+
+    for (int i = 0; i < _params.size(); ++i)
+    {
+        ROS_ASSERT(_params[i].getType()==XmlRpc::XmlRpcValue::TypeArray);
+
+        ROS_ASSERT(_params[i].size()>=2);
+        // printf("_params[%i].size() %i\n", i, _params[i].size());
+
+        ROS_ASSERT(_params[i][0].getType()==XmlRpc::XmlRpcValue::TypeString);
+        ROS_ASSERT(_params[i][1].getType()==XmlRpc::XmlRpcValue::TypeArray);
+        ROS_ASSERT(_params[i][1][0].getType()==XmlRpc::XmlRpcValue::TypeDouble);
+        ROS_ASSERT(_params[i][1][1].getType()==XmlRpc::XmlRpcValue::TypeDouble);
+
+        res = res && addObject(static_cast<string>(_params[i][0]),
+                               static_cast<double>(_params[i][1][0]),
+                               static_cast<double>(_params[i][1][1]));
     }
 
     return res;
@@ -206,6 +240,29 @@ bool CartesianEstimator::detectObjects(const cv::Mat& _in, cv::Mat& _out)
                                           "mono8", out_thres).toImageMsg();
         img_pub_thres.publish(msg);
     }
+
+    return res;
+}
+
+
+void CartesianEstimator::printObjectDB()
+{
+    ROS_INFO("Available objects in the database : %s", objectDBToString().c_str());
+    return;
+}
+
+string CartesianEstimator::objectDBToString()
+{
+    string res = "";
+
+    for (size_t i = 0; i < objs.size(); ++i)
+    {
+        if (objs[i])
+        {
+            res = res + objs[i]->toString() + ", ";
+        }
+    }
+    res = res.substr(0, res.size()-2); // Remove the last ", "
 
     return res;
 }
