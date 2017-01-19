@@ -183,6 +183,7 @@ target_link_libraries(hsv_detector              robot_perception
                                                 ${catkin_LIBRARIES} )
 target_link_libraries(modular_action_provider   robot_interface
                                                 robot_perception
+                                                flatpack_furniture
                                                 ${catkin_LIBRARIES} )
 target_link_libraries(baxter_display            robot_interface
                                                 ${OpenCV_LIBS}

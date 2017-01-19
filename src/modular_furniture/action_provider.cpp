@@ -2,6 +2,7 @@
 
 #include <ros/ros.h>
 #include "tool_picker.h"
+#include "flatpack_furniture/artag_ctrl.h"
 
 using namespace std;
 
@@ -18,7 +19,7 @@ int main(int argc, char ** argv)
     printf("\n");
     ToolPicker  right_ctrl("action_provider","right", !use_robot);
     printf("\n");
-    // HoldCtrl  right_ctrl("action_provider","right", !use_robot);
+    ARTagCtrl left_ctrl("action_provider","left", !use_robot);
     printf("\n");
     ROS_INFO("READY! Waiting for service messages..\n");
 
