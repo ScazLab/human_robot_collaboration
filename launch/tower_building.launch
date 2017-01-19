@@ -27,6 +27,19 @@
     <param name="action_provider/use_robot"             value="$(arg useRobot)"/>
     <param name="baxter_display/speech_duration"        value="$(arg speechPopUpDuration)"/>
 
+    <!-- Objects database for the left arm -->
+    <rosparam param = "action_provider/objects_left">
+        "wood very bottom"  : 1
+        "wood bottom"       : 2
+        "wood top"          : 3
+        "white very bottom" : 4
+        "white bottom"      : 5
+        "white top"         : 6
+        "blue very bottom"  : 7
+        "blue bottom"       : 8
+        "blue top"          : 9
+    </rosparam>
+
     <node pkg="baxter_collaboration" type="baxter_display"  name="baxter_display"  output="screen"/>
     <node pkg="baxter_collaboration" type="tower_action_provider" name="tower_action_provider" output="screen"/>
 

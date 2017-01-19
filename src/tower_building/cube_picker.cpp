@@ -17,17 +17,17 @@ CubePicker::CubePicker(std::string _name, std::string _limb, bool _no_robot) :
 
     printActionDB();
 
-    insertObject(1, "wood very bottom");
-    insertObject(2, "wood bottom");
-    insertObject(3, "wood top");
-    insertObject(4, "white very bottom");
-    insertObject(5, "white bottom");
-    insertObject(6, "white top");
-    insertObject(7, "blue very bottom");
-    insertObject(8, "blue bottom");
-    insertObject(9, "blue top");
-
-    printObjectDB();
+    XmlRpc::XmlRpcValue objects_db;
+    if(!_n.getParam("objects_"+getLimb(), objects_db))
+    {
+        ROS_INFO("No objects' database found in the parameter server. "
+                 "Looked up param is %s", ("objects_"+getLimb()).c_str());
+    }
+    else
+    {
+        insertObjects(objects_db);
+        printObjectDB();
+    }
 
     if (_no_robot) return;
 

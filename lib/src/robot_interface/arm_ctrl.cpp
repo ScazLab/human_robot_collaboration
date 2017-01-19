@@ -160,6 +160,21 @@ bool ArmCtrl::insertObject(int id, const std::string &n)
     return true;
 }
 
+bool ArmCtrl::insertObjects(XmlRpc::XmlRpcValue _params)
+{
+    ROS_ASSERT(_params.getType()==XmlRpc::XmlRpcValue::TypeStruct);
+
+    bool res = true;
+
+    for (XmlRpc::XmlRpcValue::iterator i=_params.begin(); i!=_params.end(); ++i)
+    {
+        ROS_ASSERT(i->second.getType()==XmlRpc::XmlRpcValue::TypeInt);
+        res = res && insertObject(static_cast<int>(i->second), i->first.c_str());
+    }
+
+    return res;
+}
+
 bool ArmCtrl::removeObject(int id)
 {
     if (isObjectInDB(id))
@@ -206,7 +221,7 @@ string ArmCtrl::objectDBToString()
 
     for ( it = object_db.begin(); it != object_db.end(); it++ )
     {
-        res = res + it->second + ", ";
+        res = res + "[" + intToString(it->first) + "] " + it->second + ", ";
     }
     res = res.substr(0, res.size()-2); // Remove the last ", "
     return res;
