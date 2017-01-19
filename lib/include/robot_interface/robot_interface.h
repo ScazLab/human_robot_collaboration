@@ -73,6 +73,10 @@ private:
     ros::Subscriber            _endpt_sub;
     std::vector<double>       _filt_force;
     double                    force_thres;
+    std::vector<double>      _filt_change; // rate of change of filter
+    ros::Time     _time_filt_last_updated; // time of last update to filter
+    double                rel_force_thres; // relative threshold for force interaction
+    double                  filt_variance; // variance threshold for force filter
 
     geometry_msgs::Point        _curr_pos;
     geometry_msgs::Quaternion   _curr_ori;
@@ -472,7 +476,15 @@ protected:
                           baxter_core_msgs::JointCommand& joint_cmd);
 
     /*
-     * Detects if the force overcame a set threshold in either one of its three axis
+     * Finds the relative difference of a to b (used in force filter calculations)
+     * @param  a  first value
+     * @param  b  value to which first value is compared relatively
+     * @return value of the relative difference
+     */
+    double findRelativeDifference(double a, double b);
+
+    /*
+     * Detects if the force overcame a relative threshold in either one of its three axis
      *
      * @return true/false if the force overcame the threshold
      */
@@ -487,7 +499,7 @@ protected:
     bool waitForForceInteraction(double _wait_time = 20.0, bool disable_coll_av = false);
 
     /*
-     * Filters the forces with a very simple low pass filter
+     * Filters the forces using a low pass filter and testing against predicted trends in filter values
      */
     void filterForces();
 

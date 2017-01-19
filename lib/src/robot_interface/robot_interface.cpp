@@ -65,15 +65,27 @@ RobotInterface::RobotInterface(string name, string limb, bool no_robot, bool use
     _filt_force.push_back(0.0);
     _filt_force.push_back(0.0);
 
+    _time_filt_last_updated = ros::Time::now();
+    _filt_change.push_back(0.0);
+    _filt_change.push_back(0.0);
+    _filt_change.push_back(0.0);
+
     if (getLimb()=="left")
     {
         _n.param<double>("force_threshold_left",  force_thres, FORCE_THRES_L);
+        _n.param<double>("force_filter_variance_left", filt_variance, FORCE_FILT_VAR_L);
+        _n.param<double>("relative_force_threshold_left", rel_force_thres, REL_FORCE_THRES_L);
     }
     else if (getLimb()=="right")
     {
         _n.param<double>("force_threshold_right", force_thres, FORCE_THRES_R);
+        _n.param<double>("force_filter_variance_right", filt_variance, FORCE_FILT_VAR_R);
+        _n.param<double>("relative_force_threshold_right", rel_force_thres, REL_FORCE_THRES_R);
     }
+
     ROS_INFO("[%s] Force Threshold : %g", getLimb().c_str(), force_thres);
+    ROS_INFO("[%s] Force Filter Variance: %g", getLimb().c_str(), filt_variance);
+    ROS_INFO("[%s] Relative Force Threshold: %g", getLimb().c_str(), rel_force_thres);
 
     ROS_INFO("[%s] Cartesian Controller %s enabled", getLimb().c_str(), _use_cart_ctrl?"is":"is NOT");
 
@@ -366,11 +378,45 @@ void RobotInterface::IRCb(const sensor_msgs::RangeConstPtr& msg)
 
 void RobotInterface::filterForces()
 {
-    _filt_force[0] = (1 - FORCE_ALPHA) * _filt_force[0] + FORCE_ALPHA * _curr_wrench.force.x;
-    _filt_force[1] = (1 - FORCE_ALPHA) * _filt_force[1] + FORCE_ALPHA * _curr_wrench.force.y;
-    _filt_force[2] = (1 - FORCE_ALPHA) * _filt_force[2] + FORCE_ALPHA * _curr_wrench.force.z;
+    double time_elap = ros::Time::now().toSec() - _time_filt_last_updated.toSec();
 
-    return;
+    std::vector<double> new_filt;
+    std::vector<double> predicted_filt;
+
+    // initial attempt to update filter using a running average of the forces on the arm (exponential moving average)
+    new_filt.push_back((1 - FORCE_ALPHA) * _filt_force[0] + FORCE_ALPHA * _curr_wrench.force.x);
+    new_filt.push_back((1 - FORCE_ALPHA) * _filt_force[1] + FORCE_ALPHA * _curr_wrench.force.y);
+    new_filt.push_back((1 - FORCE_ALPHA) * _filt_force[2] + FORCE_ALPHA * _curr_wrench.force.z);
+
+    for (int i = 0; i < 3; ++i)
+    {
+        // extrapolate a predicted new filter value using the previous rate of change of the filter value:
+        // new value = old value + rate of change * elapsed time
+        predicted_filt.push_back(_filt_force[i] + (_filt_change[i] * time_elap));
+
+        // update the rate of change of the filter using the new value from the initial attempt above
+        _filt_change[i] = (new_filt[i] - _filt_force[i])/time_elap;
+
+        // if the predicted filter value is very small or 0, this is most likely the first time the filter is updated
+        // (the filter values and rate of change start at 0), so set the filter to the new value from the initial attempt above
+        if (predicted_filt[i] < FILTER_EPSILON)
+        {
+            _filt_force[i] = new_filt[i];
+        }
+        else
+        {
+            // compare the initial attempt to the predicted filter value
+            // if the relative difference is within a threshold defined in utils.h, update the filter to the new value from the initial attempt
+            // otherwise, the filter is not changed; this keeps the filter from changing wildly while maintaining trends in the data
+            if (abs((new_filt[i] - predicted_filt[i])/predicted_filt[i]) < filt_variance)
+            {
+                _filt_force[i] = new_filt[i];
+            }
+        }
+    }
+
+    _time_filt_last_updated = ros::Time::now();
+
 }
 
 bool RobotInterface::goToPoseNoCheck(geometry_msgs::Pose p)
@@ -710,17 +756,25 @@ void RobotInterface::setJointCommands(double s0, double s1, double e0, double e1
     joint_cmd.command.push_back(w2);
 }
 
+double RobotInterface::findRelativeDifference(double a, double b)
+{
+    // returns the relative difference of a to b
+    // 0.01 is added to b in case it is very small (this will not affect large values of b)
+    return abs((a - b)/abs(b + 0.01));
+}
+
 bool RobotInterface::detectForceInteraction()
 {
-    double f_x = abs(_curr_wrench.force.x - _filt_force[0]);
-    double f_y = abs(_curr_wrench.force.y - _filt_force[1]);
-    double f_z = abs(_curr_wrench.force.z - _filt_force[2]);
+    // ROS_INFO("Filt Forces: %g, %g, %g", _filt_force[0], _filt_force[1], _filt_force[2]);
 
-    ROS_DEBUG("Interaction: %g %g %g", f_x, f_y, f_z);
+    // compare the current force to the filter force. if the relative difference is above a
+    // threshold defined in utils.h, return true
 
-    if (f_x > force_thres || f_y > force_thres || f_z > force_thres)
+    if (findRelativeDifference(_curr_wrench.force.x, _filt_force[0]) > rel_force_thres ||
+        findRelativeDifference(_curr_wrench.force.y, _filt_force[1]) > rel_force_thres ||
+        findRelativeDifference(_curr_wrench.force.z, _filt_force[2]) > rel_force_thres)
     {
-        ROS_INFO("[%s] Interaction: %g %g %g", getLimb().c_str(), f_x, f_y, f_z);
+        ROS_INFO("Interaction: %g %g %g", _curr_wrench.force.x, _curr_wrench.force.y, _curr_wrench.force.z);
         return true;
     }
     else
