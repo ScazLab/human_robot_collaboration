@@ -1,7 +1,8 @@
 # Baxter Collaboration [![Build Status](https://img.shields.io/travis/ScazLab/baxter_collaboration/master.svg?label=Build Status)](https://travis-ci.org/ScazLab/baxter_collaboration) [![Issues](https://img.shields.io/github/issues/ScazLab/baxter_collaboration.svg?label=Issues)](https://github.com/ScazLab/baxter_collaboration/issues)
 
+Yet another repository for the Baxter collaboration task.
 
-Yet another repository for the Baxter collaboration task
+![setup](https://cloud.githubusercontent.com/assets/4378663/22127940/39931bb2-de6c-11e6-864e-8c9a3da48673.jpg)
 
 ## Prerequisites
 
