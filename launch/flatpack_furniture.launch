@@ -29,10 +29,10 @@
 
     <!-- Objects database for the left arm -->
     <rosparam param = "action_provider/objects_left">
-        "left leg":      17
+        "left_leg":      17
         "top":           21
-        "central frame": 24
-        "right leg":     26
+        "central_frame": 24
+        "right_leg":     26
     </rosparam>
 
     <node pkg="baxter_collaboration" type="baxter_display"  name="baxter_display"  output="screen"/>
