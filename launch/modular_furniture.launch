@@ -37,6 +37,11 @@
     </rosparam>
 
     <!-- CONTROL -->
+    <!-- If the system should use the robot or not (useful for debugging) -->
+    <arg name="useRobot"            default="true"/>
+
+    <param name="action_provider/use_robot"             value="$(arg useRobot)"/>
+
     <node pkg="baxter_collaboration" type="modular_action_provider" name="modular_action_provider" output="screen">
     </node>
 </launch>
