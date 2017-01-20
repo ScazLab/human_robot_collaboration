@@ -22,6 +22,10 @@
     <!-- Objects database for the left arm -->
     <rosparam param = "action_provider/objects_left">
         "table_top"   : 200
+        "leg_1"       : 150
+        "leg_2"       : 151
+        "leg_3"       : 152
+        "leg_4"       : 153
     </rosparam>
 
     <!-- Objects database for the right arm -->
