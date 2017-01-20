@@ -108,14 +108,16 @@ bool CartesianEstimator::publishObjects()
     objects_msg.header.stamp = curr_stamp;
     objects_msg.header.seq++;
 
-    for(size_t i = 0; i < objects_msg.objects.size(); ++i)
+    int cnt = 0;
+    for(size_t i = 0; i < objs.size(); ++i)
     {
         if (objs[i]->isThere())
         {
-            baxter_collaboration::Object & object_i = objects_msg.objects.at(i);
-            object_i.pose = objs[i]->pose;
-            object_i.id   = i;
-            object_i.name = objs[i]->getName();
+            baxter_collaboration::Object &object_cnt = objects_msg.objects.at(cnt);
+            object_cnt.pose = objs[i]->pose;
+            object_cnt.id   = i;
+            object_cnt.name = objs[i]->getName();
+            ++cnt;
         }
     }
 
@@ -132,7 +134,7 @@ void CartesianEstimator::InternalThreadEntry()
 
     while(ros::ok())
     {
-        ROS_INFO_THROTTLE(10, "I'm running, and everything is fine..."
+        ROS_INFO_THROTTLE(30, "I'm running, and everything is fine..."
                               " Number of objects: %i", getNumValidObjects());
         cv::Mat img_in;
         cv::Mat img_out;
