@@ -26,6 +26,8 @@ bool SegmentedObjHSV::detectObject(const cv::Mat& _in, cv::Mat& _out)
 
 bool SegmentedObjHSV::detectObject(const cv::Mat& _in, cv::Mat& _out, cv::Mat& _out_thres)
 {
+    // ROS_INFO("Detecting object: %s", toString().c_str());
+
     cv::Mat img_hsv;
     cv::cvtColor(_in, img_hsv, CV_BGR2HSV); //Convert the captured frame from BGR to HSV
 
@@ -169,7 +171,7 @@ bool CartesianEstimatorHSV::addObjects(vector<string> _names, cv::Mat _o,
 
     for (int i = 0; i < _o.rows; ++i)
     {
-        res = res && addObject(_names[i], _o.at<float>(i, 0), _o.at<float>(i, 1), _hsvs[i]);
+        res = res & addObject(_names[i], _o.at<float>(i, 0), _o.at<float>(i, 1), _hsvs[i]);
     }
 
     return res;
@@ -204,10 +206,10 @@ bool CartesianEstimatorHSV::addObjects(XmlRpc::XmlRpcValue _params)
         ROS_ASSERT(_params[i][4][0].getType()==XmlRpc::XmlRpcValue::TypeInt);
         ROS_ASSERT(_params[i][4][1].getType()==XmlRpc::XmlRpcValue::TypeInt);
 
-        res = res && addObject(static_cast<string>(_params[i][0]),
-                               static_cast<double>(_params[i][1][0]),
-                               static_cast<double>(_params[i][1][1]),
-                               hsvColorRange(_params[i][2], _params[i][3], _params[i][4]));
+        res = res & addObject(static_cast<string>(_params[i][0]),
+                              static_cast<double>(_params[i][1][0]),
+                              static_cast<double>(_params[i][1][1]),
+                              hsvColorRange(_params[i][2], _params[i][3], _params[i][4]));
     }
 
     return res;

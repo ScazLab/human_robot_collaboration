@@ -169,7 +169,7 @@ bool ArmCtrl::insertObjects(XmlRpc::XmlRpcValue _params)
     for (XmlRpc::XmlRpcValue::iterator i=_params.begin(); i!=_params.end(); ++i)
     {
         ROS_ASSERT(i->second.getType()==XmlRpc::XmlRpcValue::TypeInt);
-        res = res && insertObject(static_cast<int>(i->second), i->first.c_str());
+        res = res & insertObject(static_cast<int>(i->second), i->first.c_str());
     }
 
     return res;

@@ -189,7 +189,7 @@ bool CartesianEstimator::addObjects(std::vector<std::string> _names, cv::Mat _o)
 
     for (int i = 0; i < _o.rows; ++i)
     {
-        res = res && addObject(_names[i], _o.at<float>(i, 0), _o.at<float>(i, 1));
+        res = res & addObject(_names[i], _o.at<float>(i, 0), _o.at<float>(i, 1));
     }
 
     return res;
@@ -215,9 +215,9 @@ bool CartesianEstimator::addObjects(XmlRpc::XmlRpcValue _params)
         ROS_ASSERT(_params[i][1][0].getType()==XmlRpc::XmlRpcValue::TypeDouble);
         ROS_ASSERT(_params[i][1][1].getType()==XmlRpc::XmlRpcValue::TypeDouble);
 
-        res = res && addObject(static_cast<string>(_params[i][0]),
-                               static_cast<double>(_params[i][1][0]),
-                               static_cast<double>(_params[i][1][1]));
+        res = res & addObject(static_cast<string>(_params[i][0]),
+                              static_cast<double>(_params[i][1][0]),
+                              static_cast<double>(_params[i][1][1]));
     }
 
     return res;
@@ -231,7 +231,7 @@ bool CartesianEstimator::detectObjects(const cv::Mat& _in, cv::Mat& _out)
 
     for (size_t i = 0; i < objs.size(); ++i)
     {
-        res = res && objs[i]->detectObject(_in, _out, out_thres);
+        res = res & objs[i]->detectObject(_in, _out, out_thres);
     }
 
     if (img_pub_thres.getNumSubscribers() > 0)
@@ -275,7 +275,7 @@ bool CartesianEstimator::poseRootRFAll()
     {
         if (objs[i]->isThere())
         {
-            res = res && poseRootRF(i);
+            res = res & poseRootRF(i);
         }
     }
 
@@ -284,9 +284,7 @@ bool CartesianEstimator::poseRootRFAll()
 
 bool CartesianEstimator::poseRootRF(int idx)
 {
-    bool res = true;
-
-    res = res && poseCameraRF(idx);
+    bool res = poseCameraRF(idx);
     res = res && cameraRFtoRootRF(idx);
 
     return res;
@@ -415,7 +413,7 @@ bool CartesianEstimator::draw3dAxisAll(cv::Mat &_img)
     {
         if (objs[i]->isThere())
         {
-            res = res && draw3dAxis(_img, i);
+            res = res & draw3dAxis(_img, i);
         }
     }
 
@@ -425,7 +423,7 @@ bool CartesianEstimator::draw3dAxisAll(cv::Mat &_img)
 bool CartesianEstimator::draw3dAxis(cv::Mat &_img, int idx)
 {
     int fFace  = cv::FONT_HERSHEY_SIMPLEX;
-    float size=0.2;
+    float size=0.15;
 
     cv::Mat objectPoints (4,3,CV_32FC1);
     objectPoints.at<float>(0,0)=0;

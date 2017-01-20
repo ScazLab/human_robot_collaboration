@@ -90,8 +90,7 @@ bool ToolPicker::pickUpObject()
         }
         else if (CartesianEstimatorClient::getObjectName() == "blue_box")
         {
-            offs_x = +0.05;
-            // offs_y =  0.020;
+            offs_x = +0.065;
         }
 
         x = getObjectPos().x + offs_x;
