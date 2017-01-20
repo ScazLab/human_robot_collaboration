@@ -398,6 +398,23 @@ tf::Transform CartesianEstimator::object2Tf(int idx)
     cv::Rodrigues(objs[idx]->Rvec, rot);
     cv::Mat tran = objs[idx]->Tvec;
 
+    // This transforms from the RF of the object to the RF of the end-effector
+    // in order to be able to properly align the end-effector with the object itself
+    cv::Mat rotate_to_ros(3, 3, CV_32FC1);
+    //  0 -1  0
+    // -1  0  0
+    //  0  0 -1
+    rotate_to_ros.at<float>(0,0) =  0.0;
+    rotate_to_ros.at<float>(0,1) = -1.0;
+    rotate_to_ros.at<float>(0,2) =  0.0;
+    rotate_to_ros.at<float>(1,0) = -1.0;
+    rotate_to_ros.at<float>(1,1) =  0.0;
+    rotate_to_ros.at<float>(1,2) =  0.0;
+    rotate_to_ros.at<float>(2,0) =  0.0;
+    rotate_to_ros.at<float>(2,1) =  0.0;
+    rotate_to_ros.at<float>(2,2) = -1.0;
+    rot = rot*rotate_to_ros.t();
+
     tf::Matrix3x3 tf_rot(rot.at<float>(0,0), rot.at<float>(0,1), rot.at<float>(0,2),
                          rot.at<float>(1,0), rot.at<float>(1,1), rot.at<float>(1,2),
                          rot.at<float>(2,0), rot.at<float>(2,1), rot.at<float>(2,2));
