@@ -146,8 +146,8 @@ void CartesianEstimator::InternalThreadEntry()
             img_out = img_in.clone();
 
             detectObjects(img_in, img_out);
-            poseRootRFAll();
-            draw3dAxisAll(img_out);
+            poseRootRF();
+            draw3dAxis(img_out);
 
             if (objs_pub.getNumSubscribers() > 0)    publishObjects();
 
@@ -269,7 +269,7 @@ string CartesianEstimator::objectDBToString()
     return res;
 }
 
-bool CartesianEstimator::poseRootRFAll()
+bool CartesianEstimator::poseRootRF()
 {
     bool res = true;
 
@@ -407,7 +407,7 @@ tf::Transform CartesianEstimator::object2Tf(int idx)
     return tf::Transform(tf_rot, tf_orig);
 }
 
-bool CartesianEstimator::draw3dAxisAll(cv::Mat &_img)
+bool CartesianEstimator::draw3dAxis(cv::Mat &_img)
 {
     bool res = true;
 

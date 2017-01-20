@@ -10,7 +10,7 @@
         <param name="autosize" value="true" />
     </node> -->
 
-    <param name="hsv_detector/reference_frame" value="/torso"/>
+    <param name="hsv_detector/reference_frame" value="/base"/>
     <param name="hsv_detector/camera_frame"    value="/right_hand_camera"/>
     <param name="hsv_detector/area_threshold"  value="250"/>
 
