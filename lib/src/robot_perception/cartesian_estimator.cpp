@@ -320,17 +320,17 @@ bool CartesianEstimator::poseCameraRF(int idx)
     // The convention used is to have 0 in the bottom left,
     // with the others organized in a clockwise manner
     cv::Mat ObjPoints(4,3,CV_32FC1);
-    ObjPoints.at<float>(0,0)=-objs[idx]->size[0];
-    ObjPoints.at<float>(0,1)=-objs[idx]->size[1];
+    ObjPoints.at<float>(0,0)=-objs[idx]->size[0]/2;
+    ObjPoints.at<float>(0,1)=-objs[idx]->size[1]/2;
     ObjPoints.at<float>(0,2)=0;
-    ObjPoints.at<float>(1,0)=-objs[idx]->size[0];
-    ObjPoints.at<float>(1,1)=+objs[idx]->size[1];
+    ObjPoints.at<float>(1,0)=-objs[idx]->size[0]/2;
+    ObjPoints.at<float>(1,1)=+objs[idx]->size[1]/2;
     ObjPoints.at<float>(1,2)=0;
-    ObjPoints.at<float>(2,0)=+objs[idx]->size[0];
-    ObjPoints.at<float>(2,1)=+objs[idx]->size[1];
+    ObjPoints.at<float>(2,0)=+objs[idx]->size[0]/2;
+    ObjPoints.at<float>(2,1)=+objs[idx]->size[1]/2;
     ObjPoints.at<float>(2,2)=0;
-    ObjPoints.at<float>(3,0)=+objs[idx]->size[0];
-    ObjPoints.at<float>(3,1)=-objs[idx]->size[1];
+    ObjPoints.at<float>(3,0)=+objs[idx]->size[0]/2;
+    ObjPoints.at<float>(3,1)=-objs[idx]->size[1]/2;
     ObjPoints.at<float>(3,2)=0;
 
     cv::Mat raux,taux;
