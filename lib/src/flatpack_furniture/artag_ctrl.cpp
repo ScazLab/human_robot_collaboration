@@ -263,6 +263,23 @@ bool ARTagCtrl::pickARTag()
     return false;
 }
 
+int ARTagCtrl::chooseObjectID(std::vector<int> _objs)
+{
+    int res = -1;
+
+    if (!hoverAbovePool())      return res;
+    if (!waitForARucoOK())      return res;
+
+    std::vector<int> av_markers = getAvailableMarkers(_objs);
+
+    if (av_markers.size() == 0) return res;
+
+    std::srand(std::time(0)); //use current time as seed
+    res = av_markers[rand() % av_markers.size()];
+
+    return res;
+}
+
 geometry_msgs::Quaternion ARTagCtrl::computeHOorientation()
 {
     // Get the rotation matrix for the marker, as retrieved from ARuco

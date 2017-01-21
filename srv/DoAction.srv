@@ -1,6 +1,6 @@
 string action
 # id of object (max 255)
-int16 object
+int16[] object
 ---
 bool   success
 string response

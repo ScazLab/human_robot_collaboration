@@ -132,6 +132,31 @@ bool ToolPicker::pickUpObject()
     return false;
 }
 
+int ToolPicker::chooseObjectID(std::vector<int> _objs)
+{
+    int res = -1;
+
+    // if (!hoverAbovePool()) return res;
+    if (!waitForCartEstOK())        return res;
+
+    std::vector<string> objs_str;
+    for (size_t i = 0; i < _objs.size(); ++i)
+    {
+        objs_str.push_back(getObjectNameFromDB(_objs[i]));
+    }
+
+    std::vector<string> av_objects = getAvailableObjects(objs_str);
+
+    if (av_objects.size() == 0)     return res;
+
+    std::srand(std::time(0)); //use current time as seed
+    string res_str = av_objects[rand() % av_objects.size()];
+
+    res = getObjectIDFromDB(res_str);
+
+    return res;
+}
+
 bool ToolPicker::getObject()
 {
     if (!homePoseStrict())          return false;
@@ -182,7 +207,7 @@ void ToolPicker::setHomeConfiguration()
 void ToolPicker::setObjectID(int _obj)
 {
     ArmCtrl::setObjectID(_obj);
-    CartesianEstimatorClient::setObjectName(ArmCtrl::getObjectName(_obj));
+    CartesianEstimatorClient::setObjectName(ArmCtrl::getObjectNameFromDB(_obj));
 }
 
 ToolPicker::~ToolPicker()

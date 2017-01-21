@@ -7,7 +7,7 @@ using namespace baxter_core_msgs;
 
 ArmCtrl::ArmCtrl(string _name, string _limb, bool _no_robot, bool _use_forces, bool _use_trac_ik, bool _use_cart_ctrl) :
                  RobotInterface(_name,_limb, _no_robot, _use_forces, _use_trac_ik, _use_cart_ctrl),
-                 Gripper(_limb, _no_robot), sub_state(""), action(""), object_id(-1)
+                 Gripper(_limb, _no_robot), sub_state(""), action("")
 {
     std::string topic = "/"+getName()+"/state_"+_limb;
     state_pub = _n.advertise<baxter_collaboration::ArmState>(topic,1);
@@ -91,10 +91,18 @@ bool ArmCtrl::serviceCb(baxter_collaboration::DoAction::Request  &req,
                         baxter_collaboration::DoAction::Response &res)
 {
     string action = req.action;
-    int    obj    = req.object;
+    std::vector<int> objs;
+    std::string objs_str = "";
 
-    ROS_INFO("[%s] Service request received. Action: %s object: %i", getLimb().c_str(),
-                                                                   action.c_str(), obj);
+    for (size_t i = 0; i < req.object.size(); ++i)
+    {
+        objs.push_back(req.object[i]);
+        objs_str += intToString(req.object[i]) + ", ";
+    }
+    objs_str = objs_str.substr(0, objs_str.size()-2); // Remove the last ", "
+
+    ROS_INFO("[%s] Service request received. Action: %s objects: %s", getLimb().c_str(),
+                                                      action.c_str(), objs_str.c_str());
 
     if (action == PROT_ACTION_LIST)
     {
@@ -107,7 +115,16 @@ bool ArmCtrl::serviceCb(baxter_collaboration::DoAction::Request  &req,
     res.success = false;
 
     setAction(action);
-    setObjectID(obj);
+    if      (objs.size() == 1)
+    {
+        setObjectID(objs[0]);
+    }
+    else if (objs.size() >  1)
+    {
+        setObjectID(chooseObjectID(objs));
+    }
+
+    ROS_INFO("I will pick up object with ID %i", getObjectID());
 
     startInternalThread();
     ros::Duration(0.5).sleep();
@@ -186,7 +203,7 @@ bool ArmCtrl::removeObject(int id)
     return false;
 }
 
-string ArmCtrl::getObjectName(int id)
+string ArmCtrl::getObjectNameFromDB(int id)
 {
     if (isObjectInDB(id))
     {
@@ -194,6 +211,15 @@ string ArmCtrl::getObjectName(int id)
     }
 
     return "";
+}
+
+int ArmCtrl::getObjectIDFromDB(string _name)
+{
+    for( map<int, string>::const_iterator it = object_db.begin(); it != object_db.end(); ++it )
+    {
+        if (_name == it->second) return it->first;
+    }
+    return -1;
 }
 
 bool ArmCtrl::isObjectInDB(int id)
@@ -496,7 +522,7 @@ void ArmCtrl::publishState()
 
     msg.state  = string(getState());
     msg.action = getAction();
-    msg.object = getObjectName(getObjectID());
+    msg.object = getObjectNameFromDB(getObjectID());
 
     state_pub.publish(msg);
 }

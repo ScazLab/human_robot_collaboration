@@ -1,6 +1,9 @@
 #ifndef __ARTAG_CTRL_H__
 #define __ARTAG_CTRL_H__
 
+#include <stdlib.h>
+#include <time.h>
+
 #include <aruco_msgs/MarkerArray.h>
 
 #include "robot_interface/arm_ctrl.h"
@@ -86,6 +89,18 @@ private:
      * @return the desired end-effector orientation, expressed in quaternion form
      */
     geometry_msgs::Quaternion computeHOorientation();
+
+protected:
+    /**
+     * Chooses the object to act upon according to some rule. This method
+     * needs to be specialized in any derived class because it is dependent
+     * on the type of action and the type of sensory capabilities available.
+     *
+     * @param _objs The list of IDs of objects to choose from
+     * @return      the ID of the chosen object (by default the ID of the
+     *              first object will be chosen)
+     */
+    int chooseObjectID(std::vector<int> _objs);
 
 public:
     /**

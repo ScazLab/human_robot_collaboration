@@ -190,23 +190,41 @@ protected:
     bool removeObject(int id);
 
     /**
-     * Gets an object from the object database
+     * Gets an object's name from the object database
      *
-     * @param    id the requested object
+     * @param    id the requested object's ID
      * @return      the associated string
      *              (empty string if object is not there)
      */
-    std::string getObjectName(int id);
+    std::string getObjectNameFromDB(int id);
+
+    /**
+     * Gets an object's ID from the object database
+     *
+     * @param   _name the requested object's name
+     * @return      the associated id
+     *              (-1 if object is not there)
+     */
+    int getObjectIDFromDB(std::string _name);
 
     /**
      * Checks if an object is available in the database
-     * @param  id the action to check for
-     * @param  insertAction flag to know if the method has been called
-     *                      inside insertAction (it only removes the
-     *                      ROS_ERROR if the action is not in the DB)
-     * @return   true/false if the action is available in the database
+     *
+     * @param  id the object to check for
+     * @return    true/false if the object is available in the database
      */
     bool isObjectInDB(int id);
+
+    /**
+     * Chooses the object to act upon according to some rule. This method
+     * needs to be specialized in any derived class because it is dependent
+     * on the type of action and the type of sensory capabilities available.
+     *
+     * @param _objs The list of IDs of objects to choose from
+     * @return      the ID of the chosen object (by default the ID of the
+     *              first object will be chosen)
+     */
+    virtual int chooseObjectID(std::vector<int> _objs) { return _objs[0]; };
 
     /**
      * Prints the object database to screen.
@@ -317,16 +335,16 @@ public:
 
     /* Self-explaining "setters" */
     void setSubState(std::string _state) { sub_state =  _state; };
-    virtual void setObjectID(int _obj)   { object_id =    _obj; };
+    virtual void   setObjectID(int _obj) { object_id =    _obj; };
     void setAction(std::string _action);
 
     void setState(int _state);
 
     /* Self-explaining "getters" */
-    std::string getSubState() { return sub_state; };
-    std::string getAction()   { return    action; };
-    int         getObjectID() { return object_id; };
-    bool        getInternalRecovery() { return internal_recovery; };
+    std::string  getSubState() { return         sub_state; };
+    std::string    getAction() { return            action; };
+    int          getObjectID() { return         object_id; };
+    bool getInternalRecovery() { return internal_recovery; };
 };
 
 #endif
