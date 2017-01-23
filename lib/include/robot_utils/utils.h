@@ -40,6 +40,7 @@
 #define ACTION_END_HOLD     "end_hold"
 // Protected action keys used for things that are not real actions
 #define LIST_ACTIONS        baxter_collaboration::DoAction::Request::LIST_ACTIONS
+#define LIST_OBJECTS        baxter_collaboration::DoAction::Request::LIST_OBJECTS
 
 // Response states to send back to the service
 #define NO_OBJ          baxter_collaboration::DoAction::Response::NO_OBJ

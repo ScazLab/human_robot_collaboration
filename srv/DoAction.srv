@@ -1,6 +1,7 @@
 # Action to request to the controller. It is application-dependent,
 # but some defaults are available.
 
+string LIST_OBJECTS     = list_objects
 string LIST_ACTIONS     = list_actions
 string ACTION_HOME      = home
 string ACTION_RELEASE   = release

@@ -90,6 +90,7 @@ bool ArmCtrl::serviceOtherLimbCb(baxter_collaboration::AskFeedback::Request  &re
 bool ArmCtrl::serviceCb(baxter_collaboration::DoAction::Request  &req,
                         baxter_collaboration::DoAction::Response &res)
 {
+    // Let's read the requested action and object to act upon
     setSubState("");
     string action = req.action;
     std::vector<int> objs;
@@ -105,11 +106,19 @@ bool ArmCtrl::serviceCb(baxter_collaboration::DoAction::Request  &req,
     ROS_INFO("[%s] Service request received. Action: %s objects: %s", getLimb().c_str(),
                                                       action.c_str(), objs_str.c_str());
 
-    if (action == LIST_ACTIONS)
+    // Print the action or object DB if requested by the user
+    if      (action == LIST_ACTIONS)
     {
         printActionDB();
         res.success  = true;
         res.response = actionDBToString();
+        return true;
+    }
+    else if (action == LIST_OBJECTS)
+    {
+        printObjectDB();
+        res.success  = true;
+        res.response = objectDBToString();
         return true;
     }
 
