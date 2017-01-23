@@ -125,7 +125,14 @@ bool ArmCtrl::serviceCb(baxter_collaboration::DoAction::Request  &req,
     res.success = false;
 
     setAction(action);
-    if      (objs.size() == 1)
+    objs = areObjectsInDB(objs);
+
+    if      (objs.size() == 0)
+    {
+        res.response = OBJ_NOT_IN_DB;
+        return true;
+    }
+    else if (objs.size() == 1)
     {
         setObjectID(objs[0]);
     }
@@ -250,6 +257,21 @@ bool ArmCtrl::isObjectInDB(int id)
     //               getLimb().c_str(), id);
     // }
     return false;
+}
+
+std::vector<int> ArmCtrl::areObjectsInDB(const std::vector<int> &_objs)
+{
+    std::vector<int> res;
+
+    for (size_t i = 0; i < _objs.size(); ++i)
+    {
+        if (isObjectInDB(_objs[i]))
+        {
+            res.push_back(_objs[i]);
+        }
+    }
+
+    return res;
 }
 
 void ArmCtrl::printObjectDB()

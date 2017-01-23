@@ -217,6 +217,15 @@ protected:
     bool isObjectInDB(int id);
 
     /**
+     * Checks if a set of objects is available in the database
+     *
+     * @param _objs The list of IDs of objects to choose from
+     * @return      The list of IDs of objects that are available
+     *              in the objectDB among those requested.
+     */
+    std::vector<int> areObjectsInDB(const std::vector<int> &_objs);
+
+    /**
      * Chooses the object to act upon according to some rule. This method
      * needs to be specialized in any derived class because it is dependent
      * on the type of action and the type of sensory capabilities available.
