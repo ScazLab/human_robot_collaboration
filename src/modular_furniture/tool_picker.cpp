@@ -14,6 +14,8 @@ ToolPicker::ToolPicker(std::string _name, std::string _limb, bool _no_robot) :
     insertAction(ACTION_GET,       static_cast<f_action>(&ToolPicker::getObject));
     insertAction(ACTION_PASS,      static_cast<f_action>(&ToolPicker::passObject));
     insertAction(ACTION_GET_PASS,  static_cast<f_action>(&ToolPicker::getPassObject));
+    insertAction(ACTION_CLEANUP,   static_cast<f_action>(&ToolPicker::notImplemented));
+    insertAction(ACTION_HOLD,      static_cast<f_action>(&ToolPicker::notImplemented));
 
     printActionDB();
 
