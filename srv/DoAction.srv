@@ -9,7 +9,7 @@ string ACTION_RELEASE   = release
 string action
 
 # ID of the object (max 255)
-int16[] object
+int16[] objects
 
 ---
 

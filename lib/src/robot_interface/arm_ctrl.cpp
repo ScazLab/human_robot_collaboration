@@ -96,14 +96,14 @@ bool ArmCtrl::serviceCb(baxter_collaboration::DoAction::Request  &req,
     std::vector<int> objs;
     std::string objs_str = "";
 
-    for (size_t i = 0; i < req.object.size(); ++i)
+    for (size_t i = 0; i < req.objects.size(); ++i)
     {
-        objs.push_back(req.object[i]);
-        objs_str += intToString(req.object[i]) + ", ";
+        objs.push_back(req.objects[i]);
+        objs_str += intToString(req.objects[i]) + ", ";
     }
     objs_str = objs_str.substr(0, objs_str.size()-2); // Remove the last ", "
 
-    ROS_INFO("[%s] Service request received. Action: %s objects: %s", getLimb().c_str(),
+    ROS_INFO("[%s] Service request received. Action: %s Objects: %s", getLimb().c_str(),
                                                       action.c_str(), objs_str.c_str());
 
     // Print the action or object DB if requested by the user
@@ -125,20 +125,26 @@ bool ArmCtrl::serviceCb(baxter_collaboration::DoAction::Request  &req,
     res.success = false;
 
     setAction(action);
-    objs = areObjectsInDB(objs);
 
-    if      (objs.size() == 0)
+    if (action != ACTION_HOME && action != ACTION_RELEASE)
     {
-        res.response = OBJ_NOT_IN_DB;
-        return true;
-    }
-    else if (objs.size() == 1)
-    {
-        setObjectID(objs[0]);
-    }
-    else if (objs.size() >  1)
-    {
-        setObjectID(chooseObjectID(objs));
+        objs = areObjectsInDB(objs);
+
+        if      (objs.size() == 0)
+        {
+            res.response = OBJ_NOT_IN_DB;
+            ROS_ERROR("[%s] Requested object(s) are not in the database!",
+                                                       getLimb().c_str());
+            return true;
+        }
+        else if (objs.size() == 1)
+        {
+            setObjectID(objs[0]);
+        }
+        else if (objs.size() >  1)
+        {
+            setObjectID(chooseObjectID(objs));
+        }
     }
 
     ROS_INFO("I will perform action %s on object with ID %i",
