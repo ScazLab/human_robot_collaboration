@@ -15,14 +15,13 @@
 #define HAND_OVER_DONE   "handover_done"
 #define HAND_OVER_WAIT   "handover_wait"
 
-#define NO_OBJ       baxter_collaboration::DoAction::Response::NO_OBJ
-#define ACT_FAIL     baxter_collaboration::DoAction::Response::ACT_FAIL
-
 class ArmCtrl : public RobotInterface, public Gripper, public ROSThread
 {
 private:
     // Substate of the controller (useful to keep track of
-    // long actions that need multiple internal states)
+    // long actions that need multiple internal states, or
+    // to store the error state of the controller in case of
+    // unsuccessful actions
     std::string  sub_state;
 
     // High level action the controller is engaged in
@@ -336,7 +335,7 @@ public:
     void publishState();
 
     /* Self-explaining "setters" */
-    void setSubState(std::string _state) { sub_state =  _state; };
+    void setSubState(std::string _state);
     virtual void   setObjectID(int _obj) { object_id =    _obj; };
     void setAction(std::string _action);
 

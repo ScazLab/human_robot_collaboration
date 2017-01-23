@@ -45,7 +45,11 @@ bool ToolPicker::pickUpObject()
         return false;
     }
 
-    if (!waitForCartEstData()) return false;
+    if (!waitForCartEstData())
+    {
+        setSubState(NO_OBJ);
+        return false;
+    }
 
     geometry_msgs::Quaternion q;
 

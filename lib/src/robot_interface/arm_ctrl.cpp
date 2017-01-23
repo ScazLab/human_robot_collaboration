@@ -90,6 +90,7 @@ bool ArmCtrl::serviceOtherLimbCb(baxter_collaboration::AskFeedback::Request  &re
 bool ArmCtrl::serviceCb(baxter_collaboration::DoAction::Request  &req,
                         baxter_collaboration::DoAction::Response &res)
 {
+    setSubState("");
     string action = req.action;
     std::vector<int> objs;
     std::string objs_str = "";
@@ -124,7 +125,8 @@ bool ArmCtrl::serviceCb(baxter_collaboration::DoAction::Request  &req,
         setObjectID(chooseObjectID(objs));
     }
 
-    ROS_INFO("I will pick up object with ID %i", getObjectID());
+    ROS_INFO("I will perform action %s on object with ID %i",
+                              action.c_str(), getObjectID());
 
     startInternalThread();
     ros::Duration(0.5).sleep();
@@ -140,12 +142,19 @@ bool ArmCtrl::serviceCb(baxter_collaboration::DoAction::Request  &req,
             return true;
         }
 
-        if (getState()==KILLED)
+        if (getState() == KILLED)
         {
+            res.response = ACT_FAILED;
             recoverFromError();
         }
 
         r.sleep();
+    }
+
+    if (getState() == ERROR)
+    {
+        ROS_INFO("Sub state: %s\n", getSubState().c_str());
+        res.response = getSubState();
     }
 
     if ( int(getState()) == START   ||
@@ -303,7 +312,9 @@ bool ArmCtrl::doAction(int s, std::string a)
     }
     else
     {
-        ROS_ERROR("[%s] Invalid Action %s in state %i", getLimb().c_str(), a.c_str(), s);
+        setSubState(ACT_NOT_IN_DB);
+        ROS_ERROR("[%s] Action %s in state %i is not in the database!",
+                                      getLimb().c_str(), a.c_str(), s);
     }
 
     return false;
@@ -508,6 +519,12 @@ void ArmCtrl::setState(int _state)
         setSubState(getAction());
     }
     publishState();
+}
+
+void ArmCtrl::setSubState(const string _state)
+{
+    ROS_DEBUG("Setting sub state to: %s", _state.c_str());
+    sub_state =  _state;
 }
 
 void ArmCtrl::setAction(string _action)

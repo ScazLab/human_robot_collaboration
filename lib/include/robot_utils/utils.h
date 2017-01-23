@@ -41,6 +41,12 @@
 // Protected action keys used for things that are not real actions
 #define LIST_ACTIONS        baxter_collaboration::DoAction::Request::LIST_ACTIONS
 
+// Response states to send back to the service
+#define NO_OBJ          baxter_collaboration::DoAction::Response::NO_OBJ
+#define ACT_FAILED      baxter_collaboration::DoAction::Response::ACT_FAILED
+#define ACT_NOT_IN_DB   baxter_collaboration::DoAction::Response::ACT_NOT_IN_DB
+#define ACT_NOT_IMPL    baxter_collaboration::DoAction::Response::ACT_NOT_IMPL
+
 #define Z_HIGH         0.400
 #define Z_LOW          0.200
 

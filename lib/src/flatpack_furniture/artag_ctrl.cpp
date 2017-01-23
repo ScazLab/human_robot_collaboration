@@ -175,7 +175,11 @@ bool ARTagCtrl::pickARTag()
         return false;
     }
 
-    if (!waitForARucoData()) return false;
+    if (!waitForARucoData())
+    {
+        setSubState(NO_OBJ);
+        return false;
+    }
 
     geometry_msgs::Quaternion q;
 
