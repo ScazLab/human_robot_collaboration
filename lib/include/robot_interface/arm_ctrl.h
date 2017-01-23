@@ -7,7 +7,6 @@
 #include "robot_interface/robot_interface.h"
 #include "robot_interface/gripper.h"
 
-#include "baxter_collaboration/DoAction.h"
 #include "baxter_collaboration/AskFeedback.h"
 #include "baxter_collaboration/ArmState.h"
 
@@ -15,6 +14,9 @@
 #define HAND_OVER_READY  "handover_ready"
 #define HAND_OVER_DONE   "handover_done"
 #define HAND_OVER_WAIT   "handover_wait"
+
+#define NO_OBJ       baxter_collaboration::DoAction::Response::NO_OBJ
+#define ACT_FAIL     baxter_collaboration::DoAction::Response::ACT_FAIL
 
 class ArmCtrl : public RobotInterface, public Gripper, public ROSThread
 {

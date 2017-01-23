@@ -104,7 +104,7 @@ bool ArmCtrl::serviceCb(baxter_collaboration::DoAction::Request  &req,
     ROS_INFO("[%s] Service request received. Action: %s objects: %s", getLimb().c_str(),
                                                       action.c_str(), objs_str.c_str());
 
-    if (action == PROT_ACTION_LIST)
+    if (action == LIST_ACTIONS)
     {
         printActionDB();
         res.success  = true;
@@ -255,7 +255,7 @@ string ArmCtrl::objectDBToString()
 
 bool ArmCtrl::insertAction(const std::string &a, ArmCtrl::f_action f)
 {
-    if (a == PROT_ACTION_LIST)
+    if (a == LIST_ACTIONS)
     {
         ROS_ERROR("[%s][action_db] Attempted to insert protected action key: %s",
                  getLimb().c_str(), a.c_str());

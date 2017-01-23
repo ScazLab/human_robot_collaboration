@@ -3,8 +3,8 @@
 #include <tf/transform_datatypes.h>
 
 using namespace std;
-using namespace baxter_collaboration;
 using namespace baxter_core_msgs;
+using namespace baxter_collaboration;
 
 ARTagCtrl::ARTagCtrl(std::string _name, std::string _limb, bool _no_robot) :
                      ArmCtrl(_name,_limb, _no_robot), ARucoClient(_name, _limb)

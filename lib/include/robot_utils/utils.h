@@ -11,6 +11,8 @@
 
 #include <sensor_msgs/JointState.h>
 
+#include "baxter_collaboration/DoAction.h"
+
 #define SUBSCRIBER_BUFFER 3
 
 #define THREAD_FREQ       100 // [Hz]
@@ -25,8 +27,8 @@
 #define DONE      2
 
 // Both arms
-#define ACTION_HOME         "home"
-#define ACTION_RELEASE      "release"
+#define ACTION_HOME         baxter_collaboration::DoAction::Request::ACTION_HOME
+#define ACTION_RELEASE      baxter_collaboration::DoAction::Request::ACTION_RELEASE
 #define ACTION_HAND_OVER    "hand_over"
 // Only left arm
 #define ACTION_GET          "get"
@@ -37,7 +39,7 @@
 #define ACTION_START_HOLD   "start_hold"
 #define ACTION_END_HOLD     "end_hold"
 // Protected action keys used for things that are not real actions
-#define PROT_ACTION_LIST    "list_actions"  // list the available actions
+#define LIST_ACTIONS        baxter_collaboration::DoAction::Request::LIST_ACTIONS
 
 #define Z_HIGH         0.400
 #define Z_LOW          0.200
