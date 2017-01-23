@@ -134,8 +134,8 @@ void CartesianEstimator::InternalThreadEntry()
 
     while(ros::ok())
     {
-        ROS_INFO_THROTTLE(60, "I'm running, and everything is fine..."
-                              " Number of objects: %i", getNumValidObjects());
+        ROS_INFO_THROTTLE(120, "I'm running, and everything is fine..."
+                               " Number of objects: %i", getNumValidObjects());
         cv::Mat img_in;
         cv::Mat img_out;
         if (!_img_empty)
