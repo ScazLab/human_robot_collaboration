@@ -46,7 +46,9 @@
 
     <!-- CONTROL -->
     <!-- If the system should use the robot or not (useful for debugging) -->
-    <param name="action_provider/use_robot"             value="true"/>
+    <arg name="useRobot"            default="true"/>
+    <!-- If the system should use the robot or not (useful for debugging) -->
+    <param name="action_provider/use_robot"             value="$(arg useRobot)"/>
 
     <!-- Parameters for force interaction -->
     <param name="action_provider/force_filter_variance_left"        value="0.001"/>
