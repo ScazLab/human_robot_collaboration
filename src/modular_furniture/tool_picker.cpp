@@ -115,7 +115,7 @@ bool ToolPicker::pickUpObject()
             }
             elap_time = new_elap_time;
 
-            if(hasCollidedIR("strict"))
+            if(hasCollidedIR("strict") || hasCollidedCD())
             {
                 ROS_INFO("Collision!");
                 return true;

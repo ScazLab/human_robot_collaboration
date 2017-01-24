@@ -275,9 +275,9 @@ private:
 
 protected:
     /*
-     * Checks for if the system is ok. To be called inside every thread execution,
+     * Checks for if the system is OK. To be called inside every thread execution,
      * in order to make it exit gracefully if there is any problem.
-     * It also checks for the ROS state.
+     * It also checks for the ROS state to be OK.
      * @return true if everything is okay, false otherwise
      */
     bool ok();
@@ -293,6 +293,14 @@ protected:
      * return     true if end effector has made contact; false otherwise
      */
     bool hasCollidedIR(std::string mode = "loose");
+
+    /*
+     * Checks if the collision detection topic broadcasts that a collision is
+     * in place (and any robot movement will be stopped for two seconds)
+     *
+     * return     true if end effector motion has stopped; false otherwise
+     */
+    bool hasCollidedCD();
 
     /*
      * Checks if the arm has reached its intended pose by comparing

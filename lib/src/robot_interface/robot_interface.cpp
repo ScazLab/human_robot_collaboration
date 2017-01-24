@@ -623,6 +623,11 @@ bool RobotInterface::hasCollidedIR(string mode)
     return false;
 }
 
+bool RobotInterface::hasCollidedCD()
+{
+    return is_coll_det_on;
+}
+
 bool RobotInterface::isPoseReached(geometry_msgs::Pose p, std::string mode)
 {
     return isPoseReached(p.position, p.orientation, mode);
