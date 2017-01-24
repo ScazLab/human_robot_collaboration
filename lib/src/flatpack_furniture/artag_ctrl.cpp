@@ -72,7 +72,7 @@ bool ARTagCtrl::pickObject()
 
 bool ARTagCtrl::recoverRelease()
 {
-    if (getSubState() != ACTION_RELEASE)    return false;
+    if (getPrevAction() != ACTION_RELEASE)  return false;
     if(!homePoseStrict())                   return false;
     ros::Duration(0.05).sleep();
     if (!pickARTag())                       return false;
@@ -94,7 +94,7 @@ bool ARTagCtrl::recoverGet()
 
 bool ARTagCtrl::passObject()
 {
-    if (getSubState() != ACTION_GET)    return false;
+    if (getPrevAction() != ACTION_GET)  return false;
     if (!moveObjectTowardHuman())       return false;
     ros::Duration(1.0).sleep();
     if (!waitForForceInteraction())     return false;
@@ -106,7 +106,7 @@ bool ARTagCtrl::passObject()
 
 bool ARTagCtrl::handOver()
 {
-    if (getSubState() != ACTION_GET)    return false;
+    if (getPrevAction() != ACTION_GET)  return false;
     if (!prepare4HandOver())            return false;
     ros::Duration(0.2).sleep();
     if (!waitForOtherArm(30.0, true))   return false;

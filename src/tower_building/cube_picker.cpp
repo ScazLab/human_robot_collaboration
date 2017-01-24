@@ -48,7 +48,7 @@ bool CubePicker::pickObject()
 
 bool CubePicker::passObject()
 {
-    if (getSubState() != ACTION_GET)    return false;
+    if (getPrevAction() != ACTION_GET)  return false;
     if (!moveObjectTowardHuman())       return false;
     ros::Duration(1.0).sleep();
     if (!waitForForceInteraction())     return false;
@@ -70,7 +70,7 @@ bool CubePicker::recoverPickPass()
 {
     if (!homePoseStrict()) return false;
 
-    if (getSubState() == ACTION_GET)
+    if (getPrevAction() == ACTION_GET)
     {
         if (!moveArm("left", 0.1)) return false;
         if (!moveArm("down", 0.3)) return false;

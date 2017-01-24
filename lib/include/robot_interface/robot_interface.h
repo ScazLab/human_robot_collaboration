@@ -521,7 +521,7 @@ public:
     /*
      * Self-explaining "setters"
      */
-    void setState(int state);
+    virtual void setState(int state);
     void setName(std::string name)          {        _name = name;        };
     void setTracIK(bool use_trac_ik)        { _use_trac_ik = use_trac_ik; };
 

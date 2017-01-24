@@ -179,7 +179,7 @@ bool ToolPicker::getObject()
 
 bool ToolPicker::passObject()
 {
-    if (getSubState() != ACTION_GET)    return false;
+    if (getPrevAction() != ACTION_GET)  return false;
     if (!moveObjectTowardHuman())       return false;
     ros::Duration(1.0).sleep();
     if (!waitForForceInteraction())     return false;

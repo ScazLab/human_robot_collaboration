@@ -22,10 +22,13 @@ private:
     // long actions that need multiple internal states, or
     // to store the error state of the controller in case of
     // unsuccessful actions
-    std::string  sub_state;
+    std::string   sub_state;
 
     // High level action the controller is engaged in
-    std::string     action;
+    std::string       action;
+
+    // Previous high level action (for complex actions)
+    std::string  prev_action;
 
     // Object the controller is acting upon (if the action
     // is done with respect to an object)
@@ -344,17 +347,18 @@ public:
     void publishState();
 
     /* Self-explaining "setters" */
-    void setSubState(std::string _state);
-    virtual void   setObjectID(int _obj) { object_id =    _obj; };
+    virtual void setSubState(std::string _state);
+    virtual void setObjectID(int _obj) { object_id =    _obj; };
     void setAction(std::string _action);
-
+    void setPrevAction(std::string _prev_action);
     void setState(int _state);
 
     /* Self-explaining "getters" */
-    std::string  getSubState() { return         sub_state; };
-    std::string    getAction() { return            action; };
-    int          getObjectID() { return         object_id; };
-    bool getInternalRecovery() { return internal_recovery; };
+    std::string   getSubState() { return         sub_state; };
+    std::string     getAction() { return            action; };
+    std::string getPrevAction() { return       prev_action; };
+    int           getObjectID() { return         object_id; };
+    bool  getInternalRecovery() { return internal_recovery; };
 };
 
 #endif

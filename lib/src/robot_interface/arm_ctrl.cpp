@@ -538,6 +538,8 @@ void ArmCtrl::recoverFromError()
 
 void ArmCtrl::setState(int _state)
 {
+    ROS_ERROR("[%s] Setting state to %i", getLimb().c_str(), _state);
+
     if (_state == KILLED && getState() != WORKING)
     {
         ROS_WARN("[%s] Attempted to kill a non-working controller", getLimb().c_str());
@@ -560,14 +562,20 @@ void ArmCtrl::setState(int _state)
 
 void ArmCtrl::setSubState(const string _state)
 {
-    ROS_DEBUG("Setting sub state to: %s", _state.c_str());
+    ROS_ERROR("[%s] Setting sub state to: %s", getLimb().c_str(), _state.c_str());
     sub_state =  _state;
 }
 
 void ArmCtrl::setAction(string _action)
 {
+    setPrevAction(getAction());
     action = _action;
     publishState();
+}
+
+void ArmCtrl::setPrevAction(string _prev_action)
+{
+    prev_action = _prev_action;
 }
 
 void ArmCtrl::publishState()

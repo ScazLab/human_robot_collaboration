@@ -42,11 +42,24 @@
 
     <!-- CONTROL -->
     <!-- If the system should use the robot or not (useful for debugging) -->
-    <arg name="useRobot"            default="true"/>
+    <param name="action_provider/use_robot"             value="true"/>
 
-    <param name="action_provider/use_robot"             value="$(arg useRobot)"/>
+    <!-- Parameters for force interaction -->
+    <param name="action_provider/force_filter_variance_left"        value="0.001"/>
+    <param name="action_provider/force_filter_variance_right"       value="1.0"/>
+    <param name="action_provider/relative_force_threshold_left"     value="65.0"/>
+    <param name="action_provider/relative_force_threshold_right"    value="1.0"/>
+
+    <!-- If the robot will recover from an error or will wait for the external planner's decisions -->
+    <param name="action_provider/internal_recovery"     value="false"/>
 
     <node pkg="baxter_collaboration" type="modular_action_provider" name="modular_action_provider" output="screen">
     </node>
+
+    <!-- VISUALIZATION -->
+    <!-- Parameter for speech pop up duration -->
+    <param name="baxter_display/speech_duration"        value="20.0"/>
+
+    <node pkg="baxter_collaboration" type="baxter_display"  name="baxter_display"  output="screen"/>
 </launch>
 
