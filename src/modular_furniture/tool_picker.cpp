@@ -94,7 +94,11 @@ bool ToolPicker::pickUpObject()
             offs_x = +0.015;
             offs_y = -0.020;
         }
-        else if (CartesianEstimatorClient::getObjectName() == "blue_box")
+        else if (CartesianEstimatorClient::getObjectName() == "screws_box")
+        {
+            offs_x = +0.055;
+        }
+        else if (CartesianEstimatorClient::getObjectName() == "brackets_box")
         {
             offs_x = +0.065;
         }
