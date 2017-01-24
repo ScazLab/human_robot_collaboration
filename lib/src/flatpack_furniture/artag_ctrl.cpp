@@ -66,6 +66,7 @@ bool ARTagCtrl::passObject()
 bool ARTagCtrl::getPassObject()
 {
     if (!getObject())      return false;
+    setPrevAction(ACTION_GET);
     if (!passObject())     return false;
 
     return true;

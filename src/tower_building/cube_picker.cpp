@@ -61,6 +61,7 @@ bool CubePicker::passObject()
 bool CubePicker::pickPassObject()
 {
     if (!pickObject())      return false;
+    setPrevAction(ACTION_GET);
     if (!passObject())      return false;
 
     return true;
