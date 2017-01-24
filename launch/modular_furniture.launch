@@ -36,8 +36,8 @@
 
     <!-- Objects database for the hsv cartesian detector -->
     <rosparam param = "hsv_detector/objects_db">
-        [["screwdriver", [0.099, 0.030], [160,  10], [70, 166], [10,  66]],
-         ["blue_box"   , [0.131, 0.131], [ 60, 130], [90, 256], [10, 256]]]
+        [["screwdriver", [0.099, 0.030], [160,  10], [ 70, 166], [10,  66]],
+         ["blue_box"   , [0.131, 0.131], [ 80, 130], [120, 216], [40,  126]]]
     </rosparam>
 
     <!-- CONTROL -->

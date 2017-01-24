@@ -116,7 +116,6 @@ bool ToolPicker::pickUpObject()
             if(hasCollided("strict"))
             {
                 ROS_INFO("Collision!");
-                setSubState(ACTION_GET);
                 return true;
             }
 
