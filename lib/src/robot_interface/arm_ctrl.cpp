@@ -538,7 +538,7 @@ void ArmCtrl::recoverFromError()
 
 void ArmCtrl::setState(int _state)
 {
-    ROS_ERROR("[%s] Setting state to %i", getLimb().c_str(), _state);
+    ROS_DEBUG("[%s] Setting state to %i", getLimb().c_str(), _state);
 
     if (_state == KILLED && getState() != WORKING)
     {
@@ -562,7 +562,7 @@ void ArmCtrl::setState(int _state)
 
 void ArmCtrl::setSubState(const string _state)
 {
-    ROS_ERROR("[%s] Setting sub state to: %s", getLimb().c_str(), _state.c_str());
+    ROS_DEBUG("[%s] Setting sub state to: %s", getLimb().c_str(), _state.c_str());
     sub_state =  _state;
 }
 

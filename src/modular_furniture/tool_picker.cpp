@@ -192,7 +192,7 @@ bool ToolPicker::passObject()
 bool ToolPicker::getPassObject()
 {
     if (!getObject())      return false;
-    if (!passObject())      return false;
+    if (!passObject())     return false;
 
     return true;
 }

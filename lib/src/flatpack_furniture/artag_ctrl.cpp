@@ -3,20 +3,19 @@
 #include <tf/transform_datatypes.h>
 
 using namespace std;
-using namespace baxter_core_msgs;
 using namespace baxter_collaboration;
 
 ARTagCtrl::ARTagCtrl(std::string _name, std::string _limb, bool _no_robot) :
-                     ArmCtrl(_name,_limb, _no_robot), ARucoClient(_name, _limb)
+                     ArmCtrl(_name,_limb, _no_robot), ARucoClient(_name, _limb),
+                     elap_time(0)
 {
     setHomeConfiguration();
 
-    elap_time = 0;
-
     setState(START);
 
-    insertAction(ACTION_GET,       static_cast<f_action>(&ARTagCtrl::pickObject));
+    insertAction(ACTION_GET,       static_cast<f_action>(&ARTagCtrl::getObject));
     insertAction(ACTION_PASS,      static_cast<f_action>(&ARTagCtrl::passObject));
+    insertAction(ACTION_GET_PASS,  static_cast<f_action>(&ARTagCtrl::getPassObject));
     insertAction(ACTION_HAND_OVER, static_cast<f_action>(&ARTagCtrl::handOver));
 
     // Let's override the recover_release action:
@@ -58,7 +57,7 @@ ARTagCtrl::ARTagCtrl(std::string _name, std::string _limb, bool _no_robot) :
     // moveArm("forward",0.1,"strict");
 }
 
-bool ARTagCtrl::pickObject()
+bool ARTagCtrl::getObject()
 {
     if (!hoverAbovePool())          return false;
     ros::Duration(0.05).sleep();
@@ -66,6 +65,26 @@ bool ARTagCtrl::pickObject()
     if (!gripObject())              return false;
     if (!moveArm("up", 0.4))        return false;
     if (!homePoseStrict())          return false;
+
+    return true;
+}
+
+bool ARTagCtrl::passObject()
+{
+    if (getPrevAction() != ACTION_GET)  return false;
+    if (!moveObjectTowardHuman())       return false;
+    ros::Duration(1.0).sleep();
+    if (!waitForForceInteraction())     return false;
+    if (!releaseObject())               return false;
+    if (!homePoseStrict())              return false;
+
+    return true;
+}
+
+bool ARTagCtrl::getPassObject()
+{
+    if (!getObject())      return false;
+    if (!passObject())     return false;
 
     return true;
 }
@@ -88,18 +107,6 @@ bool ARTagCtrl::recoverGet()
     if (!hoverAbovePool())          return false;
     if (!releaseObject())           return false;
     if (!homePoseStrict())          return false;
-
-    return true;
-}
-
-bool ARTagCtrl::passObject()
-{
-    if (getPrevAction() != ACTION_GET)  return false;
-    if (!moveObjectTowardHuman())       return false;
-    ros::Duration(1.0).sleep();
-    if (!waitForForceInteraction())     return false;
-    if (!releaseObject())               return false;
-    if (!homePoseStrict())              return false;
 
     return true;
 }

@@ -33,10 +33,22 @@ private:
     bool pickARTag();
 
     /**
-     * [pickObject description]
+     * [getObject description]
      * @return true/false if success/failure
      */
-    bool pickObject();
+    bool getObject();
+
+    /**
+     * [passObject description]
+     * @return true/false if success/failure
+     */
+    bool passObject();
+
+    /**
+     * [getPassObject description]
+     * @return true/false if success/failure
+     */
+    bool getPassObject();
 
     /**
      * [recoverRelease description]
@@ -49,12 +61,6 @@ private:
      * @return true/false if success/failure
      */
     bool recoverRelease();
-
-    /**
-     * [passObject description]
-     * @return true/false if success/failure
-     */
-    bool passObject();
 
     /**
      * [prepare4HandOver description]
