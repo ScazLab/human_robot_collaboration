@@ -8,6 +8,8 @@
 #include <robot_perception/cartesian_estimator_client.h>
 #include <baxter_collaboration/ObjectsArray.h>
 
+#define ACTION_CLEANUP  "cleanup"
+
 class ToolPicker : public ArmCtrl, public CartesianEstimatorClient
 {
 private:
