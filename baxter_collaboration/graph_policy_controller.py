@@ -29,7 +29,7 @@ class BaseController(object):
     ACTION_SERVICE_LEFT = '/action_provider/service_left'
     ACTION_SERVICE_RIGHT = '/action_provider/service_right'
 
-    def __init__(self, timer_path=None, left=True, right=True):
+    def __init__(self, timer_path=None, left=True, right=True, speech=True):
         self.finished = False
         # ROS stuff
         rospy.init_node(self.NODE_NAME)
@@ -45,10 +45,10 @@ class BaseController(object):
             self.action_right = rospy.ServiceProxy(self.ACTION_SERVICE_RIGHT, DoAction)
         else:
             self.action_right = fake_service_proxy
-        # Text to speech client
-        rospy.loginfo('Waiting for speech service...')
-        rospy.wait_for_service(self.SPEECH_SERVICE)
-        self.speech = rospy.ServiceProxy(self.SPEECH_SERVICE, Speech)
+        if speech:  # Text to speech client
+            rospy.loginfo('Waiting for speech service...')
+            rospy.wait_for_service(self.SPEECH_SERVICE)
+            self.speech = rospy.ServiceProxy(self.SPEECH_SERVICE, Speech)
         self._say_req = None
         # Suscriber to human answers
         self.answer_sub = CommunicationSuscriber(self.COM_TOPIC, self._stop)

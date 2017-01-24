@@ -183,5 +183,5 @@ with open(os.path.join(args.path, 'pomcp-{}.json'.format(args.user)), 'w') as f:
 
 
 timer_path = os.path.join(args.path, 'timer-{}.json'.format(args.user))
-controller = POMCPController(pol, timer_path=timer_path)
+controller = POMCPController(pol, timer_path=timer_path, speech=False)
 controller.run()
