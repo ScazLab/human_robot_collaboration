@@ -60,7 +60,7 @@ class BaseController(object):
         self._home()  # Home position
 
     def _home(self):
-        rospy.loginfo('Going home befor starting.')
+        rospy.loginfo('Going home before starting.')
         l = ServiceRequest(self.action_left, DoActionRequest.ACTION_HOME, [])
         r = ServiceRequest(self.action_right, DoActionRequest.ACTION_HOME, [])
         l.wait_result()

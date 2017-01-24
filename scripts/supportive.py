@@ -40,7 +40,7 @@ RELATIVE_EXPLO = True  # In this case use smaller exploration
 BELIEF_VALUES = False
 N_WARMUP = 10
 
-OBJECTS_RENAME = {'top': 'table_top', 'screws': 'blue_box'}
+OBJECTS_RENAME = {'top': 'table_top', 'screws': 'screws_box', 'joints': 'brackets_box'}
 
 
 class UnexpectedActionFailure(RuntimeError):
@@ -57,6 +57,7 @@ class POMCPController(BaseController):
 
     BRING = 'get_pass'
     CLEAR = 'cleanup'
+    HOLD = 'hold'
 
     def __init__(self, policy, *args, **kargs):
         super(POMCPController, self).__init__(*args, **kargs)
@@ -85,28 +86,30 @@ class POMCPController(BaseController):
         self.timer.start()
         obs = None
         while not self.finished:
-            #try:
+            try:
                 rospy.loginfo("Current history: " + str(self.pol.history))
                 self.timer.log(self.pol.history)
                 obs = self.take_action(self.pol.get_action())
                 rospy.loginfo("Observed: %s" % obs)
                 self.pol.step(obs)
-            #except Exception as e:
-            #    rospy.logerr(e)
-            #    self.finished = True
+            except Exception as e:
+                rospy.logerr(e)
+                rospy.logerr('Exiting.')
+                self.finished = True
+                raise
 
     def take_action(self, action):
         a = action.split()
         if a[0] == 'bring':
             return self.action_bring_or_clean(self.BRING, a[1])
-        elif a[0] == 'clean':
-            return self.action_bring_or_clean(self.CLEAN, a[1])
-        elif a == 'hold':
+        elif a[0] == 'clear':
+            return self.action_bring_or_clean(self.CLEAR, a[1])
+        elif a[0] == 'hold':
             return self.action_hold()
-        elif a == 'wait':
-            raise NotImplementedError
+        elif a[0] == 'wait':
+            return self.action_wait()
         else:
-            raise ValueError('Unknown action: {}'.format(action))
+            raise ValueError('Unknown action: "{}".'.format(a))
 
     def action_bring_or_clean(self, a, obj):
         rospy.loginfo("Action {} on {}.".format(a, obj))
@@ -138,6 +141,9 @@ class POMCPController(BaseController):
             return self.model.observations[self.model.O_NONE]
         else:
             raise UnexpectedActionFailure('right', self.HOLD, result.response)
+
+    def action_wait(self):
+        raise NotImplementedError
 
 
 # Problem definition
