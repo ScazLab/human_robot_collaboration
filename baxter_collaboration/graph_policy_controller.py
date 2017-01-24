@@ -1,5 +1,5 @@
 import rospy
-from baxter_collaboration.srv import DoAction
+from baxter_collaboration.srv import DoAction, DoActionRequest
 from baxter_collaboration.timer import Timer
 from baxter_collaboration.service_request import ServiceRequest
 from baxter_collaboration.suscribers import (CommunicationSuscriber,
@@ -28,8 +28,6 @@ class BaseController(object):
     SPEECH_SERVICE = '/svox_tts/speech'
     ACTION_SERVICE_LEFT = '/action_provider/service_left'
     ACTION_SERVICE_RIGHT = '/action_provider/service_right'
-
-    HOME = 'home'
 
     def __init__(self, timer_path=None, left=True, right=True):
         self.finished = False
@@ -63,8 +61,8 @@ class BaseController(object):
 
     def _home(self):
         rospy.loginfo('Going home befor starting.')
-        l = ServiceRequest(self.action_left, self.HOME, 0)
-        r = ServiceRequest(self.action_right, self.HOME, 0)
+        l = ServiceRequest(self.action_left, DoActionRequest.ACTION_HOME, [])
+        r = ServiceRequest(self.action_right, DoActionRequest.ACTION_HOME, [])
         l.wait_result()
         r.wait_result()
 

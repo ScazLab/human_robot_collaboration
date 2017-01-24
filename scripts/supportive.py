@@ -17,7 +17,8 @@ from htm.lib.pomdp import POMCPPolicyRunner
 
 import rospy
 from std_msgs.msg import String
-from baxter_collaboration.graph_policy_controller import BaseController, DoAction
+from baxter_collaboration.srv import DoActionResponse
+from baxter_collaboration.graph_policy_controller import BaseController
 from baxter_collaboration.service_request import ServiceRequest
 
 
@@ -39,6 +40,8 @@ RELATIVE_EXPLO = True  # In this case use smaller exploration
 BELIEF_VALUES = False
 N_WARMUP = 10
 
+OBJECTS_RENAME = {'top': 'table_top', 'screws': 'blue_box'}
+
 
 class UnexpectedActionFailure(RuntimeError):
 
@@ -59,18 +62,38 @@ class POMCPController(BaseController):
         super(POMCPController, self).__init__(*args, **kargs)
         self.objects_left = self._parse_objects(rospy.get_param(self.OBJECTS_LEFT))
         self.objects_right = self._parse_objects(rospy.get_param(self.OBJECTS_RIGHT))
+        print('Found {} on left and {} objects on right arm.'.format(
+            list(self.objects_left), list(self.objects_right)))
         self.pol = policy
-        self.model = self.pol.model
+        self.model = self.pol.tree.model
 
     def _parse_objects(self, obj_dict):
         obj_parser = re.compile('(.*)_[0-9]+$')
         d = {}
         for o in obj_dict:
-            new_o = obj_parser.match(o).group(1)
+            m = obj_parser.match(o)
+            if m is None:
+                new_o = o
+            else:
+                new_o = m.group(1)
             if new_o not in d:
                 d[new_o] = []
             d[new_o].append(obj_dict[o])
         return d
+
+    def run(self):
+        self.timer.start()
+        obs = None
+        while not self.finished:
+            #try:
+                rospy.loginfo("Current history: " + str(self.pol.history))
+                self.timer.log(self.pol.history)
+                obs = self.take_action(self.pol.get_action())
+                rospy.loginfo("Observed: %s" % obs)
+                self.pol.step(obs)
+            #except Exception as e:
+            #    rospy.logerr(e)
+            #    self.finished = True
 
     def take_action(self, action):
         a = action.split()
@@ -87,6 +110,7 @@ class POMCPController(BaseController):
 
     def action_bring_or_clean(self, a, obj):
         rospy.loginfo("Action {} on {}.".format(a, obj))
+        obj = OBJECTS_RENAME.get(obj, obj)  # Rename objects in the rename dict
         if obj in self.objects_left:
             # Note: always left if object reachable by both arms
             arm = self.action_left
@@ -94,13 +118,15 @@ class POMCPController(BaseController):
         elif obj in self.objects_right:
             arm = self.action_right
             obj_ids = self.objects_right[obj]
+        else:
+            raise ValueError('Unknown object: %s' % obj)
         result = arm(a, obj_ids)
         if result.success:
-            return self.model.O_NONE
-        elif result.response == DoAction.NO_OBJ:
-            return self.model.O_NOT_FOUND
-        elif result.response == DoAction.ACT_FAILED:
-            return self.model.O_FAIL
+            return self.model.observations[self.model.O_NONE]  # This sounds stupid!
+        elif result.response == DoActionResponse.NO_OBJ:
+            return self.model.observations[self.model.O_NOT_FOUND]
+        elif result.response == DoActionResponse.ACT_FAILED:
+            return self.model.observations[self.model.O_FAIL]
         else:
             raise UnexpectedActionFailure(
                 'left' if arm is self.action_left else 'right', a,
@@ -109,7 +135,7 @@ class POMCPController(BaseController):
     def action_hold(self):
         result = self.action_right(self.HOLD, [])
         if result.success:
-            return self.model.O_NONE
+            return self.model.observations[self.model.O_NONE]
         else:
             raise UnexpectedActionFailure('right', self.HOLD, result.response)
 
@@ -158,3 +184,4 @@ with open(os.path.join(args.path, 'pomcp-{}.json'.format(args.user)), 'w') as f:
 
 timer_path = os.path.join(args.path, 'timer-{}.json'.format(args.user))
 controller = POMCPController(pol, timer_path=timer_path)
+controller.run()
