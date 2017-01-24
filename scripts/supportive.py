@@ -136,6 +136,7 @@ class POMCPController(BaseController):
                 result.response)
 
     def action_hold(self):
+        rospy.loginfo("Holding...")
         result = self.action_right(self.HOLD, [])
         if result.success:
             return self.model.observations[self.model.O_NONE]
@@ -143,7 +144,11 @@ class POMCPController(BaseController):
             raise UnexpectedActionFailure('right', self.HOLD, result.response)
 
     def action_wait(self):
-        raise NotImplementedError
+        rospy.loginfo("Waiting...")
+        self.say('Tell me when you are done.', sync=False)
+        ans = self.answer_sub.wait_for_msg()
+        rospy.loginfo("Got human message: '%s'" % ans)
+        return self.model.observations[self.model.O_NONE]
 
 
 # Problem definition
@@ -174,6 +179,7 @@ for i in range(N_WARMUP):
     maxl = max(maxl, len(s))
     print(' ' * maxl, end='\r')
     print(s, end='\r')
+    sys.stdout.flush()
     best = pol.get_action()  # Some exploration
 print('Exploring... [done]')
 if BELIEF_VALUES:
@@ -189,5 +195,5 @@ with open(os.path.join(args.path, 'pomcp-{}.json'.format(args.user)), 'w') as f:
 
 
 timer_path = os.path.join(args.path, 'timer-{}.json'.format(args.user))
-controller = POMCPController(pol, timer_path=timer_path, speech=False)
+controller = POMCPController(pol, timer_path=timer_path)
 controller.run()
