@@ -521,6 +521,37 @@ void ArmCtrl::setHomeConf(double s0, double s1, double e0, double e1,
     return;
 }
 
+void ArmCtrl::setHomeConfiguration(std::string _loc)
+{
+    if      (getLimb() == "left")
+    {
+        if      (_loc == "pool")
+        {
+            setHomeConf(0.7060, -1.2717, 0.3846,  1.5405,
+                                -0.1273, 1.3135,  0.3206);
+        }
+        else if (_loc == "table")
+        {
+            setHomeConf(0.1967, -0.8702, -1.0531,  1.5578,
+                                 0.6516,  1.2464, -0.1787);
+        }
+    }
+    else if (getLimb() == "right")
+    {
+        if      (_loc == "pool")
+        {
+            setHomeConf(-1.6801, -1.0500, 1.1693, 1.9762,
+                                 -0.5722, 1.0205, 0.5430);
+        }
+        else if (_loc == "table")
+        {
+            setHomeConf( 0.0717, -1.0009, 1.1083, 1.5520,
+                                 -0.5235, 1.3468, 0.4464);
+        }
+    }
+    return;
+}
+
 bool ArmCtrl::goHome()
 {
     bool res = homePoseStrict();

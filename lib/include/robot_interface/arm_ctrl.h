@@ -131,7 +131,14 @@ protected:
     /**
      * Sets the joint-level configuration for the home position
      */
-    virtual void setHomeConfiguration() = 0;
+    virtual void setHomeConfiguration() { return; };
+
+    /**
+     * Sets the high-level configuratino for the home position
+     *
+     * @param _loc the home position (either "pool" or "table")
+     */
+    void setHomeConfiguration(std::string _loc);
 
     /**
      * Goes to the home position, and "releases" the gripper

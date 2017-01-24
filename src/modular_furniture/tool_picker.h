@@ -45,12 +45,13 @@ private:
      */
     bool pickUpObject();
 
+protected:
+
     /**
      * Sets the joint-level configuration for the home position
      */
     void setHomeConfiguration();
 
-protected:
     /**
      * Chooses the object to act upon according to some rule. This method
      * needs to be specialized in any derived class because it is dependent

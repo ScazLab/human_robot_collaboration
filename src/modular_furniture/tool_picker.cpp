@@ -205,8 +205,7 @@ bool ToolPicker::moveObjectTowardHuman()
 
 void ToolPicker::setHomeConfiguration()
 {
-    setHomeConf(-1.6801, -1.0500, 1.1693, 1.9762,
-                         -0.5722, 1.0205, 0.5430);
+    ArmCtrl::setHomeConfiguration("pool");
 }
 
 void ToolPicker::setObjectID(int _obj)

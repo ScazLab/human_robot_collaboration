@@ -12,6 +12,7 @@
 class ARTagCtrl : public ArmCtrl, public ARucoClient
 {
 private:
+    // Elapsed time (useful for testing purposes)
     double elap_time;
 
     /**
