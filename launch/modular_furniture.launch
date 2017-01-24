@@ -30,14 +30,18 @@
 
     <!-- Objects database for the right arm -->
     <rosparam param = "action_provider/objects_right">
-        "screwdriver" : 1
-        "blue_box"    : 2
+        "screwdriver"  : 1
+        "screws_box"   : 2
+        "brackets_box" : 3
     </rosparam>
 
     <!-- Objects database for the hsv cartesian detector -->
     <rosparam param = "hsv_detector/objects_db">
-        [["screwdriver", [0.099, 0.030], [160,  10], [ 70, 166], [10,  66]],
-         ["blue_box"   , [0.131, 0.131], [ 80, 130], [120, 216], [40, 126]]]
+        [["screwdriver"  , [0.099, 0.030], [160,  10], [ 70, 166], [10,  66]],
+         <!-- This should be the blue one -->
+         ["screws_box"   , [0.131, 0.131], [ 80, 130], [120, 216], [40, 126]],
+         <!-- This should be the green one -->
+         ["brackets_box" , [0.131, 0.131], [130, 130], [120, 120], [40, 40]]]
     </rosparam>
 
     <!-- CONTROL -->
