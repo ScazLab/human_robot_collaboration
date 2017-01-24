@@ -1,4 +1,3 @@
-
 #include "flatpack_furniture/hold_ctrl.h"
 
 using namespace std;
@@ -13,15 +12,6 @@ HoldCtrl::HoldCtrl(std::string _name, std::string _limb, bool _no_robot) :
     insertAction(ACTION_START_HOLD, static_cast<f_action>(&HoldCtrl::startHold));
     insertAction(ACTION_END_HOLD,   static_cast<f_action>(&HoldCtrl::endHold));
     insertAction(ACTION_HOLD,       static_cast<f_action>(&HoldCtrl::holdObject));
-    insertAction(ACTION_HAND_OVER,  static_cast<f_action>(&HoldCtrl::handOver));
-
-    // Not implemented actions throw a ROS_ERROR and return always false:
-    insertAction("recover_"+string(ACTION_START_HOLD), &HoldCtrl::notImplemented);
-    insertAction("recover_"+string(ACTION_END_HOLD),   &HoldCtrl::notImplemented);
-    insertAction("recover_"+string(ACTION_HOLD),       &HoldCtrl::notImplemented);
-    insertAction("recover_"+string(ACTION_HAND_OVER),  &HoldCtrl::notImplemented);
-
-    printActionDB();
 
     XmlRpc::XmlRpcValue objects_db;
     if(!_n.getParam("objects_"+getLimb(), objects_db))
@@ -36,8 +26,6 @@ HoldCtrl::HoldCtrl(std::string _name, std::string _limb, bool _no_robot) :
     }
 
     if (_no_robot) return;
-
-    if (!callAction(ACTION_HOME)) setState(ERROR);
 }
 
 bool HoldCtrl::handOver()

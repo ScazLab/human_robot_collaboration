@@ -138,7 +138,11 @@ add_subdirectory(lib)
 
 ## Declare a C++ executable
 add_executable(baxter_controller        src/baxter_controller/baxter_controller.cpp)
-add_executable(flatpack_action_provider src/flatpack_furniture/action_provider.cpp)
+add_executable(flatpack_action_provider src/flatpack_furniture/artag_ctrl_impl.h
+                                        src/flatpack_furniture/artag_ctrl_impl.cpp
+                                        src/flatpack_furniture/hold_ctrl_impl.h
+                                        src/flatpack_furniture/hold_ctrl_impl.cpp
+                                        src/flatpack_furniture/action_provider.cpp)
 add_executable(tower_action_provider    src/tower_building/cube_picker.h
                                         src/tower_building/cube_picker.cpp
                                         src/tower_building/action_provider.cpp)

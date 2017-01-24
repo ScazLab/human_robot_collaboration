@@ -52,28 +52,10 @@ private:
     bool getPassObject();
 
     /**
-     * [recoverRelease description]
-     * @return true/false if success/failure
-     */
-    bool recoverGet();
-
-    /**
-     * [recoverRelease description]
-     * @return true/false if success/failure
-     */
-    bool recoverRelease();
-
-    /**
      * [prepare4HandOver description]
      * @return true/false if success/failure
      */
     bool prepare4HandOver();
-
-    /**
-     * [handOver description]
-     * @return true/false if success/failure
-     */
-    bool handOver();
 
     /**
      * [waitForOtherArm description]
@@ -85,11 +67,6 @@ private:
     bool waitForOtherArm(double _wait_time = 60.0, bool disable_coll_av = false);
 
     /**
-     * Sets the joint-level configuration for the home position
-     */
-    void setHomeConfiguration();
-
-    /**
      * Computes the end-effector orientation needed to pick the object up with a constant
      * orientation. Needed by the hand-over action since it requires the object to be picked
      * up consistently.
@@ -98,6 +75,30 @@ private:
     geometry_msgs::Quaternion computeHOorientation();
 
 protected:
+
+    /**
+     * Sets the joint-level configuration for the home position
+     */
+    void setHomeConfiguration();
+
+    /**
+     * [handOver description]
+     * @return true/false if success/failure
+     */
+    bool handOver();
+
+    /**
+     * [recoverRelease description]
+     * @return true/false if success/failure
+     */
+    bool recoverGet();
+
+    /**
+     * [recoverRelease description]
+     * @return true/false if success/failure
+     */
+    bool recoverRelease();
+
     /**
      * Chooses the object to act upon according to some rule. This method
      * needs to be specialized in any derived class because it is dependent
