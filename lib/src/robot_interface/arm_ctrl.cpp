@@ -126,7 +126,7 @@ bool ArmCtrl::serviceCb(baxter_collaboration::DoAction::Request  &req,
 
     setAction(action);
 
-    if (action != ACTION_HOME && action != ACTION_RELEASE)
+    if (action != ACTION_HOME && action != ACTION_RELEASE && action != ACTION_HOLD)
     {
         objs = areObjectsInDB(objs);
 
