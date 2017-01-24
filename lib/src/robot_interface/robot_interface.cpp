@@ -18,14 +18,14 @@ RobotInterface::RobotInterface(string name, string limb, bool no_robot, bool use
                                ik_solver(limb, no_robot), _use_trac_ik(use_trac_ik), is_coll_av_on(false),
                                is_coll_det_on(false), _use_cart_ctrl(use_cart_ctrl), is_ctrl_running(false)
 {
-    if (no_robot) return;
-
     pthread_mutexattr_t _mutex_attr;
     pthread_mutexattr_init(&_mutex_attr);
     pthread_mutexattr_settype(&_mutex_attr, PTHREAD_MUTEX_RECURSIVE_NP);
 
     pthread_mutex_init(&_mutex_jnts, &_mutex_attr);
     pthread_mutex_init(&_mutex_ctrl, &_mutex_attr);
+
+    if (no_robot) return;
 
     _joint_cmd_pub = _n.advertise<JointCommand>("/robot/limb/" + _limb + "/joint_command", 1);
     _coll_av_pub   = _n.advertise<Empty>("/robot/limb/" + _limb + "/suppress_collision_avoidance", 1);

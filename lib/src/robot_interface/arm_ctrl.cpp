@@ -145,12 +145,15 @@ bool ArmCtrl::serviceCb(baxter_collaboration::DoAction::Request  &req,
         {
             setObjectID(chooseObjectID(objs));
         }
+
+        ROS_INFO("I will perform action %s on object with ID %i",
+                                  action.c_str(), getObjectID());
     }
 
-    ROS_INFO("I will perform action %s on object with ID %i",
-                              action.c_str(), getObjectID());
-
     startInternalThread();
+
+    // This is there for the current thread to avoid overlapping
+    // with the internal thread that just started
     ros::Duration(0.5).sleep();
 
     ros::Rate r(100);
