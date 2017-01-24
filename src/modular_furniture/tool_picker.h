@@ -4,13 +4,13 @@
 #include <stdlib.h>
 #include <time.h>
 
-#include <robot_interface/arm_ctrl.h>
+#include <flatpack_furniture/hold_ctrl.h>
 #include <robot_perception/cartesian_estimator_client.h>
 #include <baxter_collaboration/ObjectsArray.h>
 
 #define ACTION_CLEANUP  "cleanup"
 
-class ToolPicker : public ArmCtrl, public CartesianEstimatorClient
+class ToolPicker : public HoldCtrl, public CartesianEstimatorClient
 {
 private:
     double elap_time;
