@@ -140,7 +140,7 @@ bool CubePicker::pickARTag()
             }
             elap_time = new_elap_time;
 
-            if(hasCollided("strict"))
+            if(hasCollidedIR("strict"))
             {
                 ROS_DEBUG("Collision!");
                 setSubState(ACTION_GET);

@@ -234,7 +234,7 @@ bool ARTagCtrl::pickARTag()
             }
             elap_time = new_elap_time;
 
-            if(hasCollided("strict"))
+            if(hasCollidedIR("strict"))
             {
                 ROS_DEBUG("Collision!");
                 return true;
