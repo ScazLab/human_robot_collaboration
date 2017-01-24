@@ -7,7 +7,7 @@ using namespace baxter_core_msgs;
 
 ArmCtrl::ArmCtrl(string _name, string _limb, bool _no_robot, bool _use_forces, bool _use_trac_ik, bool _use_cart_ctrl) :
                  RobotInterface(_name,_limb, _no_robot, _use_forces, _use_trac_ik, _use_cart_ctrl),
-                 Gripper(_limb, _no_robot), sub_state(""), action(""), object_id(-1)
+                 Gripper(_limb, _no_robot), sub_state(""), action("")
 {
     std::string topic = "/"+getName()+"/state_"+_limb;
     state_pub = _n.advertise<baxter_collaboration::ArmState>(topic,1);
@@ -90,24 +90,65 @@ bool ArmCtrl::serviceOtherLimbCb(baxter_collaboration::AskFeedback::Request  &re
 bool ArmCtrl::serviceCb(baxter_collaboration::DoAction::Request  &req,
                         baxter_collaboration::DoAction::Response &res)
 {
+    // Let's read the requested action and object to act upon
+    setSubState("");
     string action = req.action;
-    int    obj    = req.object;
+    std::vector<int> objs;
+    std::string objs_str = "";
 
-    ROS_INFO("[%s] Service request received. Action: %s object: %i", getLimb().c_str(),
-                                                                   action.c_str(), obj);
+    for (size_t i = 0; i < req.objects.size(); ++i)
+    {
+        objs.push_back(req.objects[i]);
+        objs_str += intToString(req.objects[i]) + ", ";
+    }
+    objs_str = objs_str.substr(0, objs_str.size()-2); // Remove the last ", "
 
-    if (action == PROT_ACTION_LIST)
+    ROS_INFO("[%s] Service request received. Action: %s Objects: %s", getLimb().c_str(),
+                                                      action.c_str(), objs_str.c_str());
+
+    // Print the action or object DB if requested by the user
+    if      (action == LIST_ACTIONS)
     {
         printActionDB();
         res.success  = true;
         res.response = actionDBToString();
         return true;
     }
+    else if (action == LIST_OBJECTS)
+    {
+        printObjectDB();
+        res.success  = true;
+        res.response = objectDBToString();
+        return true;
+    }
 
     res.success = false;
 
     setAction(action);
-    setObjectID(obj);
+
+    if (action != ACTION_HOME && action != ACTION_RELEASE)
+    {
+        objs = areObjectsInDB(objs);
+
+        if      (objs.size() == 0)
+        {
+            res.response = OBJ_NOT_IN_DB;
+            ROS_ERROR("[%s] Requested object(s) are not in the database!",
+                                                       getLimb().c_str());
+            return true;
+        }
+        else if (objs.size() == 1)
+        {
+            setObjectID(objs[0]);
+        }
+        else if (objs.size() >  1)
+        {
+            setObjectID(chooseObjectID(objs));
+        }
+    }
+
+    ROS_INFO("I will perform action %s on object with ID %i",
+                              action.c_str(), getObjectID());
 
     startInternalThread();
     ros::Duration(0.5).sleep();
@@ -123,12 +164,19 @@ bool ArmCtrl::serviceCb(baxter_collaboration::DoAction::Request  &req,
             return true;
         }
 
-        if (getState()==KILLED)
+        if (getState() == KILLED)
         {
+            res.response = ACT_FAILED;
             recoverFromError();
         }
 
         r.sleep();
+    }
+
+    if (getState() == ERROR)
+    {
+        ROS_INFO("Sub state: %s\n", getSubState().c_str());
+        res.response = getSubState();
     }
 
     if ( int(getState()) == START   ||
@@ -186,7 +234,7 @@ bool ArmCtrl::removeObject(int id)
     return false;
 }
 
-string ArmCtrl::getObjectName(int id)
+string ArmCtrl::getObjectNameFromDB(int id)
 {
     if (isObjectInDB(id))
     {
@@ -194,6 +242,15 @@ string ArmCtrl::getObjectName(int id)
     }
 
     return "";
+}
+
+int ArmCtrl::getObjectIDFromDB(string _name)
+{
+    for( map<int, string>::const_iterator it = object_db.begin(); it != object_db.end(); ++it )
+    {
+        if (_name == it->second) return it->first;
+    }
+    return -1;
 }
 
 bool ArmCtrl::isObjectInDB(int id)
@@ -206,6 +263,21 @@ bool ArmCtrl::isObjectInDB(int id)
     //               getLimb().c_str(), id);
     // }
     return false;
+}
+
+std::vector<int> ArmCtrl::areObjectsInDB(const std::vector<int> &_objs)
+{
+    std::vector<int> res;
+
+    for (size_t i = 0; i < _objs.size(); ++i)
+    {
+        if (isObjectInDB(_objs[i]))
+        {
+            res.push_back(_objs[i]);
+        }
+    }
+
+    return res;
 }
 
 void ArmCtrl::printObjectDB()
@@ -229,7 +301,7 @@ string ArmCtrl::objectDBToString()
 
 bool ArmCtrl::insertAction(const std::string &a, ArmCtrl::f_action f)
 {
-    if (a == PROT_ACTION_LIST)
+    if (a == LIST_ACTIONS)
     {
         ROS_ERROR("[%s][action_db] Attempted to insert protected action key: %s",
                  getLimb().c_str(), a.c_str());
@@ -277,7 +349,9 @@ bool ArmCtrl::doAction(int s, std::string a)
     }
     else
     {
-        ROS_ERROR("[%s] Invalid Action %s in state %i", getLimb().c_str(), a.c_str(), s);
+        setSubState(ACT_NOT_IN_DB);
+        ROS_ERROR("[%s] Action %s in state %i is not in the database!",
+                                      getLimb().c_str(), a.c_str(), s);
     }
 
     return false;
@@ -484,6 +558,12 @@ void ArmCtrl::setState(int _state)
     publishState();
 }
 
+void ArmCtrl::setSubState(const string _state)
+{
+    ROS_DEBUG("Setting sub state to: %s", _state.c_str());
+    sub_state =  _state;
+}
+
 void ArmCtrl::setAction(string _action)
 {
     action = _action;
@@ -496,7 +576,7 @@ void ArmCtrl::publishState()
 
     msg.state  = string(getState());
     msg.action = getAction();
-    msg.object = getObjectName(getObjectID());
+    msg.object = getObjectNameFromDB(getObjectID());
 
     state_pub.publish(msg);
 }

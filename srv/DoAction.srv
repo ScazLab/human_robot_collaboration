@@ -1,6 +1,30 @@
+# Action to request to the controller. It is application-dependent,
+# but some defaults are available.
+
+string LIST_OBJECTS     = list_objects
+string LIST_ACTIONS     = list_actions
+string ACTION_HOME      = home
+string ACTION_RELEASE   = release
+
 string action
-# id of object (max 255)
-int16 object
+
+# ID of the object (max 255)
+int16[] objects
+
 ---
+
+# True false if action was successful or not
 bool   success
+
+# Additional information that occasionally is added to the response
+# message. For now, it is used to provide more information how and
+# why an action failed. There may be multiple reasons, but some
+# defaults are listed below.
+
+string OBJ_NOT_IN_DB  = Requested object not available in DB
+string NO_OBJ         = No object detected
+string ACT_FAILED     = Action failed from user input
+string ACT_NOT_IN_DB  = Requested action not available in DB
+string ACT_NOT_IMPL   = Action not implemented
+
 string response

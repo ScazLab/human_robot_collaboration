@@ -108,14 +108,16 @@ bool CartesianEstimator::publishObjects()
     objects_msg.header.stamp = curr_stamp;
     objects_msg.header.seq++;
 
-    for(size_t i = 0; i < objects_msg.objects.size(); ++i)
+    int cnt = 0;
+    for(size_t i = 0; i < objs.size(); ++i)
     {
         if (objs[i]->isThere())
         {
-            baxter_collaboration::Object & object_i = objects_msg.objects.at(i);
-            object_i.pose = objs[i]->pose;
-            object_i.id   = i;
-            object_i.name = objs[i]->getName();
+            baxter_collaboration::Object &object_cnt = objects_msg.objects.at(cnt);
+            object_cnt.pose = objs[i]->pose;
+            object_cnt.id   = i;
+            object_cnt.name = objs[i]->getName();
+            ++cnt;
         }
     }
 
@@ -132,8 +134,8 @@ void CartesianEstimator::InternalThreadEntry()
 
     while(ros::ok())
     {
-        ROS_INFO_THROTTLE(10, "I'm running, and everything is fine..."
-                              " Number of objects: %i", getNumValidObjects());
+        ROS_INFO_THROTTLE(120, "I'm running, and everything is fine..."
+                               " Number of objects: %i", getNumValidObjects());
         cv::Mat img_in;
         cv::Mat img_out;
         if (!_img_empty)
@@ -144,8 +146,8 @@ void CartesianEstimator::InternalThreadEntry()
             img_out = img_in.clone();
 
             detectObjects(img_in, img_out);
-            poseRootRFAll();
-            draw3dAxisAll(img_out);
+            poseRootRF();
+            draw3dAxis(img_out);
 
             if (objs_pub.getNumSubscribers() > 0)    publishObjects();
 
@@ -267,7 +269,7 @@ string CartesianEstimator::objectDBToString()
     return res;
 }
 
-bool CartesianEstimator::poseRootRFAll()
+bool CartesianEstimator::poseRootRF()
 {
     bool res = true;
 
@@ -396,6 +398,23 @@ tf::Transform CartesianEstimator::object2Tf(int idx)
     cv::Rodrigues(objs[idx]->Rvec, rot);
     cv::Mat tran = objs[idx]->Tvec;
 
+    // This transforms from the RF of the object to the RF of the end-effector
+    // in order to be able to properly align the end-effector with the object itself
+    cv::Mat rotate_to_ros(3, 3, CV_32FC1);
+    //  0 -1  0
+    // -1  0  0
+    //  0  0 -1
+    rotate_to_ros.at<float>(0,0) =  0.0;
+    rotate_to_ros.at<float>(0,1) = -1.0;
+    rotate_to_ros.at<float>(0,2) =  0.0;
+    rotate_to_ros.at<float>(1,0) = -1.0;
+    rotate_to_ros.at<float>(1,1) =  0.0;
+    rotate_to_ros.at<float>(1,2) =  0.0;
+    rotate_to_ros.at<float>(2,0) =  0.0;
+    rotate_to_ros.at<float>(2,1) =  0.0;
+    rotate_to_ros.at<float>(2,2) = -1.0;
+    rot = rot*rotate_to_ros.t();
+
     tf::Matrix3x3 tf_rot(rot.at<float>(0,0), rot.at<float>(0,1), rot.at<float>(0,2),
                          rot.at<float>(1,0), rot.at<float>(1,1), rot.at<float>(1,2),
                          rot.at<float>(2,0), rot.at<float>(2,1), rot.at<float>(2,2));
@@ -405,7 +424,7 @@ tf::Transform CartesianEstimator::object2Tf(int idx)
     return tf::Transform(tf_rot, tf_orig);
 }
 
-bool CartesianEstimator::draw3dAxisAll(cv::Mat &_img)
+bool CartesianEstimator::draw3dAxis(cv::Mat &_img)
 {
     bool res = true;
 

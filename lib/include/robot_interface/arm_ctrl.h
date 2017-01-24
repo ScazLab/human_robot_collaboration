@@ -7,7 +7,6 @@
 #include "robot_interface/robot_interface.h"
 #include "robot_interface/gripper.h"
 
-#include "baxter_collaboration/DoAction.h"
 #include "baxter_collaboration/AskFeedback.h"
 #include "baxter_collaboration/ArmState.h"
 
@@ -20,7 +19,9 @@ class ArmCtrl : public RobotInterface, public Gripper, public ROSThread
 {
 private:
     // Substate of the controller (useful to keep track of
-    // long actions that need multiple internal states)
+    // long actions that need multiple internal states, or
+    // to store the error state of the controller in case of
+    // unsuccessful actions
     std::string  sub_state;
 
     // High level action the controller is engaged in
@@ -190,23 +191,50 @@ protected:
     bool removeObject(int id);
 
     /**
-     * Gets an object from the object database
+     * Gets an object's name from the object database
      *
-     * @param    id the requested object
+     * @param    id the requested object's ID
      * @return      the associated string
      *              (empty string if object is not there)
      */
-    std::string getObjectName(int id);
+    std::string getObjectNameFromDB(int id);
+
+    /**
+     * Gets an object's ID from the object database
+     *
+     * @param   _name the requested object's name
+     * @return      the associated id
+     *              (-1 if object is not there)
+     */
+    int getObjectIDFromDB(std::string _name);
 
     /**
      * Checks if an object is available in the database
-     * @param  id the action to check for
-     * @param  insertAction flag to know if the method has been called
-     *                      inside insertAction (it only removes the
-     *                      ROS_ERROR if the action is not in the DB)
-     * @return   true/false if the action is available in the database
+     *
+     * @param  id the object to check for
+     * @return    true/false if the object is available in the database
      */
     bool isObjectInDB(int id);
+
+    /**
+     * Checks if a set of objects is available in the database
+     *
+     * @param _objs The list of IDs of objects to choose from
+     * @return      The list of IDs of objects that are available
+     *              in the objectDB among those requested.
+     */
+    std::vector<int> areObjectsInDB(const std::vector<int> &_objs);
+
+    /**
+     * Chooses the object to act upon according to some rule. This method
+     * needs to be specialized in any derived class because it is dependent
+     * on the type of action and the type of sensory capabilities available.
+     *
+     * @param _objs The list of IDs of objects to choose from
+     * @return      the ID of the chosen object (by default the ID of the
+     *              first object will be chosen)
+     */
+    virtual int chooseObjectID(std::vector<int> _objs) { return _objs[0]; };
 
     /**
      * Prints the object database to screen.
@@ -316,17 +344,17 @@ public:
     void publishState();
 
     /* Self-explaining "setters" */
-    void setSubState(std::string _state) { sub_state =  _state; };
-    virtual void setObjectID(int _obj)   { object_id =    _obj; };
+    void setSubState(std::string _state);
+    virtual void   setObjectID(int _obj) { object_id =    _obj; };
     void setAction(std::string _action);
 
     void setState(int _state);
 
     /* Self-explaining "getters" */
-    std::string getSubState() { return sub_state; };
-    std::string getAction()   { return    action; };
-    int         getObjectID() { return object_id; };
-    bool        getInternalRecovery() { return internal_recovery; };
+    std::string  getSubState() { return         sub_state; };
+    std::string    getAction() { return            action; };
+    int          getObjectID() { return         object_id; };
+    bool getInternalRecovery() { return internal_recovery; };
 };
 
 #endif

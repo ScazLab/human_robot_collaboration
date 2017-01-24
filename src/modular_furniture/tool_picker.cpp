@@ -14,6 +14,8 @@ ToolPicker::ToolPicker(std::string _name, std::string _limb, bool _no_robot) :
     insertAction(ACTION_GET,       static_cast<f_action>(&ToolPicker::getObject));
     insertAction(ACTION_PASS,      static_cast<f_action>(&ToolPicker::passObject));
     insertAction(ACTION_GET_PASS,  static_cast<f_action>(&ToolPicker::getPassObject));
+    insertAction(ACTION_CLEANUP,   static_cast<f_action>(&ToolPicker::notImplemented));
+    insertAction(ACTION_HOLD,      static_cast<f_action>(&ToolPicker::notImplemented));
 
     printActionDB();
 
@@ -45,7 +47,11 @@ bool ToolPicker::pickUpObject()
         return false;
     }
 
-    if (!waitForCartEstData()) return false;
+    if (!waitForCartEstData())
+    {
+        setSubState(NO_OBJ);
+        return false;
+    }
 
     geometry_msgs::Quaternion q;
 
@@ -112,7 +118,6 @@ bool ToolPicker::pickUpObject()
             if(hasCollided("strict"))
             {
                 ROS_INFO("Collision!");
-                setSubState(ACTION_GET);
                 return true;
             }
 
@@ -130,6 +135,31 @@ bool ToolPicker::pickUpObject()
     }
 
     return false;
+}
+
+int ToolPicker::chooseObjectID(std::vector<int> _objs)
+{
+    int res = -1;
+
+    // if (!hoverAbovePool()) return res;
+    if (!waitForCartEstOK())        return res;
+
+    std::vector<string> objs_str;
+    for (size_t i = 0; i < _objs.size(); ++i)
+    {
+        objs_str.push_back(getObjectNameFromDB(_objs[i]));
+    }
+
+    std::vector<string> av_objects = getAvailableObjects(objs_str);
+
+    if (av_objects.size() == 0)     return res;
+
+    std::srand(std::time(0)); //use current time as seed
+    string res_str = av_objects[rand() % av_objects.size()];
+
+    res = getObjectIDFromDB(res_str);
+
+    return res;
 }
 
 bool ToolPicker::getObject()
@@ -182,7 +212,7 @@ void ToolPicker::setHomeConfiguration()
 void ToolPicker::setObjectID(int _obj)
 {
     ArmCtrl::setObjectID(_obj);
-    CartesianEstimatorClient::setObjectName(ArmCtrl::getObjectName(_obj));
+    CartesianEstimatorClient::setObjectName(ArmCtrl::getObjectNameFromDB(_obj));
 }
 
 ToolPicker::~ToolPicker()

@@ -1,3 +1,5 @@
+#include <algorithm>
+
 #include "robot_perception/aruco_client.h"
 
 using namespace std;
@@ -14,13 +16,22 @@ void ARucoClient::clearMarkerPose()
 {
     aruco_ok     = false;
     marker_found = false;
+
+    available_markers.clear();
 }
 
 void ARucoClient::ARucoCb(const aruco_msgs::MarkerArray& msg)
 {
+    if (msg.markers.size() > 0)
+    {
+        available_markers.clear();
+    }
+
     for (size_t i = 0; i < msg.markers.size(); ++i)
     {
         // ROS_DEBUG("Processing marker with id %i",msg.markers[i].id);
+
+        available_markers.push_back(int(msg.markers[i].id));
 
         if (int(msg.markers[i].id) == getMarkerID())
         {
@@ -48,13 +59,30 @@ void ARucoClient::ARucoCb(const aruco_msgs::MarkerArray& msg)
     }
 }
 
-bool ARucoClient::waitForARucoData()
+std::vector<int> ARucoClient::getAvailableMarkers(std::vector<int> _markers)
+{
+    std::vector<int> res;
+
+    for (size_t i = 0; i < _markers.size(); ++i)
+    {
+        if(std::find(available_markers.begin(), available_markers.end(),
+                                _markers[i]) != available_markers.end())
+        {
+            /* available_markers contains _markers[i] */
+            res.push_back(_markers[i]);
+        }
+    }
+
+    return res;
+}
+
+bool ARucoClient::waitForARucoOK()
 {
     clearMarkerPose();
-    ROS_INFO("[%s] Waiting for ARuco data..", getArucoLimb().c_str());
-    int cnt=0;
 
+    int cnt = 0;
     ros::Rate r(10);
+
     while (!aruco_ok)
     {
         if (cnt!=0) // let's skip the first one since it is very likely to occur
@@ -72,7 +100,19 @@ bool ARucoClient::waitForARucoData()
         r.sleep();
     }
 
-    cnt=0;
+    return true;
+}
+
+bool ARucoClient::waitForARucoData()
+{
+    clearMarkerPose();
+    ROS_INFO("[%s] Waiting for ARuco data..", getArucoLimb().c_str());
+
+    if (!waitForARucoOK()) return false;
+
+    int cnt=0;
+    ros::Rate r(10);
+
     while (!marker_found)
     {
         if (cnt!=0) // let's skip the first one since it is very likely to occurr

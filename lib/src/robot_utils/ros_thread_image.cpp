@@ -12,7 +12,7 @@ ROSThreadImage::ROSThreadImage(std::string name) :  ROSThread(), _n(name), _name
     pthread_mutexattr_settype(&_mutex_attr, PTHREAD_MUTEX_RECURSIVE_NP);
     pthread_mutex_init(&_mutex_img, &_mutex_attr);
 
-    _img_sub = _img_trp.subscribe("/"+getName()+"/image",
+    _img_sub = _img_trp.subscribe("/"+getName()+"/image", // "/cameras/right_hand_camera/image",
                            SUBSCRIBER_BUFFER, &ROSThreadImage::imageCb, this);
 
     spinner.start();
