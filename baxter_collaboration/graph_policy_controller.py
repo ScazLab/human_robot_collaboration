@@ -7,54 +7,59 @@ from baxter_collaboration.suscribers import (CommunicationSuscriber,
 from svox_tts.srv import Speech, SpeechRequest
 
 
-COM_TOPIC = '/web_interface/pub'
-ERR_TOPIC = '/robot/digital_io/left_lower_button/state'
-SPEECH_SERVICE = '/svox_tts/speech'
-ACTION_SERVICE_LEFT = '/action_provider/service_left'
-ACTION_SERVICE_RIGHT = '/action_provider/service_right'
-RELEASE = 'release'
-RECOVER = 'recover'
-
-
 def fake_service_proxy(*args):
     return True
 
 
-class BaseGPController(object):
+class BaseController(object):
+    """Abstract interaction with robot's ROS nodes.
 
-    T_WAIT = 1.  # Wait time
+    Uses the following ressources:
+    - service clients for left and right arm action providers,
+    - service client for text to speech,
+    - suscriber to communication topic,
+    - suscriber to error topic.
+    """
 
-    # Base observations
-    NONE = 'none'
-    YES = 'yes'
-    NO = 'no'
-    ERROR = 'error'
+    NODE_NAME = "experiment_controller"
+
+    COM_TOPIC = '/web_interface/pub'
+    ERR_TOPIC = '/robot/digital_io/left_lower_button/state'
+    SPEECH_SERVICE = '/svox_tts/speech'
+    ACTION_SERVICE_LEFT = '/action_provider/service_left'
+    ACTION_SERVICE_RIGHT = '/action_provider/service_right'
 
     HOME = 'home'
 
-    def __init__(self, policy_runner, timer_path=None, right=True):
-        self.pr = policy_runner
+    def __init__(self, timer_path=None, left=True, right=True):
         self.finished = False
         # ROS stuff
-        rospy.init_node("hold_and_release_controller")
-        rospy.loginfo('Waiting for left service...')
-        rospy.wait_for_service(ACTION_SERVICE_LEFT)
-        self.action_left = rospy.ServiceProxy(ACTION_SERVICE_LEFT, DoAction)
-        if right:
-            rospy.loginfo('Waiting for right service...')
-            rospy.wait_for_service(ACTION_SERVICE_RIGHT)
-            self.action_right = rospy.ServiceProxy(ACTION_SERVICE_RIGHT, DoAction)
+        rospy.init_node(self.NODE_NAME)
+        if left:  # Left arm action service client
+            rospy.loginfo('Waiting for left service...')
+            rospy.wait_for_service(self.ACTION_SERVICE_LEFT)
+            self.action_left = rospy.ServiceProxy(self.ACTION_SERVICE_LEFT, DoAction)
         else:
-            self.action_right = fake_service_proxy 
+            self.action_left = fake_service_proxy
+        if right:  # Right arm action service client
+            rospy.loginfo('Waiting for right service...')
+            rospy.wait_for_service(self.ACTION_SERVICE_RIGHT)
+            self.action_right = rospy.ServiceProxy(self.ACTION_SERVICE_RIGHT, DoAction)
+        else:
+            self.action_right = fake_service_proxy
+        # Text to speech client
         rospy.loginfo('Waiting for speech service...')
-        rospy.wait_for_service(SPEECH_SERVICE)
-        self.speech = rospy.ServiceProxy(SPEECH_SERVICE, Speech)
-        self.answer_sub = CommunicationSuscriber(COM_TOPIC, self._stop)
-        self.error_sub = ErrorSuscriber(ERR_TOPIC, timeout=5)
+        rospy.wait_for_service(self.SPEECH_SERVICE)
+        self.speech = rospy.ServiceProxy(self.SPEECH_SERVICE, Speech)
         self._say_req = None
+        # Suscriber to human answers
+        self.answer_sub = CommunicationSuscriber(self.COM_TOPIC, self._stop)
+        # Suscriber to errors
+        self.error_sub = ErrorSuscriber(self.ERR_TOPIC, timeout=5)
+        # Timer to log events
         self.timer = Timer(path=timer_path)
         rospy.loginfo('Done.')
-        self._home()
+        self._home()  # Home position
 
     def _home(self):
         rospy.loginfo('Going home befor starting.')
@@ -85,6 +90,34 @@ class BaseGPController(object):
             self._home()
 
     def run(self):
+        raise NotImplementedError
+
+    def take_action(self, action):
+        raise NotImplementedError
+
+
+class BaseGPController(BaseController):
+
+    NODE_NAME = "graph_policy_controller"
+
+    T_WAIT = 1.  # Wait time
+
+    # Base observations
+    NONE = 'none'
+    YES = 'yes'
+    NO = 'no'
+    ERROR = 'error'
+
+    def __init__(self, policy_runner, **kwargs):
+        self.pr = policy_runner
+        super(BaseGPController, self).__init__(**kwargs)
+
+    def action_wait(self):
+        rospy.loginfo("Waiting")
+        rospy.sleep(self.T_WAIT)
+        return self.NONE
+
+    def run(self):
         self.timer.start()
         obs = None
         while not self.finished:
@@ -100,11 +133,3 @@ class BaseGPController(object):
             except Exception as e:
                 rospy.logerr(e)
                 self.finished = True
-
-    def take_action(self, action):
-        raise NotImplemented
-
-    def action_wait(self):
-        rospy.loginfo("Waiting")
-        rospy.sleep(self.T_WAIT)
-        return self.NONE
