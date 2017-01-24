@@ -134,7 +134,7 @@ protected:
     virtual void setHomeConfiguration() { return; };
 
     /**
-     * Sets the high-level configuratino for the home position
+     * Sets the high-level configuration for the home position
      *
      * @param _loc the home position (either "pool" or "table")
      */
