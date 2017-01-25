@@ -42,8 +42,6 @@ bool SegmentedObjHSV::detectObject(const cv::Mat& _in, cv::Mat& _out, cv::Mat& _
     for (int i = 0; i < 4; ++i) dilate(img_thres, img_thres, cv::Mat());
     for (int i = 0; i < 2; ++i) erode(img_thres, img_thres, cv::Mat());
 
-    cv::bitwise_or(_out_thres, img_thres.clone(), _out_thres);
-
     // Find contours
     cv::findContours(img_thres, contours, hierarchy, CV_RETR_TREE,
                      CV_CHAIN_APPROX_SIMPLE, cv::Point(0, 0));
@@ -59,6 +57,11 @@ bool SegmentedObjHSV::detectObject(const cv::Mat& _in, cv::Mat& _out, cv::Mat& _
         }
     }
 
+    img_thres = cv::Mat::zeros(_in.size(), CV_8UC1);
+    cv::drawContours(img_thres, filt_contours, -1, cv::Scalar::all(255), CV_FILLED, 8);
+
+    cv::bitwise_or(_out_thres, img_thres.clone(), _out_thres);
+
     // If there no contours any more, the object is not there
     if (filt_contours.size() == 0)
     {
@@ -66,23 +69,33 @@ bool SegmentedObjHSV::detectObject(const cv::Mat& _in, cv::Mat& _out, cv::Mat& _
         return false;
     }
 
+    Contour detected_obj;
+
     // At this stage, there should be only a contour in the vector of contours.
-    // If this is not the case, let's pick the contour with the biggest area
-    int largest_area=0;
-    int largest_contour_idx=-1;
-
-    for( size_t i = 0; i< filt_contours.size(); i++ )
-    {
-        double a = contourArea(filt_contours[i], false);  //  Find the area of contour
-
-        if( a > largest_area )
+    // Strategy 1: If this is not the case, let's merge all the available contours
+        for (size_t i = 0; i < filt_contours.size(); ++i)
         {
-            largest_area = a;
-            largest_contour_idx = i;                // Store the index of largest contour
+            detected_obj.insert(detected_obj.end(), filt_contours[i].begin(), filt_contours[i].end());
         }
-    }
 
-    rect = minAreaRect(cv::Mat(filt_contours[largest_contour_idx]));
+    // Strategy 2: If this is not the case, let's pick the contour with the biggest area
+        // int largest_area=0;
+        // int largest_contour_idx=-1;
+
+        // for( size_t i = 0; i< filt_contours.size(); i++ )
+        // {
+        //     double a = contourArea(filt_contours[i], false);  //  Find the area of contour
+
+        //     if( a > largest_area )
+        //     {
+        //         largest_area = a;
+        //         largest_contour_idx = i;                // Store the index of largest contour
+        //     }
+        // }
+
+        // detected_obj = filt_contours[largest_contour_idx];
+
+    rect = minAreaRect(cv::Mat(detected_obj));
 
     cv::Scalar color = cv::Scalar::all(255);
 

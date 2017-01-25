@@ -41,7 +41,7 @@
     <rosparam param = "hsv_detector/objects_db">
         [["screwdriver"  , [0.099, 0.030], [160,  10], [ 70, 166], [10,  66]],
          <!-- This should be the small blue box -->
-         ["screws_box"   , [0.112, 0.112], [ 80, 130], [120, 216], [70, 136]],
+         ["screws_box"   , [0.112, 0.112], [ 80, 130], [120, 216], [70, 146]],
          <!-- This should be the big green box -->
          ["brackets_box" , [0.137, 0.137], [ 30, 100], [ 80, 246], [20,  66]]]
     </rosparam>
@@ -58,9 +58,6 @@
     <param name="action_provider/relative_force_threshold_left"     value="65.0"/>
     <param name="action_provider/relative_force_threshold_right"    value="1.0"/>
 
-    <!-- If the robot will recover from an error or will wait for the external planner's decisions -->
-    <param name="action_provider/internal_recovery"     value="false"/>
-
     <!-- Parameters for force interaction -->
     <arg name="forceFilterVarianceL" default="0.001"/>
     <arg name="forceFilterVarianceR" default="1.0"/>
@@ -73,15 +70,10 @@
     <param name="action_provider/relative_force_threshold_right"    value="$(arg relativeForceThresholdR)"/>
 
     <!-- If the robot will recover from an error or will wait for the external planner's decisions -->
-    <arg name="internalRecovery"    default="true"/>
+    <arg name="internalRecovery"    default="false"/>
     <param name="action_provider/internal_recovery"     value="$(arg internalRecovery)"/>
 
-    <!-- Parameter for speech pop up duration -->
-    <arg name="speechPopUpDuration"  default="20.0"/>    <!-- [s] -->
-    <param name="baxter_display/speech_duration"        value="$(arg speechPopUpDuration)"/>
-
-    <node pkg="baxter_collaboration" type="modular_action_provider" name="modular_action_provider" output="screen">
-    </node>
+    <node pkg="baxter_collaboration" type="modular_action_provider" name="modular_action_provider" output="screen"/>
 
     <!-- VISUALIZATION & MISC -->
     <!-- Parameter for speech pop up duration -->
