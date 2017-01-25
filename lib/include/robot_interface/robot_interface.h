@@ -107,7 +107,8 @@ private:
     /**
      * Cuff buttons
      */
-    ros::Subscriber _cuff_sub;
+    ros::Subscriber _cuff_sub_lower; // circle button
+    ros::Subscriber _cuff_sub_upper; // oval button
 
     /**
      * Control server
@@ -202,11 +203,18 @@ private:
     void endpointCb(const baxter_core_msgs::EndpointState& msg);
 
     /*
-     * Callback function for the CUFF OK button
+     * Callback function for the lower (circle) CUFF OK button
      *
      * @param msg the topic message
      */
-    void cuffCb(const baxter_core_msgs::DigitalIOState& msg);
+    void cuffLowerCb(const baxter_core_msgs::DigitalIOState& msg);
+
+    /*
+     * Callback function for the upper (oval) CUFF OK button
+     *
+     * @param msg the topic message
+     */
+    void cuffUpperCb(const baxter_core_msgs::DigitalIOState& msg);
 
     /**
      * Callback for the joint states. Used to seed the

@@ -35,8 +35,12 @@ RobotInterface::RobotInterface(string name, string limb, bool no_robot, bool use
 
     _ir_sub        = _n.subscribe("/robot/range/" + _limb + "_hand_range/state",
                                     SUBSCRIBER_BUFFER, &RobotInterface::IRCb, this);
-    _cuff_sub      = _n.subscribe("/robot/digital_io/" + _limb + "_lower_button/state",
-                                    SUBSCRIBER_BUFFER, &RobotInterface::cuffCb, this);
+
+    _cuff_sub_lower = _n.subscribe("/robot/digital_io/" + _limb + "_lower_button/state",
+                                    SUBSCRIBER_BUFFER, &RobotInterface::cuffLowerCb, this);
+
+    _cuff_sub_upper = _n.subscribe("/robot/digital_io/" + _limb + "_upper_button/state",
+                                    SUBSCRIBER_BUFFER, &RobotInterface::cuffUpperCb, this);
 
     _jntstate_sub  = _n.subscribe("/robot/joint_states",
                                     SUBSCRIBER_BUFFER, &RobotInterface::jointStatesCb, this);
@@ -351,7 +355,17 @@ void RobotInterface::jointStatesCb(const sensor_msgs::JointState& msg)
     return;
 }
 
-void RobotInterface::cuffCb(const baxter_core_msgs::DigitalIOState& msg)
+void RobotInterface::cuffLowerCb(const baxter_core_msgs::DigitalIOState& msg)
+{
+    if (msg.state == baxter_core_msgs::DigitalIOState::PRESSED)
+    {
+        setState(KILLED);
+    }
+
+    return;
+}
+
+void RobotInterface::cuffUpperCb(const baxter_core_msgs::DigitalIOState& msg)
 {
     if (msg.state == baxter_core_msgs::DigitalIOState::PRESSED)
     {
