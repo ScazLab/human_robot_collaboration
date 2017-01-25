@@ -208,6 +208,18 @@ geometry_msgs::Point operator/ (const geometry_msgs::Point& a, const double& b);
 double dot(const geometry_msgs::Point& a, const geometry_msgs::Point& b);
 
 /**
+ * Assigns a set of doubles to a quaternion. It is not possible to create the
+ * assignment operator as a free function, so I had to resort to this hack
+ *
+ * @param q The quaternion to assign the doubles to
+ * @param x The new x value of the quaternion
+ * @param y The new y value of the quaternion
+ * @param z The new z value of the quaternion
+ * @param w The new w value of the quaternion
+ */
+void quaternionFromDoubles(geometry_msgs::Quaternion &q,
+                           double x, double y, double z, double w);
+/**
  * Print function for a geometry_msgs::Point.
  *
  * @return A text description of the Point.

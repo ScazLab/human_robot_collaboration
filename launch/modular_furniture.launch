@@ -10,7 +10,7 @@
         <param name="autosize" value="true" />
     </node> -->
 
-    <!-- <include file="$(find baxter_collaboration)/launch/baxter_marker_publisher.launch" /> -->
+    <include file="$(find baxter_collaboration)/launch/baxter_marker_publisher.launch" />
 
     <param name="hsv_detector/reference_frame" value="/base"/>
     <param name="hsv_detector/camera_frame"    value="/right_hand_camera"/>
@@ -40,10 +40,10 @@
     <!-- Objects database for the hsv cartesian detector -->
     <rosparam param = "hsv_detector/objects_db">
         [["screwdriver"  , [0.099, 0.030], [160,  10], [ 70, 166], [10,  66]],
-         <!-- This should be the small blue box -->
-         ["screws_box"   , [0.137, 0.137], [ 80, 130], [120, 216], [70, 146]],
-         <!-- This should be the big green box -->
-         ["brackets_box" , [0.137, 0.137], [ 30, 100], [ 80, 246], [20,  96]]]
+         <!-- This should be the blue box -->
+         ["screws_box"   , [0.110, 0.110], [ 80, 130], [120, 216], [70, 146]],
+         <!-- This should be the green box -->
+         ["brackets_box" , [0.110, 0.110], [ 30, 100], [ 80, 246], [20,  96]]]
     </rosparam>
 
     <!-- CONTROL -->

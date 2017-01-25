@@ -66,7 +66,7 @@ bool ToolPicker::pickUpObject()
     if (!computeOrientation(q))             return false;
 
     ROS_INFO("Going to: %g %g %g", x, y, z);
-    if (!goToPose(x, y, z, q.x,q.y,q.z,q.w,"loose"))
+    if (!goToPose(x, y, z, q.x, q.y, q.z, q.w, "loose"))
     {
         return false;
     }
@@ -94,7 +94,7 @@ bool ToolPicker::pickUpObject()
         ROS_DEBUG("Time %g Going to: %g %g %g Position: %g %g %g", new_elap_time, x, y, z,
                                                        getPos().x, getPos().y, getPos().z);
 
-        if (goToPoseNoCheck(x,y,z,q.x,q.y,q.z,q.w))
+        if (goToPoseNoCheck(x,y,z,q.x, q.y, q.z, q.w))
         {
             cnt_ik_fail = 0;
             if (new_elap_time - elap_time > 0.02)
@@ -105,6 +105,10 @@ bool ToolPicker::pickUpObject()
 
             if(hasCollidedIR("strict") || hasCollidedCD())
             {
+                if (hasCollidedCD())
+                {
+                    moveArm("up", 0.002);
+                }
                 ROS_INFO("Collision!");
                 return true;
             }
@@ -121,7 +125,7 @@ bool ToolPicker::pickUpObject()
 
 bool ToolPicker::computeOffsets(double &_x_offs, double &_y_offs)
 {
-    if      (getAction() ==     ACTION_GET)
+    if      (getAction() == ACTION_GET || getAction() == ACTION_GET_PASS)
     {
         if (CartesianEstimatorClient::getObjectName() == "screwdriver")
         {
@@ -131,7 +135,7 @@ bool ToolPicker::computeOffsets(double &_x_offs, double &_y_offs)
         else if (CartesianEstimatorClient::getObjectName() == "screws_box"  ||
                  CartesianEstimatorClient::getObjectName() == "brackets_box")
         {
-            _x_offs = +0.065;
+            _x_offs = +0.06;
         }
     }
     else if (getAction() == ACTION_CLEANUP)
@@ -139,16 +143,17 @@ bool ToolPicker::computeOffsets(double &_x_offs, double &_y_offs)
         if (CartesianEstimatorClient::getObjectName() == "screwdriver")
         {
             _x_offs = -0.020;
-            _y_offs = -0.015;
+            _y_offs = -0.010;
         }
         else if (CartesianEstimatorClient::getObjectName() == "screws_box"  ||
                  CartesianEstimatorClient::getObjectName() == "brackets_box")
         {
-            _y_offs = -0.065;
+            _y_offs = -0.058;
         }
     }
     else
     {
+        ROS_ERROR("State is neither ACTION_GET, ACTION_GET_PASS or ACTION_CLEANUP!");
         return false;
     }
 
@@ -157,16 +162,17 @@ bool ToolPicker::computeOffsets(double &_x_offs, double &_y_offs)
 
 bool ToolPicker::computeOrientation(geometry_msgs::Quaternion &_q)
 {
-    if      (getAction() ==     ACTION_GET)
+    if      (getAction() == ACTION_GET || getAction() == ACTION_GET_PASS)
     {
-        // _q = geometry_msgs::Quaternion(POOL_ORI_R);
+        quaternionFromDoubles(_q, POOL_ORI_R);
     }
     else if (getAction() == ACTION_CLEANUP)
     {
-        // _q = geometry_msgs::Quaternion(VERTICAL_ORI_R);
+        quaternionFromDoubles(_q, VERTICAL_ORI_R);
     }
     else
     {
+        ROS_ERROR("State is neither ACTION_GET, ACTION_GET_PASS or ACTION_CLEANUP!");
         return false;
     }
 
@@ -216,10 +222,10 @@ bool ToolPicker::passObject()
 
     if (CartesianEstimatorClient::getObjectName() == "screwdriver")
     {
-        if (!moveObjectTowardHuman())       return false;
+        if (!goToPose(0.85, -0.26, 0.27, HORIZONTAL_ORI_R)) return false;
         ros::Duration(1.0).sleep();
-        if (!waitForForceInteraction())     return false;
-        if (!releaseObject())               return false;
+        if (!waitForForceInteraction())                     return false;
+        if (!releaseObject())                               return false;
     }
     else if (CartesianEstimatorClient::getObjectName() == "screws_box"  ||
              CartesianEstimatorClient::getObjectName() == "brackets_box")
@@ -228,11 +234,11 @@ bool ToolPicker::passObject()
 
         if (CartesianEstimatorClient::getObjectName() == "brackets_box")
         {
-            if (!goToPose(0.65, -0.00, -0.06, VERTICAL_ORI_R)) return false;
+            if (!goToPose(0.65, -0.10, -0.10, VERTICAL_ORI_R)) return false;
         }
         else
         {
-            if (!goToPose(0.65, -0.25, -0.06, VERTICAL_ORI_R)) return false;
+            if (!goToPose(0.65, -0.30, -0.10, VERTICAL_ORI_R)) return false;
         }
 
         ros::Duration(0.5).sleep();
@@ -257,13 +263,30 @@ bool ToolPicker::getPassObject()
 bool ToolPicker::cleanUpObject()
 {
     if (!goToPose(0.65, -0.25, 0.25, VERTICAL_ORI_R)) return false;
-    return true;
-}
+    ros::Duration(0.05).sleep();
+    if (!pickUpObject())            return false;
+    if (!gripObject())              return false;
+    if (!moveArm("up", 0.3))        return false;
+    if (!homePoseStrict())          return false;
 
-bool ToolPicker::moveObjectTowardHuman()
-{
-    ROS_INFO("[%s] Moving object toward human..", getLimb().c_str());
-    return goToPose(0.80, -0.26, 0.32, VERTICAL_ORI_L);
+    if (CartesianEstimatorClient::getObjectName() == "screwdriver")
+    {
+        if (!goToPose(0.20, -0.85, -0.27, POOL_ORI_R)) return false;
+    }
+    else if (CartesianEstimatorClient::getObjectName() == "brackets_box")
+    {
+        if (!goToPose(0.00, -0.85, -0.20, POOL_ORI_R)) return false;
+    }
+    else if (CartesianEstimatorClient::getObjectName() == "screws_box")
+    {
+        if (!goToPose(-0.15, -0.85, -0.20, POOL_ORI_R)) return false;
+    }
+
+    ros::Duration(0.5).sleep();
+    if (!releaseObject())           return false;
+    if (!homePoseStrict())          return false;
+
+    return true;
 }
 
 void ToolPicker::setHomeConfiguration()

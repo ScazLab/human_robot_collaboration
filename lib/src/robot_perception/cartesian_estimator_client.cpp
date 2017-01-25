@@ -81,7 +81,7 @@ bool CartesianEstimatorClient::waitForCartEstOK()
     clearObjectPose();
 
     int cnt=0;
-    ros::Rate r(50);
+    ros::Rate r(10);
 
     while (!cartest_ok)
     {

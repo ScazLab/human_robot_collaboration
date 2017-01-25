@@ -176,6 +176,15 @@ std::string print(geometry_msgs::Pose p)
     return res.str();
 }
 
+void quaternionFromDoubles(geometry_msgs::Quaternion &q,
+                           double x, double y, double z, double w)
+{
+    q.x =x;
+    q.y =y;
+    q.z =z;
+    q.w =w;
+}
+
 /**************************************************************************/
 /*                               Utils                                    */
 /**************************************************************************/

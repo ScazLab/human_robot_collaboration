@@ -16,12 +16,6 @@ private:
     double elap_time;
 
     /**
-     * [moveObjectTowardHuman description]
-     * @return true/false if success/failure
-     */
-    bool moveObjectTowardHuman();
-
-    /**
      * [getObject description]
      * @return true/false if success/failure
      */
