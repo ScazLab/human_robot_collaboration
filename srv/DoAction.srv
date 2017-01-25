@@ -21,6 +21,7 @@ bool   success
 # why an action failed. There may be multiple reasons, but some
 # defaults are listed below.
 
+string NO_IR_SENSOR   = No callback from the IR sensor
 string OBJ_NOT_IN_DB  = Requested object not available in DB
 string NO_OBJ         = No object detected
 string ACT_FAILED     = Action failed from user input

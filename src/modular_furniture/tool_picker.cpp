@@ -43,6 +43,7 @@ bool ToolPicker::pickUpObject()
     if (!is_ir_ok())
     {
         ROS_ERROR("No callback from the IR sensor! Stopping.");
+        setSubState(NO_IR_SENSOR);
         return false;
     }
 
@@ -54,8 +55,8 @@ bool ToolPicker::pickUpObject()
 
     geometry_msgs::Quaternion q;
 
-    double x = getObjectPos().x+0.02;
-    double y = getObjectPos().y-0.02;
+    double x = getObjectPos().x;
+    double y = getObjectPos().y;
     double z =       getPos().z;
 
     ROS_INFO("Going to: %g %g %g", x, y, z);
@@ -93,11 +94,8 @@ bool ToolPicker::pickUpObject()
             offs_x = +0.015;
             offs_y = +0.020;
         }
-        else if (CartesianEstimatorClient::getObjectName() == "screws_box")
-        {
-            offs_x = +0.055;
-        }
-        else if (CartesianEstimatorClient::getObjectName() == "brackets_box")
+        else if (CartesianEstimatorClient::getObjectName() == "screws_box"  ||
+                 CartesianEstimatorClient::getObjectName() == "brackets_box")
         {
             offs_x = +0.065;
         }
@@ -192,7 +190,7 @@ bool ToolPicker::passObject()
              CartesianEstimatorClient::getObjectName() == "brackets_box")
     {
         if (!hoverAboveTable(Z_LOW))    return false;
-        if (!hoverAboveTable(-0.1))     return false;
+        if (!hoverAboveTable(-0.05))    return false;
         if (!releaseObject())           return false;
         if (!hoverAboveTable(Z_LOW))    return false;
     }

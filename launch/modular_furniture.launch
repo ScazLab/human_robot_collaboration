@@ -16,7 +16,7 @@
     <param name="hsv_detector/camera_frame"    value="/right_hand_camera"/>
     <param name="hsv_detector/area_threshold"  value="250"/>
 
-    <node pkg="baxter_collaboration" type="hsv_detector" name="hsv_detector" output="screen">
+    <node pkg="baxter_collaboration" type="hsv_detector" name="hsv_detector" output="screen" respawn="true">
         <remap from="hsv_detector/image" to="/cameras/right_hand_camera/image"/>
         <remap from="hsv_detector/camera_info" to="/cameras/right_hand_camera/camera_info"/>
     </node>
@@ -41,7 +41,7 @@
     <rosparam param = "hsv_detector/objects_db">
         [["screwdriver"  , [0.099, 0.030], [160,  10], [ 70, 166], [10,  66]],
          <!-- This should be the small blue box -->
-         ["screws_box"   , [0.112, 0.112], [ 80, 130], [120, 216], [70, 146]],
+         ["screws_box"   , [0.137, 0.137], [ 80, 130], [120, 216], [70, 146]],
          <!-- This should be the big green box -->
          ["brackets_box" , [0.137, 0.137], [ 30, 100], [ 80, 246], [20,  96]]]
     </rosparam>

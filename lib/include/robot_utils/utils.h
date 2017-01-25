@@ -43,6 +43,7 @@
 #define LIST_OBJECTS        baxter_collaboration::DoAction::Request::LIST_OBJECTS
 
 // Response states to send back to the service
+#define NO_IR_SENSOR    baxter_collaboration::DoAction::Response::NO_IR_SENSOR
 #define OBJ_NOT_IN_DB   baxter_collaboration::DoAction::Response::OBJ_NOT_IN_DB
 #define NO_OBJ          baxter_collaboration::DoAction::Response::NO_OBJ
 #define ACT_FAILED      baxter_collaboration::DoAction::Response::ACT_FAILED
