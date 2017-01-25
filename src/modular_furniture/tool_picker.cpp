@@ -14,7 +14,7 @@ ToolPicker::ToolPicker(std::string _name, std::string _limb, bool _no_robot) :
     insertAction(ACTION_GET,       static_cast<f_action>(&ToolPicker::getObject));
     insertAction(ACTION_PASS,      static_cast<f_action>(&ToolPicker::passObject));
     insertAction(ACTION_GET_PASS,  static_cast<f_action>(&ToolPicker::getPassObject));
-    insertAction(ACTION_CLEANUP,   static_cast<f_action>(&ToolPicker::notImplemented));
+    insertAction(ACTION_CLEANUP,   static_cast<f_action>(&ToolPicker::cleanUpObject));
 
     printActionDB();
 
@@ -38,7 +38,7 @@ ToolPicker::ToolPicker(std::string _name, std::string _limb, bool _no_robot) :
 bool ToolPicker::pickUpObject()
 {
     ROS_INFO("[%s] Start Picking up object %s..", getLimb().c_str(),
-              CartesianEstimatorClient::getObjectName().c_str());
+                  CartesianEstimatorClient::getObjectName().c_str());
 
     if (!is_ir_ok())
     {
@@ -53,52 +53,39 @@ bool ToolPicker::pickUpObject()
         return false;
     }
 
-    geometry_msgs::Quaternion q;
+    double offs_x = 0.0;
+    double offs_y = 0.0;
 
-    double x = getObjectPos().x;
-    double y = getObjectPos().y;
+    if (!computeOffsets(offs_x, offs_y))    return false;
+
+    double x = getObjectPos().x + offs_x;
+    double y = getObjectPos().y + offs_y;
     double z =       getPos().z;
 
+    geometry_msgs::Quaternion q;
+    if (!computeOrientation(q))             return false;
+
     ROS_INFO("Going to: %g %g %g", x, y, z);
-    if (!goToPose(x, y, z, POOL_ORI_R,"loose"))
+    if (!goToPose(x, y, z, q.x,q.y,q.z,q.w,"loose"))
     {
         return false;
     }
 
-    if (!waitForCartEstData()) return false;
+    if (!waitForCartEstData())
+    {
+        setSubState(NO_OBJ);
+        return false;
+    }
 
     ros::Time start_time = ros::Time::now();
     double z_start       =       getPos().z;
-    int cnt_ik_fail      =                0;
+    int cnt_ik_fail = 0;
 
-    double period = 100.0;
-    ros::Rate r(period);
+    ros::Rate r(THREAD_FREQ);
 
     while(RobotInterface::ok())
     {
         double new_elap_time = (ros::Time::now() - start_time).toSec();
-
-        // geometry_msgs::Point p_n = getPos();
-        // geometry_msgs::Point p_d = getObjectPos();
-        // p_d.x += 0.02;
-        // p_d.y -= 0.02;
-        // geometry_msgs::Point p_c = p_n + (p_d - p_n) / norm(p_d - p_n) * ARM_SPEED * (1/period);
-
-        // The offsets are for gripping the screwdriver not in its center
-        // but where the screwdriver is thinner
-        double offs_x = 0.0;
-        double offs_y = 0.0;
-
-        if (CartesianEstimatorClient::getObjectName() == "screwdriver")
-        {
-            offs_x = +0.015;
-            offs_y = +0.020;
-        }
-        else if (CartesianEstimatorClient::getObjectName() == "screws_box"  ||
-                 CartesianEstimatorClient::getObjectName() == "brackets_box")
-        {
-            offs_x = +0.065;
-        }
 
         x = getObjectPos().x + offs_x;
         y = getObjectPos().y + offs_y;
@@ -107,7 +94,7 @@ bool ToolPicker::pickUpObject()
         ROS_DEBUG("Time %g Going to: %g %g %g Position: %g %g %g", new_elap_time, x, y, z,
                                                        getPos().x, getPos().y, getPos().z);
 
-        if (goToPoseNoCheck(x,y,z,POOL_ORI_R))
+        if (goToPoseNoCheck(x,y,z,q.x,q.y,q.z,q.w))
         {
             cnt_ik_fail = 0;
             if (new_elap_time - elap_time > 0.02)
@@ -124,18 +111,66 @@ bool ToolPicker::pickUpObject()
 
             r.sleep();
         }
-        else
-        {
-            cnt_ik_fail++;
-        }
+        else    cnt_ik_fail++;
 
-        if (cnt_ik_fail == 10)
-        {
-            return false;
-        }
+        if (cnt_ik_fail == 10)  return false;
     }
 
     return false;
+}
+
+bool ToolPicker::computeOffsets(double &_x_offs, double &_y_offs)
+{
+    if      (getAction() ==     ACTION_GET)
+    {
+        if (CartesianEstimatorClient::getObjectName() == "screwdriver")
+        {
+            _x_offs = +0.015;
+            _y_offs = +0.020;
+        }
+        else if (CartesianEstimatorClient::getObjectName() == "screws_box"  ||
+                 CartesianEstimatorClient::getObjectName() == "brackets_box")
+        {
+            _x_offs = +0.065;
+        }
+    }
+    else if (getAction() == ACTION_CLEANUP)
+    {
+        if (CartesianEstimatorClient::getObjectName() == "screwdriver")
+        {
+            _x_offs = -0.020;
+            _y_offs = -0.015;
+        }
+        else if (CartesianEstimatorClient::getObjectName() == "screws_box"  ||
+                 CartesianEstimatorClient::getObjectName() == "brackets_box")
+        {
+            _y_offs = -0.065;
+        }
+    }
+    else
+    {
+        return false;
+    }
+
+    return true;
+}
+
+bool ToolPicker::computeOrientation(geometry_msgs::Quaternion &_q)
+{
+    if      (getAction() ==     ACTION_GET)
+    {
+        // _q = geometry_msgs::Quaternion(POOL_ORI_R);
+    }
+    else if (getAction() == ACTION_CLEANUP)
+    {
+        // _q = geometry_msgs::Quaternion(VERTICAL_ORI_R);
+    }
+    else
+    {
+        return false;
+    }
+
+    return true;
 }
 
 int ToolPicker::chooseObjectID(std::vector<int> _objs)
@@ -190,7 +225,17 @@ bool ToolPicker::passObject()
              CartesianEstimatorClient::getObjectName() == "brackets_box")
     {
         if (!hoverAboveTable(Z_LOW))    return false;
-        if (!hoverAboveTable(-0.05))    return false;
+
+        if (CartesianEstimatorClient::getObjectName() == "brackets_box")
+        {
+            if (!goToPose(0.65, -0.00, -0.06, VERTICAL_ORI_R)) return false;
+        }
+        else
+        {
+            if (!goToPose(0.65, -0.25, -0.06, VERTICAL_ORI_R)) return false;
+        }
+
+        ros::Duration(0.5).sleep();
         if (!releaseObject())           return false;
         if (!hoverAboveTable(Z_LOW))    return false;
     }
@@ -206,6 +251,12 @@ bool ToolPicker::getPassObject()
     setPrevAction(ACTION_GET);
     if (!passObject())     return false;
 
+    return true;
+}
+
+bool ToolPicker::cleanUpObject()
+{
+    if (!goToPose(0.65, -0.25, 0.25, VERTICAL_ORI_R)) return false;
     return true;
 }
 

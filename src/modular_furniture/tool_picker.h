@@ -45,6 +45,33 @@ private:
      */
     bool pickUpObject();
 
+    /**
+     * Cleans up the selected obejct from the table by using the cartesian estimator's info
+     * @return true/false if success/failure
+     */
+    bool cleanUpObject();
+
+    /**
+     * Computes object-specific (and pose-specific) offsets in order for the robot
+     * to grip the object not in the center of its coordinate system but where
+     * it is most convenient for the gripper
+     *
+     * @param x_offs The x offset
+     * @param y_offs The y offset
+     *
+     * @return true/false if success/failure
+     */
+    bool computeOffsets(double &x_offs, double &y_offs);
+
+    /**
+     * Computes action-specific orientation in order for the robto to be able to
+     * be transparent with respect to different actions in different poses
+     *
+     * @param _ori The desired orientation as a quaternion
+     * @return true/false if success/failure
+     */
+    bool computeOrientation(geometry_msgs::Quaternion &_q);
+
 protected:
 
     /**

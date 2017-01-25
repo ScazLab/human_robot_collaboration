@@ -152,7 +152,7 @@ bool ArmCtrl::serviceCb(baxter_collaboration::DoAction::Request  &req,
     // with the internal thread that just started
     ros::Duration(0.5).sleep();
 
-    ros::Rate r(100);
+    ros::Rate r(THREAD_FREQ);
     while( ros::ok() && ( int(getState()) != START   &&
                           int(getState()) != ERROR   &&
                           int(getState()) != DONE      ))
@@ -182,6 +182,10 @@ bool ArmCtrl::serviceCb(baxter_collaboration::DoAction::Request  &req,
          int(getState()) == DONE      )
     {
         res.success = true;
+    }
+    else if (getSubState() == "")
+    {
+        setSubState(ACT_FAILED);
     }
 
     ROS_INFO("[%s] Service reply with success: %s\n", getLimb().c_str(),
@@ -477,13 +481,13 @@ bool ArmCtrl::hoverAboveTable(double height, string mode, bool disable_coll_av)
 {
     if (getLimb() == "right")
     {
-        return RobotInterface::goToPose(HOME_POS_R, height, VERTICAL_ORI_R,
-                                                     mode, disable_coll_av);
+        return goToPose(HOME_POS_R, height, VERTICAL_ORI_R,
+                                    mode, disable_coll_av);
     }
     else if (getLimb() == "left")
     {
-        return RobotInterface::goToPose(HOME_POS_L, height, VERTICAL_ORI_L,
-                                                     mode, disable_coll_av);
+        return goToPose(HOME_POS_L, height, VERTICAL_ORI_L,
+                                    mode, disable_coll_av);
     }
     else return false;
 }
