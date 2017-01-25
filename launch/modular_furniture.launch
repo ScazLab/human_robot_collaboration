@@ -41,7 +41,7 @@
     <rosparam param = "hsv_detector/objects_db">
         [["screwdriver"  , [0.099, 0.030], [160,  10], [ 70, 166], [10,  66]],
          <!-- This should be the small blue box -->
-         ["screws_box"   , [0.112, 0.112], [ 80, 130], [120, 216], [40, 126]],
+         ["screws_box"   , [0.112, 0.112], [ 80, 130], [120, 216], [70, 136]],
          <!-- This should be the big green box -->
          ["brackets_box" , [0.137, 0.137], [ 30, 100], [ 80, 246], [20,  66]]]
     </rosparam>
