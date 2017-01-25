@@ -249,7 +249,7 @@ protected:
      *
      * @return true/false if success/failure
      */
-    bool poseRootRFAll();
+    bool poseRootRF();
 
     /**
      * Calculates the cartesian pose of the segmented object in the root frame
@@ -270,7 +270,7 @@ protected:
      *
      * @return true/false if success/failure
      */
-    bool draw3dAxisAll(cv::Mat &_img);
+    bool draw3dAxis(cv::Mat &_img);
 
     /**
      * Draws a 3D axis in the object

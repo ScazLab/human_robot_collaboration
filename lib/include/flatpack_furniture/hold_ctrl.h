@@ -38,12 +38,6 @@ private:
     bool prepare4HandOver();
 
     /**
-     * [handOver description]
-     * @return true/false if success/failure
-     */
-    bool handOver();
-
-    /**
      * [waitForOtherArm description]
      * @param  _wait_time      time to wait
      * @param  disable_coll_av if to disable the collision avoidance while
@@ -51,6 +45,13 @@ private:
      * @return                 true/false if success/failure
      */
     bool waitForOtherArm(double _wait_time = 60.0, bool disable_coll_av = false);
+
+protected:
+    /**
+     * [handOver description]
+     * @return true/false if success/failure
+     */
+    bool handOver();
 
     /**
      * Sets the joint-level configuration for the home position

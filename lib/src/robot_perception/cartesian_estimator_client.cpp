@@ -1,3 +1,5 @@
+#include <algorithm>
+
 #include "robot_perception/cartesian_estimator_client.h"
 
 using namespace std;
@@ -14,13 +16,22 @@ void CartesianEstimatorClient::clearObjectPose()
 {
     cartest_ok   = false;
     object_found = false;
+
+    available_objects.clear();
 }
 
 void CartesianEstimatorClient::ObjectCb(const baxter_collaboration::ObjectsArray& _msg)
 {
+    if (_msg.objects.size() > 0)
+    {
+        available_objects.clear();
+    }
+
     for (size_t i = 0; i < _msg.objects.size(); ++i)
     {
         // ROS_DEBUG("Processing object with id %i",_msg.objects[i].id);
+
+        available_objects.push_back(_msg.objects[i].name);
 
         if (_msg.objects[i].name == getObjectName())
         {
@@ -48,31 +59,60 @@ void CartesianEstimatorClient::ObjectCb(const baxter_collaboration::ObjectsArray
     }
 }
 
-bool CartesianEstimatorClient::waitForCartEstData()
+std::vector<string> CartesianEstimatorClient::getAvailableObjects(std::vector<string> _objects)
+{
+    std::vector<string> res;
+
+    for (size_t i = 0; i < _objects.size(); ++i)
+    {
+        if(std::find(available_objects.begin(), available_objects.end(),
+                                _objects[i]) != available_objects.end())
+        {
+            /* available_objects contains _objects[i] */
+            res.push_back(_objects[i]);
+        }
+    }
+
+    return res;
+}
+
+bool CartesianEstimatorClient::waitForCartEstOK()
 {
     clearObjectPose();
-    ROS_INFO("[%s] Waiting for ARuco data..", getCartesianEstimatorLimb().c_str());
-    int cnt=0;
 
-    ros::Rate r(10);
+    int cnt=0;
+    ros::Rate r(50);
+
     while (!cartest_ok)
     {
         if (cnt!=0) // let's skip the first one since it is very likely to occur
         {
-            ROS_WARN("No callback from ARuco. Is ARuco running?");
+            ROS_WARN("No callback from CartesianEstimator. Is CartesianEstimator running?");
         }
         ++cnt;
 
         if (cnt == 10)
         {
-            ROS_ERROR("No callback from ARuco! Stopping.");
+            ROS_ERROR("No callback from CartesianEstimator! Stopping.");
             return false;
         }
 
         r.sleep();
     }
 
-    cnt=0;
+    return true;
+}
+
+bool CartesianEstimatorClient::waitForCartEstData()
+{
+    clearObjectPose();
+    ROS_INFO("[%s] Waiting for CartesianEstimator data..", getCartesianEstimatorLimb().c_str());
+
+    if (!waitForCartEstOK()) return false;
+
+    int cnt=0;
+    ros::Rate r(10);
+
     while (!object_found)
     {
         if (cnt!=0) // let's skip the first one since it is very likely to occurr

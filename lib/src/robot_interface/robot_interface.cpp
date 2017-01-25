@@ -16,16 +16,16 @@ RobotInterface::RobotInterface(string name, string limb, bool no_robot, bool use
                                bool use_trac_ik, bool use_cart_ctrl) : _n(name), _name(name), _limb(limb),
                                _state(START), spinner(4), _no_robot(no_robot), _use_forces(use_forces), ir_ok(false),
                                ik_solver(limb, no_robot), _use_trac_ik(use_trac_ik), is_coll_av_on(false),
-                               _use_cart_ctrl(use_cart_ctrl), is_ctrl_running(false)
+                               is_coll_det_on(false), _use_cart_ctrl(use_cart_ctrl), is_ctrl_running(false)
 {
-    if (no_robot) return;
-
     pthread_mutexattr_t _mutex_attr;
     pthread_mutexattr_init(&_mutex_attr);
     pthread_mutexattr_settype(&_mutex_attr, PTHREAD_MUTEX_RECURSIVE_NP);
 
     pthread_mutex_init(&_mutex_jnts, &_mutex_attr);
     pthread_mutex_init(&_mutex_ctrl, &_mutex_attr);
+
+    if (no_robot) return;
 
     _joint_cmd_pub = _n.advertise<JointCommand>("/robot/limb/" + _limb + "/joint_command", 1);
     _coll_av_pub   = _n.advertise<Empty>("/robot/limb/" + _limb + "/suppress_collision_avoidance", 1);
@@ -47,6 +47,9 @@ RobotInterface::RobotInterface(string name, string limb, bool no_robot, bool use
 
     _coll_av_sub   = _n.subscribe("/robot/limb/" + _limb + "/collision_avoidance_state",
                                     SUBSCRIBER_BUFFER, &RobotInterface::collAvCb, this);
+
+    _coll_det_sub   = _n.subscribe("/robot/limb/" + _limb + "/collision_detection_state",
+                                    SUBSCRIBER_BUFFER, &RobotInterface::collDetCb, this);
 
     if (_use_cart_ctrl)
     {
@@ -179,7 +182,7 @@ void RobotInterface::ThreadEntry()
                 if (!goToPoseNoCheck(pose_curr)) ROS_WARN("[%s] desired configuration could not be reached.",
                                                                                           getLimb().c_str());
 
-                if (hasCollided("strict")) ROS_INFO_THROTTLE(2, "[%s] is colliding!", getLimb().c_str());
+                if (hasCollidedIR("strict")) ROS_INFO_THROTTLE(2, "[%s] is colliding!", getLimb().c_str());
             }
             else
             {
@@ -304,9 +307,23 @@ void RobotInterface::collAvCb(const baxter_core_msgs::CollisionAvoidanceState& m
             // purposes, i.e. the part that says "collision_"
             objects = objects + " " + std::string(msg.collision_object[i]).erase(0,10);
         }
-        ROS_WARN_THROTTLE(1, "[%s] Collision detected with: %s", getLimb().c_str(), objects.c_str());
+        ROS_WARN_THROTTLE(1, "[%s] Collision avoidance with: %s",
+                             getLimb().c_str(), objects.c_str());
     }
     else is_coll_av_on = false;
+
+    return;
+}
+
+void RobotInterface::collDetCb(const baxter_core_msgs::CollisionDetectionState& msg)
+{
+    if (msg.collision_state==true)
+    {
+        is_coll_det_on = true;
+
+        ROS_WARN_THROTTLE(1, "[%s] Collision detected!", getLimb().c_str());
+    }
+    else is_coll_det_on = false;
 
     return;
 }
@@ -594,7 +611,7 @@ bool RobotInterface::computeIK(double px, double py, double pz,
     return false;
 }
 
-bool RobotInterface::hasCollided(string mode)
+bool RobotInterface::hasCollidedIR(string mode)
 {
     double thres;
 
@@ -618,6 +635,11 @@ bool RobotInterface::hasCollided(string mode)
         _curr_range <= thres             ) return true;
 
     return false;
+}
+
+bool RobotInterface::hasCollidedCD()
+{
+    return is_coll_det_on;
 }
 
 bool RobotInterface::isPoseReached(geometry_msgs::Pose p, std::string mode)

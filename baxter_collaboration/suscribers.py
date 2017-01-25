@@ -14,6 +14,7 @@ class WaitForOneSuscriber(object):
         self._suscribe(topic)
         self.listening = False
         self.timeout = timeout
+        self._reset_msg()
 
     def _suscribe(self, topic):
         raise NotImplemented()

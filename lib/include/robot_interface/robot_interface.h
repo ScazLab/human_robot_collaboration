@@ -12,6 +12,7 @@
 #include <baxter_core_msgs/DigitalIOState.h>
 #include <baxter_core_msgs/EndpointState.h>
 #include <baxter_core_msgs/CollisionAvoidanceState.h>
+#include <baxter_core_msgs/CollisionDetectionState.h>
 #include <baxter_core_msgs/JointCommand.h>
 #include <baxter_core_msgs/SolvePositionIK.h>
 
@@ -96,6 +97,12 @@ private:
      */
     ros::Subscriber _coll_av_sub;
     bool           is_coll_av_on;
+
+    /**
+     * Collision Detection State
+     */
+    ros::Subscriber _coll_det_sub;
+    bool           is_coll_det_on;
 
     /**
      * Cuff buttons
@@ -227,6 +234,16 @@ private:
      */
     void collAvCb(const baxter_core_msgs::CollisionAvoidanceState& msg);
 
+    /**
+     * Callback for the collision detection state. Used to detect
+     * if the robot is currently pushed back by the collision detection
+     * software which is embedded into the Baxter robot and we don't have
+     * access to.
+     *
+     * @param msg the topic message
+     */
+    void collDetCb(const baxter_core_msgs::CollisionDetectionState& msg);
+
     /*
      * Infrared sensor callback function that sets the current range to the range received
      * from the left hand range state topic
@@ -266,9 +283,9 @@ private:
 
 protected:
     /*
-     * Checks for if the system is ok. To be called inside every thread execution,
+     * Checks for if the system is OK. To be called inside every thread execution,
      * in order to make it exit gracefully if there is any problem.
-     * It also checks for the ROS state.
+     * It also checks for the ROS state to be OK.
      * @return true if everything is okay, false otherwise
      */
     bool ok();
@@ -277,13 +294,21 @@ protected:
      * Checks if end effector has made contact with a token by checking if
      * the range of the infrared sensor has fallen below the threshold value
      *
-     * @param      current range values of the IR sensor, and a string
+     * @param     current range values of the IR sensor, and a string
      *            (strict/loose) indicating whether to use a high or low
      *            threshold value
      *
      * return     true if end effector has made contact; false otherwise
      */
-    bool hasCollided(std::string mode = "loose");
+    bool hasCollidedIR(std::string mode = "loose");
+
+    /*
+     * Checks if the collision detection topic broadcasts that a collision is
+     * in place (and any robot movement will be stopped for two seconds)
+     *
+     * return     true if end effector motion has stopped; false otherwise
+     */
+    bool hasCollidedCD();
 
     /*
      * Checks if the arm has reached its intended pose by comparing
@@ -529,7 +554,7 @@ public:
     /*
      * Self-explaining "setters"
      */
-    void setState(int state);
+    virtual void setState(int state);
     void setName(std::string name)          {        _name = name;        };
     void setTracIK(bool use_trac_ik)        { _use_trac_ik = use_trac_ik; };
 

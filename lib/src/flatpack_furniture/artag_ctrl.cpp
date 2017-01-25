@@ -4,34 +4,17 @@
 
 using namespace std;
 using namespace baxter_collaboration;
-using namespace baxter_core_msgs;
 
 ARTagCtrl::ARTagCtrl(std::string _name, std::string _limb, bool _no_robot) :
-                     ArmCtrl(_name,_limb, _no_robot), ARucoClient(_name, _limb)
+                     ArmCtrl(_name,_limb, _no_robot), ARucoClient(_name, _limb),
+                     elap_time(0)
 {
     setHomeConfiguration();
-
-    elap_time = 0;
-
     setState(START);
 
-    insertAction(ACTION_GET,       static_cast<f_action>(&ARTagCtrl::pickObject));
+    insertAction(ACTION_GET,       static_cast<f_action>(&ARTagCtrl::getObject));
     insertAction(ACTION_PASS,      static_cast<f_action>(&ARTagCtrl::passObject));
-    insertAction(ACTION_HAND_OVER, static_cast<f_action>(&ARTagCtrl::handOver));
-
-    // Let's override the recover_release action:
-    // removeAction("recover_"+string(ACTION_RELEASE));
-    insertAction("recover_"+string(ACTION_RELEASE),
-                 static_cast<f_action>(&ARTagCtrl::recoverRelease));
-
-    insertAction("recover_"+string(ACTION_GET),
-                  static_cast<f_action>(&ARTagCtrl::recoverGet));
-
-    // Not implemented actions throw a ROS_ERROR and return always false:
-    insertAction("recover_"+string(ACTION_PASS),      &ARTagCtrl::notImplemented);
-    insertAction("recover_"+string(ACTION_HAND_OVER), &ARTagCtrl::notImplemented);
-
-    printActionDB();
+    insertAction(ACTION_GET_PASS,  static_cast<f_action>(&ARTagCtrl::getPassObject));
 
     XmlRpc::XmlRpcValue objects_db;
     if(!_n.getParam("objects_"+getLimb(), objects_db))
@@ -47,8 +30,6 @@ ARTagCtrl::ARTagCtrl(std::string _name, std::string _limb, bool _no_robot) :
 
     if (_no_robot) return;
 
-    if (!callAction(ACTION_HOME)) setState(ERROR);
-
     // moveArm("up",0.2,"strict");
     // moveArm("down",0.2,"strict");
     // moveArm("right",0.2,"strict");
@@ -58,7 +39,7 @@ ARTagCtrl::ARTagCtrl(std::string _name, std::string _limb, bool _no_robot) :
     // moveArm("forward",0.1,"strict");
 }
 
-bool ARTagCtrl::pickObject()
+bool ARTagCtrl::getObject()
 {
     if (!hoverAbovePool())          return false;
     ros::Duration(0.05).sleep();
@@ -70,9 +51,30 @@ bool ARTagCtrl::pickObject()
     return true;
 }
 
+bool ARTagCtrl::passObject()
+{
+    if (getPrevAction() != ACTION_GET)  return false;
+    if (!moveObjectTowardHuman())       return false;
+    ros::Duration(1.0).sleep();
+    if (!waitForForceInteraction())     return false;
+    if (!releaseObject())               return false;
+    if (!homePoseStrict())              return false;
+
+    return true;
+}
+
+bool ARTagCtrl::getPassObject()
+{
+    if (!getObject())      return false;
+    setPrevAction(ACTION_GET);
+    if (!passObject())     return false;
+
+    return true;
+}
+
 bool ARTagCtrl::recoverRelease()
 {
-    if (getSubState() != ACTION_RELEASE)    return false;
+    if (getPrevAction() != ACTION_RELEASE)  return false;
     if(!homePoseStrict())                   return false;
     ros::Duration(0.05).sleep();
     if (!pickARTag())                       return false;
@@ -92,21 +94,9 @@ bool ARTagCtrl::recoverGet()
     return true;
 }
 
-bool ARTagCtrl::passObject()
-{
-    if (getSubState() != ACTION_GET)    return false;
-    if (!moveObjectTowardHuman())       return false;
-    ros::Duration(1.0).sleep();
-    if (!waitForForceInteraction())     return false;
-    if (!releaseObject())               return false;
-    if (!homePoseStrict())              return false;
-
-    return true;
-}
-
 bool ARTagCtrl::handOver()
 {
-    if (getSubState() != ACTION_GET)    return false;
+    if (getPrevAction() != ACTION_GET)  return false;
     if (!prepare4HandOver())            return false;
     ros::Duration(0.2).sleep();
     if (!waitForOtherArm(30.0, true))   return false;
@@ -175,7 +165,11 @@ bool ARTagCtrl::pickARTag()
         return false;
     }
 
-    if (!waitForARucoData()) return false;
+    if (!waitForARucoData())
+    {
+        setSubState(NO_OBJ);
+        return false;
+    }
 
     geometry_msgs::Quaternion q;
 
@@ -241,7 +235,7 @@ bool ARTagCtrl::pickARTag()
             }
             elap_time = new_elap_time;
 
-            if(hasCollided("strict"))
+            if(hasCollidedIR("strict"))
             {
                 ROS_DEBUG("Collision!");
                 return true;
@@ -261,6 +255,23 @@ bool ARTagCtrl::pickARTag()
     }
 
     return false;
+}
+
+int ARTagCtrl::chooseObjectID(std::vector<int> _objs)
+{
+    int res = -1;
+
+    if (!hoverAbovePool())      return res;
+    if (!waitForARucoOK())      return res;
+
+    std::vector<int> av_markers = getAvailableMarkers(_objs);
+
+    if (av_markers.size() == 0) return res;
+
+    std::srand(std::time(0)); //use current time as seed
+    res = av_markers[rand() % av_markers.size()];
+
+    return res;
 }
 
 geometry_msgs::Quaternion ARTagCtrl::computeHOorientation()

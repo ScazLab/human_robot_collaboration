@@ -1,11 +1,16 @@
 #ifndef __TOOL_PICKER_H__
 #define __TOOL_PICKER_H__
 
-#include <robot_interface/arm_ctrl.h>
+#include <stdlib.h>
+#include <time.h>
+
+#include <flatpack_furniture/hold_ctrl.h>
 #include <robot_perception/cartesian_estimator_client.h>
 #include <baxter_collaboration/ObjectsArray.h>
 
-class ToolPicker : public ArmCtrl, public CartesianEstimatorClient
+#define ACTION_CLEANUP  "cleanup"
+
+class ToolPicker : public HoldCtrl, public CartesianEstimatorClient
 {
 private:
     double elap_time;
@@ -40,10 +45,23 @@ private:
      */
     bool pickUpObject();
 
+protected:
+
     /**
      * Sets the joint-level configuration for the home position
      */
     void setHomeConfiguration();
+
+    /**
+     * Chooses the object to act upon according to some rule. This method
+     * needs to be specialized in any derived class because it is dependent
+     * on the type of action and the type of sensory capabilities available.
+     *
+     * @param _objs The list of IDs of objects to choose from
+     * @return      the ID of the chosen object (by default the ID of the
+     *              first object will be chosen)
+     */
+    int chooseObjectID(std::vector<int> _objs);
 
 public:
     /**
