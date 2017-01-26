@@ -39,7 +39,7 @@
 
     <!-- Objects database for the hsv cartesian detector -->
     <rosparam param = "hsv_detector/objects_db">
-        [["screwdriver"  , [0.099, 0.030], [160,  10], [ 70, 166], [10,  66]],
+        [["screwdriver"  , [0.095, 0.023], [160,  10], [ 70, 166], [10,  66]],
          <!-- This should be the blue box -->
          ["screws_box"   , [0.110, 0.110], [ 80, 130], [120, 216], [70, 146]],
          <!-- This should be the green box -->
@@ -54,9 +54,9 @@
 
     <!-- Parameters for force interaction -->
     <arg name="forceFilterVarianceL" default="0.001"/>
-    <arg name="forceFilterVarianceR" default="0.001"/>
+    <arg name="forceFilterVarianceR" default="0.01"/>
     <arg name="relativeForceThresholdL"   default="65.0"/>
-    <arg name="relativeForceThresholdR"   default="65.0"/>
+    <arg name="relativeForceThresholdR"   default="500.0"/>
 
     <param name="action_provider/force_filter_variance_left"        value="$(arg forceFilterVarianceL)"/>
     <param name="action_provider/force_filter_variance_right"       value="$(arg forceFilterVarianceR)"/>
