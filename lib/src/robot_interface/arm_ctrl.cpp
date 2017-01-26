@@ -127,7 +127,7 @@ bool ArmCtrl::serviceCb(baxter_collaboration::DoAction::Request  &req,
 
     if (action != ACTION_HOME && action != ACTION_RELEASE && action != ACTION_HOLD)
     {
-        object_ids = areObjectsInDB(object_ids);
+        setObjectIDs(areObjectsInDB(object_ids));
 
         if      (object_ids.size() == 0)
         {
@@ -281,6 +281,8 @@ std::vector<int> ArmCtrl::areObjectsInDB(const std::vector<int> &_objs)
             res.push_back(_objs[i]);
         }
     }
+
+    ROS_DEBUG("[%s] Found %lu objects in DB.", getLimb().c_str(), res.size());
 
     return res;
 }

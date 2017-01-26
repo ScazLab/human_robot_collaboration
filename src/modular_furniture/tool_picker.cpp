@@ -148,7 +148,7 @@ bool ToolPicker::computeOffsets(double &_x_offs, double &_y_offs)
         else if (CartesianEstimatorClient::getObjectName() == "screws_box"  ||
                  CartesianEstimatorClient::getObjectName() == "brackets_box")
         {
-            _x_offs = -0.025;
+            _x_offs =  0.020;
             _y_offs = -0.058;
         }
     }
@@ -182,6 +182,12 @@ bool ToolPicker::computeOrientation(geometry_msgs::Quaternion &_q)
 
 int ToolPicker::chooseObjectID(std::vector<int> _objs)
 {
+    if (getSubState() != CHECK_OBJ_IDS)
+    {
+        return ArmCtrl::chooseObjectID(_objs);
+    }
+
+    ROS_DEBUG("[%s] Choosing object IDs", getLimb().c_str());
     int res = -1;
 
     if (!waitForCartEstOK())
@@ -277,7 +283,10 @@ bool ToolPicker::cleanUpObject()
 
     if (getObjectIDs().size() >  1)
     {
+        setSubState(CHECK_OBJ_IDS);
         setObjectID(chooseObjectID(getObjectIDs()));
+        ROS_INFO("[%s] Chosen object with ID %i", getLimb().c_str(),
+                                                     getObjectID());
     }
 
     if (!waitForCartEstObjFound())
@@ -297,11 +306,11 @@ bool ToolPicker::cleanUpObject()
     }
     else if (CartesianEstimatorClient::getObjectName() == "brackets_box")
     {
-        if (!goToPose(0.00, -0.85, -0.20, POOL_ORI_R)) return false;
+        if (!goToPose(0.00, -0.85, -0.25, POOL_ORI_R)) return false;
     }
     else if (CartesianEstimatorClient::getObjectName() == "screws_box")
     {
-        if (!goToPose(-0.15, -0.85, -0.20, POOL_ORI_R)) return false;
+        if (!goToPose(-0.15, -0.85, -0.25, POOL_ORI_R)) return false;
     }
 
     ros::Duration(0.5).sleep();
