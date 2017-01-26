@@ -6,7 +6,7 @@ using namespace baxter_core_msgs;
 
 ArmCtrl::ArmCtrl(string _name, string _limb, bool _no_robot, bool _use_forces, bool _use_trac_ik, bool _use_cart_ctrl) :
                  RobotInterface(_name,_limb, _no_robot, _use_forces, _use_trac_ik, _use_cart_ctrl),
-                 Gripper(_limb, _no_robot), sub_state(""), action("")
+                 Gripper(_limb, _no_robot), sub_state(""), action(""), sel_object_id(-1)
 {
     std::string topic = "/"+getName()+"/state_"+_limb;
     state_pub = _n.advertise<baxter_collaboration::ArmState>(topic,1);
@@ -88,13 +88,16 @@ bool ArmCtrl::serviceCb(baxter_collaboration::DoAction::Request  &req,
 {
     // Let's read the requested action and object to act upon
     setSubState("");
+    object_ids.clear();
+    setObjectID(-1);
+
     string action = req.action;
-    std::vector<int> objs;
+    std::vector<int> object_ids;
     std::string objs_str = "";
 
     for (size_t i = 0; i < req.objects.size(); ++i)
     {
-        objs.push_back(req.objects[i]);
+        object_ids.push_back(req.objects[i]);
         objs_str += intToString(req.objects[i]) + ", ";
     }
     objs_str = objs_str.substr(0, objs_str.size()-2); // Remove the last ", "
@@ -124,26 +127,25 @@ bool ArmCtrl::serviceCb(baxter_collaboration::DoAction::Request  &req,
 
     if (action != ACTION_HOME && action != ACTION_RELEASE && action != ACTION_HOLD)
     {
-        objs = areObjectsInDB(objs);
+        object_ids = areObjectsInDB(object_ids);
 
-        if      (objs.size() == 0)
+        if      (object_ids.size() == 0)
         {
             res.response = OBJ_NOT_IN_DB;
             ROS_ERROR("[%s] Requested object(s) are not in the database!",
                                                        getLimb().c_str());
             return true;
         }
-        else if (objs.size() == 1)
+        else if (object_ids.size() == 1)
         {
-            setObjectID(objs[0]);
+            setObjectID(object_ids[0]);
+            // ROS_INFO("I will perform action %s on object with ID %i",
+            //                           action.c_str(), getObjectID());
         }
-        else if (objs.size() >  1)
+        else if (object_ids.size() >  1)
         {
-            setObjectID(chooseObjectID(objs));
+            setObjectID(chooseObjectID(object_ids));
         }
-
-        ROS_INFO("I will perform action %s on object with ID %i",
-                                  action.c_str(), getObjectID());
     }
 
     startInternalThread();
