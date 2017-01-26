@@ -22,6 +22,7 @@ void CartesianEstimatorClient::clearObjectPose()
 
 void CartesianEstimatorClient::ObjectCb(const baxter_collaboration::ObjectsArray& _msg)
 {
+    // ROS_INFO("ObjectCb");
     if (_msg.objects.size() > 0)
     {
         available_objects.clear();

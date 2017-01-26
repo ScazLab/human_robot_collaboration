@@ -148,6 +148,7 @@ bool ToolPicker::computeOffsets(double &_x_offs, double &_y_offs)
         else if (CartesianEstimatorClient::getObjectName() == "screws_box"  ||
                  CartesianEstimatorClient::getObjectName() == "brackets_box")
         {
+            _x_offs = -0.025;
             _y_offs = -0.058;
         }
     }
@@ -234,11 +235,11 @@ bool ToolPicker::passObject()
 
         if (CartesianEstimatorClient::getObjectName() == "brackets_box")
         {
-            if (!goToPose(0.65, -0.10, -0.10, VERTICAL_ORI_R)) return false;
+            if (!goToPose(0.65, -0.10, -0.12, VERTICAL_ORI_R)) return false;
         }
         else
         {
-            if (!goToPose(0.65, -0.30, -0.10, VERTICAL_ORI_R)) return false;
+            if (!goToPose(0.65, -0.30, -0.12, VERTICAL_ORI_R)) return false;
         }
 
         ros::Duration(0.5).sleep();

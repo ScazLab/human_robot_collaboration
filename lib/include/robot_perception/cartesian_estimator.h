@@ -87,8 +87,8 @@ public:
     virtual std::string toString();
 
     /* GETTERS */
-    bool isThere() { return is_there; };
-    std::string getName() { return name; };
+    bool isThere()        { return is_there; };
+    std::string getName() { return     name; };
 
     /* SETTERS */
     void setIsThere(bool _it)           { is_there = _it; };

@@ -275,9 +275,12 @@ bool CartesianEstimator::poseRootRF()
 
     for (size_t i = 0; i < objs.size(); ++i)
     {
-        if (objs[i]->isThere())
+        if (objs[i])
         {
-            res = res & poseRootRF(i);
+            if (objs[i]->isThere())
+            {
+                res = res & poseRootRF(i);
+            }
         }
     }
 
@@ -430,9 +433,12 @@ bool CartesianEstimator::draw3dAxis(cv::Mat &_img)
 
     for (size_t i = 0; i < objs.size(); ++i)
     {
-        if (objs[i]->isThere())
+        if (objs[i])
         {
-            res = res & draw3dAxis(_img, i);
+            if (objs[i]->isThere())
+            {
+                res = res & draw3dAxis(_img, i);
+            }
         }
     }
 
@@ -479,7 +485,10 @@ int CartesianEstimator::getNumValidObjects()
 
     for(size_t i = 0; i < objs.size(); ++i)
     {
-        if (objs[i]->isThere())     res++;
+        if (objs[i])
+        {
+            if (objs[i]->isThere())     res++;
+        }
     }
 
     return res;
@@ -489,7 +498,10 @@ void CartesianEstimator::clearObjs()
 {
     for (size_t i = 0; i < objs.size(); ++i)
     {
-        delete objs[i];
+        if (objs[i])
+        {
+            delete objs[i];
+        }
     }
 
     objs.clear();
