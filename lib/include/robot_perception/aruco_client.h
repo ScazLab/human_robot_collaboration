@@ -37,8 +37,6 @@ private:
     geometry_msgs::Point        curr_marker_pos;
     geometry_msgs::Quaternion   curr_marker_ori;
 
-protected:
-
     /**
      * Resets the ARuco state in order to wait for
      * fresh, new data from the topic
@@ -56,6 +54,8 @@ protected:
      * and wait for fresh, new data
      */
     void clearMarkersFound();
+
+protected:
 
     /**
      * Callback function for the ARuco topic

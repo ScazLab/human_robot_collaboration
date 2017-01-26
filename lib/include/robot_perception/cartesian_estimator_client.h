@@ -37,8 +37,6 @@ private:
     geometry_msgs::Point        curr_object_pos;
     geometry_msgs::Quaternion   curr_object_ori;
 
-protected:
-
     /**
      * Resets the cartesian estimator state in order to wait for
      * fresh, new data from the topic
@@ -56,6 +54,8 @@ protected:
      * and wait for fresh, new data
      */
     void clearObjsFound();
+
+protected:
 
     /**
      * Callback function for the CartesianEstimator topic
