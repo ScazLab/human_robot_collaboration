@@ -56,17 +56,6 @@ SegmentedObj::~SegmentedObj()
 /************************************************************************************/
 CartesianEstimator::CartesianEstimator(string _name) : ROSThreadImage(_name)
 {
-    XmlRpc::XmlRpcValue objects_db;
-    if(!_n.getParam("/"+getName()+"/objects_db", objects_db))
-    {
-        ROS_INFO("No objects' database found in the parameter server. "
-                 "Looked up param is %s", ("/"+getName()+"/objects_db").c_str());
-    }
-    else
-    {
-        addObjects(objects_db);
-        printObjectDB();
-    }
 
     init();
 }
