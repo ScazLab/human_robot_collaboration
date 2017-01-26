@@ -192,37 +192,47 @@ bool CartesianEstimatorHSV::addObjects(vector<string> _names, cv::Mat _o,
 
 bool CartesianEstimatorHSV::addObjects(XmlRpc::XmlRpcValue _params)
 {
-    ROS_ASSERT(_params.getType()==XmlRpc::XmlRpcValue::TypeArray);
+    ROS_ASSERT(_params.getType()==XmlRpc::XmlRpcValue::TypeStruct);
     ROS_ASSERT(_params.size()>=0);
-    // printf("_params.size() %i\n", _params.size());
+    printf("_params.size() %i\n", _params.size());
 
     bool res = true;
 
-    for (int i = 0; i < _params.size(); ++i)
+    for (XmlRpc::XmlRpcValue::iterator i=_params.begin(); i!=_params.end(); ++i)
     {
-        ROS_ASSERT(_params[i].getType()==XmlRpc::XmlRpcValue::TypeArray);
+        ROS_ASSERT(i->second.getType()==XmlRpc::XmlRpcValue::TypeStruct);
 
-        ROS_ASSERT(_params[i].size()>=4);
-        // printf("_params[%i].size() %i\n", i, _params[i].size());
+        ROS_ASSERT(i->second.size()>=2);
 
-        ROS_ASSERT(_params[i][0].getType()==XmlRpc::XmlRpcValue::TypeString);
-        ROS_ASSERT(_params[i][1].getType()==XmlRpc::XmlRpcValue::TypeArray);
-        ROS_ASSERT(_params[i][1][0].getType()==XmlRpc::XmlRpcValue::TypeDouble);
-        ROS_ASSERT(_params[i][1][1].getType()==XmlRpc::XmlRpcValue::TypeDouble);
-        ROS_ASSERT(_params[i][2].getType()==XmlRpc::XmlRpcValue::TypeArray);
-        ROS_ASSERT(_params[i][2][0].getType()==XmlRpc::XmlRpcValue::TypeInt);
-        ROS_ASSERT(_params[i][2][1].getType()==XmlRpc::XmlRpcValue::TypeInt);
-        ROS_ASSERT(_params[i][3].getType()==XmlRpc::XmlRpcValue::TypeArray);
-        ROS_ASSERT(_params[i][3][0].getType()==XmlRpc::XmlRpcValue::TypeInt);
-        ROS_ASSERT(_params[i][3][1].getType()==XmlRpc::XmlRpcValue::TypeInt);
-        ROS_ASSERT(_params[i][4].getType()==XmlRpc::XmlRpcValue::TypeArray);
-        ROS_ASSERT(_params[i][4][0].getType()==XmlRpc::XmlRpcValue::TypeInt);
-        ROS_ASSERT(_params[i][4][1].getType()==XmlRpc::XmlRpcValue::TypeInt);
+        for (XmlRpc::XmlRpcValue::iterator j=i->second.begin(); j!=i->second.end(); ++j)
+        {
+            // ROS_ASSERT(j->first.getType()==XmlRpc::XmlRpcValue::TypeString);
+            if (j->first=="size")
+            {
+                ROS_ASSERT(j->second.getType()==XmlRpc::XmlRpcValue::TypeArray);
+                ROS_ASSERT(j->second[0].getType()==XmlRpc::XmlRpcValue::TypeDouble);
+                ROS_ASSERT(j->second[1].getType()==XmlRpc::XmlRpcValue::TypeDouble);
+            }
+            if (j->first=="HSV")
+            {
+                ROS_ASSERT(j->second.getType()==XmlRpc::XmlRpcValue::TypeStruct);
+                ROS_ASSERT(j->second["H"].getType()==XmlRpc::XmlRpcValue::TypeArray);
+                ROS_ASSERT(j->second["S"].getType()==XmlRpc::XmlRpcValue::TypeArray);
+                ROS_ASSERT(j->second["V"].getType()==XmlRpc::XmlRpcValue::TypeArray);
+                ROS_ASSERT(j->second["H"][0].getType()==XmlRpc::XmlRpcValue::TypeInt);
+                ROS_ASSERT(j->second["H"][1].getType()==XmlRpc::XmlRpcValue::TypeInt);
+                ROS_ASSERT(j->second["S"][0].getType()==XmlRpc::XmlRpcValue::TypeInt);
+                ROS_ASSERT(j->second["S"][1].getType()==XmlRpc::XmlRpcValue::TypeInt);
+                ROS_ASSERT(j->second["V"][0].getType()==XmlRpc::XmlRpcValue::TypeInt);
+                ROS_ASSERT(j->second["V"][1].getType()==XmlRpc::XmlRpcValue::TypeInt);
 
-        res = res & addObject(static_cast<string>(_params[i][0]),
-                              static_cast<double>(_params[i][1][0]),
-                              static_cast<double>(_params[i][1][1]),
-                              hsvColorRange(_params[i][2], _params[i][3], _params[i][4]));
+            }
+        }
+
+        res = res & addObject(static_cast<string>(i->first.c_str()),
+                              static_cast<double>(i->second["size"][0]),
+                              static_cast<double>(i->second["size"][1]),
+                              hsvColorRange(i->second["HSV"]["H"], i->second["HSV"]["S"], i->second["HSV"]["V"]));
     }
 
     return res;

@@ -39,11 +39,11 @@
 
     <!-- Objects database for the hsv cartesian detector -->
     <rosparam param = "hsv_detector/objects_db">
-        [["screwdriver"  , [0.095, 0.023], [160,  10], [ 70, 166], [10,  66]],
+        "screwdriver" : { size: [0.099, 0.030], HSV: { H: [160,  10], S: [ 70, 166], V: [10,  66]}}
          <!-- This should be the blue box -->
-         ["screws_box"   , [0.110, 0.110], [ 80, 130], [120, 216], [70, 146]],
+        "screws_box"  : { size: [0.137, 0.137], HSV: { H: [ 80, 130], S: [120, 216], V: [70, 146]}}
          <!-- This should be the green box -->
-         ["brackets_box" , [0.110, 0.110], [ 30, 100], [ 80, 246], [20,  96]]]
+        "brackets_box": { size: [0.137, 0.137], HSV: { H: [ 30, 100], S: [ 80, 246], V: [20,  96]}}
     </rosparam>
 
     <!-- CONTROL -->
