@@ -4,18 +4,27 @@
 
 using namespace std;
 
-ARucoClient::ARucoClient(string name, string limb) :
-                        _nh(name), _limb(limb), aruco_ok(false),
-                        marker_found(false), marker_id(-1)
+ARucoClient::ARucoClient(string name, string limb) : _nh(name), _limb(limb),
+                                      aruco_ok(false), markers_found(false),
+                                         marker_found(false), marker_id(-1)
 {
     _aruco_sub = _nh.subscribe("/aruco_marker_publisher/markers",
                                SUBSCRIBER_BUFFER, &ARucoClient::ARucoCb, this);
 }
 
-void ARucoClient::clearMarkerPose()
+void ARucoClient::resetARuco()
 {
-    aruco_ok     = false;
+    aruco_ok   = false;
+}
+
+void ARucoClient::clearMarkerFound()
+{
     marker_found = false;
+}
+
+void ARucoClient::clearMarkersFound()
+{
+    markers_found = false;
 
     available_markers.clear();
 }
@@ -32,19 +41,20 @@ void ARucoClient::ARucoCb(const aruco_msgs::MarkerArray& msg)
         // ROS_DEBUG("Processing marker with id %i",msg.markers[i].id);
 
         available_markers.push_back(int(msg.markers[i].id));
+        markers_found = true;
 
         if (int(msg.markers[i].id) == getMarkerID())
         {
-            _curr_marker_pos = msg.markers[i].pose.pose.position;
-            _curr_marker_ori = msg.markers[i].pose.pose.orientation;
+            curr_marker_pos = msg.markers[i].pose.pose.position;
+            curr_marker_ori = msg.markers[i].pose.pose.orientation;
 
-            ROS_DEBUG("Marker is in: %g %g %g", _curr_marker_pos.x,
-                                                _curr_marker_pos.y,
-                                                _curr_marker_pos.z);
-            // ROS_INFO("Marker is in: %g %g %g %g", _curr_marker_ori.x,
-            //                                       _curr_marker_ori.y,
-            //                                       _curr_marker_ori.z,
-            //                                       _curr_marker_ori.w);
+            ROS_DEBUG("Marker is in: %g %g %g", curr_marker_pos.x,
+                                                curr_marker_pos.y,
+                                                curr_marker_pos.z);
+            // ROS_INFO("Marker is in: %g %g %g %g", curr_marker_ori.x,
+            //                                       curr_marker_ori.y,
+            //                                       curr_marker_ori.z,
+            //                                       curr_marker_ori.w);
 
             if (!marker_found)
             {
@@ -78,17 +88,14 @@ std::vector<int> ARucoClient::getAvailableMarkers(std::vector<int> _markers)
 
 bool ARucoClient::waitForARucoOK()
 {
-    clearMarkerPose();
+    resetARuco();
 
     int cnt = 0;
     ros::Rate r(10);
 
     while (!aruco_ok)
     {
-        if (cnt!=0) // let's skip the first one since it is very likely to occur
-        {
-            ROS_WARN("No callback from ARuco. Is ARuco running?");
-        }
+        ROS_WARN_COND(cnt>0, "No callback from ARuco. Is ARuco running?");
         ++cnt;
 
         if (cnt == 10)
@@ -103,22 +110,40 @@ bool ARucoClient::waitForARucoOK()
     return true;
 }
 
-bool ARucoClient::waitForARucoData()
+bool ARucoClient::waitForARucoMarkersFound()
 {
-    clearMarkerPose();
-    ROS_INFO("[%s] Waiting for ARuco data..", getArucoLimb().c_str());
+    clearMarkersFound();
 
-    if (!waitForARucoOK()) return false;
+    int cnt=0;
+    ros::Rate r(10);
+
+    while (!markers_found)
+    {
+        ROS_WARN_COND(cnt>0, "Objects not found. Are there any the objects there?");
+        ++cnt;
+
+        if (cnt == 10)
+        {
+            ROS_ERROR("Objects not found! Stopping.");
+            return false;
+        }
+
+        r.sleep();
+    }
+
+    return true;
+}
+
+bool ARucoClient::waitForARucoMarkerFound()
+{
+    clearMarkerFound();
 
     int cnt=0;
     ros::Rate r(10);
 
     while (!marker_found)
     {
-        if (cnt!=0) // let's skip the first one since it is very likely to occurr
-        {
-            ROS_WARN("Object with ID %i not found. Is the object there?", getMarkerID());
-        }
+        ROS_WARN_COND(cnt>0, "Object with ID %i not found. Is the object there?", getMarkerID());
         ++cnt;
 
         if (cnt == 10)
@@ -129,6 +154,17 @@ bool ARucoClient::waitForARucoData()
 
         r.sleep();
     }
+
+    return true;
+}
+
+bool ARucoClient::waitForARucoData()
+{
+    ROS_INFO("[%s] Waiting for ARuco data..", getArucoLimb().c_str());
+
+    if (!waitForARucoOK())           return false;
+    if (!waitForARucoMarkersFound()) return false;
+    if (!waitForARucoMarkerFound())  return false;
 
     return true;
 }
