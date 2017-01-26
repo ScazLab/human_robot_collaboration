@@ -129,8 +129,8 @@ bool ToolPicker::computeOffsets(double &_x_offs, double &_y_offs)
     {
         if (CartesianEstimatorClient::getObjectName() == "screwdriver")
         {
-            _x_offs = +0.015;
-            _y_offs = +0.020;
+            _x_offs = +0.010;
+            _y_offs = +0.017;
         }
         else if (CartesianEstimatorClient::getObjectName() == "screws_box"  ||
                  CartesianEstimatorClient::getObjectName() == "brackets_box")
