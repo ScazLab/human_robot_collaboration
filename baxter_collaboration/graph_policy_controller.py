@@ -32,7 +32,7 @@ class BaseController(object):
     def __init__(self, timer_path=None, left=True, right=True, speech=True):
         self.finished = False
         # ROS stuff
-        rospy.init_node(self.NODE_NAME)
+        rospy.init_node(self.NODE_NAME, disable_signals=True)
         if left:  # Left arm action service client
             rospy.loginfo('Waiting for left service...')
             rospy.wait_for_service(self.ACTION_SERVICE_LEFT)
@@ -87,8 +87,19 @@ class BaseController(object):
             self.finished = True
             self._home()
 
+    def _abort_waiting_suscribers(self):
+        self.answer_sub.listening = False
+        self.error_sub.listening = False
+
     def run(self):
-        raise NotImplementedError
+        try:
+            self._run()
+        except (Exception, KeyboardInterrupt) as e:
+            rospy.logerr(e)
+            rospy.logerr('Exiting.')
+            self.finished = True
+            self._abort_waiting_suscribers()
+            raise
 
     def take_action(self, action):
         raise NotImplementedError
@@ -115,19 +126,15 @@ class BaseGPController(BaseController):
         rospy.sleep(self.T_WAIT)
         return self.NONE
 
-    def run(self):
+    def _run(self):
         self.timer.start()
         obs = None
         while not self.finished:
-            try:
-                rospy.loginfo("Current state in policy: " + str(self.pr.current))
-                self.timer.log({'node': self.pr.current,
-                                'action': self.pr.get_action(),
-                                'last-observation': obs,
-                                })
-                obs = self.take_action(self.pr.get_action())
-                rospy.loginfo("Observed: " + obs)
-                self.pr.step(obs)
-            except Exception as e:
-                rospy.logerr(e)
-                self.finished = True
+            rospy.loginfo("Current state in policy: " + str(self.pr.current))
+            self.timer.log({'node': self.pr.current,
+                            'action': self.pr.get_action(),
+                            'last-observation': obs,
+                            })
+            obs = self.take_action(self.pr.get_action())
+            rospy.loginfo("Observed: " + obs)
+            self.pr.step(obs)

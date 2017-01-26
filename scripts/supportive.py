@@ -82,21 +82,16 @@ class POMCPController(BaseController):
             d[new_o].append(obj_dict[o])
         return d
 
-    def run(self):
+    def _run(self):
         self.timer.start()
         obs = None
         while not self.finished:
-            try:
-                rospy.loginfo("Current history: " + str(self.pol.history))
-                self.timer.log(self.pol.history)
-                obs = self.take_action(self.pol.get_action())
-                rospy.loginfo("Observed: %s" % obs)
-                self.pol.step(obs)
-            except Exception as e:
-                rospy.logerr(e)
-                rospy.logerr('Exiting.')
-                self.finished = True
-                raise
+            b = self.model._int_to_state().belief_quotient(self.pol.belief.array)
+            rospy.loginfo("Current belief on HTM: " + str(b))
+            self.timer.log(self.pol.history)
+            obs = self.take_action(self.pol.get_action())
+            rospy.loginfo("Observed: %s" % obs)
+            self.pol.step(obs)
 
     def take_action(self, action):
         a = action.split()
