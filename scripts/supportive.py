@@ -89,7 +89,11 @@ class POMCPController(BaseController):
             b = self.model._int_to_state().belief_quotient(self.pol.belief.array)
             rospy.loginfo("Current belief on HTM: " + str(b))
             self.timer.log(self.pol.history)
-            obs = self.take_action(self.pol.get_action())
+            t = rospy.Time.now()
+            a = self.pol.get_action()
+            rospy.loginfo('Computed action during {}s'.format(
+                (rospy.Time.now() - t).to_sec()))
+            obs = self.take_action(a)
             rospy.loginfo("Observed: %s" % obs)
             self.pol.step(obs)
 
