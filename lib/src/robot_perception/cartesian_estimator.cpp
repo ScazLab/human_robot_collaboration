@@ -56,6 +56,18 @@ SegmentedObj::~SegmentedObj()
 /************************************************************************************/
 CartesianEstimator::CartesianEstimator(string _name) : ROSThreadImage(_name)
 {
+    XmlRpc::XmlRpcValue objects_db;
+    if(!_n.getParam("/"+getName()+"/objects_db", objects_db))
+    {
+        ROS_INFO("No objects' database found in the parameter server. "
+                 "Looked up param is %s", ("/"+getName()+"/objects_db").c_str());
+    }
+    else
+    {
+        addObjects(objects_db);
+        printObjectDB();
+    }
+
     init();
 }
 
@@ -199,27 +211,32 @@ bool CartesianEstimator::addObjects(std::vector<std::string> _names, cv::Mat _o)
 
 bool CartesianEstimator::addObjects(XmlRpc::XmlRpcValue _params)
 {
-    ROS_ASSERT(_params.getType()==XmlRpc::XmlRpcValue::TypeArray);
+    ROS_ASSERT(_params.getType()==XmlRpc::XmlRpcValue::TypeStruct);
     ROS_ASSERT(_params.size()>=0);
     // printf("_params.size() %i\n", _params.size());
-
     bool res = true;
 
-    for (int i = 0; i < _params.size(); ++i)
+    for (XmlRpc::XmlRpcValue::iterator i=_params.begin(); i!=_params.end(); ++i)
     {
-        ROS_ASSERT(_params[i].getType()==XmlRpc::XmlRpcValue::TypeArray);
+        ROS_ASSERT(i->second.getType()==XmlRpc::XmlRpcValue::TypeStruct);
 
-        ROS_ASSERT(_params[i].size()>=2);
-        // printf("_params[%i].size() %i\n", i, _params[i].size());
+        ROS_ASSERT(i->second.size()>=1);
 
-        ROS_ASSERT(_params[i][0].getType()==XmlRpc::XmlRpcValue::TypeString);
-        ROS_ASSERT(_params[i][1].getType()==XmlRpc::XmlRpcValue::TypeArray);
-        ROS_ASSERT(_params[i][1][0].getType()==XmlRpc::XmlRpcValue::TypeDouble);
-        ROS_ASSERT(_params[i][1][1].getType()==XmlRpc::XmlRpcValue::TypeDouble);
+        for (XmlRpc::XmlRpcValue::iterator j=i->second.begin(); j!=i->second.end(); ++j)
+        {
+            // ROS_ASSERT(j->first.getType()==XmlRpc::XmlRpcValue::TypeString);
+            if (j->first=="size")
+            {
+                ROS_ASSERT(j->second.getType()==XmlRpc::XmlRpcValue::TypeArray);
+                ROS_ASSERT(j->second[0].getType()==XmlRpc::XmlRpcValue::TypeDouble);
+                ROS_ASSERT(j->second[1].getType()==XmlRpc::XmlRpcValue::TypeDouble);
 
-        res = res & addObject(static_cast<string>(_params[i][0]),
-                              static_cast<double>(_params[i][1][0]),
-                              static_cast<double>(_params[i][1][1]));
+                res = res & addObject(static_cast<string>(i->first.c_str()),
+                              static_cast<double>(i->second["size"][0]),
+                              static_cast<double>(i->second["size"][1]));
+            }
+        }
+
     }
 
     return res;
