@@ -184,8 +184,17 @@ int ToolPicker::chooseObjectID(std::vector<int> _objs)
 {
     int res = -1;
 
-    // if (!hoverAbovePool()) return res;
-    if (!waitForCartEstOK())        return res;
+    if (!waitForCartEstOK())
+    {
+        setSubState(NO_OBJ);
+        return false;
+    }
+
+    if (!waitForCartEstObjsFound())
+    {
+        setSubState(NO_OBJ);
+        return false;
+    }
 
     std::vector<string> objs_str;
     for (size_t i = 0; i < _objs.size(); ++i)
@@ -265,6 +274,18 @@ bool ToolPicker::cleanUpObject()
 {
     if (!goToPose(0.65, -0.25, 0.25, VERTICAL_ORI_R)) return false;
     ros::Duration(0.05).sleep();
+
+    if (getObjectIDs().size() >  1)
+    {
+        setObjectID(chooseObjectID(getObjectIDs()));
+    }
+
+    if (!waitForCartEstObjFound())
+    {
+        setSubState(NO_OBJ);
+        return false;
+    }
+
     if (!pickUpObject())            return false;
     if (!gripObject())              return false;
     if (!moveArm("up", 0.3))        return false;
