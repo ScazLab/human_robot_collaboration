@@ -194,7 +194,7 @@ bool CartesianEstimatorHSV::addObjects(XmlRpc::XmlRpcValue _params)
 {
     ROS_ASSERT(_params.getType()==XmlRpc::XmlRpcValue::TypeStruct);
     ROS_ASSERT(_params.size()>=0);
-    // printf("_params.size() %i\n", _params.size());
+    printf("_params.size() %i\n", _params.size());
 
     bool res = true;
 
