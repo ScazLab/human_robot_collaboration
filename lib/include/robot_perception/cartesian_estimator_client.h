@@ -24,7 +24,10 @@ private:
     // Bool to check the CartesianEstimator is fine or not
     bool         cartest_ok;
 
-    // Bool to check if the object was found or not
+    // Bool to check if there are any objects detected
+    bool      objects_found;
+
+    // Bool to check if the selected object was found or not
     bool       object_found;
 
     // Name of the object to detect
@@ -34,12 +37,25 @@ private:
     geometry_msgs::Point        curr_object_pos;
     geometry_msgs::Quaternion   curr_object_ori;
 
-protected:
+    /**
+     * Resets the cartesian estimator state in order to wait for
+     * fresh, new data from the topic
+     */
+    void resetCartEst();
 
     /**
-     * Clears the object pose to reset its state internally
+     * Clears the object found flag to reset its state internally
+     * and wait for fresh, new data
      */
-    void clearObjectPose();
+    void clearObjFound();
+
+    /**
+     * Clears the objects_found flag to reset its state internally
+     * and wait for fresh, new data
+     */
+    void clearObjsFound();
+
+protected:
 
     /**
      * Callback function for the CartesianEstimator topic
@@ -54,25 +70,40 @@ protected:
     bool waitForCartEstOK();
 
     /**
-     * Waits for useful data coming from CartesianEstimator
+     * Waits to see if there are any objects detected
+     * @return true/false if success/failure
+     */
+    bool waitForCartEstObjsFound();
+
+    /**
+     * Waits to see if the desired object has been detected
+     * @return true/false if success/failure
+     */
+    bool waitForCartEstObjFound();
+
+    /**
+     * Waits for useful data coming from CartesianEstimator. It performs
+     * all the wait* functions declared above (i.e. waitForCartEstOK(),
+     * waitForCartEstObjsFound() and waitForCartEstObjFound())
      * @return true/false if success/failure
      */
     bool waitForCartEstData();
 
     /*
      * Check availability of the CartesianEstimator data
+     * @return true/false if feedback from the cartesian estimator is received
     */
-    bool is_cartesian_estimator_ok() { return cartest_ok; };
+    bool isCartEstOK() { return   cartest_ok; };
 
     /* SETTERS */
-    void setObjectName(std::string _name)    { object_name =     _name; };
+    void setObjectName(std::string _name)    { object_name = _name; };
 
     /* GETTERS */
     geometry_msgs::Point      getObjectPos() { return curr_object_pos; };
     geometry_msgs::Quaternion getObjectOri() { return curr_object_ori; };
 
-    std::string getCartesianEstimatorLimb() { return        limb; };
-    std::string getObjectName()             { return object_name; };
+    std::string getCartEstLimb() { return        limb; };
+    std::string getObjectName()  { return object_name; };
 
     /**
      * Returns a list of available markers
@@ -82,7 +113,7 @@ protected:
 
     /**
      * Looks if a set of markers is present among those available.
-     * @return the subset of available markers among those avilable
+     * @return the subset of available markers among those available
      */
     std::vector<std::string> getAvailableObjects(std::vector<std::string> _objects);
 

@@ -148,7 +148,7 @@ bool ToolPicker::computeOffsets(double &_x_offs, double &_y_offs)
         else if (CartesianEstimatorClient::getObjectName() == "screws_box"  ||
                  CartesianEstimatorClient::getObjectName() == "brackets_box")
         {
-            _x_offs = -0.025;
+            _x_offs =  0.020;
             _y_offs = -0.058;
         }
     }
@@ -182,10 +182,25 @@ bool ToolPicker::computeOrientation(geometry_msgs::Quaternion &_q)
 
 int ToolPicker::chooseObjectID(std::vector<int> _objs)
 {
+    if (getSubState() != CHECK_OBJ_IDS)
+    {
+        return ArmCtrl::chooseObjectID(_objs);
+    }
+
+    ROS_DEBUG("[%s] Choosing object IDs", getLimb().c_str());
     int res = -1;
 
-    // if (!hoverAbovePool()) return res;
-    if (!waitForCartEstOK())        return res;
+    if (!waitForCartEstOK())
+    {
+        setSubState(NO_OBJ);
+        return false;
+    }
+
+    if (!waitForCartEstObjsFound())
+    {
+        setSubState(NO_OBJ);
+        return false;
+    }
 
     std::vector<string> objs_str;
     for (size_t i = 0; i < _objs.size(); ++i)
@@ -265,6 +280,21 @@ bool ToolPicker::cleanUpObject()
 {
     if (!goToPose(0.65, -0.25, 0.25, VERTICAL_ORI_R)) return false;
     ros::Duration(0.05).sleep();
+
+    if (getObjectIDs().size() >  1)
+    {
+        setSubState(CHECK_OBJ_IDS);
+        setObjectID(chooseObjectID(getObjectIDs()));
+        ROS_INFO("[%s] Chosen object with ID %i", getLimb().c_str(),
+                                                     getObjectID());
+    }
+
+    if (!waitForCartEstObjFound())
+    {
+        setSubState(NO_OBJ);
+        return false;
+    }
+
     if (!pickUpObject())            return false;
     if (!gripObject())              return false;
     if (!moveArm("up", 0.3))        return false;
@@ -276,11 +306,11 @@ bool ToolPicker::cleanUpObject()
     }
     else if (CartesianEstimatorClient::getObjectName() == "brackets_box")
     {
-        if (!goToPose(0.00, -0.85, -0.20, POOL_ORI_R)) return false;
+        if (!goToPose(0.00, -0.85, -0.25, POOL_ORI_R)) return false;
     }
     else if (CartesianEstimatorClient::getObjectName() == "screws_box")
     {
-        if (!goToPose(-0.15, -0.85, -0.20, POOL_ORI_R)) return false;
+        if (!goToPose(-0.15, -0.85, -0.25, POOL_ORI_R)) return false;
     }
 
     ros::Duration(0.5).sleep();

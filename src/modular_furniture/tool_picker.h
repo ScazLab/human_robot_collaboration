@@ -10,6 +10,8 @@
 
 #define ACTION_CLEANUP  "cleanup"
 
+#define  CHECK_OBJ_IDS  "check_obj_ids"
+
 class ToolPicker : public HoldCtrl, public CartesianEstimatorClient
 {
 private:

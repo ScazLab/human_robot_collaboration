@@ -22,31 +22,37 @@ private:
     // long actions that need multiple internal states, or
     // to store the error state of the controller in case of
     // unsuccessful actions
-    std::string   sub_state;
+    std::string       sub_state;
 
     // High level action the controller is engaged in
-    std::string       action;
+    std::string          action;
 
     // Previous high level action (for complex actions)
-    std::string  prev_action;
+    std::string     prev_action;
 
-    // Object the controller is acting upon (if the action
-    // is done with respect to an object)
-    int          object_id;
+    // Vector of object ids the client is requesting the controller to act upon.
+    // Among them, the controller will select those available in the DB, those
+    // visible in the field of view and if there still is multiple choice,
+    // it will randomly pick one of them
+    std::vector<int> object_ids;
+
+    // Selected Object ID the controller is acting upon (if the action is done with
+    // respect to an object), among the list of requested objects
+    int           sel_object_id;
 
     // Flag to know if the robot will try to recover from an error
     // or will wait the external planner to take care of that
-    bool internal_recovery;
+    bool      internal_recovery;
 
     // Service to request actions to
-    ros::ServiceServer service;
+    ros::ServiceServer  service;
 
     // Internal service used for multi-arm actions
     ros::ServiceServer service_other_limb;
 
     // Publisher to publish the high-level state of the controller
     // (to be shown in the Baxter display)
-    ros::Publisher     state_pub;
+    ros::Publisher    state_pub;
 
     // Home configuration. Setting it in any of the children
     // of this class is mandatory (through the virtual method
@@ -355,17 +361,19 @@ public:
 
     /* Self-explaining "setters" */
     virtual void setSubState(std::string _state);
-    virtual void setObjectID(int _obj) { object_id =    _obj; };
+    virtual void setObjectID(int _obj)                { sel_object_id =  _obj; };
+    virtual void setObjectIDs(std::vector<int> _objs) { object_ids    = _objs; };
     void setAction(std::string _action);
     void setPrevAction(std::string _prev_action);
     void setState(int _state);
 
     /* Self-explaining "getters" */
-    std::string   getSubState() { return         sub_state; };
-    std::string     getAction() { return            action; };
-    std::string getPrevAction() { return       prev_action; };
-    int           getObjectID() { return         object_id; };
-    bool  getInternalRecovery() { return internal_recovery; };
+    std::string       getSubState() { return         sub_state; };
+    std::string         getAction() { return            action; };
+    std::string     getPrevAction() { return       prev_action; };
+    int               getObjectID() { return     sel_object_id; };
+    std::vector<int> getObjectIDs() { return        object_ids; };
+    bool      getInternalRecovery() { return internal_recovery; };
 };
 
 #endif
