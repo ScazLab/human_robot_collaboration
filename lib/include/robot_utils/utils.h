@@ -61,9 +61,9 @@
 #define FORCE_ALPHA     0.2
 #define FILTER_EPSILON  1e-6
 #define FORCE_FILT_VAR_L 0.001
-#define FORCE_FILT_VAR_R 1.0
+#define FORCE_FILT_VAR_R 0.001
 #define REL_FORCE_THRES_L 65.0
-#define REL_FORCE_THRES_R 1.0
+#define REL_FORCE_THRES_R 65.0
 
 #define HORIZONTAL_ORI_L      0.0, 0.70, 0.10, 0.70
 #define VERTICAL_ORI_L        0.0,  1.0,  0.0,  0.0

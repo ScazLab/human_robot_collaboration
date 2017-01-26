@@ -54,9 +54,9 @@
 
     <!-- Parameters for force interaction -->
     <arg name="forceFilterVarianceL" default="0.001"/>
-    <arg name="forceFilterVarianceR" default="1.0"/>
+    <arg name="forceFilterVarianceR" default="0.001"/>
     <arg name="relativeForceThresholdL"   default="65.0"/>
-    <arg name="relativeForceThresholdR"   default="1.0"/>
+    <arg name="relativeForceThresholdR"   default="65.0"/>
 
     <param name="action_provider/force_filter_variance_left"        value="$(arg forceFilterVarianceL)"/>
     <param name="action_provider/force_filter_variance_right"       value="$(arg forceFilterVarianceR)"/>
