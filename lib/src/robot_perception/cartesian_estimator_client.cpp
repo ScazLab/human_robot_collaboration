@@ -5,17 +5,26 @@
 using namespace std;
 
 CartesianEstimatorClient::CartesianEstimatorClient(string _name, string _limb) :
-                        nh(_name), limb(_limb), cartest_ok(false),
-                        object_found(false), object_name("")
+               nh(_name), limb(_limb), cartest_ok(false), objects_found(false),
+                                          object_found(false), object_name("")
 {
     cartest_sub = nh.subscribe("/hsv_detector/objects", SUBSCRIBER_BUFFER,
                                 &CartesianEstimatorClient::ObjectCb, this);
 }
 
-void CartesianEstimatorClient::clearObjectPose()
+void CartesianEstimatorClient::resetCartEst()
 {
     cartest_ok   = false;
+}
+
+void CartesianEstimatorClient::clearObjFound()
+{
     object_found = false;
+}
+
+void CartesianEstimatorClient::clearObjsFound()
+{
+    objects_found = false;
 
     available_objects.clear();
 }
@@ -33,6 +42,7 @@ void CartesianEstimatorClient::ObjectCb(const baxter_collaboration::ObjectsArray
         // ROS_DEBUG("Processing object with id %i",_msg.objects[i].id);
 
         available_objects.push_back(_msg.objects[i].name);
+        objects_found = true;
 
         if (_msg.objects[i].name == getObjectName())
         {
@@ -79,17 +89,14 @@ std::vector<string> CartesianEstimatorClient::getAvailableObjects(std::vector<st
 
 bool CartesianEstimatorClient::waitForCartEstOK()
 {
-    clearObjectPose();
+    resetCartEst();
 
     int cnt=0;
     ros::Rate r(10);
 
     while (!cartest_ok)
     {
-        if (cnt!=0) // let's skip the first one since it is very likely to occur
-        {
-            ROS_WARN("No callback from CartesianEstimator. Is CartesianEstimator running?");
-        }
+        ROS_WARN_COND(cnt>0, "No callback from CartesianEstimator. Is CartesianEstimator running?");
         ++cnt;
 
         if (cnt == 10)
@@ -104,22 +111,40 @@ bool CartesianEstimatorClient::waitForCartEstOK()
     return true;
 }
 
-bool CartesianEstimatorClient::waitForCartEstData()
+bool CartesianEstimatorClient::waitForCartEstObjsFound()
 {
-    clearObjectPose();
-    ROS_INFO("[%s] Waiting for CartesianEstimator data..", getCartesianEstimatorLimb().c_str());
+    clearObjsFound();
 
-    if (!waitForCartEstOK()) return false;
+    int cnt=0;
+    ros::Rate r(10);
+
+    while (!objects_found)
+    {
+        ROS_WARN_COND(cnt>0, "Objects not found. Are there any the objects there?");
+        ++cnt;
+
+        if (cnt == 10)
+        {
+            ROS_ERROR("Objects not found! Stopping.");
+            return false;
+        }
+
+        r.sleep();
+    }
+
+    return true;
+}
+
+bool CartesianEstimatorClient::waitForCartEstObjFound()
+{
+    clearObjFound();
 
     int cnt=0;
     ros::Rate r(10);
 
     while (!object_found)
     {
-        if (cnt!=0) // let's skip the first one since it is very likely to occurr
-        {
-            ROS_WARN("Object with name %s not found. Is the object there?", getObjectName().c_str());
-        }
+        ROS_WARN_COND(cnt>0, "Object with name %s not found. Is the object there?", getObjectName().c_str());
         ++cnt;
 
         if (cnt == 10)
@@ -130,6 +155,17 @@ bool CartesianEstimatorClient::waitForCartEstData()
 
         r.sleep();
     }
+
+    return true;
+}
+
+bool CartesianEstimatorClient::waitForCartEstData()
+{
+    ROS_INFO("[%s] Waiting for CartesianEstimator data..", getCartEstLimb().c_str());
+
+    if (!waitForCartEstOK())        return false;
+    if (!waitForCartEstObjsFound()) return false;
+    if (!waitForCartEstObjFound())  return false;
 
     return true;
 }
