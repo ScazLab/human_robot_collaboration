@@ -18,9 +18,9 @@ ToolPicker::ToolPicker(std::string _name, std::string _limb, bool _no_robot) :
 
     printActionDB();
 
-    reduceSquish();
-
     if (_no_robot) return;
+
+    reduceSquish();
 
     if (!callAction(ACTION_HOME)) setState(ERROR);
 }
