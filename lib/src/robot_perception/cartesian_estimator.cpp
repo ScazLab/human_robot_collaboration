@@ -54,7 +54,7 @@ bool SegmentedObj::drawBox(cv::Mat &_img)
         for( int j = 0; j < 4; j++ )
         {
             cv::line   (_img, rect_points[j], rect_points[(j+1)%4], color, 2, 8 );
-            // cv::putText(_out, intToString(j), rect_points[j],
+            // cv::putText(_img, intToString(j), rect_points[j],
             //              FONT_FACE, 1, cv::Scalar::all(255), 2, CV_AA);
         }
 
@@ -223,8 +223,8 @@ void CartesianEstimator::InternalThreadEntry()
             img_out = img_in.clone();
 
             detectObjects(img_in, img_out);
-            poseRootRF();
             draw(img_out);
+            poseRootRF();
 
             if (objs_pub.getNumSubscribers() > 0)    publishObjects();
 
