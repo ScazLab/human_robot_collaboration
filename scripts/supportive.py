@@ -19,7 +19,7 @@ from htm.lib.belief import format_belief_array
 import rospy
 from std_msgs.msg import String
 from baxter_collaboration.srv import DoActionResponse
-from baxter_collaboration.graph_policy_controller import BaseController
+from baxter_collaboration.controller import BaseController
 from baxter_collaboration.service_request import ServiceRequest
 
 
