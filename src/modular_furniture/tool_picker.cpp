@@ -39,11 +39,11 @@ ToolPicker::ToolPicker(std::string _name, std::string _limb, bool _no_robot) :
 
 void ToolPicker::reduceSquish()
 {
-    XmlRpc::XmlRpcValue squish_params; 
+    XmlRpc::XmlRpcValue squish_params;
     // store the initial squish thresholds from the parameter server
     _n.getParam("collision/right/baxter/squish_thresholds", squish_params);
     ROS_ASSERT(squish_params.getType()==XmlRpc::XmlRpcValue::TypeArray);
-    
+
     for (int i = 0; i < squish_params.size(); ++i)
     {
         // store the initial squish thresholds for reset later
@@ -51,8 +51,8 @@ void ToolPicker::reduceSquish()
     }
 
     // adjust the squish thresholds for better tool picking
-    squish_params[3] = 0.5 * squish_params[3];
-    squish_params[5] = 0.5 * squish_params[5];
+    squish_params[3] = 0.5 * static_cast<double>(squish_params[3]);
+    squish_params[5] = 0.5 * static_cast<double>(squish_params[5]);
 
     // set the squish thresholds in the parameter server to the new values
     _n.setParam("collision/right/baxter/squish_thresholds", squish_params);
