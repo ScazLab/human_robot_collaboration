@@ -18,18 +18,6 @@ ToolPicker::ToolPicker(std::string _name, std::string _limb, bool _no_robot) :
 
     printActionDB();
 
-    XmlRpc::XmlRpcValue objects_db;
-    if(!_n.getParam("objects_"+getLimb(), objects_db))
-    {
-        ROS_INFO("No objects' database found in the parameter server. "
-                 "Looked up param is %s", ("objects_"+getLimb()).c_str());
-    }
-    else
-    {
-        insertObjects(objects_db);
-        printObjectDB();
-    }
-
     reduceSquish();
 
     if (_no_robot) return;
