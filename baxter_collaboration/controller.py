@@ -26,11 +26,13 @@ class BaseController(object):
 
     COM_TOPIC = '/web_interface/pub'
     ERR_TOPIC = '/robot/digital_io/left_lower_button/state'
+    LISTEN_TOPIC = '/user_input'
     SPEECH_SERVICE = '/svox_tts/speech'
     ACTION_SERVICE_LEFT = '/action_provider/service_left'
     ACTION_SERVICE_RIGHT = '/action_provider/service_right'
 
-    def __init__(self, timer_path=None, left=True, right=True, speech=True):
+    def __init__(self, timer_path=None, left=True, right=True, speech=True,
+                 listen=True):
         self.finished = False
         # ROS stuff
         rospy.init_node(self.NODE_NAME, disable_signals=True)
@@ -52,7 +54,10 @@ class BaseController(object):
             self.speech = rospy.ServiceProxy(self.SPEECH_SERVICE, Speech)
         self._say_req = None
         # Suscriber to human answers
-        self.answer_sub = CommunicationSuscriber(self.COM_TOPIC, self._stop)
+        if listen:
+            self.answer_sub = CommunicationSuscriber(self.LISTEN_TOPIC, self._stop)
+        else:
+            self.answer_sub = CommunicationSuscriber(self.COM_TOPIC, self._stop)
         # Suscriber to errors
         self.error_sub = ErrorSuscriber(self.ERR_TOPIC, timeout=5)
         # Timer to log events
@@ -104,3 +109,14 @@ class BaseController(object):
 
     def take_action(self, action):
         raise NotImplementedError
+
+    def set_listen_context(self, context):
+        rospy.get_param('/ros_speech2text/speech_context', context)
+
+    def ask(self, question, context=None):
+        self.say(question, sync=False)
+        if context is not None:
+            self.set_listen_context(context)
+        ans = self.answer_sub.wait_for_msg()
+        rospy.loginfo("Got human answer: '%s'" % ans)
+        return ans

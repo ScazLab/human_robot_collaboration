@@ -155,7 +155,7 @@ class POMCPController(BaseController):
 
     def action_wait(self):
         rospy.loginfo("Waiting...")
-        self.say('Tell me when you are done.', sync=False)
+        self.ask('Tell me when you are done.', context=['Done.', "I'm done."])
         ans = self.answer_sub.wait_for_msg()
         rospy.loginfo("Got human message: '%s'" % ans)
         return self.model.observations[self.model.O_NONE]
