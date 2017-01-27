@@ -43,7 +43,7 @@ void ToolPicker::reduceSquish()
     squish_params[5] = 0.5 * static_cast<double>(squish_params[5]);
 
     // set the squish thresholds in the parameter server to the new values
-    _n.setParam("collision/right/baxter/squish_thresholds", squish_params);
+    _n.setParam("collision/"+getLimb()"/baxter/squish_thresholds", squish_params);
 }
 
 void ToolPicker::resetSquish()
