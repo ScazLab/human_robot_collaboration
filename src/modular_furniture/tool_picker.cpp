@@ -29,8 +29,11 @@ void ToolPicker::reduceSquish()
 {
     XmlRpc::XmlRpcValue squish_params;
     // store the initial squish thresholds from the parameter server
-    _n.getParam("collision/"+getLimb()+"/baxter/squish_thresholds", squish_params);
-    ROS_ASSERT(squish_params.getType()==XmlRpc::XmlRpcValue::TypeArray);
+    _n.getParam("/collision/"+getLimb()+"/baxter/squish_thresholds", squish_params);
+
+    ROS_ASSERT_MSG(squish_params.getType()==XmlRpc::XmlRpcValue::TypeArray,
+                          "[%s] Squish params is not an array! Type is %i",
+                               getLimb().c_str(), squish_params.getType());
 
     for (int i = 0; i < squish_params.size(); ++i)
     {
@@ -42,8 +45,12 @@ void ToolPicker::reduceSquish()
     squish_params[3] = 0.5 * static_cast<double>(squish_params[3]);
     squish_params[5] = 0.5 * static_cast<double>(squish_params[5]);
 
+    ROS_INFO("[%s] Reduced squish thresholds for joint 3 and 5 to %g and %g .",
+                      getLimb().c_str(), static_cast<double>(squish_params[3]),
+                                        static_cast<double>(squish_params[5]));
+
     // set the squish thresholds in the parameter server to the new values
-    _n.setParam("collision/"+getLimb()+"/baxter/squish_thresholds", squish_params);
+    _n.setParam("/collision/"+getLimb()+"/baxter/squish_thresholds", squish_params);
 }
 
 void ToolPicker::resetSquish()
@@ -55,8 +62,12 @@ void ToolPicker::resetSquish()
         squish_params[i] = squish_thresholds[i];
     }
 
+    ROS_INFO("[%s] Squish thresholds for joint 3 and 5 have been set back to %g and %g .",
+                                 getLimb().c_str(), static_cast<double>(squish_params[3]),
+                                                   static_cast<double>(squish_params[5]));
+
     // reset squish thresholds in the parameter server to the new values
-    _n.setParam("collision/"+getLimb()+"/baxter/squish_thresholds", squish_params);
+    _n.setParam("/collision/"+getLimb()+"/baxter/squish_thresholds", squish_params);
 }
 
 bool ToolPicker::pickUpObject()
