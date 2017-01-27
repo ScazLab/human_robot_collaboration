@@ -2,6 +2,8 @@
 
 using namespace std;
 
+#define FONT_FACE     cv::FONT_HERSHEY_SIMPLEX
+
 /************************************************************************************/
 /*                                 SEGMENTED OBJECT                                 */
 /************************************************************************************/
@@ -38,6 +40,81 @@ bool SegmentedObj::detectObject(const cv::Mat& _in, cv::Mat& _out)
 bool SegmentedObj::detectObject(const cv::Mat& _in, cv::Mat& _out, cv::Mat& _out_thres)
 {
     return false;
+}
+
+bool SegmentedObj::drawBox(cv::Mat &_img)
+{
+    if (isThere())
+    {
+        cv::Scalar color = cv::Scalar::all(255);
+
+        cv::Point2f rect_points[4];
+        rect.points(rect_points);
+
+        for( int j = 0; j < 4; j++ )
+        {
+            cv::line   (_img, rect_points[j], rect_points[(j+1)%4], color, 2, 8 );
+            // cv::putText(_out, intToString(j), rect_points[j],
+            //              FONT_FACE, 1, cv::Scalar::all(255), 2, CV_AA);
+        }
+
+        return true;
+    }
+
+    return false;
+}
+
+bool SegmentedObj::drawName(cv::Mat &_img)
+{
+    if (isThere())
+    {
+        cv::putText(_img, name.c_str(), rect.center,
+                    FONT_FACE, 0.7, cv::Scalar::all(255), 0.7, CV_AA);
+    }
+
+    return false;
+}
+
+bool SegmentedObj::draw3dAxis(cv::Mat &_img, const cv::Mat& _cam_mat,
+                                             const cv::Mat& _dist_mat)
+{
+    if (isThere())
+    {
+        float size=0.15;
+
+        cv::Mat obj_points (4,3,CV_32FC1);
+        obj_points.at<float>(0,0)=   0; obj_points.at<float>(0,1)=   0; obj_points.at<float>(0,2)=   0;
+        obj_points.at<float>(1,0)=size; obj_points.at<float>(1,1)=   0; obj_points.at<float>(1,2)=   0;
+        obj_points.at<float>(2,0)=   0; obj_points.at<float>(2,1)=size; obj_points.at<float>(2,2)=   0;
+        obj_points.at<float>(3,0)=   0; obj_points.at<float>(3,1)=   0; obj_points.at<float>(3,2)=size;
+
+        vector<cv::Point2f> img_points;
+        cv::projectPoints( obj_points, Rvec, Tvec, _cam_mat, _dist_mat, img_points);
+
+        //draw lines of different colours
+        cv::line(_img, img_points[0], img_points[1], cv::Scalar(0,0,255,255), 1, CV_AA);
+        cv::line(_img, img_points[0], img_points[2], cv::Scalar(0,255,0,255), 1, CV_AA);
+        cv::line(_img, img_points[0], img_points[3], cv::Scalar(255,0,0,255), 1, CV_AA);
+        cv::putText(_img, "x", img_points[1], FONT_FACE, 0.6, cv::Scalar(0,0,255,255), 2);
+        cv::putText(_img, "y", img_points[2], FONT_FACE, 0.6, cv::Scalar(0,255,0,255), 2);
+        cv::putText(_img, "z", img_points[3], FONT_FACE, 0.6, cv::Scalar(255,0,0,255), 2);
+
+        return true;
+    }
+
+    return false;
+}
+
+bool SegmentedObj::draw(cv::Mat &_img, const cv::Mat& _cam_mat,
+                                       const cv::Mat& _dist_mat)
+{
+    bool res = true;
+
+    res = res & draw3dAxis(_img, _cam_mat, _dist_mat);
+    res = res & drawBox   (_img);
+    res = res & drawName  (_img);
+
+    return res;
 }
 
 string SegmentedObj::toString()
@@ -134,8 +211,8 @@ void CartesianEstimator::InternalThreadEntry()
 
     while(ros::ok())
     {
-        ROS_INFO_THROTTLE(120, "I'm running, and everything is fine..."
-                               " Number of objects: %i", getNumValidObjects());
+        // ROS_INFO_THROTTLE(120, "I'm running, and everything is fine..."
+        //                        " Number of objects: %i", getNumValidObjects());
         cv::Mat img_in;
         cv::Mat img_out;
         if (!_img_empty)
@@ -147,7 +224,7 @@ void CartesianEstimator::InternalThreadEntry()
 
             detectObjects(img_in, img_out);
             poseRootRF();
-            draw3dAxis(img_out);
+            draw(img_out);
 
             if (objs_pub.getNumSubscribers() > 0)    publishObjects();
 
@@ -200,8 +277,8 @@ bool CartesianEstimator::addObjects(std::vector<std::string> _names, cv::Mat _o)
 bool CartesianEstimator::addObjects(XmlRpc::XmlRpcValue _params)
 {
     ROS_ASSERT(_params.getType()==XmlRpc::XmlRpcValue::TypeStruct);
-    ROS_ASSERT(_params.size()>=0);
-    // printf("_params.size() %i\n", _params.size());
+    ROS_WARN_COND(_params.size() == 0, "No objects available in the parameter server!");
+
     bool res = true;
 
     for (XmlRpc::XmlRpcValue::iterator i=_params.begin(); i!=_params.end(); ++i)
@@ -238,7 +315,10 @@ bool CartesianEstimator::detectObjects(const cv::Mat& _in, cv::Mat& _out)
 
     for (size_t i = 0; i < objs.size(); ++i)
     {
-        res = res & objs[i]->detectObject(_in, _out, out_thres);
+        if (objs[i])
+        {
+            res = res & objs[i]->detectObject(_in, _out, out_thres);
+        }
     }
 
     if (img_pub_thres.getNumSubscribers() > 0)
@@ -324,22 +404,17 @@ bool CartesianEstimator::poseCameraRF(int idx)
         ImgPoints.at<float>(j,1)=obj_segm_pts[j].y;
     }
 
+    double h_w = objs[idx]->size[0]/2;
+    double h_h = objs[idx]->size[1]/2;
+
     // Matrix representing the points relative to the objects.
     // The convention used is to have 0 in the bottom left,
     // with the others organized in a clockwise manner
     cv::Mat ObjPoints(4,3,CV_32FC1);
-    ObjPoints.at<float>(0,0)=-objs[idx]->size[0]/2;
-    ObjPoints.at<float>(0,1)=-objs[idx]->size[1]/2;
-    ObjPoints.at<float>(0,2)=0;
-    ObjPoints.at<float>(1,0)=-objs[idx]->size[0]/2;
-    ObjPoints.at<float>(1,1)=+objs[idx]->size[1]/2;
-    ObjPoints.at<float>(1,2)=0;
-    ObjPoints.at<float>(2,0)=+objs[idx]->size[0]/2;
-    ObjPoints.at<float>(2,1)=+objs[idx]->size[1]/2;
-    ObjPoints.at<float>(2,2)=0;
-    ObjPoints.at<float>(3,0)=+objs[idx]->size[0]/2;
-    ObjPoints.at<float>(3,1)=-objs[idx]->size[1]/2;
-    ObjPoints.at<float>(3,2)=0;
+    ObjPoints.at<float>(0,0)=-h_w;   ObjPoints.at<float>(0,1)=-h_h;   ObjPoints.at<float>(0,2)=0;
+    ObjPoints.at<float>(1,0)=-h_w;   ObjPoints.at<float>(1,1)=+h_h;   ObjPoints.at<float>(1,2)=0;
+    ObjPoints.at<float>(2,0)=+h_w;   ObjPoints.at<float>(2,1)=+h_h;   ObjPoints.at<float>(2,2)=0;
+    ObjPoints.at<float>(3,0)=+h_w;   ObjPoints.at<float>(3,1)=-h_h;   ObjPoints.at<float>(3,2)=0;
 
     cv::Mat raux,taux;
     cv::solvePnP(ObjPoints, ImgPoints, cam_param.CameraMatrix, cv::Mat(), raux, taux);
@@ -408,20 +483,14 @@ tf::Transform CartesianEstimator::object2Tf(int idx)
 
     // This transforms from the RF of the object to the RF of the end-effector
     // in order to be able to properly align the end-effector with the object itself
-    cv::Mat rotate_to_ros(3, 3, CV_32FC1);
+    cv::Mat obj2EE(3, 3, CV_32FC1);
     //  0 -1  0
     // -1  0  0
     //  0  0 -1
-    rotate_to_ros.at<float>(0,0) =  0.0;
-    rotate_to_ros.at<float>(0,1) = -1.0;
-    rotate_to_ros.at<float>(0,2) =  0.0;
-    rotate_to_ros.at<float>(1,0) = -1.0;
-    rotate_to_ros.at<float>(1,1) =  0.0;
-    rotate_to_ros.at<float>(1,2) =  0.0;
-    rotate_to_ros.at<float>(2,0) =  0.0;
-    rotate_to_ros.at<float>(2,1) =  0.0;
-    rotate_to_ros.at<float>(2,2) = -1.0;
-    rot = rot*rotate_to_ros.t();
+    obj2EE.at<float>(0,0) =  0.0; obj2EE.at<float>(0,1) = -1.0; obj2EE.at<float>(0,2) =  0.0;
+    obj2EE.at<float>(1,0) = -1.0; obj2EE.at<float>(1,1) =  0.0; obj2EE.at<float>(1,2) =  0.0;
+    obj2EE.at<float>(2,0) =  0.0; obj2EE.at<float>(2,1) =  0.0; obj2EE.at<float>(2,2) = -1.0;
+    rot = rot*obj2EE.t();
 
     tf::Matrix3x3 tf_rot(rot.at<float>(0,0), rot.at<float>(0,1), rot.at<float>(0,2),
                          rot.at<float>(1,0), rot.at<float>(1,1), rot.at<float>(1,2),
@@ -432,7 +501,7 @@ tf::Transform CartesianEstimator::object2Tf(int idx)
     return tf::Transform(tf_rot, tf_orig);
 }
 
-bool CartesianEstimator::draw3dAxis(cv::Mat &_img)
+bool CartesianEstimator::draw(cv::Mat &_img)
 {
     bool res = true;
 
@@ -440,46 +509,16 @@ bool CartesianEstimator::draw3dAxis(cv::Mat &_img)
     {
         if (objs[i])
         {
-            if (objs[i]->isThere())
-            {
-                res = res & draw3dAxis(_img, i);
-            }
+            res = res & draw(_img, i);
         }
     }
 
     return res;
 }
 
-bool CartesianEstimator::draw3dAxis(cv::Mat &_img, int idx)
+bool CartesianEstimator::draw(cv::Mat &_img, int idx)
 {
-    int fFace  = cv::FONT_HERSHEY_SIMPLEX;
-    float size=0.15;
-
-    cv::Mat objectPoints (4,3,CV_32FC1);
-    objectPoints.at<float>(0,0)=0;
-    objectPoints.at<float>(0,1)=0;
-    objectPoints.at<float>(0,2)=0;
-    objectPoints.at<float>(1,0)=size;
-    objectPoints.at<float>(1,1)=0;
-    objectPoints.at<float>(1,2)=0;
-    objectPoints.at<float>(2,0)=0;
-    objectPoints.at<float>(2,1)=size;
-    objectPoints.at<float>(2,2)=0;
-    objectPoints.at<float>(3,0)=0;
-    objectPoints.at<float>(3,1)=0;
-    objectPoints.at<float>(3,2)=size;
-
-    vector<cv::Point2f> imagePoints;
-    cv::projectPoints( objectPoints, objs[idx]->Rvec, objs[idx]->Tvec,
-                       cam_param.CameraMatrix, cam_param.Distorsion, imagePoints);
-
-    //draw lines of different colours
-    cv::line(_img, imagePoints[0], imagePoints[1], cv::Scalar(0,0,255,255), 1, CV_AA);
-    cv::line(_img, imagePoints[0], imagePoints[2], cv::Scalar(0,255,0,255), 1, CV_AA);
-    cv::line(_img, imagePoints[0], imagePoints[3], cv::Scalar(255,0,0,255), 1, CV_AA);
-    cv::putText(_img, "x", imagePoints[1], fFace, 0.6, cv::Scalar(0,0,255,255), 2);
-    cv::putText(_img, "y", imagePoints[2], fFace, 0.6, cv::Scalar(0,255,0,255), 2);
-    cv::putText(_img, "z", imagePoints[3], fFace, 0.6, cv::Scalar(255,0,0,255), 2);
+    objs[idx]->draw(_img, cam_param.CameraMatrix, cam_param.Distorsion);
 
     return true;
 }
@@ -506,6 +545,7 @@ void CartesianEstimator::clearObjs()
         if (objs[i])
         {
             delete objs[i];
+            objs[i] = 0;
         }
     }
 

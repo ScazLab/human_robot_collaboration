@@ -81,6 +81,53 @@ public:
     virtual bool detectObject(const cv::Mat& _in, cv::Mat& _out, cv::Mat& _out_thres);
 
     /**
+     * Draws a box in the image where the object is located
+     *
+     * @param _img      Image to draw the 3D box into
+     *
+     * @return true/false if success/failure
+     */
+    bool drawBox(cv::Mat &_img);
+
+    /**
+     * Draws a the object name in the image where the object is located
+     *
+     * @param _img      Image to draw the name into
+     *
+     * @return true/false if success/failure
+     */
+    bool drawName(cv::Mat &_img);
+
+    /**
+     * Draws a 3D axis in the image where the object is located
+     *
+     * @param _img      Image to draw the 3D axis into
+     * @param _cam_mat  Camera matrix A = \vecthreethree{f_x}{0}{c_x}{0}{f_y}{c_y}{0}{0}{_1}
+     * @param _dist_mat Input vector of distortion coefficients
+     *                  (k_1, k_2, p_1, p_2[, k_3[, k_4, k_5, k_6]]) of 4, 5, or 8 elements.
+     *                  If the vector is NULL/empty, no distortion coefficients are assumed.
+     *
+     * @return true/false if success/failure
+     */
+    bool draw3dAxis(cv::Mat &_img, const cv::Mat& _cam_mat,
+                                   const cv::Mat& _dist_mat);
+
+    /**
+     * Draws a the segmented rectangle, its name and its 3D axis where
+     * the object is located in the image.
+     *
+     * @param _img      Image to draw things into
+     * @param _cam_mat  Camera matrix A = \vecthreethree{f_x}{0}{c_x}{0}{f_y}{c_y}{0}{0}{_1}
+     * @param _dist_mat Input vector of distortion coefficients
+     *                  (k_1, k_2, p_1, p_2[, k_3[, k_4, k_5, k_6]]) of 4, 5, or 8 elements.
+     *                  If the vector is NULL/empty, no distortion coefficients are assumed.
+     *
+     * @return true/false if success/failure
+     */
+    bool draw(cv::Mat &_img, const cv::Mat& _cam_mat,
+                             const cv::Mat& _dist_mat);
+
+    /**
      * Converts the segmented object to a string.
      * @return the segmented object as a string
      */
@@ -263,24 +310,23 @@ protected:
     bool poseRootRF(int idx);
 
     /**
-     * Draws a 3D axis in the image where the object is located
+     * Draws all objects in the image where they are located
      *
-     * @param _img Image to draw the 3D axis into
-     * @param  idx The object's index
+     * @param _img Image to draw the objects into
      *
      * @return true/false if success/failure
      */
-    bool draw3dAxis(cv::Mat &_img);
+    bool draw(cv::Mat &_img);
 
     /**
-     * Draws a 3D axis in the object
+     * Draws an object in the image where they are located
      *
-     * @param _img Image to draw the 3D axis into
+     * @param _img Image to draw the object into
      * @param  idx The object's index
      *
      * @return true/false if success/failure
      */
-    bool draw3dAxis(cv::Mat &_img, int idx);
+    bool draw(cv::Mat &_img, int idx);
 
     /**
      * Computes the number of valid objects visible on the current frame
