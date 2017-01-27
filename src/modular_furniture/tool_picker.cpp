@@ -29,7 +29,7 @@ void ToolPicker::reduceSquish()
 {
     XmlRpc::XmlRpcValue squish_params;
     // store the initial squish thresholds from the parameter server
-    _n.getParam("collision/right/baxter/squish_thresholds", squish_params);
+    _n.getParam("collision/"+getLimb()+"/baxter/squish_thresholds", squish_params);
     ROS_ASSERT(squish_params.getType()==XmlRpc::XmlRpcValue::TypeArray);
 
     for (int i = 0; i < squish_params.size(); ++i)
@@ -56,7 +56,7 @@ void ToolPicker::resetSquish()
     }
 
     // reset squish thresholds in the parameter server to the new values
-    _n.setParam("collision/right/baxter/squish_thresholds", squish_params);
+    _n.setParam("collision/"+getLimb()+"/baxter/squish_thresholds", squish_params);
 }
 
 bool ToolPicker::pickUpObject()
