@@ -17,6 +17,19 @@ class ToolPicker : public HoldCtrl, public CartesianEstimatorClient
 private:
     double elap_time;
 
+    std::vector<double> squish_thresholds;
+
+    /**
+     * Stores initial squish thresholds to squish_thresholds, then
+     * reduces and rewrites squish thresholds to aid in picking up tools
+     */
+    void reduceSquish();
+
+    /**
+     * Resets squish thresholds to original values stored in squish_thresholds
+     */
+    void resetSquish();
+
     /**
      * [getObject description]
      * @return true/false if success/failure
