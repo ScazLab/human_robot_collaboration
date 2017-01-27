@@ -96,20 +96,8 @@ bool SegmentedObjHSV::detectObject(const cv::Mat& _in, cv::Mat& _out, cv::Mat& _
         // detected_obj = filt_contours[largest_contour_idx];
 
     rect = minAreaRect(cv::Mat(detected_obj));
-
-    cv::Scalar color = cv::Scalar::all(255);
-
-    cv::Point2f rect_points[4];
-    rect.points(rect_points);
-
-    for( int j = 0; j < 4; j++ )
-    {
-        cv::line   (_out, rect_points[j], rect_points[(j+1)%4], color, 1, 8 );
-        cv::putText(_out, intToString(j), rect_points[j],
-                     cv::FONT_HERSHEY_SIMPLEX, 1, cv::Scalar::all(255), 2, CV_AA);
-    }
-
     setIsThere(true);
+
     return true;
 }
 
@@ -193,7 +181,7 @@ bool CartesianEstimatorHSV::addObjects(vector<string> _names, cv::Mat _o,
 bool CartesianEstimatorHSV::addObjects(XmlRpc::XmlRpcValue _params)
 {
     ROS_ASSERT(_params.getType()==XmlRpc::XmlRpcValue::TypeStruct);
-    ROS_ASSERT(_params.size()>=0);
+    ROS_WARN_COND(_params.size() == 0, "No objects available in the parameter server!");
 
     bool res = true;
 
