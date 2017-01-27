@@ -14,6 +14,7 @@ from htm.task import (SequentialCombination, AlternativeCombination,
 from htm.supportive import (SupportivePOMDP, AssembleFoot, AssembleTopJoint,
                             AssembleLegToTop, BringTop, NHTMHorizon)
 from htm.lib.pomdp import POMCPPolicyRunner, export_pomcp
+from htm.lib.belief import format_belief_array
 
 import rospy
 from std_msgs.msg import String
@@ -97,7 +98,7 @@ class POMCPController(BaseController):
                 rospy.loginfo("Assumes task is done: exiting....")
                 self._stop()
             else:
-                rospy.loginfo("Current belief on HTM: " + str(b))
+                rospy.loginfo("Current belief on HTM: " + format_belief_array(b))
                 self.timer.log(self.pol.history)
                 t = rospy.Time.now()
                 a = self.pol.get_action()
