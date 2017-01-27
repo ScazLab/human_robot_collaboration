@@ -13,7 +13,7 @@ from htm.task import (SequentialCombination, AlternativeCombination,
                       LeafCombination, ParallelCombination)
 from htm.supportive import (SupportivePOMDP, AssembleFoot, AssembleTopJoint,
                             AssembleLegToTop, BringTop, NHTMHorizon)
-from htm.lib.pomdp import POMCPPolicyRunner
+from htm.lib.pomdp import POMCPPolicyRunner, export_pomcp
 
 import rospy
 from std_msgs.msg import String
@@ -39,6 +39,10 @@ EXPLORATION = 10  # 1000
 RELATIVE_EXPLO = True  # In this case use smaller exploration
 BELIEF_VALUES = False
 N_WARMUP = 10
+N_PARTICLES = 200
+
+EXPORT_DEST = os.path.join(args.path, 'pomcp-{}.json'.format(args.user))
+EXPORT_BELIEF_QUOTIENT = True
 
 OBJECTS_RENAME = {'top': 'table_top', 'screws': 'screws_box', 'joints': 'brackets_box'}
 
@@ -172,7 +176,8 @@ pol = POMCPPolicyRunner(p, iterations=ITERATIONS,
                         exploration=EXPLORATION,
                         relative_exploration=RELATIVE_EXPLO,
                         belief_values=BELIEF_VALUES,
-                        belief='particle', belief_params={'n_particles': 100})
+                        belief='particle',
+                        belief_params={'n_particles': N_PARTICLES})
 
 # Warm up policy
 best = None
@@ -189,15 +194,8 @@ for i in range(N_WARMUP):
 print('Exploring... [done]')
 if BELIEF_VALUES:
     print('Found {} distinct beliefs.'.format(len(pol.tree._obs_nodes)))
-dic = pol.trajectory_trees_from_starts()
-dic['actions'] = pol.tree.model.actions
-dic['states'] = pol.tree.model.states
-dic['exploration'] = EXPLORATION
-dic['relative_exploration'] = RELATIVE_EXPLO
-# Store POMCP representation
-with open(os.path.join(args.path, 'pomcp-{}.json'.format(args.user)), 'w') as f:
-    json.dump(dic, f, indent=2)
 
+export_pomcp(pol, EXPORT_DEST, belief_as_quotien=EXPORT_BELIEF_QUOTIENT)
 
 timer_path = os.path.join(args.path, 'timer-{}.json'.format(args.user))
 controller = POMCPController(pol, timer_path=timer_path)
