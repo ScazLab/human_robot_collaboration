@@ -51,8 +51,8 @@ void ToolPicker::reduceSquish()
     }
 
     // adjust the squish thresholds for better tool picking
-    squish_params[3] = 0.5*squish_params[3]
-    squish_params[5] = 0.5*squish_params[5]
+    squish_params[3] = 0.5 * squish_params[3];
+    squish_params[5] = 0.5 * squish_params[5];
 
     // set the squish thresholds in the parameter server to the new values
     _n.setParam("collision/right/baxter/squish_thresholds", squish_params);
@@ -61,7 +61,7 @@ void ToolPicker::reduceSquish()
 void ToolPicker::resetSquish()
 {
     XmlRpc::XmlRpcValue squish_params;
-    for (int i = 0; i < squish_thresholds.size(); ++i)
+    for (std::vector<int>::size_type i = 0; i != squish_thresholds.size(); i++)
     {
         // rewrite the squish parameters from the initial squish thresholds stored in reduceSquish()
         squish_params[i] = squish_thresholds[i];
