@@ -27,6 +27,38 @@ RobotInterface::RobotInterface(string name, string limb, bool no_robot, bool use
 
     if (no_robot) return;
 
+    _curr_max_range = 0;
+    _curr_min_range = 0;
+    _curr_range     = 0;
+
+    _filt_force.push_back(0.0);
+    _filt_force.push_back(0.0);
+    _filt_force.push_back(0.0);
+
+    _time_filt_last_updated = ros::Time::now();
+    _filt_change.push_back(0.0);
+    _filt_change.push_back(0.0);
+    _filt_change.push_back(0.0);
+
+    if (getLimb()=="left")
+    {
+        _n.param<double>("force_threshold_left",  force_thres, FORCE_THRES_L);
+        _n.param<double>("force_filter_variance_left", filt_variance, FORCE_FILT_VAR_L);
+        _n.param<double>("relative_force_threshold_left", rel_force_thres, REL_FORCE_THRES_L);
+    }
+    else if (getLimb()=="right")
+    {
+        _n.param<double>("force_threshold_right", force_thres, FORCE_THRES_R);
+        _n.param<double>("force_filter_variance_right", filt_variance, FORCE_FILT_VAR_R);
+        _n.param<double>("relative_force_threshold_right", rel_force_thres, REL_FORCE_THRES_R);
+    }
+
+    ROS_INFO("[%s] Force Threshold : %g", getLimb().c_str(), force_thres);
+    ROS_INFO("[%s] Force Filter Variance: %g", getLimb().c_str(), filt_variance);
+    ROS_INFO("[%s] Relative Force Threshold: %g", getLimb().c_str(), rel_force_thres);
+
+    ROS_INFO("[%s] Cartesian Controller %s enabled", getLimb().c_str(), _use_cart_ctrl?"is":"is NOT");
+
     _joint_cmd_pub = _n.advertise<JointCommand>("/robot/limb/" + _limb + "/joint_command", 1);
     _coll_av_pub   = _n.advertise<Empty>("/robot/limb/" + _limb + "/suppress_collision_avoidance", 1);
 
@@ -63,38 +95,6 @@ RobotInterface::RobotInterface(string name, string limb, bool no_robot, bool use
         _ik_client = _n.serviceClient<SolvePositionIK>("/ExternalTools/" + _limb +
                                                        "/PositionKinematicsNode/IKService");
     }
-
-    _curr_max_range = 0;
-    _curr_min_range = 0;
-    _curr_range     = 0;
-
-    _filt_force.push_back(0.0);
-    _filt_force.push_back(0.0);
-    _filt_force.push_back(0.0);
-
-    _time_filt_last_updated = ros::Time::now();
-    _filt_change.push_back(0.0);
-    _filt_change.push_back(0.0);
-    _filt_change.push_back(0.0);
-
-    if (getLimb()=="left")
-    {
-        _n.param<double>("force_threshold_left",  force_thres, FORCE_THRES_L);
-        _n.param<double>("force_filter_variance_left", filt_variance, FORCE_FILT_VAR_L);
-        _n.param<double>("relative_force_threshold_left", rel_force_thres, REL_FORCE_THRES_L);
-    }
-    else if (getLimb()=="right")
-    {
-        _n.param<double>("force_threshold_right", force_thres, FORCE_THRES_R);
-        _n.param<double>("force_filter_variance_right", filt_variance, FORCE_FILT_VAR_R);
-        _n.param<double>("relative_force_threshold_right", rel_force_thres, REL_FORCE_THRES_R);
-    }
-
-    ROS_INFO("[%s] Force Threshold : %g", getLimb().c_str(), force_thres);
-    ROS_INFO("[%s] Force Filter Variance: %g", getLimb().c_str(), filt_variance);
-    ROS_INFO("[%s] Relative Force Threshold: %g", getLimb().c_str(), rel_force_thres);
-
-    ROS_INFO("[%s] Cartesian Controller %s enabled", getLimb().c_str(), _use_cart_ctrl?"is":"is NOT");
 
     spinner.start();
 
@@ -381,7 +381,7 @@ void RobotInterface::endpointCb(const baxter_core_msgs::EndpointState& msg)
     _curr_pos      = msg.pose.position;
     _curr_ori      = msg.pose.orientation;
 
-    if (_use_forces == true) _curr_wrench   = msg.wrench;
+    if (_use_forces == true) _curr_wrench = msg.wrench;
 
     tf::Quaternion _marker_quat;
     tf::quaternionMsgToTF(_curr_ori, _marker_quat);
