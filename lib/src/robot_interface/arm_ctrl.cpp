@@ -178,20 +178,15 @@ bool ArmCtrl::serviceCb(baxter_collaboration::DoAction::Request  &req,
         r.sleep();
     }
 
-    if (getState() == ERROR)
-    {
-        ROS_INFO("Sub state: %s\n", getSubState().c_str());
-        res.response = getSubState();
-    }
-
     if ( int(getState()) == START   ||
          int(getState()) == DONE      )
     {
         res.success = true;
     }
-    else if (getSubState() == "")
+
+    if (getState() == ERROR)
     {
-        setSubState(ACT_FAILED);
+        res.response = getSubState();
     }
 
     ROS_INFO("[%s] Service reply with success: %s\n", getLimb().c_str(),
@@ -590,15 +585,15 @@ void ArmCtrl::setState(int _state)
 
     RobotInterface::setState(_state);
 
-    // if (_state == DONE)
-    // {
-    //     setAction("");
-    //     setMarkerID(-1);
-    // }
-    if (_state == DONE)
+    if      (_state == DONE)
     {
         setSubState(getAction());
     }
+    else if (_state == ERROR && getSubState() == "")
+    {
+        setSubState(ACT_FAILED);
+    }
+
     publishState();
 }
 
