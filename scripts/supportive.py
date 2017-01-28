@@ -5,22 +5,17 @@ from __future__ import print_function
 import os
 import re
 import sys
-import json
 import argparse
 
-from htm.task import AbstractAction
-from htm.task import (SequentialCombination, AlternativeCombination,
-                      LeafCombination, ParallelCombination)
+from htm.task import (SequentialCombination, LeafCombination)
 from htm.supportive import (SupportivePOMDP, AssembleFoot, AssembleTopJoint,
                             AssembleLegToTop, BringTop, NHTMHorizon)
 from htm.lib.pomdp import POMCPPolicyRunner, export_pomcp
 from htm.lib.belief import format_belief_array
 
 import rospy
-from std_msgs.msg import String
 from baxter_collaboration.srv import DoActionResponse
 from baxter_collaboration.controller import BaseController
-from baxter_collaboration.service_request import ServiceRequest
 
 
 # Arguments
