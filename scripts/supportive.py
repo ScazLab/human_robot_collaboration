@@ -86,14 +86,17 @@ class POMCPController(BaseController):
         self.timer.start()
         obs = None
         while not self.finished:
-            b = self.model._int_to_state().belief_quotient(self.pol.belief.array)
+            b = self.pol.belief.array
+            bq = self.model._int_to_state().belief_quotient(p)
+            bp = self.model._int_to_state().belief_preferences(p)[0]
             # TODO: make this an action in the model
             if b[-1] > .8:
                 self.say("I believe we are done here.")
                 rospy.loginfo("Assumes task is done: exiting....")
                 self._stop()
             else:
-                rospy.loginfo("Current belief on HTM: " + format_belief_array(b))
+                rospy.loginfo("Current belief on HTM: {} and on preferences:"
+                              "{:.2f}".format(format_belief_array(bq), bp))
                 self.timer.log(self.pol.history)
                 t = rospy.Time.now()
                 a = self.pol.get_action()
