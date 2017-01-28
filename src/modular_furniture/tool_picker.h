@@ -20,17 +20,6 @@ private:
     std::vector<double> squish_thresholds;
 
     /**
-     * Stores initial squish thresholds to squish_thresholds, then
-     * reduces and rewrites squish thresholds to aid in picking up tools
-     */
-    void reduceSquish();
-
-    /**
-     * Resets squish thresholds to original values stored in squish_thresholds
-     */
-    void resetSquish();
-
-    /**
      * [getObject description]
      * @return true/false if success/failure
      */
@@ -73,13 +62,24 @@ private:
     bool computeOffsets(double &x_offs, double &y_offs);
 
     /**
-     * Computes action-specific orientation in order for the robto to be able to
+     * Computes action-specific orientation in order for the robot to be able to
      * be transparent with respect to different actions in different poses
      *
      * @param _ori The desired orientation as a quaternion
      * @return true/false if success/failure
      */
     bool computeOrientation(geometry_msgs::Quaternion &_q);
+
+    /**
+     * Stores initial squish thresholds to squish_thresholds, then
+     * reduces and rewrites squish thresholds to aid in picking up tools
+     */
+    void reduceSquish();
+
+    /**
+     * Resets squish thresholds to original values stored in squish_thresholds
+     */
+    void resetSquish();
 
 protected:
 

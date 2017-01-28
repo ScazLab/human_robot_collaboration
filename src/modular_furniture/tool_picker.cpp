@@ -25,51 +25,6 @@ ToolPicker::ToolPicker(std::string _name, std::string _limb, bool _no_robot) :
     if (!callAction(ACTION_HOME)) setState(ERROR);
 }
 
-void ToolPicker::reduceSquish()
-{
-    XmlRpc::XmlRpcValue squish_params;
-    // store the initial squish thresholds from the parameter server
-    _n.getParam("/collision/"+getLimb()+"/baxter/squish_thresholds", squish_params);
-
-    ROS_ASSERT_MSG(squish_params.getType()==XmlRpc::XmlRpcValue::TypeArray,
-                          "[%s] Squish params is not an array! Type is %i",
-                               getLimb().c_str(), squish_params.getType());
-
-    for (int i = 0; i < squish_params.size(); ++i)
-    {
-        // store the initial squish thresholds for reset later
-        squish_thresholds.push_back(squish_params[i]);
-    }
-
-    // adjust the squish thresholds for better tool picking
-    squish_params[3] = 0.5 * static_cast<double>(squish_params[3]);
-    squish_params[5] = 0.5 * static_cast<double>(squish_params[5]);
-
-    ROS_INFO("[%s] Reduced squish thresholds for joint 3 and 5 to %g and %g .",
-                      getLimb().c_str(), static_cast<double>(squish_params[3]),
-                                        static_cast<double>(squish_params[5]));
-
-    // set the squish thresholds in the parameter server to the new values
-    _n.setParam("/collision/"+getLimb()+"/baxter/squish_thresholds", squish_params);
-}
-
-void ToolPicker::resetSquish()
-{
-    XmlRpc::XmlRpcValue squish_params;
-    for (std::vector<int>::size_type i = 0; i != squish_thresholds.size(); i++)
-    {
-        // rewrite the squish parameters from the initial squish thresholds stored in reduceSquish()
-        squish_params[i] = squish_thresholds[i];
-    }
-
-    ROS_INFO("[%s] Squish thresholds for joint 3 and 5 have been set back to %g and %g .",
-                                 getLimb().c_str(), static_cast<double>(squish_params[3]),
-                                                   static_cast<double>(squish_params[5]));
-
-    // reset squish thresholds in the parameter server to the new values
-    _n.setParam("/collision/"+getLimb()+"/baxter/squish_thresholds", squish_params);
-}
-
 bool ToolPicker::pickUpObject()
 {
     ROS_INFO("[%s] Start Picking up object %s..", getLimb().c_str(),
@@ -165,7 +120,7 @@ bool ToolPicker::computeOffsets(double &_x_offs, double &_y_offs)
         if (CartesianEstimatorClient::getObjectName() == "screwdriver")
         {
             _x_offs = +0.010;
-            _y_offs = +0.017;
+            // _y_offs = +0.017;
         }
         else if (CartesianEstimatorClient::getObjectName() == "screws_box"  ||
                  CartesianEstimatorClient::getObjectName() == "brackets_box")
@@ -177,13 +132,13 @@ bool ToolPicker::computeOffsets(double &_x_offs, double &_y_offs)
     {
         if (CartesianEstimatorClient::getObjectName() == "screwdriver")
         {
-            _x_offs = -0.020;
+            // _x_offs = -0.020;
             _y_offs = -0.010;
         }
         else if (CartesianEstimatorClient::getObjectName() == "screws_box"  ||
                  CartesianEstimatorClient::getObjectName() == "brackets_box")
         {
-            _x_offs =  0.020;
+            _x_offs = +0.020;
             _y_offs = -0.058;
         }
     }
@@ -296,11 +251,11 @@ bool ToolPicker::passObject()
 
         if (CartesianEstimatorClient::getObjectName() == "brackets_box")
         {
-            if (!goToPose(0.65, -0.10, -0.12, VERTICAL_ORI_R)) return false;
+            if (!goToPose(0.63, -0.10, -0.12, VERTICAL_ORI_R)) return false;
         }
         else
         {
-            if (!goToPose(0.65, -0.30, -0.12, VERTICAL_ORI_R)) return false;
+            if (!goToPose(0.63, -0.30, -0.12, VERTICAL_ORI_R)) return false;
         }
 
         ros::Duration(0.5).sleep();
@@ -366,6 +321,54 @@ bool ToolPicker::cleanUpObject()
     if (!homePoseStrict())          return false;
 
     return true;
+}
+
+void ToolPicker::reduceSquish()
+{
+    XmlRpc::XmlRpcValue squish_params;
+    // store the initial squish thresholds from the parameter server
+    _n.getParam("/collision/"+getLimb()+"/baxter/squish_thresholds", squish_params);
+
+    ROS_ASSERT_MSG(squish_params.getType()==XmlRpc::XmlRpcValue::TypeArray,
+                          "[%s] Squish params is not an array! Type is %i",
+                               getLimb().c_str(), squish_params.getType());
+
+    for (int i = 0; i < squish_params.size(); ++i)
+    {
+        // store the initial squish thresholds for reset later
+        squish_thresholds.push_back(squish_params[i]);
+    }
+
+    // adjust the squish thresholds for better tool picking
+    squish_params[3] = 0.5 * static_cast<double>(squish_params[3]);
+    squish_params[4] = 0.5 * static_cast<double>(squish_params[4]);
+    squish_params[5] = 0.5 * static_cast<double>(squish_params[5]);
+
+    ROS_INFO("[%s] Reduced squish thresholds for joint 3, 4 and 5 to %g. %g and %g .",
+                            getLimb().c_str(), static_cast<double>(squish_params[3]),
+                                               static_cast<double>(squish_params[5]),
+                                               static_cast<double>(squish_params[5]));
+
+    // set the squish thresholds in the parameter server to the new values
+    _n.setParam("/collision/"+getLimb()+"/baxter/squish_thresholds", squish_params);
+}
+
+void ToolPicker::resetSquish()
+{
+    XmlRpc::XmlRpcValue squish_params;
+    for (std::vector<int>::size_type i = 0; i != squish_thresholds.size(); i++)
+    {
+        // rewrite the squish parameters from the initial squish thresholds stored in reduceSquish()
+        squish_params[i] = squish_thresholds[i];
+    }
+
+    ROS_INFO("[%s] Squish thresholds for joint 3, 4 and 5 set back to %g. %g and %g .",
+                             getLimb().c_str(), static_cast<double>(squish_params[3]),
+                                                static_cast<double>(squish_params[5]),
+                                                static_cast<double>(squish_params[5]));
+
+    // reset squish thresholds in the parameter server to the new values
+    _n.setParam("/collision/"+getLimb()+"/baxter/squish_thresholds", squish_params);
 }
 
 void ToolPicker::setHomeConfiguration()
