@@ -3,6 +3,8 @@
 using namespace std;
 using namespace baxter_core_msgs;
 
+#define VERTICAL_ORI_R2         0.1, 1.0, 0.0, 0.0
+
 ToolPicker::ToolPicker(std::string _name, std::string _limb, bool _no_robot) :
                        HoldCtrl(_name,_limb, _no_robot), CartesianEstimatorClient(_name, _limb),
                        elap_time(0)
@@ -20,7 +22,7 @@ ToolPicker::ToolPicker(std::string _name, std::string _limb, bool _no_robot) :
 
     if (_no_robot) return;
 
-    reduceSquish();
+    // reduceSquish();
 
     if (!callAction(ACTION_HOME)) setState(ERROR);
 }
@@ -66,14 +68,14 @@ bool ToolPicker::passObject()
 
         if (CartesianEstimatorClient::getObjectName() == "brackets_box")
         {
-            if (!goToPose(0.63, -0.10, -0.12, VERTICAL_ORI_R)) return false;
+            if (!goToPose(0.63, -0.10, -0.14, VERTICAL_ORI_R2)) return false;
         }
         else
         {
-            if (!goToPose(0.63, -0.30, -0.12, VERTICAL_ORI_R)) return false;
+            if (!goToPose(0.63, -0.30, -0.14, VERTICAL_ORI_R2)) return false;
         }
 
-        ros::Duration(0.5).sleep();
+        ros::Duration(0.25).sleep();
         if (!releaseObject())           return false;
         if (!hoverAboveTable(Z_LOW))    return false;
     }
@@ -120,18 +122,18 @@ bool ToolPicker::cleanUpObject()
 
     if (CartesianEstimatorClient::getObjectName() == "screwdriver")
     {
-        if (!goToPose(0.20, -0.85, -0.27, POOL_ORI_R)) return false;
+        if (!goToPose( 0.20, -0.85, -0.30, POOL_ORI_R)) return false;
     }
     else if (CartesianEstimatorClient::getObjectName() == "brackets_box")
     {
-        if (!goToPose(0.00, -0.85, -0.25, POOL_ORI_R)) return false;
+        if (!goToPose( 0.00, -0.85, -0.25, POOL_ORI_R)) return false;
     }
     else if (CartesianEstimatorClient::getObjectName() == "screws_box")
     {
         if (!goToPose(-0.15, -0.85, -0.25, POOL_ORI_R)) return false;
     }
 
-    ros::Duration(0.5).sleep();
+    ros::Duration(0.25).sleep();
     if (!releaseObject())           return false;
     if (!homePoseStrict())          return false;
 
@@ -384,5 +386,5 @@ void ToolPicker::setObjectID(int _obj)
 
 ToolPicker::~ToolPicker()
 {
-    resetSquish();
+    // resetSquish();
 }
