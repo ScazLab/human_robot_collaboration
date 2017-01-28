@@ -202,20 +202,6 @@ private:
      */
     void endpointCb(const baxter_core_msgs::EndpointState& msg);
 
-    /*
-     * Callback function for the lower (circle) CUFF OK button
-     *
-     * @param msg the topic message
-     */
-    void cuffLowerCb(const baxter_core_msgs::DigitalIOState& msg);
-
-    /*
-     * Callback function for the upper (oval) CUFF OK button
-     *
-     * @param msg the topic message
-     */
-    void cuffUpperCb(const baxter_core_msgs::DigitalIOState& msg);
-
     /**
      * Callback for the joint states. Used to seed the
      * inverse kinematics solver
@@ -289,6 +275,24 @@ protected:
      * @return true if everything is okay, false otherwise
      */
     bool ok();
+
+    /*
+     * Callback function for the lower (circle) CUFF OK button.
+     * By default, it sets the state of the controller to ERROR if the button
+     * is pressed, but it can be specialized in any derived class.
+     *
+     * @param msg the topic message
+     */
+    virtual void cuffLowerCb(const baxter_core_msgs::DigitalIOState& msg);
+
+    /*
+     * Callback function for the upper (oval) CUFF OK button.
+     * By default, it sets the state of the controller to ERROR if the button
+     * is pressed, but it can be specialized in any derived class.
+     *
+     * @param msg the topic message
+     */
+    virtual void cuffUpperCb(const baxter_core_msgs::DigitalIOState& msg);
 
     /*
      * Checks if end effector has made contact with a token by checking if

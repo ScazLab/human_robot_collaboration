@@ -6,6 +6,8 @@
 class HoldCtrl : public ArmCtrl
 {
 private:
+    bool cuff_button_pressed;
+
     /**
      * [goHoldPose description]
      * @param  height [description]
@@ -47,6 +49,23 @@ private:
     bool waitForOtherArm(double _wait_time = 60.0, bool disable_coll_av = false);
 
 protected:
+    /*
+     * Callback function for the upper (oval) CUFF OK button.
+     * Specialized from RobotInterface::cuffUpperCb. Here it is used to receive
+     * feedback from the user about the internal states of the hold action
+     *
+     * @param msg the topic message
+     */
+    virtual void cuffUpperCb(const baxter_core_msgs::DigitalIOState& msg);
+
+    /**
+     * Waits for the user to press the cuff button. Used in the hold action.
+     *
+     * @param _wait_time Time duration (in s) after which the method will return false
+     * @return           true/false if button has been pressed.
+     */
+    bool waitForUserFb(double _wait_time = 60.0);
+
     /**
      * [handOver description]
      * @return true/false if success/failure

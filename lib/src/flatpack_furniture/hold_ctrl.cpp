@@ -4,7 +4,7 @@ using namespace std;
 using namespace baxter_core_msgs;
 
 HoldCtrl::HoldCtrl(std::string _name, std::string _limb, bool _no_robot) :
-                   ArmCtrl(_name,_limb, _no_robot)
+                   ArmCtrl(_name,_limb, _no_robot), cuff_button_pressed(false)
 {
     setHomeConfiguration();
     setState(START);
@@ -50,32 +50,65 @@ bool HoldCtrl::handOver()
 
 bool HoldCtrl::startHold()
 {
-    double time=getObjectID()>0?getObjectID():30.0;
+    double time=getObjectIDs().size()>=2?getObjectIDs()[0]:30.0;
 
     if (!goHoldPose(0.30))              return false;
     ros::Duration(1.0).sleep();
-    if (!waitForForceInteraction(time)) return false;
+    if (!waitForUserFb(time))           return false;
     if (!gripObject())                  return false;
+    ros::Duration(1.0).sleep();
 
     return true;
 }
 
-
 bool HoldCtrl::endHold()
 {
-    double time=getObjectID()>0?getObjectID():180.0;
+    double time=getObjectIDs().size()>=2?getObjectIDs()[1]:180.0;
 
-    if (!waitForForceInteraction(time)) return false;
+    if (!waitForUserFb(time))           return false;
     if (!releaseObject())               return false;
     ros::Duration(1.0).sleep();
-    if (!homePoseStrict())       return false;
+    if (!homePoseStrict())              return false;
     return true;
+}
+
+bool HoldCtrl::waitForUserFb(double _wait_time)
+{
+    ROS_INFO("[%s] Waiting user feedback for %g [s]",
+                      getLimb().c_str(), _wait_time);
+
+    cuff_button_pressed = false;
+
+    ros::Time _init = ros::Time::now();
+
+    ros::Rate(THREAD_FREQ);
+    while(RobotInterface::ok())
+    {
+        if (cuff_button_pressed == true)        return true;
+
+        if ((ros::Time::now()-_init).toSec() > _wait_time)
+        {
+            ROS_ERROR("No user feedback has been detected in %g [s]!",_wait_time);
+            return false;
+        }
+    }
+
+    return false;
+}
+
+void HoldCtrl::cuffUpperCb(const baxter_core_msgs::DigitalIOState& msg)
+{
+    if (msg.state == baxter_core_msgs::DigitalIOState::PRESSED)
+    {
+        cuff_button_pressed = true;
+    }
+
+    return;
 }
 
 bool HoldCtrl::holdObject()
 {
     if (!startHold())            return false;
-    ros::Duration(1.0).sleep();
     if (!endHold())              return false;
 
     return true;

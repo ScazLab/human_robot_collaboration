@@ -147,6 +147,10 @@ bool ArmCtrl::serviceCb(baxter_collaboration::DoAction::Request  &req,
             setObjectID(chooseObjectID(object_ids));
         }
     }
+    else if (action == ACTION_HOLD)
+    {
+        setObjectIDs(object_ids);
+    }
 
     startInternalThread();
 
@@ -580,7 +584,7 @@ void ArmCtrl::setState(int _state)
 
     if (_state == KILLED && getState() != WORKING)
     {
-        ROS_WARN("[%s] Attempted to kill a non-working controller", getLimb().c_str());
+        ROS_WARN_THROTTLE(2, "[%s] Attempted to kill a non-working controller", getLimb().c_str());
         return;
     }
 
