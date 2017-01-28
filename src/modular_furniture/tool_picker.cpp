@@ -228,13 +228,13 @@ int ToolPicker::chooseObjectID(std::vector<int> _objs)
     if (!waitForCartEstOK())
     {
         setSubState(NO_OBJ);
-        return false;
+        return res;
     }
 
     if (!waitForCartEstObjsFound())
     {
         setSubState(NO_OBJ);
-        return false;
+        return res;
     }
 
     std::vector<string> objs_str;
@@ -319,7 +319,9 @@ bool ToolPicker::cleanUpObject()
     if (getObjectIDs().size() >  1)
     {
         setSubState(CHECK_OBJ_IDS);
-        setObjectID(chooseObjectID(getObjectIDs()));
+        int id = chooseObjectID(getObjectIDs());
+        if (id == -1)       return false;
+        setObjectID(id);
         ROS_INFO("[%s] Chosen object with ID %i", getLimb().c_str(),
                                                      getObjectID());
     }
