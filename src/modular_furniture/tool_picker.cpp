@@ -259,6 +259,17 @@ bool ToolPicker::getObject()
 {
     if (!homePoseStrict())          return false;
     ros::Duration(0.05).sleep();
+
+    if (getObjectIDs().size() >  1)
+    {
+        setSubState(CHECK_OBJ_IDS);
+        int id = chooseObjectID(getObjectIDs());
+        if (id == -1)       return false;
+        setObjectID(id);
+        ROS_INFO("[%s] Chosen object with ID %i", getLimb().c_str(),
+                                                     getObjectID());
+    }
+
     if (!pickUpObject())            return false;
     if (!gripObject())              return false;
     if (!moveArm("up", 0.3))        return false;
