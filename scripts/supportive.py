@@ -124,6 +124,8 @@ class POMCPController(BaseController):
             return self.action_hold()
         elif a[0] == 'wait':
             return self.action_wait()
+        elif a[0] == 'ask':
+            return self.action_ask(a[1])
         else:
             raise ValueError('Unknown action: "{}".'.format(a))
 
@@ -164,6 +166,21 @@ class POMCPController(BaseController):
         ans = self.answer_sub.wait_for_msg()
         rospy.loginfo("Got human message: '%s'", ans)
         return self.model.observations[self.model.O_NONE]
+
+    def action_ask(self, topic):
+        if topic != 'hold':
+            raise ValueError("Don't know how to ask about '%s'." % topic)
+        self.ask('Do you want me to hold?', context=['Yes', "No", "don't"])
+        ans = self.answer_sub.wait_for_msg()
+        rospy.loginfo("Got human message: '%s'", ans)
+        ans = ans.lower()
+        if 'yes' in ans:
+            return self.model.observations[self.model.O_YES]
+        if 'no' in ans or "don't" in ans:
+            return self.model.observations[self.model.O_NO]
+        else:
+            self.say("I didn't get what you meant.", sync=False)
+            return self.model.observations[self.model.O_NONE]
 
 
 # Problem definition
