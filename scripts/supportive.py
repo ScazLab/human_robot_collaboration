@@ -154,6 +154,8 @@ class POMCPController(BaseController):
         result = self.action_right(self.HOLD, [])
         if result.success:
             return self.model.observations[self.model.O_NONE]
+        elif result.response == DoActionResponse.ACT_FAILED:
+            return self.model.observations[self.model.O_FAIL]
         else:
             raise UnexpectedActionFailure('right', self.HOLD, result.response)
 
