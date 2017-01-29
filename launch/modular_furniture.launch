@@ -41,9 +41,9 @@
     <rosparam param = "hsv_detector/objects_db">
         "screwdriver" : { size: [0.099, 0.030], HSV: { H: [160,  10], S: [ 70, 166], V: [10,  66]}}
          <!-- This should be the blue box -->
-        "screws_box"  : { size: [0.137, 0.137], HSV: { H: [ 80, 130], S: [120, 216], V: [70, 146]}}
+        "screws_box"  : { size: [0.111, 0.111], HSV: { H: [ 80, 130], S: [120, 216], V: [70, 146]}}
          <!-- This should be the green box -->
-        "brackets_box": { size: [0.137, 0.137], HSV: { H: [ 30, 100], S: [ 80, 246], V: [20,  96]}}
+        "brackets_box": { size: [0.111, 0.111], HSV: { H: [ 30, 100], S: [ 80, 246], V: [20,  96]}}
     </rosparam>
 
     <!-- CONTROL -->
@@ -76,5 +76,7 @@
     <node pkg="baxter_collaboration" type="baxter_display"  name="baxter_display"  output="screen"/>
 
     <include file="$(find svox_tts)/launch/svox_tts.launch" />
+
+    <include file="$(find ros_speech2text)/launch/ros_speech2text.launch" />
 </launch>
 
