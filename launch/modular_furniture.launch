@@ -64,7 +64,7 @@
     <param name="action_provider/relative_force_threshold_right"    value="$(arg relativeForceThresholdR)"/>
 
     <!-- If the robot will recover from an error or will wait for the external planner's decisions -->
-    <arg name="internalRecovery"    default="false"/>
+    <arg name="internalRecovery"    default="true"/>
     <param name="action_provider/internal_recovery"     value="$(arg internalRecovery)"/>
 
     <node pkg="baxter_collaboration" type="modular_action_provider" name="modular_action_provider" output="screen"/>
