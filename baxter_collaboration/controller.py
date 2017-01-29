@@ -32,7 +32,7 @@ class BaseController(object):
     ACTION_SERVICE_RIGHT = '/action_provider/service_right'
 
     def __init__(self, timer_path=None, left=True, right=True, speech=True,
-                 listen=True):
+                 listen=True, recovery=False):
         self.finished = False
         # ROS stuff
         rospy.init_node(self.NODE_NAME, disable_signals=True)
@@ -60,6 +60,8 @@ class BaseController(object):
             self.answer_sub = CommunicationSuscriber(self.COM_TOPIC, self._stop)
         # Suscriber to errors
         self.error_sub = ErrorSuscriber(self.ERR_TOPIC, timeout=5)
+        # Set ROS parameter for recovery
+        rospy.set_param('/action_provider/internal_recovery', recovery)
         # Timer to log events
         self.timer = Timer(path=timer_path)
         rospy.loginfo('Done.')
@@ -90,6 +92,7 @@ class BaseController(object):
             self.timer.log('Stop')
             rospy.loginfo(str(self.timer.data))
             self.timer.save()
+        self._abort()
 
     def _abort(self):
         self.finished = True

@@ -226,5 +226,5 @@ except:
     pass
 
 timer_path = os.path.join(args.path, 'timer-{}.json'.format(args.user))
-controller = POMCPController(pol, timer_path=timer_path)
+controller = POMCPController(pol, timer_path=timer_path, recovery=True)
 controller.run()
