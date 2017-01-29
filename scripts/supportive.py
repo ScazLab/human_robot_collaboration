@@ -95,7 +95,6 @@ class POMCPController(BaseController):
                 rospy.loginfo("Assumes task is done: exiting....")
                 self._stop()
             else:
-<<<<<<< Updated upstream
                 rospy.loginfo("Belief / HTM: {} and on preferences:"
                               "{:.2f}".format(format_belief_array(bq), bp))
                 self.timer.log(self.pol.history)
