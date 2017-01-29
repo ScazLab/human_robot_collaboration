@@ -24,17 +24,16 @@ void PartPicker::setHomeConfiguration()
 
 bool PartPicker::passObject()
 {
-    if (getObjectID() == 200)
-    {
-        return ARTagCtrl::passObject();
-    }
-
     if (getPrevAction() != ACTION_GET)  return false;
     if (!moveObjectTowardHuman())       return false;
-    ros::Duration(1.0).sleep();
     if (!waitForUserFb())               return false;
-    if (!goToPose(0.50, 0.93, 0.2, POOL_ORI_L)) return false;
-    ros::Duration(0.25).sleep();
+
+    if (getObjectID() != 200)
+    {
+        if (!goToPose(0.50, 0.93, 0.2, POOL_ORI_L)) return false;
+        ros::Duration(0.25).sleep();
+    }
+
     if (!releaseObject())               return false;
     if (!homePoseStrict())              return false;
 

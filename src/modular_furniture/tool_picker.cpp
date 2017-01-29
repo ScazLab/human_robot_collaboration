@@ -56,10 +56,10 @@ bool ToolPicker::passObject()
 
     if (CartesianEstimatorClient::getObjectName() == "screwdriver")
     {
-        if (!goToPose(0.85, -0.26, 0.27, HORIZONTAL_ORI_R)) return false;
-        ros::Duration(1.0).sleep();
-        if (!waitForForceInteraction())                     return false;
-        if (!releaseObject())                               return false;
+        if (!goToPose(0.85, -0.26, 0.27,
+                      HORIZONTAL_ORI_R))    return false;
+        if (!waitForUserFb())               return false;
+        if (!releaseObject())               return false;
     }
     else if (CartesianEstimatorClient::getObjectName() == "screws_box"  ||
              CartesianEstimatorClient::getObjectName() == "brackets_box")
