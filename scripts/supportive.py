@@ -30,10 +30,10 @@ args = parser.parse_args(sys.argv[1:])
 
 
 # Algorithm parameters
-N_WARMUP = 10 #  100
+N_WARMUP = 50
 ITERATIONS = 200
-EXPLORATION = 10  # 1000
-RELATIVE_EXPLO = True  # In this case use smaller exploration
+EXPLORATION = 20
+RELATIVE_EXPLO = False  # In this case use smaller exploration
 BELIEF_VALUES = False
 N_PARTICLES = 200
 HORIZON = 2
@@ -192,6 +192,7 @@ htm = SequentialCombination([
     for i in range(4)])
 
 p = SupportivePOMDP(htm)
+p.r_subtask = 0.
 pol = AsyncPOMCPPolicyRunner(p, iterations=ITERATIONS,
                              horizon=NHTMHorizon.generator(p, n=HORIZON),
                              exploration=EXPLORATION,
