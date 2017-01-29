@@ -442,7 +442,7 @@ bool CartesianEstimator::cameraRFtoRootRF(int idx)
     tf::TransformBroadcaster br;
     tf::poseTFToMsg(transform, objs[idx]->pose);
     br.sendTransform(tf::StampedTransform(transform, ros::Time::now(), reference_frame,
-                                          getName()+"/obj_"+objs[idx]->getName().c_str()));
+                                                        objs[idx]->getName().c_str()));
 
     return true;
 }
