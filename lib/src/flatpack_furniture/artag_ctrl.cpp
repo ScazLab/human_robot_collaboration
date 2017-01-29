@@ -184,17 +184,11 @@ bool ARTagCtrl::pickARTag()
         // such that further movements are easier
         q = computeHOorientation();
 
-        if (!goToPose(x, y, z, q.x,q.y,q.z,q.w,"loose"))
-        {
-            return false;
-        }
+        if (!goToPose(x, y, z, q.x,q.y,q.z,q.w,"loose"))   return false;
     }
     else
     {
-        if (!goToPose(x, y, z, POOL_ORI_L,"loose"))
-        {
-            return false;
-        }
+        if (!goToPose(x, y, z, POOL_ORI_L,"loose"))        return false;
     }
 
     if (!waitForARucoData()) return false;
@@ -248,10 +242,7 @@ bool ARTagCtrl::pickARTag()
             cnt_ik_fail++;
         }
 
-        if (cnt_ik_fail == 10)
-        {
-            return false;
-        }
+        if (cnt_ik_fail == 10)      return false;
     }
 
     return false;

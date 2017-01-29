@@ -22,34 +22,10 @@ private:
     bool hoverAbovePool();
 
     /**
-     * [moveObjectTowardHuman description]
-     * @return true/false if success/failure
-     */
-    bool moveObjectTowardHuman();
-
-    /**
      * [pickARTag description]
      * @return true/false if success/failure
      */
     bool pickARTag();
-
-    /**
-     * [getObject description]
-     * @return true/false if success/failure
-     */
-    bool getObject();
-
-    /**
-     * [passObject description]
-     * @return true/false if success/failure
-     */
-    bool passObject();
-
-    /**
-     * [getPassObject description]
-     * @return true/false if success/failure
-     */
-    bool getPassObject();
 
     /**
      * [prepare4HandOver description]
@@ -82,10 +58,34 @@ protected:
     void setHomeConfiguration();
 
     /**
+     * [getObject description]
+     * @return true/false if success/failure
+     */
+    virtual bool getObject();
+
+    /**
+     * [passObject description]
+     * @return true/false if success/failure
+     */
+    virtual bool passObject();
+
+    /**
+     * [getPassObject description]
+     * @return true/false if success/failure
+     */
+    bool getPassObject();
+
+    /**
      * [handOver description]
      * @return true/false if success/failure
      */
     bool handOver();
+
+    /**
+     * [moveObjectTowardHuman description]
+     * @return true/false if success/failure
+     */
+    bool moveObjectTowardHuman();
 
     /**
      * [recoverRelease description]
