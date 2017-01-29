@@ -8,8 +8,8 @@ import sys
 import argparse
 
 from htm.task import (SequentialCombination, LeafCombination)
-from htm.supportive import (SupportivePOMDP, AssembleFoot, AssembleTopJoint,
-                            AssembleLegToTop, BringTop, NHTMHorizon)
+from htm.supportive import (SupportivePOMDP, AssembleLeg, AssembleLegToTop,
+                            NHTMHorizon)
 from htm.lib.pomdp import AsyncPOMCPPolicyRunner, export_pomcp
 from htm.lib.belief import format_belief_array
 
@@ -185,13 +185,11 @@ class POMCPController(BaseController):
 
 # Problem definition
 leg_i = 'leg-{}'.format
-mount_legs = SequentialCombination([
-    SequentialCombination([LeafCombination(AssembleFoot(leg_i(i))),
-                           LeafCombination(AssembleTopJoint(leg_i(i))),
-                           LeafCombination(AssembleLegToTop(leg_i(i))),
-                           ])
+htm = SequentialCombination([
+    SequentialCombination([
+        LeafCombination(AssembleLeg(leg_i(i))),
+        LeafCombination(AssembleLegToTop(leg_i(i), bring_top=(i == 0)))])
     for i in range(4)])
-htm = SequentialCombination([LeafCombination(BringTop()), mount_legs])
 
 p = SupportivePOMDP(htm)
 pol = AsyncPOMCPPolicyRunner(p, iterations=ITERATIONS,
