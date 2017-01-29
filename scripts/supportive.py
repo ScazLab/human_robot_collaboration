@@ -10,7 +10,7 @@ import argparse
 from htm.task import (SequentialCombination, LeafCombination)
 from htm.supportive import (SupportivePOMDP, AssembleFoot, AssembleTopJoint,
                             AssembleLegToTop, BringTop, NHTMHorizon)
-from htm.lib.pomdp import POMCPPolicyRunner, export_pomcp
+from htm.lib.pomdp import AsyncPOMCPPolicyRunner, export_pomcp
 from htm.lib.belief import format_belief_array
 
 import rospy
@@ -30,11 +30,11 @@ args = parser.parse_args(sys.argv[1:])
 
 
 # Algorithm parameters
-ITERATIONS = 100
+N_WARMUP = 10 #  100
+ITERATIONS = 200
 EXPLORATION = 10  # 1000
 RELATIVE_EXPLO = True  # In this case use smaller exploration
 BELIEF_VALUES = False
-N_WARMUP = 10
 N_PARTICLES = 200
 
 EXPORT_DEST = os.path.join(args.path, 'pomcp-{}.json'.format(args.user))
@@ -95,16 +95,23 @@ class POMCPController(BaseController):
                 rospy.loginfo("Assumes task is done: exiting....")
                 self._stop()
             else:
-                rospy.loginfo("Current belief on HTM: {} and on preferences:"
+                rospy.loginfo("Belief / HTM: {} and on preferences:"
                               "{:.2f}".format(format_belief_array(bq), bp))
                 self.timer.log(self.pol.history)
                 t = rospy.Time.now()
                 a = self.pol.get_action()
-                rospy.loginfo('Computed action during {}s'.format(
+                rospy.logdebug('Computed action during {}s'.format(
                     (rospy.Time.now() - t).to_sec()))
+                rospy.loginfo("Action: %s" % a)
                 obs = self.take_action(a)
                 rospy.loginfo("Observed: %s" % obs)
                 self.pol.step(obs)
+            self.pol.execute(export_pomcp, pol, EXPORT_DEST,
+                             belief_as_quotient=EXPORT_BELIEF_QUOTIENT)
+
+    def _abort(self):
+        self.pol.stop()
+        super(POMCPController, self)._abort()
 
     def take_action(self, action):
         a = action.split()
@@ -120,7 +127,6 @@ class POMCPController(BaseController):
             raise ValueError('Unknown action: "{}".'.format(a))
 
     def action_bring_or_clean(self, a, obj):
-        rospy.loginfo("Action {} on {}.".format(a, obj))
         obj = OBJECTS_RENAME.get(obj, obj)  # Rename objects in the rename dict
         if obj in self.objects_left:
             # Note: always left if object reachable by both arms
@@ -144,7 +150,6 @@ class POMCPController(BaseController):
                 result.response)
 
     def action_hold(self):
-        rospy.loginfo("Holding...")
         result = self.action_right(self.HOLD, [])
         if result.success:
             return self.model.observations[self.model.O_NONE]
@@ -152,7 +157,6 @@ class POMCPController(BaseController):
             raise UnexpectedActionFailure('right', self.HOLD, result.response)
 
     def action_wait(self):
-        rospy.loginfo("Waiting...")
         self.ask('Tell me when you are done.', context=['Done.', "I'm done."])
         ans = self.answer_sub.wait_for_msg()
         rospy.loginfo("Got human message: '%s'" % ans)
@@ -170,13 +174,13 @@ mount_legs = SequentialCombination([
 htm = SequentialCombination([LeafCombination(BringTop()), mount_legs])
 
 p = SupportivePOMDP(htm)
-pol = POMCPPolicyRunner(p, iterations=ITERATIONS,
-                        horizon=NHTMHorizon.generator(p, n=3),
-                        exploration=EXPLORATION,
-                        relative_exploration=RELATIVE_EXPLO,
-                        belief_values=BELIEF_VALUES,
-                        belief='particle',
-                        belief_params={'n_particles': N_PARTICLES})
+pol = AsyncPOMCPPolicyRunner(p, iterations=ITERATIONS,
+                             horizon=NHTMHorizon.generator(p, n=3),
+                             exploration=EXPLORATION,
+                             relative_exploration=RELATIVE_EXPLO,
+                             belief_values=BELIEF_VALUES,
+                             belief='particle',
+                             belief_params={'n_particles': N_PARTICLES})
 
 # Warm up policy
 best = None
@@ -194,7 +198,8 @@ print('Exploring... [done]')
 if BELIEF_VALUES:
     print('Found {} distinct beliefs.'.format(len(pol.tree._obs_nodes)))
 
-export_pomcp(pol, EXPORT_DEST, belief_as_quotien=EXPORT_BELIEF_QUOTIENT)
+export_pomcp(pol, EXPORT_DEST, belief_as_quotient=EXPORT_BELIEF_QUOTIENT)
+print('Saved: ' + EXPORT_DEST)
 
 timer_path = os.path.join(args.path, 'timer-{}.json'.format(args.user))
 controller = POMCPController(pol, timer_path=timer_path)

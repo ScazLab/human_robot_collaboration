@@ -90,8 +90,11 @@ class BaseController(object):
             self.timer.log('Stop')
             rospy.loginfo(str(self.timer.data))
             self.timer.save()
-            self.finished = True
-            self._home()
+
+    def _abort(self):
+        self.finished = True
+        self._abort_waiting_suscribers()
+        self._home()
 
     def _abort_waiting_suscribers(self):
         self.answer_sub.listening = False
@@ -103,8 +106,7 @@ class BaseController(object):
         except (Exception, KeyboardInterrupt) as e:
             rospy.logerr(e)
             rospy.logerr('Exiting.')
-            self.finished = True
-            self._abort_waiting_suscribers()
+            self._abort()
             raise
 
     def take_action(self, action):
