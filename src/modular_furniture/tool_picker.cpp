@@ -208,13 +208,8 @@ bool ToolPicker::pickUpObject()
             }
             elap_time = new_elap_time;
 
-            if(hasCollidedIR("strict") || hasCollidedCD())
+            if (determineContactCondition())
             {
-                if (hasCollidedCD())
-                {
-                    moveArm("up", 0.002);
-                }
-                ROS_INFO("Collision!");
                 return true;
             }
 
@@ -223,6 +218,41 @@ bool ToolPicker::pickUpObject()
         else    cnt_ik_fail++;
 
         if (cnt_ik_fail == 10)  return false;
+    }
+
+    return false;
+}
+
+bool ToolPicker::determineContactCondition()
+{
+    if (hasCollidedIR("strict") || hasCollidedCD())
+    {
+        if (hasCollidedCD())
+        {
+            moveArm("up", 0.002);
+        }
+        ROS_INFO("Collision!");
+        return true;
+    }
+    else if (CartesianEstimatorClient::getObjectName() != "screwdriver")
+    {
+        if (getAction() == ACTION_CLEANUP)
+        {
+            if (getPos().z < -0.17)
+            {
+                ROS_INFO("Object reached!");
+                return true;
+            }
+        }
+        else if (getAction() == ACTION_GET      ||
+                 getAction() == ACTION_GET_PASS)
+        {
+            if (getPos().z < -0.28)
+            {
+                ROS_INFO("Object reached!");
+                return true;
+            }
+        }
     }
 
     return false;

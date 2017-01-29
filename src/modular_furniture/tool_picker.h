@@ -38,16 +38,25 @@ private:
     bool getPassObject();
 
     /**
+     * Cleans up the selected obejct from the table by using the cartesian estimator's info
+     * @return true/false if success/failure
+     */
+    bool cleanUpObject();
+
+    /**
      * Picks up the selected object by using the cartesian estimator's info
      * @return true/false if success/failure
      */
     bool pickUpObject();
 
     /**
-     * Cleans up the selected obejct from the table by using the cartesian estimator's info
+     * Determines if a contact occurred by reading the IR sensor and looking for
+     * eventual squish events. Since the SDK does not allow for setting custom squish params,
+     * the latter can often fail so there is a check that prevents the end-effector from going
+     * too low if this happens.
      * @return true/false if success/failure
      */
-    bool cleanUpObject();
+    bool determineContactCondition();
 
     /**
      * Computes object-specific (and pose-specific) offsets in order for the robot
