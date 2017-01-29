@@ -36,6 +36,7 @@ EXPLORATION = 10  # 1000
 RELATIVE_EXPLO = True  # In this case use smaller exploration
 BELIEF_VALUES = False
 N_PARTICLES = 200
+HORIZON = 2
 
 EXPORT_DEST = os.path.join(args.path, 'pomcp-{}.json'.format(args.user))
 EXPORT_BELIEF_QUOTIENT = True
@@ -87,24 +88,24 @@ class POMCPController(BaseController):
         obs = None
         while not self.finished:
             b = self.pol.belief.array
-            bq = self.model._int_to_state().belief_quotient(p)
-            bp = self.model._int_to_state().belief_preferences(p)[0]
+            bq = self.model._int_to_state().belief_quotient(b)
+            bp = self.model._int_to_state().belief_preferences(b)[0]
             # TODO: make this an action in the model
-            if b[-1] > .8:
+            if bq[-1] > .8:
                 self.say("I believe we are done here.")
                 rospy.loginfo("Assumes task is done: exiting....")
                 self._stop()
             else:
-                rospy.loginfo("Belief / HTM: {} and on preferences:"
+                rospy.loginfo("Belief / HTM: {} and on preferences: "
                               "{:.2f}".format(format_belief_array(bq), bp))
                 self.timer.log(self.pol.history)
                 t = rospy.Time.now()
                 a = self.pol.get_action()
                 rospy.logdebug('Computed action during {}s'.format(
                     (rospy.Time.now() - t).to_sec()))
-                rospy.loginfo("Action: %s" % a)
+                rospy.loginfo("Action: %s", a)
                 obs = self.take_action(a)
-                rospy.loginfo("Observed: %s" % obs)
+                rospy.loginfo("Observed: %s", obs)
                 self.pol.step(obs)
             self.pol.execute(export_pomcp, pol, EXPORT_DEST,
                              belief_as_quotient=EXPORT_BELIEF_QUOTIENT)
@@ -157,9 +158,9 @@ class POMCPController(BaseController):
             raise UnexpectedActionFailure('right', self.HOLD, result.response)
 
     def action_wait(self):
-        self.ask('Tell me when you are done.', context=['Done.', "I'm done."])
+        self.ask('Tell me when you are done.', context=['Done', "I'm done", "Finished"])
         ans = self.answer_sub.wait_for_msg()
-        rospy.loginfo("Got human message: '%s'" % ans)
+        rospy.loginfo("Got human message: '%s'", ans)
         return self.model.observations[self.model.O_NONE]
 
 
@@ -175,7 +176,7 @@ htm = SequentialCombination([LeafCombination(BringTop()), mount_legs])
 
 p = SupportivePOMDP(htm)
 pol = AsyncPOMCPPolicyRunner(p, iterations=ITERATIONS,
-                             horizon=NHTMHorizon.generator(p, n=3),
+                             horizon=NHTMHorizon.generator(p, n=HORIZON),
                              exploration=EXPLORATION,
                              relative_exploration=RELATIVE_EXPLO,
                              belief_values=BELIEF_VALUES,
@@ -200,6 +201,11 @@ if BELIEF_VALUES:
 
 export_pomcp(pol, EXPORT_DEST, belief_as_quotient=EXPORT_BELIEF_QUOTIENT)
 print('Saved: ' + EXPORT_DEST)
+
+try:
+    input("Press enter to start...")
+except:
+    pass
 
 timer_path = os.path.join(args.path, 'timer-{}.json'.format(args.user))
 controller = POMCPController(pol, timer_path=timer_path)
