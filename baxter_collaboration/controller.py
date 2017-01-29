@@ -115,10 +115,12 @@ class BaseController(object):
     def set_listen_context(self, context):
         rospy.get_param('/ros_speech2text/speech_context', context)
 
-    def ask(self, question, context=None):
+    def ask(self, question, context=None, timeout=None):
+        if timeout is None:
+            timeout = 15
         self.say(question, sync=False)
         if context is not None:
             self.set_listen_context(context)
-        ans = self.answer_sub.wait_for_msg()
+        ans = self.answer_sub.wait_for_msg(timeout=timeout)
         rospy.loginfo("Got human answer: '%s'" % ans)
         return ans
