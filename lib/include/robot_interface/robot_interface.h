@@ -476,9 +476,9 @@ protected:
      * @param  mode (either loose or strict, it checks for the final desired position)
      * @return true/false if success/failure
      */
-    bool goToPose(double px, double py, double pz,
-                  double ox, double oy, double oz, double ow,
-                  std::string mode="loose", bool disable_coll_av = false);
+    virtual bool goToPose(double px, double py, double pz,
+                          double ox, double oy, double oz, double ow,
+                          std::string mode="loose", bool disable_coll_av = false);
 
     /**
      * Moves arm to the requested joint configuration, without checking if the configuration

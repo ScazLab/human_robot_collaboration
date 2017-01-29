@@ -49,6 +49,7 @@
 #define ACT_FAILED      baxter_collaboration::DoAction::Response::ACT_FAILED
 #define ACT_NOT_IN_DB   baxter_collaboration::DoAction::Response::ACT_NOT_IN_DB
 #define ACT_NOT_IMPL    baxter_collaboration::DoAction::Response::ACT_NOT_IMPL
+#define INV_KIN_FAILED  baxter_collaboration::DoAction::Response::INV_KIN_FAILED
 
 #define Z_HIGH         0.400
 #define Z_LOW          0.200

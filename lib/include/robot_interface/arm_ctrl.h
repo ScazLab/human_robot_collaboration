@@ -165,6 +165,19 @@ protected:
     bool moveArm(std::string dir, double dist, std::string mode = "loose",
                                              bool disable_coll_av = false);
 
+    /*
+     * Moves arm to the requested pose , and checks if the pose has been achieved.
+     * Specializes the RobotInterface::gotoPose method by setting the sub_state to
+     * INV_KIN_FAILED if the method returns false.
+     *
+     * @param  requested pose (3D position + 4D quaternion for the orientation)
+     * @param  mode (either loose or strict, it checks for the final desired position)
+     * @return true/false if success/failure
+     */
+    bool goToPose(double px, double py, double pz,
+                  double ox, double oy, double oz, double ow,
+                  std::string mode="loose", bool disable_coll_av = false);
+
     /**
      * Placeholder for an action that has not been implemented (yet)
      *

@@ -27,5 +27,6 @@ string NO_OBJ         = No object detected
 string ACT_FAILED     = Action failed from user input
 string ACT_NOT_IN_DB  = Requested action not available in DB
 string ACT_NOT_IMPL   = Action not implemented
+string INV_KIN_FAILED = Inverse Kinematics failed
 
 string response

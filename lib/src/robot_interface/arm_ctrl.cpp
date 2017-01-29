@@ -480,6 +480,21 @@ bool ArmCtrl::moveArm(string dir, double dist, string mode, bool disable_coll_av
     return true;
 }
 
+bool ArmCtrl::goToPose(double px, double py, double pz,
+                       double ox, double oy, double oz, double ow,
+                       std::string mode, bool disable_coll_av)
+{
+    bool res = RobotInterface::goToPose(px, py, pz,
+                                        ox, oy, oz, ow, mode, disable_coll_av);
+
+    if (res == false)
+    {
+        setSubState(INV_KIN_FAILED);
+    }
+
+    return res;
+}
+
 bool ArmCtrl::hoverAboveTable(double height, string mode, bool disable_coll_av)
 {
     if (getLimb() == "right")
