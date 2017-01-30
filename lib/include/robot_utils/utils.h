@@ -84,6 +84,8 @@
 
 #define EPSILON         1e-8
 
+#define OBJ_NOT_FOUND_NUM_ATTEMPTS  30
+
 /*
  * sets the position of a pose
  *

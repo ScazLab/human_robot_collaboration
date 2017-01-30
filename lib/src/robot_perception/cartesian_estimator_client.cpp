@@ -99,7 +99,7 @@ bool CartesianEstimatorClient::waitForCartEstOK()
         ROS_WARN_COND(cnt>0, "No callback from CartesianEstimator. Is CartesianEstimator running?");
         ++cnt;
 
-        if (cnt == 10)
+        if (cnt == OBJ_NOT_FOUND_NUM_ATTEMPTS)
         {
             ROS_ERROR("No callback from CartesianEstimator! Stopping.");
             return false;
@@ -123,7 +123,7 @@ bool CartesianEstimatorClient::waitForCartEstObjsFound()
         ROS_WARN_COND(cnt>0, "Objects not found. Are there any the objects there?");
         ++cnt;
 
-        if (cnt == 10)
+        if (cnt == OBJ_NOT_FOUND_NUM_ATTEMPTS)
         {
             ROS_ERROR("Objects not found! Stopping.");
             return false;
@@ -147,7 +147,7 @@ bool CartesianEstimatorClient::waitForCartEstObjFound()
         ROS_WARN_COND(cnt>0, "Object with name %s not found. Is the object there?", getObjectName().c_str());
         ++cnt;
 
-        if (cnt == 10)
+        if (cnt == OBJ_NOT_FOUND_NUM_ATTEMPTS)
         {
             ROS_ERROR("Object with name %s not found! Stopping.", getObjectName().c_str());
             return false;

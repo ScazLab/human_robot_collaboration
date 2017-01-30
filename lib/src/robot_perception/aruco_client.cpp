@@ -98,7 +98,7 @@ bool ARucoClient::waitForARucoOK()
         ROS_WARN_COND(cnt>0, "No callback from ARuco. Is ARuco running?");
         ++cnt;
 
-        if (cnt == 10)
+        if (cnt == OBJ_NOT_FOUND_NUM_ATTEMPTS)
         {
             ROS_ERROR("No callback from ARuco! Stopping.");
             return false;
@@ -122,7 +122,7 @@ bool ARucoClient::waitForARucoMarkersFound()
         ROS_WARN_COND(cnt>0, "Objects not found. Are there any the objects there?");
         ++cnt;
 
-        if (cnt == 10)
+        if (cnt == OBJ_NOT_FOUND_NUM_ATTEMPTS)
         {
             ROS_ERROR("Objects not found! Stopping.");
             return false;
@@ -146,7 +146,7 @@ bool ARucoClient::waitForARucoMarkerFound()
         ROS_WARN_COND(cnt>0, "Object with ID %i not found. Is the object there?", getMarkerID());
         ++cnt;
 
-        if (cnt == 10)
+        if (cnt == OBJ_NOT_FOUND_NUM_ATTEMPTS)
         {
             ROS_ERROR("Object with ID %i not found! Stopping.", getMarkerID());
             return false;
