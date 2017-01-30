@@ -2,9 +2,8 @@ import rospy
 
 from .srv import DoAction, DoActionRequest
 from .timer import Timer
-from .service_request import ServiceRequest
-from .suscribers import (CommunicationSuscriber,
-                                             ErrorSuscriber)
+from .service_request import ServiceRequest, finished_request
+from .suscribers import CommunicationSuscriber, ButtonSuscriber
 from svox_tts.srv import Speech, SpeechRequest
 
 
@@ -25,8 +24,10 @@ class BaseController(object):
     NODE_NAME = "experiment_controller"
 
     COM_TOPIC = '/web_interface/pub'
-    ERR_TOPIC = '/robot/digital_io/left_lower_button/state'
     LISTEN_TOPIC = '/user_input'
+    ERR_TOPIC = '/robot/digital_io/left_lower_button/state'
+    LEFT_BUTTON = '/robot/digital_io/left_upper_button/state'
+    RIGHT_BUTTON = '/robot/digital_io/right_upper_button/state'
     SPEECH_SERVICE = '/svox_tts/speech'
     ACTION_SERVICE_LEFT = '/action_provider/service_left'
     ACTION_SERVICE_RIGHT = '/action_provider/service_right'
@@ -39,33 +40,70 @@ class BaseController(object):
         if left:  # Left arm action service client
             rospy.loginfo('Waiting for left service...')
             rospy.wait_for_service(self.ACTION_SERVICE_LEFT)
-            self.action_left = rospy.ServiceProxy(self.ACTION_SERVICE_LEFT, DoAction)
+            self._action_left = rospy.ServiceProxy(self.ACTION_SERVICE_LEFT, DoAction)
         else:
-            self.action_left = fake_service_proxy
+            self._action_left = fake_service_proxy
+        self._last_action_left_request = finished_request
         if right:  # Right arm action service client
             rospy.loginfo('Waiting for right service...')
             rospy.wait_for_service(self.ACTION_SERVICE_RIGHT)
-            self.action_right = rospy.ServiceProxy(self.ACTION_SERVICE_RIGHT, DoAction)
+            self._action_right = rospy.ServiceProxy(self.ACTION_SERVICE_RIGHT, DoAction)
         else:
-            self.action_right = fake_service_proxy
+            self._action_right = fake_service_proxy
+        self._last_action_right_request = finished_request
         if speech:  # Text to speech client
             rospy.loginfo('Waiting for speech service...')
             rospy.wait_for_service(self.SPEECH_SERVICE)
             self.speech = rospy.ServiceProxy(self.SPEECH_SERVICE, Speech)
-        self._say_req = None
+        self._last_say_req = finished_request
         # Suscriber to human answers
         if listen:
             self.answer_sub = CommunicationSuscriber(self.LISTEN_TOPIC, self._stop)
         else:
             self.answer_sub = CommunicationSuscriber(self.COM_TOPIC, self._stop)
         # Suscriber to errors
-        self.error_sub = ErrorSuscriber(self.ERR_TOPIC, timeout=5)
+        self.error_sub = ButtonSuscriber(self.ERR_TOPIC, timeout=5)
+        self.left_button_sub = ButtonSuscriber(self.LEFT_BUTTON, timeout=60)
+        self.right_button_sub = ButtonSuscriber(self.RIGHT_BUTTON, timeout=60)
         # Set ROS parameter for recovery
         rospy.set_param('/action_provider/internal_recovery', recovery)
         # Timer to log events
         self.timer = Timer(path=timer_path)
         rospy.loginfo('Done.')
         self._home()  # Home position
+
+    def _action(self, side, args, kwargs):
+        wait = kwargs.pop('wait', True)
+        if side == 0:
+            self._last_action_left_request.wait_result()
+            s = self._action_left
+        else:
+            self._last_action_right_request.wait_result()
+            s = self._action_right
+        r = ServiceRequest(s, *args)
+        if side == 0:
+            self._last_action_left_request = r
+        else:
+            self._last_action_right_request = r
+        if wait:
+            return r.wait_result()
+        else:
+            return r
+
+    def wait_for_request_returns_or_button_pressed(self, req, button_sub):
+        button_sub.start_listening()
+        while (button_sub.listening and not req.finished):
+            rospy.sleep(.1)
+        if req.finished:
+            return req.result
+        else:
+            return None
+
+    def action_left(self, *args, **kwargs):
+        return self._action(0, args, kwargs)
+
+    def action_right(self, *args, **kwargs):
+        return self._action(1, args, kwargs)
 
     def _home(self):
         rospy.loginfo('Going home before starting.')
@@ -75,16 +113,13 @@ class BaseController(object):
         r.wait_result()
 
     def say(self, sentence, sync=True):
-        prev = self._say_req
-        if prev is not None and not prev.finished:
-            rospy.loginfo('Waiting for end of previous speech utterance.')
-            prev.wait_result()
-        self._say_req = ServiceRequest(
+        self._last_say_req.wait_result()
+        self._last_say_req = ServiceRequest(
             self.speech, SpeechRequest.SAY, sentence, None)
         if sync:
-            self._say_req.join()
+            return self._last_say_req.wait_result()
         else:
-            return self._say_req
+            return self._last_say_req
 
     def _stop(self):
         if not self.finished:

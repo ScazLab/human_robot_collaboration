@@ -2,6 +2,17 @@ import rospy
 import threading
 
 
+class FinishedServiceRequest:
+
+    finished = True
+
+    def wait_result(self):
+        pass
+
+
+finished_request = FinishedServiceRequest()
+
+
 class ServiceRequest(threading.Thread):
 
     def __init__(self, service_proxy, *args):

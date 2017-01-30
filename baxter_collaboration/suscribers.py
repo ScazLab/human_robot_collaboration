@@ -75,7 +75,7 @@ class CommunicationSuscriber(WaitForOneSuscriber):
             pass
 
 
-class ErrorSuscriber(WaitForOneSuscriber):
+class ButtonSuscriber(WaitForOneSuscriber):
 
     def _suscribe(self, topic):
         self.sub = rospy.Subscriber(topic, DigitalIOState, self.cb)

@@ -98,7 +98,12 @@ class POMCPController(BaseController):
             else:
                 rospy.loginfo("Belief / HTM: {} and on preferences: "
                               "{:.2f}".format(format_belief_array(bq), bp))
-                self.timer.log(self.pol.history)
+                self.timer.log({
+                  'history': self.pol.history,
+                  'belief': b,
+                  'belief quotient': bq,
+                  'belief preference': bq,
+                  })
                 t = rospy.Time.now()
                 a = self.pol.get_action()
                 rospy.logdebug('Computed action during {}s'.format(
@@ -107,8 +112,6 @@ class POMCPController(BaseController):
                 obs = self.take_action(a)
                 rospy.loginfo("Observed: %s", obs)
                 self.pol.step(obs)
-            self.pol.execute(export_pomcp, pol, EXPORT_DEST,
-                             belief_as_quotient=EXPORT_BELIEF_QUOTIENT)
 
     def _abort(self):
         self.pol.stop()
@@ -135,12 +138,17 @@ class POMCPController(BaseController):
             # Note: always left if object reachable by both arms
             arm = self.action_left
             obj_ids = self.objects_left[obj]
+            button_sub = self.left_button_sub
         elif obj in self.objects_right:
             arm = self.action_right
             obj_ids = self.objects_right[obj]
+            button_sub = self.right_button_sub
         else:
             raise ValueError('Unknown object: %s' % obj)
-        result = arm(a, obj_ids)
+        req = arm(a, obj_ids, wait=False)
+        result = self.wait_for_request_returns_or_button_pressed(req, button_sub)
+        if result is None or result.success:
+            return self.model.observations[self.model.O_NONE]
         if result.success:
             return self.model.observations[self.model.O_NONE]  # This sounds stupid!
         elif result.response == DoActionResponse.NO_OBJ:
@@ -153,8 +161,15 @@ class POMCPController(BaseController):
                 result.response)
 
     def action_hold(self):
-        result = self.action_right(self.HOLD, [])
-        if result.success:
+        req = self.action_right(self.HOLD, [], wait=False)
+        result = self.wait_for_request_returns_or_button_pressed(
+            req, self.right_button_sub)
+        if result is None: # We need to wait for two buttons
+            rospy.logdebug('First button received')
+            rospy.sleep(.5)
+            result = self.wait_for_request_returns_or_button_pressed(
+                req, self.right_button_sub)
+        if result is None or result.success:
             return self.model.observations[self.model.O_NONE]
         elif result.response == DoActionResponse.ACT_FAILED:
             return self.model.observations[self.model.O_FAIL]
@@ -162,9 +177,15 @@ class POMCPController(BaseController):
             raise UnexpectedActionFailure('right', self.HOLD, result.response)
 
     def action_wait(self):
-        self.ask('Tell me when you are done.', context=['Done', "I'm done", "Finished"])
-        ans = self.answer_sub.wait_for_msg()
-        rospy.loginfo("Got human message: '%s'", ans)
+        self.ask('Tell me when you are done.', context=['done', "I'm done", "finished"])
+        togo = 8
+        while togo > 0:
+            ans = self.answer_sub.wait_for_msg() or ""
+            if ans:
+              rospy.loginfo("Got human message: '%s'", ans)
+            if 'done' in ans or 'finish' in ans:
+                togo = 0
+            togo -= 1
         return self.model.observations[self.model.O_NONE]
 
     def action_ask(self, topic):
@@ -172,6 +193,7 @@ class POMCPController(BaseController):
             raise ValueError("Don't know how to ask about '%s'." % topic)
         self.ask('Do you want me to hold?', context=['Yes', "No", "don't"])
         ans = self.answer_sub.wait_for_msg()
+        ans = "" if ans is None else ans
         rospy.loginfo("Got human message: '%s'", ans)
         ans = ans.lower()
         if 'yes' in ans:
@@ -228,3 +250,5 @@ except:
 timer_path = os.path.join(args.path, 'timer-{}.json'.format(args.user))
 controller = POMCPController(pol, timer_path=timer_path, recovery=True)
 controller.run()
+self.pol.execute(export_pomcp, pol, EXPORT_DEST,
+                 belief_as_quotient=EXPORT_BELIEF_QUOTIENT)
