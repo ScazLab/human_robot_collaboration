@@ -59,6 +59,8 @@ class POMCPController(BaseController):
     BRING = 'get_pass'
     CLEAR = 'cleanup'
     HOLD = 'hold'
+    HOLD_LEG = 'hold_leg'
+    HOLD_TOP = 'hold_top'
 
     def __init__(self, policy, *args, **kargs):
         super(POMCPController, self).__init__(*args, **kargs)
@@ -124,7 +126,7 @@ class POMCPController(BaseController):
         elif a[0] == 'clear':
             return self.action_bring_or_clean(self.CLEAR, a[1])
         elif a[0] == 'hold':
-            return self.action_hold()
+            return self.action_hold(a[1] if len(a) > 1 else '')
         elif a[0] == 'wait':
             return self.action_wait()
         elif a[0] == 'ask':
@@ -160,8 +162,14 @@ class POMCPController(BaseController):
                 'left' if arm is self.action_left else 'right', a,
                 result.response)
 
-    def action_hold(self):
-        req = self.action_right(self.HOLD, [], wait=False)
+    def action_hold(self, mode=''):
+        if mode.lowercase() == 'h':
+            hold = self.HOLD_LEG
+        elif mode.lowercase() == 'v':
+            hold = self.HOLD_TOP
+        else:
+            hold = self.HOLD
+        req = self.action_right(hold, [], wait=False)
         result = self.wait_for_request_returns_or_button_pressed(
             req, self.right_button_sub)
         if result is None: # We need to wait for two buttons
@@ -174,7 +182,7 @@ class POMCPController(BaseController):
         elif result.response == DoActionResponse.ACT_FAILED:
             return self.model.observations[self.model.O_FAIL]
         else:
-            raise UnexpectedActionFailure('right', self.HOLD, result.response)
+            raise UnexpectedActionFailure('right', hold, result.response)
 
     def action_wait(self):
         self.ask('Tell me when you are done.', context=['done', "I'm done", "finished"])
