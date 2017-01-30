@@ -125,7 +125,8 @@ bool ArmCtrl::serviceCb(baxter_collaboration::DoAction::Request  &req,
 
     setAction(action);
 
-    if (action != ACTION_HOME && action != ACTION_RELEASE && action != ACTION_HOLD)
+    if (action != ACTION_HOME && action != ACTION_RELEASE && action != ACTION_HOLD &&
+        action != std::string(ACTION_HOLD) + "_leg" && action != std::string(ACTION_HOLD) + "_top")
     {
         setObjectIDs(areObjectsInDB(object_ids));
 
@@ -147,7 +148,8 @@ bool ArmCtrl::serviceCb(baxter_collaboration::DoAction::Request  &req,
             setObjectID(chooseObjectID(object_ids));
         }
     }
-    else if (action == ACTION_HOLD)
+    else if (action == ACTION_HOLD || action == std::string(ACTION_HOLD) + "_leg" ||
+                                      action == std::string(ACTION_HOLD) + "_top"   )
     {
         setObjectIDs(object_ids);
     }
