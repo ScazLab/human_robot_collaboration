@@ -100,9 +100,9 @@ class POMCPController(BaseController):
                               "{:.2f}".format(format_belief_array(bq), bp))
                 self.timer.log({
                   'history': self.pol.history,
-                  'belief': (b),
-                  'belief quotient': (bq),
-                  'belief preference': (bq),
+                  'belief': list(b),
+                  'belief quotient': list(bq),
+                  'belief preference': list(bq),
                   })
                 t = rospy.Time.now()
                 a = self.pol.get_action()
