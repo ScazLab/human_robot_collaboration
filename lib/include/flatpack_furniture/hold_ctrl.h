@@ -9,13 +9,6 @@ private:
     bool cuff_button_pressed;
 
     /**
-     * [goHoldPose description]
-     * @param  height [description]
-     * @return        true/false if success/failure
-     */
-    bool goHoldPose(double height);
-
-    /**
      * [startHold description]
      * @return true/false if success/failure
      */
@@ -26,12 +19,6 @@ private:
      * @return true/false if success/failure
      */
     bool endHold();
-
-    /**
-     * [holdObject description]
-     * @return true/false if success/failure
-     */
-    bool holdObject();
 
     /**
      * [prepare4HandOver description]
@@ -57,6 +44,19 @@ protected:
      * @param msg the topic message
      */
     virtual void cuffUpperCb(const baxter_core_msgs::DigitalIOState& msg);
+
+    /**
+     * [goHoldPose description]
+     * @param  height [description]
+     * @return        true/false if success/failure
+     */
+    virtual bool goHoldPose(double height);
+
+    /**
+     * [holdObject description]
+     * @return true/false if success/failure
+     */
+    bool holdObject();
 
     /**
      * Waits for the user to press the cuff button. Used in the hold action.

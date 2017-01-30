@@ -18,6 +18,11 @@ ToolPicker::ToolPicker(std::string _name, std::string _limb, bool _no_robot) :
     insertAction(ACTION_GET_PASS,  static_cast<f_action>(&ToolPicker::getPassObject));
     insertAction(ACTION_CLEANUP,   static_cast<f_action>(&ToolPicker::cleanUpObject));
 
+    removeAction(ACTION_HOLD);
+
+    insertAction(std::string(ACTION_HOLD) + "_leg", static_cast<f_action>(&ToolPicker::holdObject));
+    insertAction(std::string(ACTION_HOLD) + "_top", static_cast<f_action>(&ToolPicker::holdObject));
+
     printActionDB();
 
     if (_no_robot) return;
@@ -401,6 +406,18 @@ void ToolPicker::resetSquish()
 
     // reset squish thresholds in the parameter server to the new values
     _n.setParam("/collision/"+getLimb()+"/baxter/squish_thresholds", squish_params);
+}
+
+bool ToolPicker::goHoldPose(double height)
+{
+    ROS_INFO("[%s] Going to %s position..", getLimb().c_str(), getAction().c_str());
+
+    if (getAction() == std::string(ACTION_HOLD) + "_top")
+    {
+        return goToPose(0.72, -0.31, 0.032, 0.54, 0.75, 0.29,0.22);
+    }
+
+    return goToPose(0.80, -0.4, height, HORIZONTAL_ORI_R);
 }
 
 void ToolPicker::setHomeConfiguration()
