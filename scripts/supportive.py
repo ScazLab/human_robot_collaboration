@@ -30,13 +30,13 @@ args = parser.parse_args(sys.argv[1:])
 
 
 # Algorithm parameters
-N_WARMUP = 50
-ITERATIONS = 200
-EXPLORATION = 20
+N_WARMUP = 10
+ITERATIONS = 1000
+EXPLORATION = 50
 RELATIVE_EXPLO = False  # In this case use smaller exploration
 BELIEF_VALUES = False
 N_PARTICLES = 200
-HORIZON = 2
+HORIZON = 3
 
 EXPORT_DEST = os.path.join(args.path, 'pomcp-{}.json'.format(args.user))
 EXPORT_BELIEF_QUOTIENT = True
@@ -214,7 +214,11 @@ htm = SequentialCombination([
     for i in range(4)])
 
 p = SupportivePOMDP(htm)
+# TODO put as default
 p.r_subtask = 0.
+p.r_preference = 20.
+p.cost_hold = 5.
+p.cost_get = 20.
 pol = AsyncPOMCPPolicyRunner(p, iterations=ITERATIONS,
                              horizon=NHTMHorizon.generator(p, n=HORIZON),
                              exploration=EXPLORATION,
