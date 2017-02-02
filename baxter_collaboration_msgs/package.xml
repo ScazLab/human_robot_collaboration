@@ -1,0 +1,22 @@
+<package format="2">
+  <name>baxter_collaboration_msgs</name>
+  <version>1.0.0</version>
+  <description>Messages and services for the baxter_collaboration project</description>
+
+  <maintainer email="alessandro.roncone@yale.edu">Alessandro Roncone</maintainer>
+
+  <license>LGPLv2.1</license>
+
+  <url type="website">https://github.com/scazlab/baxter_collaboration</url>
+
+  <author email="alessandro.roncone@yale.edu">Alessandro Roncone</author>
+
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <depend>geometry_msgs</depend>
+
+  <build_depend>message_generation</build_depend>
+  <exec_depend>message_runtime</exec_depend>
+
+</package>
