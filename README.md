@@ -17,7 +17,7 @@ We use the new Catkin Command Line Tools `catkin_tools`, a Python package that p
 
  1. Compile the repo: `catkin build baxter_collaboration`
  2. Compile tests and run them (to be done after compiling the repo with command #1): `catkin build baxter_collaboration --catkin-make-args run_tests`
- 3. Check the results of step #2: `catkin_test_results build/baxter_collaboration/`
+ 3. Check the results of step #2: `catkin build baxter_collaboration_lib --catkin-make-args run_tests && catkin_test_results build/baxter_collaboration_lib`
 
 ## Execution
 
@@ -36,7 +36,7 @@ These two modes can be enabled concurrently, but this feature is disabled by def
 
 ### Mode A. Cartesian Controller Server
 
-In this mode, the user can ask the robot to go to a specific _3D Position_ or _6D Pose_ (position + orientation), and the robot will simply go there (if physically possible). To guarantee safety, the robot _still_ has the standard safety systems enabled by default. More advanced uses are allowed, but not exposed to the user: if you want to tinker with advanced features, we recommend to specialize the [`RobotInterface` class](https://github.com/ScazLab/baxter_collaboration/blob/master/lib/include/robot_interface/robot_interface.h).
+In this mode, the user can ask the robot to go to a specific _3D Position_ or _6D Pose_ (position + orientation), and the robot will simply go there (if physically possible). To guarantee safety, the robot _still_ has the standard safety systems enabled by default. More advanced uses are allowed, but not exposed to the user: if you want to tinker with advanced features, we recommend to specialize the [`RobotInterface` class](https://github.com/ScazLab/baxter_collaboration/blob/master/baxter_collaboration_lib/include/robot_interface/robot_interface.h).
 
 In order to use the Cartesian Controller Server, you have to launch it with:
 
@@ -46,10 +46,10 @@ roslaunch baxter_collaboration baxter_controller.launch
 
 This should create two topics the user can request operational space configurations to. They are `/baxter_controller/left/go_to_pose` for left arm, and `/baxter_controller/left/go_to_pose` for right arm. In the following, there are some examples on how to require them from terminal (e.g. for the left arm):
 
- * _[6D Pose]_ : `rostopic pub /baxter_controller/left/go_to_pose baxter_collaboration/GoToPose "{pose_stamp: {pose:{position:{ x: 0.55, y: 0.55, z: 0.2}, orientation:{ x: 0, y: 1, z: 0, w: 0}}}, ctrl_mode: 0}" --once`
- * _[3D Position]_ : `rostopic pub /baxter_controller/left/go_to_pose baxter_collaboration/GoToPose "{pose_stamp: {pose:{position:{ x: 0.55, y: 0.55, z: 0.2}, orientation:{ x: -100, y: -100, z: -100, w: -100}}}, ctrl_mode: 0}" --once`. This differs from the previous case since now every value of the orientation quaternion is set to -100. This is to communicate the Cartesian Controller to reach the desired position _while maintaining the current orientation_.
+ * _[6D Pose]_ : `rostopic pub /baxter_controller/left/go_to_pose baxter_collaboration_msgs/GoToPose "{pose_stamp: {pose:{position:{ x: 0.55, y: 0.55, z: 0.2}, orientation:{ x: 0, y: 1, z: 0, w: 0}}}, ctrl_mode: 0}" --once`
+ * _[3D Position]_ : `rostopic pub /baxter_controller/left/go_to_pose baxter_collaboration_msgs/GoToPose "{pose_stamp: {pose:{position:{ x: 0.55, y: 0.55, z: 0.2}, orientation:{ x: -100, y: -100, z: -100, w: -100}}}, ctrl_mode: 0}" --once`. This differs from the previous case since now every value of the orientation quaternion is set to -100. This is to communicate the Cartesian Controller to reach the desired position _while maintaining the current orientation_.
 
-Obviously, these same messages can be sent directly _within_ your code. Please take a look at the [`GoToPose.msg` file](https://github.com/ScazLab/baxter_collaboration/blob/master/msg/GoToPose.msg) for further info.
+Obviously, these same messages can be sent directly _within_ your code. Please take a look at the [`GoToPose.msg` file](https://github.com/ScazLab/baxter_collaboration/blob/master/baxter_collaboration_msgs/msg/GoToPose.msg) for further info.
 
 ### Mode B. High-Level Actions
 
@@ -58,13 +58,13 @@ We implemented a low-level, state-less controller able to operate each of the ar
 To enable this mode, run this in two separate terminals:
 
  1. `roslaunch baxter_collaboration baxter_marker_publisher.launch`
- 2. `roslaunch baxter_collaboration flatpack_furniture.launch` or `roslaunch baxter_collaboration tower_building.launch`. These are two predefined launch files that we use for two different experiments we ran in the lab. If you would like to create and use your own high-level actions, we suggest you to specialize the [`ArmCtrl` class](https://github.com/ScazLab/baxter_collaboration/blob/master/lib/include/robot_interface/arm_ctrl.h). See the [`flatpack_furniture`](https://github.com/ScazLab/baxter_collaboration/tree/master/lib/include/flatpack_furniture) or the [`tower_building`](https://github.com/ScazLab/baxter_collaboration/tree/master/lib/include/tower_building) library for inspiration on how to do it.
+ 2. `roslaunch baxter_collaboration flatpack_furniture.launch` or `roslaunch baxter_collaboration tower_building.launch`. These are two predefined launch files that we use for two different experiments we ran in the lab. If you would like to create and use your own high-level actions, we suggest you to specialize the [`ArmCtrl` class](https://github.com/ScazLab/baxter_collaboration/blob/master/baxter_collaboration_lib/include/robot_interface/arm_ctrl.h). See the [`flatpack_furniture library`](https://github.com/ScazLab/baxter_collaboration/tree/master/baxter_collaboration/lib/include/flatpack_furniture) for inspiration on how to do it.
 
 Now, the user should be able to request actions to either one of the two arms by using the proper service (`/action_provider/service_left` for left arm, `/action_provider/service_right` for right arm). Here are some examples to make the demo work from terminal:
   * `rosservice call /action_provider/service_right "{action: 'hold'}"`
-  * `rosservice call /action_provider/service_left "{action: 'get', object: 17}"`
+  * `rosservice call /action_provider/service_left "{action: 'get', objects: [17]}"`
 
-Similarly to Mode A, these same services can be requested directly _within_ your code. Please take a look at the [`DoAction.srv` file](https://github.com/ScazLab/baxter_collaboration/blob/master/srv/DoAction.srv) for further info.
+Similarly to Mode A, these same services can be requested directly _within_ your code. Please take a look at the [`DoAction.srv` file](https://github.com/ScazLab/baxter_collaboration/blob/master/baxter_collaboration_msgs/srv/DoAction.srv) for further info.
 
 #### Non-exhaustive list of supported actions
 
