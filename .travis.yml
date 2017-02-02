@@ -120,4 +120,4 @@ script:
   - catkin build $REPO_NAME $( [ -f $CATKIN_OPTIONS ] && cat $CATKIN_OPTIONS )
   # Run the tests, ensuring the path is set correctly.
   - source devel/setup.bash
-  - catkin build $REPO_NAME --catkin-make-args run_tests && catkin_test_results build/$REPO_NAME
+  - catkin build $REPO_NAME_lib --catkin-make-args run_tests && catkin_test_results build/$REPO_NAME_lib
