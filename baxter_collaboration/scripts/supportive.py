@@ -30,8 +30,8 @@ args = parser.parse_args(sys.argv[1:])
 
 
 # Algorithm parameters
-N_WARMUP = 10
-ITERATIONS = 1000
+N_WARMUP = 20
+ITERATIONS = 800
 EXPLORATION = 50
 RELATIVE_EXPLO = False  # In this case use smaller exploration
 BELIEF_VALUES = False
@@ -58,9 +58,9 @@ class POMCPController(BaseController):
 
     BRING = 'get_pass'
     CLEAR = 'cleanup'
-    HOLD = 'hold'
     HOLD_LEG = 'hold_leg'
     HOLD_TOP = 'hold_top'
+    HOLD = 'hold_leg'
 
     def __init__(self, policy, *args, **kargs):
         super(POMCPController, self).__init__(*args, **kargs)
@@ -155,21 +155,17 @@ class POMCPController(BaseController):
             return self.model.observations[self.model.O_NONE]  # This sounds stupid!
         elif result.response == DoActionResponse.NO_OBJ:
             return self.model.observations[self.model.O_NOT_FOUND]
-        elif result.response == DoActionResponse.ACT_FAILED:
-            return self.model.observations[self.model.O_FAIL]
         else:
-            raise UnexpectedActionFailure(
-                'left' if arm is self.action_left else 'right', a,
-                result.response)
+            return self.model.observations[self.model.O_FAIL]
 
     def action_hold(self, mode=''):
-        if mode.lowercase() == 'h':
+        if mode.lower() == 'h':
             hold = self.HOLD_LEG
-        elif mode.lowercase() == 'v':
+        elif mode.lower() == 'v':
             hold = self.HOLD_TOP
         else:
             hold = self.HOLD
-        req = self.action_right(hold, [], wait=False)
+        req = self.action_right(hold, [60, 180], wait=False)
         result = self.wait_for_request_returns_or_button_pressed(
             req, self.right_button_sub)
         if result is None: # We need to wait for two buttons
@@ -179,10 +175,8 @@ class POMCPController(BaseController):
                 req, self.right_button_sub)
         if result is None or result.success:
             return self.model.observations[self.model.O_NONE]
-        elif result.response == DoActionResponse.ACT_FAILED:
-            return self.model.observations[self.model.O_FAIL]
         else:
-            raise UnexpectedActionFailure('right', hold, result.response)
+            return self.model.observations[self.model.O_FAIL]
 
     def action_wait(self):
         self.ask('Tell me when you are done.', context=['done', "I'm done", "finished"])
@@ -193,6 +187,7 @@ class POMCPController(BaseController):
               rospy.loginfo("Got human message: '%s'", ans)
             if 'done' in ans or 'finish' in ans:
                 togo = 0
+                self.say('OK')
             togo -= 1
         return self.model.observations[self.model.O_NONE]
 
@@ -225,7 +220,7 @@ p = SupportivePOMDP(htm)
 # TODO put as default
 p.r_subtask = 0.
 p.r_preference = 20.
-p.cost_hold = 5.
+p.cost_hold = 3.
 p.cost_get = 20.
 pol = AsyncPOMCPPolicyRunner(p, iterations=ITERATIONS,
                              horizon=NHTMHorizon.generator(p, n=HORIZON),
@@ -262,5 +257,5 @@ except:
 timer_path = os.path.join(args.path, 'timer-{}.json'.format(args.user))
 controller = POMCPController(pol, timer_path=timer_path, recovery=True)
 controller.run()
-self.pol.execute(export_pomcp, pol, EXPORT_DEST,
-                 belief_as_quotient=EXPORT_BELIEF_QUOTIENT)
+pol.execute(export_pomcp, pol, EXPORT_DEST,
+            belief_as_quotient=EXPORT_BELIEF_QUOTIENT)
