@@ -31,15 +31,11 @@
   <buildtool_depend>catkin</buildtool_depend>
   <build_depend>roscpp</build_depend>
 
-  <depend>baxter_collaboration_msgs</depend>
-  <depend>rosconsole</depend>
-  <depend>baxter_core_msgs</depend>
-  <depend>aruco_msgs</depend>
   <depend>aruco</depend>
-  <depend>aruco_ros</depend>
+  <depend>baxter_collaboration_lib</depend>
   <depend>cv_bridge</depend>
   <depend>image_transport</depend>
-  <depend>trac_ik_lib</depend>
+  <depend>rosconsole</depend>
   <depend>svox_tts</depend>
 
   <!-- The export tag contains other, unspecified, tags -->

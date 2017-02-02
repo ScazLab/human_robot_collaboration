@@ -1,3 +1,7 @@
+# Copyright: (C) 2016 Social Robotics Lab - Yale University
+# Author: Alessandro Roncone <alessandro.roncone@yale.edu>
+# CopyPolicy: Released under the terms of the LGPLv2.1 .
+
 cmake_minimum_required(VERSION 2.8.3)
 project(baxter_collaboration)
 
@@ -5,20 +9,14 @@ project(baxter_collaboration)
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
-             roscpp
-             rospy
-             rosconsole
-             baxter_collaboration_msgs
+             aruco
+             baxter_collaboration_lib
              baxter_core_msgs
-             tf # Even if I'm not explicitly using it, adding tf is the only way
-                # I found to avoid the undefined reference error to ros::init.
-                # See http://goo.gl/GlbKgM
              cv_bridge
              image_transport
-             trac_ik_lib
-             eigen_conversions
-             aruco
-             aruco_ros
+             rosconsole
+             roscpp
+             rospy
              )
 
 find_package(OpenCV 2.4 REQUIRED)
@@ -42,9 +40,8 @@ catkin_python_setup()
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
     INCLUDE_DIRS lib/include
-    LIBRARIES robot_utils robot_interface robot_perception
-    CATKIN_DEPENDS trac_ik_lib
-    # DEPENDS system_lib
+    LIBRARIES flatpack_furniture
+    CATKIN_DEPENDS baxter_collaboration_lib
 )
 
 ###########
@@ -57,9 +54,7 @@ ADD_DEFINITIONS ( -Wall -Wextra -Wno-unused-parameter -Werror)
 ## Your package locations should be listed before other locations
 include_directories(lib/include
                     ${OpenCV_INCLUDE_DIRS}
-                    ${eigen_INCLUDE_DIRS}
-                    ${catkin_INCLUDE_DIRS}
-                    ${CMAKE_CURRENT_SOURCE_DIR})
+                    ${catkin_INCLUDE_DIRS})
 
 ## Add C++ libraries
 add_subdirectory(lib)
@@ -98,23 +93,12 @@ add_dependencies(baxter_display           ${${PROJECT_NAME}_EXPORTED_TARGETS}
                                           ${catkin_EXPORTED_TARGETS})
 
 ## Specify libraries to link a library or executable target against
-target_link_libraries(baxter_controller         robot_interface
-                                                ${catkin_LIBRARIES} )
-target_link_libraries(flatpack_action_provider  robot_interface
-                                                robot_perception
-                                                flatpack_furniture
-                                                ${catkin_LIBRARIES} )
-target_link_libraries(tower_action_provider     robot_interface
-                                                robot_perception
-                                                ${catkin_LIBRARIES} )
-target_link_libraries(hsv_detector              robot_perception
-                                                ${catkin_LIBRARIES} )
-target_link_libraries(modular_action_provider   robot_interface
-                                                robot_perception
-                                                flatpack_furniture
-                                                ${catkin_LIBRARIES} )
-target_link_libraries(baxter_display            robot_interface
-                                                ${OpenCV_LIBS}
+target_link_libraries(baxter_controller         ${catkin_LIBRARIES} )
+target_link_libraries(flatpack_action_provider  flatpack_furniture ${catkin_LIBRARIES} )
+target_link_libraries(tower_action_provider     ${catkin_LIBRARIES} )
+target_link_libraries(hsv_detector              ${catkin_LIBRARIES} )
+target_link_libraries(modular_action_provider   flatpack_furniture ${catkin_LIBRARIES} )
+target_link_libraries(baxter_display            ${OpenCV_LIBS}
                                                 ${catkin_LIBRARIES} )
 
 #############
@@ -151,17 +135,3 @@ install(PROGRAMS
 #   # myfile2
 #   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
 # )
-
-#############
-## Testing ##
-#############
-
-## Add gtest based cpp test target and link libraries
-catkin_add_gtest(utils-test test/test_utils_lib.cpp)
-
-if(TARGET utils-test)
-  target_link_libraries(utils-test robot_utils)
-endif()
-
-## Add folders to be run by python nosetests
-# catkin_add_nosetests(test)
