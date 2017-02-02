@@ -1,3 +1,7 @@
+# Copyright: (C) 2016 Social Robotics Lab - Yale University
+# Author: Alessandro Roncone <alessandro.roncone@yale.edu>
+# CopyPolicy: Released under the terms of the LGPLv2.1 .
+
 cmake_minimum_required(VERSION 2.8.3)
 project(baxter_collaboration_msgs)
 
@@ -5,8 +9,8 @@ project(baxter_collaboration_msgs)
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED
-             message_generation
-             geometry_msgs)
+             geometry_msgs
+             message_generation)
 
 ## Generate messages in the 'msg' folder
 add_message_files(FILES
