@@ -7,8 +7,8 @@
 #include "robot_interface/robot_interface.h"
 #include "robot_interface/gripper.h"
 
-#include "baxter_collaboration/AskFeedback.h"
-#include "baxter_collaboration/ArmState.h"
+#include "baxter_collaboration_msgs/AskFeedback.h"
+#include "baxter_collaboration_msgs/ArmState.h"
 
 #define HAND_OVER_START  "handover_start"
 #define HAND_OVER_READY  "handover_ready"
@@ -355,8 +355,8 @@ public:
      * @param  res the action response (res.success either true or false)
      * @return     true always :)
      */
-    bool serviceCb(baxter_collaboration::DoAction::Request  &req,
-                   baxter_collaboration::DoAction::Response &res);
+    bool serviceCb(baxter_collaboration_msgs::DoAction::Request  &req,
+                   baxter_collaboration_msgs::DoAction::Response &res);
 
     /**
      * Callback for the service that lets the two limbs interact
@@ -364,8 +364,8 @@ public:
      * @param  res the action response (res.success either true or false)
      * @return     true always :)
      */
-    virtual bool serviceOtherLimbCb(baxter_collaboration::AskFeedback::Request  &req,
-                                    baxter_collaboration::AskFeedback::Response &res);
+    virtual bool serviceOtherLimbCb(baxter_collaboration_msgs::AskFeedback::Request  &req,
+                                    baxter_collaboration_msgs::AskFeedback::Response &res);
 
     /**
      * Publishes the high-level state of the controller (to be shown in the baxter display)

@@ -9,7 +9,7 @@ ArmCtrl::ArmCtrl(string _name, string _limb, bool _no_robot, bool _use_forces, b
                  Gripper(_limb, _no_robot), sub_state(""), action(""), sel_object_id(-1)
 {
     std::string topic = "/"+getName()+"/state_"+_limb;
-    state_pub = _n.advertise<baxter_collaboration::ArmState>(topic,1);
+    state_pub = _n.advertise<baxter_collaboration_msgs::ArmState>(topic,1);
     ROS_INFO("[%s] Created state publisher with name : %s", getLimb().c_str(), topic.c_str());
 
     std::string other_limb = getLimb() == "right" ? "left" : "right";
@@ -75,16 +75,16 @@ void ArmCtrl::InternalThreadEntry()
     return;
 }
 
-bool ArmCtrl::serviceOtherLimbCb(baxter_collaboration::AskFeedback::Request  &req,
-                                 baxter_collaboration::AskFeedback::Response &res)
+bool ArmCtrl::serviceOtherLimbCb(baxter_collaboration_msgs::AskFeedback::Request  &req,
+                                 baxter_collaboration_msgs::AskFeedback::Response &res)
 {
     res.success = false;
     res.reply   = "not implemented";
     return true;
 }
 
-bool ArmCtrl::serviceCb(baxter_collaboration::DoAction::Request  &req,
-                        baxter_collaboration::DoAction::Response &res)
+bool ArmCtrl::serviceCb(baxter_collaboration_msgs::DoAction::Request  &req,
+                        baxter_collaboration_msgs::DoAction::Response &res)
 {
     // Let's read the requested action and object to act upon
     setSubState("");
@@ -634,7 +634,7 @@ void ArmCtrl::setPrevAction(string _prev_action)
 
 void ArmCtrl::publishState()
 {
-    baxter_collaboration::ArmState msg;
+    baxter_collaboration_msgs::ArmState msg;
 
     msg.state  = string(getState());
     msg.action = getAction();

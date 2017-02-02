@@ -151,7 +151,7 @@ void CartesianEstimator::init()
 {
     img_pub        = _img_trp.advertise(      "/"+getName()+"/image_result", SUBSCRIBER_BUFFER);
     img_pub_thres  = _img_trp.advertise("/"+getName()+"/image_result_thres", SUBSCRIBER_BUFFER);
-    objs_pub       = _n.advertise<baxter_collaboration::ObjectsArray>("/"+getName()+"/objects", 1);
+    objs_pub       = _n.advertise<baxter_collaboration_msgs::ObjectsArray>("/"+getName()+"/objects", 1);
 
     _n.param<string>("/"+getName()+"/reference_frame", reference_frame,         "");
     _n.param<string>("/"+getName()+   "/camera_frame",    camera_frame,         "");
@@ -190,7 +190,7 @@ bool CartesianEstimator::publishObjects()
     {
         if (objs[i]->isThere())
         {
-            baxter_collaboration::Object &object_cnt = objects_msg.objects.at(cnt);
+            baxter_collaboration_msgs::Object &object_cnt = objects_msg.objects.at(cnt);
             object_cnt.pose = objs[i]->pose;
             object_cnt.id   = i;
             object_cnt.name = objs[i]->getName();

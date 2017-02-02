@@ -1,6 +1,6 @@
 <package format="2">
   <name>baxter_collaboration</name>
-  <version>0.4.0</version>
+  <version>1.0.0</version>
   <description>The baxter_collaboration package</description>
 
   <!-- One maintainer tag required, multiple allowed, one person per tag -->
@@ -30,9 +30,8 @@
   <!--   <test_depend>gtest</test_depend> -->
   <buildtool_depend>catkin</buildtool_depend>
   <build_depend>roscpp</build_depend>
-  <build_depend>message_generation</build_depend>
 
-  <depend>std_msgs</depend>
+  <depend>baxter_collaboration_msgs</depend>
   <depend>rosconsole</depend>
   <depend>baxter_core_msgs</depend>
   <depend>aruco_msgs</depend>
@@ -42,8 +41,6 @@
   <depend>image_transport</depend>
   <depend>trac_ik_lib</depend>
   <depend>svox_tts</depend>
-
-  <exec_depend>message_runtime</exec_depend>
 
   <!-- The export tag contains other, unspecified, tags -->
   <export>

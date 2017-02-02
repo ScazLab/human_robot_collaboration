@@ -11,7 +11,7 @@
 
 #include <sensor_msgs/JointState.h>
 
-#include "baxter_collaboration/DoAction.h"
+#include "baxter_collaboration_msgs/DoAction.h"
 
 #define SUBSCRIBER_BUFFER 3
 
@@ -27,8 +27,8 @@
 #define DONE      2
 
 // Both arms
-#define ACTION_HOME         baxter_collaboration::DoAction::Request::ACTION_HOME
-#define ACTION_RELEASE      baxter_collaboration::DoAction::Request::ACTION_RELEASE
+#define ACTION_HOME         baxter_collaboration_msgs::DoAction::Request::ACTION_HOME
+#define ACTION_RELEASE      baxter_collaboration_msgs::DoAction::Request::ACTION_RELEASE
 #define ACTION_HAND_OVER    "hand_over"
 // Only left arm
 #define ACTION_GET          "get"
@@ -39,17 +39,17 @@
 #define ACTION_START_HOLD   "start_hold"
 #define ACTION_END_HOLD     "end_hold"
 // Protected action keys used for things that are not real actions
-#define LIST_ACTIONS        baxter_collaboration::DoAction::Request::LIST_ACTIONS
-#define LIST_OBJECTS        baxter_collaboration::DoAction::Request::LIST_OBJECTS
+#define LIST_ACTIONS        baxter_collaboration_msgs::DoAction::Request::LIST_ACTIONS
+#define LIST_OBJECTS        baxter_collaboration_msgs::DoAction::Request::LIST_OBJECTS
 
 // Response states to send back to the service
-#define NO_IR_SENSOR    baxter_collaboration::DoAction::Response::NO_IR_SENSOR
-#define OBJ_NOT_IN_DB   baxter_collaboration::DoAction::Response::OBJ_NOT_IN_DB
-#define NO_OBJ          baxter_collaboration::DoAction::Response::NO_OBJ
-#define ACT_FAILED      baxter_collaboration::DoAction::Response::ACT_FAILED
-#define ACT_NOT_IN_DB   baxter_collaboration::DoAction::Response::ACT_NOT_IN_DB
-#define ACT_NOT_IMPL    baxter_collaboration::DoAction::Response::ACT_NOT_IMPL
-#define INV_KIN_FAILED  baxter_collaboration::DoAction::Response::INV_KIN_FAILED
+#define NO_IR_SENSOR    baxter_collaboration_msgs::DoAction::Response::NO_IR_SENSOR
+#define OBJ_NOT_IN_DB   baxter_collaboration_msgs::DoAction::Response::OBJ_NOT_IN_DB
+#define NO_OBJ          baxter_collaboration_msgs::DoAction::Response::NO_OBJ
+#define ACT_FAILED      baxter_collaboration_msgs::DoAction::Response::ACT_FAILED
+#define ACT_NOT_IN_DB   baxter_collaboration_msgs::DoAction::Response::ACT_NOT_IN_DB
+#define ACT_NOT_IMPL    baxter_collaboration_msgs::DoAction::Response::ACT_NOT_IMPL
+#define INV_KIN_FAILED  baxter_collaboration_msgs::DoAction::Response::INV_KIN_FAILED
 
 #define Z_HIGH         0.400
 #define Z_LOW          0.200

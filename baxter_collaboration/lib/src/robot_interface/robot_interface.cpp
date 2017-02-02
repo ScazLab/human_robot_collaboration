@@ -230,7 +230,7 @@ bool RobotInterface::initCtrlParams()
     return true;
 }
 
-void RobotInterface::ctrlMsgCb(const baxter_collaboration::GoToPose& msg)
+void RobotInterface::ctrlMsgCb(const baxter_collaboration_msgs::GoToPose& msg)
 {
     if (int(getState()) != WORKING)
     {
@@ -250,10 +250,10 @@ void RobotInterface::ctrlMsgCb(const baxter_collaboration::GoToPose& msg)
 
         ctrl_mode = msg.ctrl_mode;
 
-        if (ctrl_mode != baxter_collaboration::GoToPose::POSITION_MODE )
+        if (ctrl_mode != baxter_collaboration_msgs::GoToPose::POSITION_MODE )
         {
             ROS_WARN("As of now, the only accepted control mode is POSITION_MODE");
-            ctrl_mode = baxter_collaboration::GoToPose::POSITION_MODE;
+            ctrl_mode = baxter_collaboration_msgs::GoToPose::POSITION_MODE;
         }
 
         setCtrlRunning(true);

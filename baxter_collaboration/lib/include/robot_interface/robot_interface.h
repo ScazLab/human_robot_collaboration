@@ -24,7 +24,7 @@
 #include "robot_utils/ros_thread_obj.h"
 #include "robot_utils/baxter_trac_ik.h"
 
-#include <baxter_collaboration/GoToPose.h>
+#include <baxter_collaboration_msgs/GoToPose.h>
 
 /**
  * @brief A ROS Thread class
@@ -120,8 +120,8 @@ private:
     bool _use_cart_ctrl;
 
     // Control mode for the controller server. It can be either
-    // baxter_collaboration::GoToPose::POSITION_MODE or
-    // baxter_collaboration::GoToPose::VELOCITY_MODE , but for
+    // baxter_collaboration_msgs::GoToPose::POSITION_MODE or
+    // baxter_collaboration_msgs::GoToPose::VELOCITY_MODE , but for
     // now only the former has been implemented.
     int ctrl_mode;
 
@@ -170,7 +170,7 @@ private:
      *
      * @param msg the topic message
      */
-    void ctrlMsgCb(const baxter_collaboration::GoToPose& msg);
+    void ctrlMsgCb(const baxter_collaboration_msgs::GoToPose& msg);
 
     /**
      * Internal thread entry that gets called when the thread is started.

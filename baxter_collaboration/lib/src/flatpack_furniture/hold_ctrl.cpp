@@ -143,8 +143,8 @@ void HoldCtrl::setHomeConfiguration()
                          -0.5235, 1.3468, 0.4464);
 }
 
-bool HoldCtrl::serviceOtherLimbCb(baxter_collaboration::AskFeedback::Request  &req,
-                                  baxter_collaboration::AskFeedback::Response &res)
+bool HoldCtrl::serviceOtherLimbCb(baxter_collaboration_msgs::AskFeedback::Request  &req,
+                                  baxter_collaboration_msgs::AskFeedback::Response &res)
 {
     res.success = false;
     if (req.ask == HAND_OVER_READY)

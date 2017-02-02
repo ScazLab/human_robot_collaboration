@@ -6,7 +6,7 @@
 
 #include <flatpack_furniture/hold_ctrl.h>
 #include <robot_perception/cartesian_estimator_client.h>
-#include <baxter_collaboration/ObjectsArray.h>
+#include <baxter_collaboration_msgs/ObjectsArray.h>
 
 #define ACTION_CLEANUP  "cleanup"
 
