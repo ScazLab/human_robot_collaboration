@@ -574,7 +574,7 @@ public:
     geometry_msgs::Point        getPos()         { return    _curr_pos; };
     geometry_msgs::Quaternion   getOri()         { return    _curr_ori; };
     geometry_msgs::Wrench       getWrench()      { return _curr_wrench; };
-    sensor_msgs::JointState     getJointStates() { return _curr_joints; };
+    sensor_msgs::JointState     getJointStates() { return _curr_jnts; };
 
     geometry_msgs::Pose         getPose();
 
