@@ -535,6 +535,13 @@ protected:
      */
     bool waitForForceInteraction(double _wait_time = 20.0, bool disable_coll_av = false);
 
+    /*
+     * Waits for _curr_jnts to be populated by jointStatesCb().
+     *
+     * @return true when _curr_jnts has values
+     * @return false if _curr_jnts not initialized within 20 s
+     */
+    bool waitForJointAngles(double _wait_time = 20.0);
 
     /*
      * Filters the forces using a low pass filter and testing against predicted trends in filter values
@@ -557,14 +564,6 @@ public:
     ~RobotInterface();
 
     /*
-     * Waits for _curr_jnts to be populated by jointStatesCb().
-     *
-     * @return true when _curr_jnts has values
-     * @return false if _curr_jnts not initialized within 20 s
-     */
-    bool waitForJointAngles(double _wait_time = 20.0);
-
-    /*
      * Self-explaining "setters"
      */
     virtual void setState(int state);
@@ -583,9 +582,9 @@ public:
     geometry_msgs::Point        getPos()         { return    _curr_pos; };
     geometry_msgs::Quaternion   getOri()         { return    _curr_ori; };
     geometry_msgs::Wrench       getWrench()      { return _curr_wrench; };
-    sensor_msgs::JointState     getJointStates() { return   _curr_jnts; };
 
-    geometry_msgs::Pose         getPose();
+    sensor_msgs::JointState     getJointStates();
+    geometry_msgs::Pose                getPose();
 
     bool getIKLimits(KDL::JntArray &ll, KDL::JntArray &ul);
 
