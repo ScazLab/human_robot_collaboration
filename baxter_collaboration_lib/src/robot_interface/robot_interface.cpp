@@ -841,6 +841,39 @@ bool RobotInterface::waitForForceInteraction(double _wait_time, bool disable_col
     return false;
 }
 
+bool RobotInterface::waitForJointAngles(double _wait_time)
+{
+    ros::Time _init = ros::Time::now();
+
+    ros::Rate r(100);
+    while (RobotInterface::ok())
+    {
+        sensor_msgs::JointState _jnt_state = getJointStates();
+        if (_jnt_state.position.size() > 0)      return true;
+
+        r.sleep();
+
+        if ((ros::Time::now()-_init).toSec() > _wait_time)
+        {
+            ROS_ERROR("No joint angle initialization in %gs!",_wait_time);
+            return false;
+        }
+    }
+
+    return false;
+}
+
+sensor_msgs::JointState RobotInterface::getJointStates()
+{
+    sensor_msgs::JointState cj;
+
+    pthread_mutex_lock(&_mutex_jnts);
+    cj = _curr_jnts;
+    pthread_mutex_unlock(&_mutex_jnts);
+
+    return   cj;
+}
+
 geometry_msgs::Pose RobotInterface::getPose()
 {
     geometry_msgs::Pose res;
@@ -882,3 +915,4 @@ RobotInterface::~RobotInterface()
 
     _thread.kill();
 }
+
