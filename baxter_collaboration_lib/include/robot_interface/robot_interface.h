@@ -535,6 +535,7 @@ protected:
      */
     bool waitForForceInteraction(double _wait_time = 20.0, bool disable_coll_av = false);
 
+
     /*
      * Filters the forces using a low pass filter and testing against predicted trends in filter values
      */
@@ -554,6 +555,14 @@ public:
                    bool use_forces = true, bool use_trac_ik = true, bool use_cart_ctrl = true);
 
     ~RobotInterface();
+
+    /*
+     * Waits for _curr_jnts to be populated by jointStatesCb().
+     *
+     * @return true when _curr_jnts has values
+     * @return false if _curr_jnts not initialized within 20 s
+     */
+    bool waitForJointAngles(double _wait_time = 20.0);
 
     /*
      * Self-explaining "setters"

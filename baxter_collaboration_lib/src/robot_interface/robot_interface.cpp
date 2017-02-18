@@ -882,3 +882,25 @@ RobotInterface::~RobotInterface()
 
     _thread.kill();
 }
+
+bool RobotInterface::waitForJointAngles(double _wait_time)
+{
+    ros::Time _init = ros::Time::now();
+
+    ros::Rate r(100);
+    while (RobotInterface::ok())
+    {
+        sensor_msgs::JointState _jnt_state = getJointStates();
+        if (_jnt_state.position.size() > 0)      return true;
+
+        r.sleep();
+
+        if ((ros::Time::now()-_init).toSec() > _wait_time)
+        {
+            ROS_ERROR("No joint angle initialization in %gs!",_wait_time);
+            return false;
+        }
+    }
+
+    return false;
+}
