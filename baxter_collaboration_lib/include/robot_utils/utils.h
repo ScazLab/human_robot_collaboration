@@ -113,6 +113,14 @@ void setOrientation(geometry_msgs::Pose& pose, float x, float y, float z, float 
  */
 std::string intToString( const int a );
 
+/**
+ * converts a vector of integers to a string
+ *
+ * @param  _v vector of integers to be converted
+ * @return    converted string
+ */
+std::string vectorOfIntToString(std::vector<int> const& _v);
+
 /*
  * converts an double to a string
  *
@@ -121,6 +129,15 @@ std::string intToString( const int a );
  * return     converted string
  */
 std::string doubleToString( const double a );
+
+/**
+ * converts a vector of double to a string
+ *
+ * @param  _v vector of double to be converted
+ * @return    converted string
+ */
+
+std::string vectorOfDoubleToString(std::vector<double> const& _v);
 
 /**
  * Norm of a vector
@@ -270,17 +287,17 @@ public:
     /**
      * Returns the state as an integer
      */
-    operator int ();
+    operator int();
 
     /**
      * Returns the state as a std::string (i.e. a text description of the state)
      */
-    operator std::string ();
+    operator std::string();
 
     /**
      * Returns the state as a ros::Time object (i.e. when the state was last set)
      */
-    operator ros::Time ();
+    operator ros::Time();
 };
 
 #endif

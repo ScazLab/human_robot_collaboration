@@ -43,11 +43,41 @@ string intToString( const int a )
     return ss.str();
 }
 
+string vectorOfIntToString(vector<int> const& _v)
+{
+    string      res;
+    stringstream ss;
+
+    std::copy(_v.begin(), _v.end(),
+              std::ostream_iterator<int>(ss, ", "));
+
+    res = ss.str();
+    res = res.substr(0, res.size()-2); // Remove the last ", "
+    res = "[" + res + "]";
+
+    return res;
+}
+
 string doubleToString( const double a )
 {
     stringstream ss;
     ss << a;
     return ss.str();
+}
+
+string vectorOfDoubleToString(vector<double> const& _v)
+{
+    string      res;
+    stringstream ss;
+
+    std::copy(_v.begin(), _v.end(),
+              std::ostream_iterator<double>(ss, ", "));
+
+    res = ss.str();
+    res = res.substr(0, res.size()-2); // Remove the last ", "
+    res = "[" + res + "]";
+
+    return res;
 }
 
 double norm(vector<double> const& _v)
@@ -197,7 +227,7 @@ void State::set(int _s)
     return;
 }
 
-State::operator int ()
+State::operator int()
 {
     return state;
 }
