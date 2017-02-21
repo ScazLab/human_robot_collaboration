@@ -473,16 +473,16 @@ bool RobotInterface::goToPoseNoCheck(double px, double py, double pz,
     return goToJointConfNoCheck(joint_angles);
 }
 
-bool RobotInterface::goToJointConfNoCheck(vector<double> joint_angles)
+bool RobotInterface::goToJointConfNoCheck(vector<double> joint_values)
 {
     JointCommand     joint_cmd;
     joint_cmd.mode = ctrl_mode;
 
     setJointNames(joint_cmd);
 
-    for (size_t i = 0; i < joint_angles.size(); i++)
+    for (size_t i = 0; i < joint_values.size(); i++)
     {
-        joint_cmd.command.push_back(joint_angles[i]);
+        joint_cmd.command.push_back(joint_values[i]);
     }
 
     publish_joint_cmd(joint_cmd);

@@ -487,10 +487,10 @@ protected:
      * Moves arm to the requested joint configuration, without checking if the configuration
      * has been reached or not.
      *
-     * @param  joint_angles requested joint configuration
+     * @param  joint_values requested joint configuration
      * @return              true/false if success/failure
      */
-    bool goToJointConfNoCheck(std::vector<double> joint_angles);
+    bool goToJointConfNoCheck(std::vector<double> joint_values);
 
     /*
      * Sets the joint names of a JointCommand
