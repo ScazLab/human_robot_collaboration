@@ -122,7 +122,7 @@ private:
     // Control mode for the controller server. It can be either
     // baxter_collaboration_msgs::GoToPose::POSITION_MODE or
     // baxter_collaboration_msgs::GoToPose::VELOCITY_MODE , but for
-    // now only the former has been implemented.
+    // now the latter is experimental
     int ctrl_mode;
 
     // Desired pose to move the arm to
@@ -466,8 +466,8 @@ protected:
      * @param    ox, oy, oz, ow requested Orientation quaternion as set of doubles
      * @return                  true/false if success/failure
      */
-    bool goToPoseNoCheck(double px, double py, double pz,
-                         double ox, double oy, double oz, double ow);
+    virtual bool goToPoseNoCheck(double px, double py, double pz,
+                                 double ox, double oy, double oz, double ow);
 
     /*
      * Moves arm to the requested pose , and checks if the pose has been achieved
