@@ -143,6 +143,9 @@ private:
     // Starting pose
     geometry_msgs::Pose pose_start;
 
+    // Flag to know if the robot is running in experimental mode
+    bool _is_experimental;
+
     /**
      * Initializes some control parameters when the controller starts.
      *
@@ -559,7 +562,8 @@ protected:
 
 public:
     RobotInterface(std::string name, std::string limb, bool no_robot = false,
-                   bool use_forces = true, bool use_trac_ik = true, bool use_cart_ctrl = true);
+                   bool use_forces = true, bool use_trac_ik = true,
+                   bool use_cart_ctrl = true, bool is_experimental = false);
 
     ~RobotInterface();
 

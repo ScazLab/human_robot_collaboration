@@ -12,11 +12,12 @@ using namespace cv;
 /**************************************************************************/
 /*                         RobotInterface                                 */
 /**************************************************************************/
-RobotInterface::RobotInterface(string name, string limb, bool no_robot, bool use_forces,
-                               bool use_trac_ik, bool use_cart_ctrl) : _n(name), _name(name), _limb(limb),
-                               _state(START), spinner(4), _no_robot(no_robot), _use_forces(use_forces), ir_ok(false),
-                               ik_solver(limb, no_robot), _use_trac_ik(use_trac_ik), is_coll_av_on(false),
-                               is_coll_det_on(false), _use_cart_ctrl(use_cart_ctrl), is_ctrl_running(false)
+RobotInterface::RobotInterface(string name, string limb, bool no_robot, bool use_forces, bool use_trac_ik,
+                               bool use_cart_ctrl, bool is_experimental) : _n(name), _name(name), _limb(limb),
+                               _state(START), spinner(4), _no_robot(no_robot), _use_forces(use_forces),
+                               ir_ok(false), ik_solver(limb, no_robot),_use_trac_ik(use_trac_ik),
+                               is_coll_av_on(false), is_coll_det_on(false), _use_cart_ctrl(use_cart_ctrl),
+                               is_ctrl_running(false), _is_experimental(is_experimental)
 {
     pthread_mutexattr_t _mutex_attr;
     pthread_mutexattr_init(&_mutex_attr);
@@ -250,9 +251,12 @@ void RobotInterface::ctrlMsgCb(const baxter_collaboration_msgs::GoToPose& msg)
 
         ctrl_mode = msg.ctrl_mode;
 
-        if (ctrl_mode != baxter_collaboration_msgs::GoToPose::POSITION_MODE )
+        if (ctrl_mode != baxter_collaboration_msgs::GoToPose::POSITION_MODE &&
+            _is_experimental == false)
         {
-            ROS_WARN("As of now, the only accepted control mode is POSITION_MODE");
+            ROS_ERROR("As of now, the only tested control mode is POSITION_MODE. "
+                      "To be able to use any other control mode, please set the "
+                      "experimental flag in the constructor to true.");
             ctrl_mode = baxter_collaboration_msgs::GoToPose::POSITION_MODE;
         }
 
@@ -471,8 +475,8 @@ bool RobotInterface::goToPoseNoCheck(double px, double py, double pz,
 
 bool RobotInterface::goToJointConfNoCheck(vector<double> joint_angles)
 {
-    JointCommand joint_cmd;
-    joint_cmd.mode = JointCommand::POSITION_MODE;
+    JointCommand     joint_cmd;
+    joint_cmd.mode = ctrl_mode;
 
     setJointNames(joint_cmd);
 
