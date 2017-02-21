@@ -17,6 +17,7 @@ RobotInterface::RobotInterface(string name, string limb, bool no_robot, bool use
                                _state(START), spinner(4), _no_robot(no_robot), _use_forces(use_forces),
                                ir_ok(false), ik_solver(limb, no_robot),_use_trac_ik(use_trac_ik),
                                is_coll_av_on(false), is_coll_det_on(false), _use_cart_ctrl(use_cart_ctrl),
+                               ctrl_mode(baxter_collaboration_msgs::GoToPose::POSITION_MODE),
                                is_ctrl_running(false), _is_experimental(is_experimental)
 {
     pthread_mutexattr_t _mutex_attr;
@@ -252,7 +253,7 @@ void RobotInterface::ctrlMsgCb(const baxter_collaboration_msgs::GoToPose& msg)
         ctrl_mode = msg.ctrl_mode;
 
         if (ctrl_mode != baxter_collaboration_msgs::GoToPose::POSITION_MODE &&
-            _is_experimental == false)
+            _is_experimental == true)
         {
             ROS_ERROR("As of now, the only tested control mode is POSITION_MODE. "
                       "To be able to use any other control mode, please set the "
@@ -263,7 +264,7 @@ void RobotInterface::ctrlMsgCb(const baxter_collaboration_msgs::GoToPose& msg)
         setCtrlRunning(true);
         initCtrlParams();
 
-        ROS_INFO("[%s] Received new target pose: %s", getLimb().c_str(), print(pose_des).c_str());
+        ROS_INFO("[%s] Received new target pose: %s mode: %i", getLimb().c_str(), print(pose_des).c_str(), ctrl_mode);
     }
     else
     {
