@@ -131,7 +131,7 @@ public:
      * Converts the segmented object to a string.
      * @return the segmented object as a string
      */
-    virtual std::string toString();
+    virtual operator std::string();
 
     /* GETTERS */
     bool isThere()        { return is_there; };

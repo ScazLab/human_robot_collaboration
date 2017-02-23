@@ -111,7 +111,7 @@ void setOrientation(geometry_msgs::Pose& pose, float x, float y, float z, float 
  *
  * return     converted string
  */
-std::string intToString( const int a );
+std::string toString( const int a );
 
 /**
  * converts a vector of integers to a string
@@ -119,7 +119,7 @@ std::string intToString( const int a );
  * @param  _v vector of integers to be converted
  * @return    converted string
  */
-std::string vectorOfIntToString(std::vector<int> const& _v);
+std::string toString(std::vector<int> const& _v);
 
 /*
  * converts an double to a string
@@ -128,7 +128,7 @@ std::string vectorOfIntToString(std::vector<int> const& _v);
  *
  * return     converted string
  */
-std::string doubleToString( const double a );
+std::string toString( const double a );
 
 /**
  * converts a vector of double to a string
@@ -137,7 +137,7 @@ std::string doubleToString( const double a );
  * @return    converted string
  */
 
-std::string vectorOfDoubleToString(std::vector<double> const& _v);
+std::string toString(std::vector<double> const& _v);
 
 /**
  * Norm of a vector

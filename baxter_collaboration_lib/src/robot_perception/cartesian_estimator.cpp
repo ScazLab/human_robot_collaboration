@@ -54,7 +54,7 @@ bool SegmentedObj::drawBox(cv::Mat &_img)
         for( int j = 0; j < 4; j++ )
         {
             cv::line   (_img, rect_points[j], rect_points[(j+1)%4], color, 2, 8 );
-            // cv::putText(_img, intToString(j), rect_points[j],
+            // cv::putText(_img, toString(j), rect_points[j],
             //              FONT_FACE, 1, cv::Scalar::all(255), 2, CV_AA);
         }
 
@@ -117,10 +117,10 @@ bool SegmentedObj::draw(cv::Mat &_img, const cv::Mat& _cam_mat,
     return res;
 }
 
-string SegmentedObj::toString()
+SegmentedObj::operator std::string()
 {
-    return std::string(name + " [" + doubleToString(size[0]) + " "
-                                   + doubleToString(size[1]) + "]");
+    return std::string(name + " [" + toString(size[0]) + " "
+                                   + toString(size[1]) + "]");
 }
 
 SegmentedObj::~SegmentedObj()
@@ -346,7 +346,7 @@ string CartesianEstimator::objectDBToString()
     {
         if (objs[i])
         {
-            res = res + objs[i]->toString() + ", ";
+            res = res + std::string(*objs[i]) + ", ";
         }
     }
     res = res.substr(0, res.size()-2); // Remove the last ", "

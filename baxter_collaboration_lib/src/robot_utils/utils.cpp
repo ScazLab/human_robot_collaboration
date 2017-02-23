@@ -36,14 +36,14 @@ void setOrientation(Pose& pose, float x, float y, float z, float w)
     pose.orientation.w = w;
 }
 
-string intToString( const int a )
+string toString( const int a )
 {
     stringstream ss;
     ss << a;
     return ss.str();
 }
 
-string vectorOfIntToString(vector<int> const& _v)
+string toString(vector<int> const& _v)
 {
     string      res;
     stringstream ss;
@@ -58,14 +58,14 @@ string vectorOfIntToString(vector<int> const& _v)
     return res;
 }
 
-string doubleToString( const double a )
+string toString( const double a )
 {
     stringstream ss;
     ss << a;
     return ss.str();
 }
 
-string vectorOfDoubleToString(vector<double> const& _v)
+string toString(vector<double> const& _v)
 {
     string      res;
     stringstream ss;

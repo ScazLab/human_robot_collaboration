@@ -43,7 +43,7 @@ public:
      * Converts the segmented object to a string.
      * @return the segmented object as a string
      */
-    std::string toString();
+    operator std::string();
 };
 
 /**

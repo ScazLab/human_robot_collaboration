@@ -98,7 +98,7 @@ bool ArmCtrl::serviceCb(baxter_collaboration_msgs::DoAction::Request  &req,
     for (size_t i = 0; i < req.objects.size(); ++i)
     {
         object_ids.push_back(req.objects[i]);
-        objs_str += intToString(req.objects[i]) + ", ";
+        objs_str += toString(req.objects[i]) + ", ";
     }
     objs_str = objs_str.substr(0, objs_str.size()-2); // Remove the last ", "
 
@@ -301,7 +301,7 @@ string ArmCtrl::objectDBToString()
 
     for ( it = object_db.begin(); it != object_db.end(); it++ )
     {
-        res = res + "[" + intToString(it->first) + "] " + it->second + ", ";
+        res = res + "[" + toString(it->first) + "] " + it->second + ", ";
     }
     res = res.substr(0, res.size()-2); // Remove the last ", "
     return res;

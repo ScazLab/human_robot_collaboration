@@ -101,16 +101,16 @@ bool SegmentedObjHSV::detectObject(const cv::Mat& _in, cv::Mat& _out, cv::Mat& _
     return true;
 }
 
-string SegmentedObjHSV::toString()
+SegmentedObjHSV::operator std::string()
 {
-    return std::string(getName() + " [" + doubleToString(  size[0]) + " "
-                                        + doubleToString(  size[1]) + "],"
-                                   " [" + doubleToString(col.H.min) + " "
-                                        + doubleToString(col.H.max) + "],"
-                                   " [" + doubleToString(col.S.min) + " "
-                                        + doubleToString(col.S.max) + "],"
-                                   " [" + doubleToString(col.V.min) + " "
-                                        + doubleToString(col.V.max) + "]");
+    return std::string(getName() + " [" + toString(  size[0]) + " "
+                                        + toString(  size[1]) + "],"
+                                   " [" + toString(col.H.min) + " "
+                                        + toString(col.H.max) + "],"
+                                   " [" + toString(col.S.min) + " "
+                                        + toString(col.S.max) + "],"
+                                   " [" + toString(col.V.min) + " "
+                                        + toString(col.V.max) + "]");
 }
 
 SegmentedObjHSV::~SegmentedObjHSV()
