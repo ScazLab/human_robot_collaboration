@@ -37,7 +37,7 @@ find_package(OpenCV 2.4 REQUIRED)
 catkin_package(
   INCLUDE_DIRS include
   LIBRARIES robot_utils robot_interface robot_perception
-  DEPENDS trac_ik_lib aruco_ros
+  DEPENDS trac_ik_lib aruco_ros aruco
 )
 
 ###########
