@@ -579,9 +579,10 @@ public:
     /*
      * Self-explaining "getters"
      */
-    std::string  getName() { return  _name; };
-    std::string  getLimb() { return  _limb; };
-    State       getState() { return _state; };
+    bool         noRobot() { return _no_robot; };
+    std::string  getName() { return     _name; };
+    std::string  getLimb() { return     _limb; };
+    State       getState() { return    _state; };
 
     geometry_msgs::Point        getPos()         { return    _curr_pos; };
     geometry_msgs::Quaternion   getOri()         { return    _curr_ori; };
