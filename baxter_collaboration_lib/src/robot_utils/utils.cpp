@@ -80,6 +80,23 @@ string toString(vector<double> const& _v)
     return res;
 }
 
+string toString(const geometry_msgs::Pose& _p)
+{
+    string      res;
+    stringstream ss;
+
+    ss << "{position:{ x:" << _p.position.x <<  ", ";
+    ss <<             "y:" << _p.position.y <<  ", ";
+    ss <<             "z:" << _p.position.z << "}, ";
+    ss << "orientation:{ x:" << _p.orientation.x << ", ";
+    ss <<               "y:" << _p.orientation.y << ", ";
+    ss <<               "z:" << _p.orientation.z << ", ";
+    ss <<               "w:" << _p.orientation.w << "}}";
+
+    res = ss.str();
+    return res;
+}
+
 double norm(vector<double> const& _v)
 {
     double accum = 0.0;

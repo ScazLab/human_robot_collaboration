@@ -101,6 +101,8 @@ RobotInterface::RobotInterface(string name, string limb, bool no_robot, bool use
     spinner.start();
 
     if (_use_cart_ctrl)     startThread();
+
+    if (is_experimental)    ROS_WARN("[%s] Experimental mode enabled!", getLimb().c_str());
 }
 
 bool RobotInterface::startThread()
@@ -181,8 +183,11 @@ void RobotInterface::ThreadEntry()
                 // ROS_INFO("[%s] Executing trajectory: time %g/%g pose_curr %s", getLimb.c_str(), time_elap,
                 //                                                      traj_time, print(pose_curr).c_str());
 
-                if (!goToPoseNoCheck(pose_curr)) ROS_WARN("[%s] desired configuration could not be reached.",
-                                                                                          getLimb().c_str());
+                if (!goToPoseNoCheck(pose_curr))
+                {
+                    ROS_WARN("[%s] desired configuration could not be reached.", getLimb().c_str());
+                    setCtrlRunning(false);
+                }
 
                 if (hasCollidedIR("strict")) ROS_INFO_THROTTLE(2, "[%s] is colliding!", getLimb().c_str());
             }
@@ -252,13 +257,20 @@ void RobotInterface::ctrlMsgCb(const baxter_collaboration_msgs::GoToPose& msg)
 
         ctrl_mode = msg.ctrl_mode;
 
-        if (ctrl_mode != baxter_collaboration_msgs::GoToPose::POSITION_MODE &&
-            _is_experimental == true)
+        if (ctrl_mode != baxter_collaboration_msgs::GoToPose::POSITION_MODE)
         {
-            ROS_ERROR("As of now, the only tested control mode is POSITION_MODE. "
-                      "To be able to use any other control mode, please set the "
-                      "experimental flag in the constructor to true.");
-            ctrl_mode = baxter_collaboration_msgs::GoToPose::POSITION_MODE;
+            if (_is_experimental == false)
+            {
+                ROS_ERROR("As of now, the only tested control mode is POSITION_MODE. "
+                          "To be able to use any other control mode, please set the "
+                          "experimental flag in the constructor to true.");
+                ctrl_mode = baxter_collaboration_msgs::GoToPose::POSITION_MODE;
+            }
+            else
+            {
+                ROS_WARN("Experimental VELOCITY_MODE enabled1");
+                ctrl_mode = baxter_collaboration_msgs::GoToPose::VELOCITY_MODE;
+            }
         }
 
         setCtrlRunning(true);
