@@ -180,8 +180,8 @@ void RobotInterface::ThreadEntry()
                     pose_curr.orientation = o_c;
                 }
 
-                // ROS_INFO("[%s] Executing trajectory: time %g/%g pose_curr %s", getLimb.c_str(), time_elap,
-                //                                                      traj_time, print(pose_curr).c_str());
+                ROS_INFO("[%s] Current Pose: %s Time %g/%g", getLimb().c_str(), print(pose_curr).c_str(),
+                                                                                   time_elap, traj_time);
 
                 if (!goToPoseNoCheck(pose_curr))
                 {
@@ -193,7 +193,17 @@ void RobotInterface::ThreadEntry()
             }
             else
             {
-                ROS_INFO("[%s] Pose reached", getLimb().c_str());
+                ROS_INFO("[%s] Pose reached\n", getLimb().c_str());
+
+                if (ctrl_mode == baxter_collaboration_msgs::GoToPose::VELOCITY_MODE)
+                {
+                    std::vector<double> joint_values;
+                    for (int i = 0; i < 7; ++i)
+                    {
+                        joint_values.push_back(0.0);
+                    }
+                    goToJointConfNoCheck(joint_values);
+                }
                 setCtrlRunning(false);
             }
         }
@@ -255,6 +265,13 @@ void RobotInterface::ctrlMsgCb(const baxter_collaboration_msgs::GoToPose& msg)
             pose_des.orientation = getOri();
         }
 
+        if (msg.pose_stamp.pose.position.z > 99)
+        {
+            pose_des.orientation  = getOri();
+            pose_des.position     = getPos();
+            pose_des.position.z  += msg.pose_stamp.pose.position.z - 100;
+        }
+
         ctrl_mode = msg.ctrl_mode;
 
         if (ctrl_mode != baxter_collaboration_msgs::GoToPose::POSITION_MODE)
@@ -268,7 +285,7 @@ void RobotInterface::ctrlMsgCb(const baxter_collaboration_msgs::GoToPose& msg)
             }
             else
             {
-                ROS_WARN("Experimental VELOCITY_MODE enabled1");
+                ROS_WARN("Experimental VELOCITY_MODE enabled!!");
                 ctrl_mode = baxter_collaboration_msgs::GoToPose::VELOCITY_MODE;
             }
         }
@@ -398,13 +415,15 @@ void RobotInterface::endpointCb(const baxter_core_msgs::EndpointState& msg)
     _curr_pos      = msg.pose.position;
     _curr_ori      = msg.pose.orientation;
 
-    if (_use_forces == true) _curr_wrench = msg.wrench;
+    // tf::Quaternion _marker_quat;
+    // tf::quaternionMsgToTF(_curr_ori, _marker_quat);
+    // tf::Matrix3x3 _marker_mat(_marker_quat);
 
-    tf::Quaternion _marker_quat;
-    tf::quaternionMsgToTF(_curr_ori, _marker_quat);
-    tf::Matrix3x3 _marker_mat(_marker_quat);
-
-    if (_use_forces == true) filterForces();
+    if (_use_forces == true)
+    {
+        _curr_wrench = msg.wrench;
+        filterForces();
+    }
 
     return;
 }
@@ -691,15 +710,15 @@ bool RobotInterface::isPositionReached(double px, double py, double pz, string m
 
     if (mode == "strict")
     {
-        if (abs(getPos().x-px) > 0.005) return false;
-        if (abs(getPos().y-py) > 0.005) return false;
-        if (abs(getPos().z-pz) > 0.005) return false;
+        if (abs(getPos().x-px) > 0.002) return false;
+        if (abs(getPos().y-py) > 0.002) return false;
+        if (abs(getPos().z-pz) > 0.002) return false;
     }
     else if (mode == "loose")
     {
-        if (abs(getPos().x-px) >  0.01) return false;
-        if (abs(getPos().y-py) >  0.01) return false;
-        if (abs(getPos().z-pz) >  0.01) return false;
+        if (abs(getPos().x-px) > 0.005) return false;
+        if (abs(getPos().y-py) > 0.005) return false;
+        if (abs(getPos().z-pz) > 0.005) return false;
     }
     else
     {
