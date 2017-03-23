@@ -518,7 +518,7 @@ bool RobotInterface::goToJointConfNoCheck(vector<double> joint_values)
         joint_cmd.command.push_back(joint_values[i]);
     }
 
-    publish_joint_cmd(joint_cmd);
+    publishJointCmd(joint_cmd);
 
     return true;
 }
@@ -934,7 +934,7 @@ void RobotInterface::setState(int state)
     return;
 }
 
-void RobotInterface::publish_joint_cmd(baxter_core_msgs::JointCommand _cmd)
+void RobotInterface::publishJointCmd(baxter_core_msgs::JointCommand _cmd)
 {
     _joint_cmd_pub.publish(_cmd);
 }
