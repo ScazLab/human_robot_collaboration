@@ -193,12 +193,12 @@ private:
     void ThreadEntry();
 
     /**
-     * @brief Publishes the desired joint configuration
-     * @details Publishes the desired joint configuration in the proper topic
+     * Publishes the desired joint configuration in the proper topic, i.e.
+     * /robot/limb/" + _limb + "/joint_command"
      *
      * @param _cmd The desired joint configuration
      */
-    void publish_joint_cmd(baxter_core_msgs::JointCommand _cmd);
+    void publishJointCmd(baxter_core_msgs::JointCommand _cmd);
 
     /*
      * Callback function that sets the current pose to the pose received from
