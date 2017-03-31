@@ -14,7 +14,7 @@ from htm.lib.pomdp import AsyncPOMCPPolicyRunner, export_pomcp
 from htm.lib.belief import format_belief_array
 
 import rospy
-from baxter_collaboration.srv import DoActionResponse
+from baxter_collaboration_msgs.srv import DoActionResponse
 from baxter_collaboration.controller import BaseController
 
 
