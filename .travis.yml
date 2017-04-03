@@ -117,7 +117,9 @@ before_script:
 script:
   - source /opt/ros/$ROS_DISTRO/setup.bash
   - cd ~/catkin_ws
+  # To remove this -> libdc1394 error: Failed to initialize libdc1394
   - sudo ln /dev/null /dev/raw1394
+  # Build the repo
   - catkin build $REPO_NAME $( [ -f $CATKIN_OPTIONS ] && cat $CATKIN_OPTIONS )
   # Run the tests, ensuring the path is set correctly.
   - source devel/setup.bash
