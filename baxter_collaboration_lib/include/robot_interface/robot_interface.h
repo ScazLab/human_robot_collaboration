@@ -68,6 +68,9 @@ private:
     bool             _use_trac_ik;
     ros::ServiceClient _ik_client;
 
+    // Rate [Hz] of the control loop. Default 100Hz.
+    double ctrl_freq;
+
     /**
      * End-effector state
      */
@@ -573,6 +576,7 @@ public:
     virtual void setState(int state);
     void setName(std::string name)          {        _name = name;        };
     void setTracIK(bool use_trac_ik)        { _use_trac_ik = use_trac_ik; };
+    void setCtrlFreq(double _ctrl_freq)     {    ctrl_freq = _ctrl_freq;  };
 
     bool setIKLimits(KDL::JntArray  ll, KDL::JntArray  ul);
 
@@ -583,6 +587,7 @@ public:
     std::string  getName() { return     _name; };
     std::string  getLimb() { return     _limb; };
     State       getState() { return    _state; };
+    double   getCtrlFreq() { return ctrl_freq; };
 
     geometry_msgs::Point        getPos()         { return    _curr_pos; };
     geometry_msgs::Quaternion   getOri()         { return    _curr_ori; };
