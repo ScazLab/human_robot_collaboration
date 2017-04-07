@@ -1,9 +1,9 @@
 import rospy
 
+from .srv import DoAction, DoActionRequest
 from .timer import Timer
 from .service_request import ServiceRequest, finished_request
 from .suscribers import CommunicationSuscriber, ButtonSuscriber
-from baxter_collaboration_msgs.srv import DoAction, DoActionRequest
 from svox_tts.srv import Speech, SpeechRequest
 
 
