@@ -373,6 +373,7 @@ void RobotInterface::jointStatesCb(const sensor_msgs::JointState& msg)
         pthread_mutex_lock(&_mutex_jnts);
         _curr_jnts.name.clear();
         _curr_jnts.position.clear();
+        _curr_jnts.velocity.clear();
         for (size_t i = 0; i < joint_cmd.names.size(); ++i)
         {
             for (size_t j = 0; j < msg.name.size(); ++j)
@@ -381,6 +382,7 @@ void RobotInterface::jointStatesCb(const sensor_msgs::JointState& msg)
                 {
                     _curr_jnts.name.push_back(msg.name[j]);
                     _curr_jnts.position.push_back(msg.position[j]);
+                    _curr_jnts.velocity.push_back(msg.velocity[j]);
                 }
             }
         }
