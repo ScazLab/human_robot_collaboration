@@ -631,7 +631,7 @@ bool RobotInterface::computeIK(double px, double py, double pz,
 
 bool RobotInterface::hasCollidedIR(string mode)
 {
-    double thres;
+    double thres = 0.0;
 
     if (getLimb() == "left")
     {
