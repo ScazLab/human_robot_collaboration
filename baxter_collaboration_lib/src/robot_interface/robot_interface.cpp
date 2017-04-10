@@ -563,11 +563,10 @@ bool RobotInterface::computeIK(double px, double py, double pz,
     setOrientation(pose_stamp.pose, ox, oy, oz, ow);
 
     j.clear();
-    bool got_solution = false;
     ros::Time start = ros::Time::now();
     float thresh_z = pose_stamp.pose.position.z + 0.01;
 
-    while (!got_solution)
+    while (RobotInterface::ok())
     {
         SolvePositionIK ik_srv;
 
