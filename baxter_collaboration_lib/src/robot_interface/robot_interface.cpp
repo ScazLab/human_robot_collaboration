@@ -183,8 +183,8 @@ void RobotInterface::ThreadEntry()
                     pose_curr.orientation = o_c;
                 }
 
-                // ROS_INFO("[%s] Current Pose: %s Time %g/%g", getLimb().c_str(), print(pose_curr).c_str(),
-                //                                                                    time_elap, traj_time);
+                ROS_INFO("[%s] Current Pose: %s Time %g/%g", getLimb().c_str(), print(pose_curr).c_str(),
+                                                                                   time_elap, traj_time);
 
                 if (!goToPoseNoCheck(pose_curr))
                 {
