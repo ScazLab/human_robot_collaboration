@@ -183,8 +183,8 @@ void RobotInterface::ThreadEntry()
                     pose_curr.orientation = o_c;
                 }
 
-                ROS_INFO("[%s] Current Pose: %s Time %g/%g", getLimb().c_str(), print(pose_curr).c_str(),
-                                                                                   time_elap, traj_time);
+                // ROS_INFO("[%s] Current Pose: %s Time %g/%g", getLimb().c_str(), print(pose_curr).c_str(),
+                //                                                                    time_elap, traj_time);
 
                 if (!goToPoseNoCheck(pose_curr))
                 {
@@ -305,16 +305,8 @@ void RobotInterface::ctrlMsgCb(const baxter_collaboration_msgs::GoToPose& msg)
             return;
         }
 
-        if (msg.pose_stamp.pose.position.z > 99)
-        {
-            pose_des.orientation  = getOri();
-            pose_des.position     = getPos();
-            pose_des.position.z  += msg.pose_stamp.pose.position.z - 100;
-        }
-
-        ctrl_mode = msg.ctrl_mode;
-
-        if (ctrl_mode != baxter_collaboration_msgs::GoToPose::POSITION_MODE)
+        // Then, let's check if control mode is among the allowed options
+        if (msg.ctrl_mode != baxter_collaboration_msgs::GoToPose::POSITION_MODE)
         {
             if (_is_experimental == false)
             {
@@ -325,8 +317,22 @@ void RobotInterface::ctrlMsgCb(const baxter_collaboration_msgs::GoToPose& msg)
             }
             else
             {
-                ROS_WARN("Experimental mode enabled!!");
-                // ctrl_mode = baxter_collaboration_msgs::GoToPose::VELOCITY_MODE;
+                if (msg.ctrl_mode == baxter_collaboration_msgs::GoToPose::VELOCITY_MODE)
+                {
+                    ROS_WARN("[%s] Experimental VELOCITY_MODE enabled", getLimb().c_str());
+                    ctrl_mode = baxter_collaboration_msgs::GoToPose::VELOCITY_MODE;
+                }
+                else if (msg.ctrl_mode == baxter_collaboration_msgs::GoToPose::RAW_POSITION_MODE)
+                {
+                    ROS_WARN("[%s] Experimental RAW_POSITION_MODE enabled", getLimb().c_str());
+                    ctrl_mode = baxter_collaboration_msgs::GoToPose::RAW_POSITION_MODE;
+                }
+                else
+                {
+                    ROS_ERROR("[%s] Requested control mode %i not allowed!",
+                                          getLimb().c_str(), msg.ctrl_mode);
+                    return;
+                }
             }
         }
 
@@ -990,7 +996,11 @@ void RobotInterface::setState(int state)
 
 void RobotInterface::publishJointCmd(baxter_core_msgs::JointCommand _cmd)
 {
+<<<<<<< HEAD
     // cout << "Joint Command: " << _cmd << endl;
+=======
+    cout << "Joint Command: " << _cmd << endl;
+>>>>>>> Committed latest things. @Brahmgardner please chekc them out
     _joint_cmd_pub.publish(_cmd);
 }
 
