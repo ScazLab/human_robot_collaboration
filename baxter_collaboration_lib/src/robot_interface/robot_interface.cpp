@@ -2,6 +2,8 @@
 
 #include <tf/transform_datatypes.h>
 
+#include <iostream>
+
 using namespace std;
 using namespace baxter_core_msgs;
 using namespace geometry_msgs;
@@ -181,8 +183,8 @@ void RobotInterface::ThreadEntry()
                     pose_curr.orientation = o_c;
                 }
 
-                ROS_INFO("[%s] Current Pose: %s Time %g/%g", getLimb().c_str(), print(pose_curr).c_str(),
-                                                                                   time_elap, traj_time);
+                // ROS_INFO("[%s] Current Pose: %s Time %g/%g", getLimb().c_str(), print(pose_curr).c_str(),
+                //                                                                    time_elap, traj_time);
 
                 if (!goToPoseNoCheck(pose_curr))
                 {
@@ -208,7 +210,8 @@ void RobotInterface::ThreadEntry()
                 setCtrlRunning(false);
             }
         }
-
+        // ++i;
+        // ROS_INFO("i=%d", i);
         r.sleep();
     }
 
@@ -286,8 +289,8 @@ void RobotInterface::ctrlMsgCb(const baxter_collaboration_msgs::GoToPose& msg)
             }
             else
             {
-                ROS_WARN("Experimental VELOCITY_MODE enabled!!");
-                ctrl_mode = baxter_collaboration_msgs::GoToPose::VELOCITY_MODE;
+                ROS_WARN("Experimental mode enabled!!");
+                // ctrl_mode = baxter_collaboration_msgs::GoToPose::VELOCITY_MODE;
             }
         }
 
@@ -371,6 +374,13 @@ void RobotInterface::jointStatesCb(const sensor_msgs::JointState& msg)
     if (msg.name.size() >= joint_cmd.names.size())
     {
         pthread_mutex_lock(&_mutex_jnts);
+
+        cout << "Joint state ";
+        for (size_t i = 9; i < 16; ++i)
+        {
+            cout << "[" << i << "] " << msg.name[i] << " " << msg.position[i] << "\t";
+        }
+        cout << endl;
         _curr_jnts.name.clear();
         _curr_jnts.position.clear();
         _curr_jnts.velocity.clear();
@@ -938,6 +948,7 @@ void RobotInterface::setState(int state)
 
 void RobotInterface::publishJointCmd(baxter_core_msgs::JointCommand _cmd)
 {
+    cout << "Joint Command: " << _cmd << endl;
     _joint_cmd_pub.publish(_cmd);
 }
 

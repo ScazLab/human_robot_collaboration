@@ -8,5 +8,6 @@ geometry_msgs/PoseStamped pose_stamp
 # to directly control the robot's joints in velocity.
 int32 POSITION_MODE = 1
 int32 VELOCITY_MODE = 2
+int32 RAW_POSITION_MODE = 3
 
 int32 ctrl_mode
