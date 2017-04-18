@@ -143,7 +143,7 @@ void RobotInterface::ThreadEntry()
             geometry_msgs::Point      p_d =      pose_des.position;
             geometry_msgs::Quaternion o_d =   pose_des.orientation;
 
-            if (!isPoseReached(p_d, o_d, "strict"))
+            if (!isPoseReached(p_d, o_d, "loose"))
             {
                 // Current pose to send to the IK solver.
                 geometry_msgs::Pose pose_curr = pose_des;
@@ -725,7 +725,14 @@ bool RobotInterface::isOrientationReached(double ox, double oy, double oz, doubl
                            getLimb().c_str(), getOri().x, getOri().y, getOri().z, getOri().w,
                                                                ox, oy, oz, ow, des.dot(cur));
 
-    if (abs(des.dot(cur)) < 0.985)  return false;
+    if (mode == "strict")
+    {
+        if (abs(des.dot(cur)) < 0.98)  { return false; }
+    }
+    else if (mode == "loose")
+    {
+        if (abs(des.dot(cur)) < 0.95)  { return false; }
+    }
 
     return true;
 }
