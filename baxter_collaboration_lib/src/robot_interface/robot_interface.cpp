@@ -375,12 +375,12 @@ void RobotInterface::jointStatesCb(const sensor_msgs::JointState& msg)
     {
         pthread_mutex_lock(&_mutex_jnts);
 
-        cout << "Joint state ";
-        for (size_t i = 9; i < 16; ++i)
-        {
-            cout << "[" << i << "] " << msg.name[i] << " " << msg.position[i] << "\t";
-        }
-        cout << endl;
+        // cout << "Joint state ";
+        // for (size_t i = 9; i < 16; ++i)
+        // {
+        //     cout << "[" << i << "] " << msg.name[i] << " " << msg.position[i] << "\t";
+        // }
+        // cout << endl;
         _curr_jnts.name.clear();
         _curr_jnts.position.clear();
         _curr_jnts.velocity.clear();
@@ -948,7 +948,7 @@ void RobotInterface::setState(int state)
 
 void RobotInterface::publishJointCmd(baxter_core_msgs::JointCommand _cmd)
 {
-    cout << "Joint Command: " << _cmd << endl;
+    // cout << "Joint Command: " << _cmd << endl;
     _joint_cmd_pub.publish(_cmd);
 }
 
