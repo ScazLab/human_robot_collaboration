@@ -143,7 +143,7 @@ if(CATKIN_ENABLE_TESTING)
 
   add_rostest_gtest(test_robot_interface test/test_robot_interface.launch
                                          test/test_robot_interface.cpp)
-  target_link_libraries(test_robot_interface  robot_interface)
+  target_link_libraries(test_robot_interface  robot_interface ${catkin_LIBRARIES})
 endif()
 
 ## Add folders to be run by python nosetests
