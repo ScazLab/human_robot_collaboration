@@ -150,7 +150,7 @@ bool ToolPicker::pickUpObject()
     ROS_INFO("[%s] Start Picking up object %s..", getLimb().c_str(),
                   CartesianEstimatorClient::getObjectName().c_str());
 
-    if (!is_ir_ok())
+    if (!isIRok())
     {
         ROS_ERROR("No callback from the IR sensor! Stopping.");
         setSubState(NO_IR_SENSOR);
