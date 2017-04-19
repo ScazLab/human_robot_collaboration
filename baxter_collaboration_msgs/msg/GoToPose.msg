@@ -27,3 +27,4 @@ geometry_msgs/Quaternion orientation
 # increment is in meters, and will move the end effector in the desired
 # direction, specified by the type
 float64 increment
+

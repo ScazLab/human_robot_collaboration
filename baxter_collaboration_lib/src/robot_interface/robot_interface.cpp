@@ -996,11 +996,8 @@ void RobotInterface::setState(int state)
 
 void RobotInterface::publishJointCmd(baxter_core_msgs::JointCommand _cmd)
 {
-<<<<<<< HEAD
     // cout << "Joint Command: " << _cmd << endl;
-=======
-    cout << "Joint Command: " << _cmd << endl;
->>>>>>> Committed latest things. @Brahmgardner please chekc them out
+
     _joint_cmd_pub.publish(_cmd);
 }
 
