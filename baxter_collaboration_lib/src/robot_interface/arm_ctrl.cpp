@@ -40,7 +40,7 @@ void ArmCtrl::InternalThreadEntry()
 
     setState(WORKING);
 
-    if (is_no_robot())
+    if (isNoRobot())
     {
         ros::Duration(2.0).sleep();
         setState(DONE);
