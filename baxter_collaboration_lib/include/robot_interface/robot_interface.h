@@ -557,9 +557,10 @@ protected:
     void suppressCollisionAv();
 
 public:
-    RobotInterface(std::string name, std::string limb, bool no_robot = false,
-                   double ctrl_freq = THREAD_FREQ, bool use_forces = true, bool use_trac_ik = true,
-                   bool use_cart_ctrl = true, bool is_experimental = false);
+    RobotInterface(std::string           name, std::string                   limb,
+                   bool      no_robot = false, double     ctrl_freq = THREAD_FREQ,
+                   bool    use_forces =  true, bool     use_trac_ik =        true,
+                   bool use_cart_ctrl =  true, bool is_experimental =      false);
 
     ~RobotInterface();
 

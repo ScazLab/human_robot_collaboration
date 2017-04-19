@@ -5,6 +5,26 @@
 using namespace std;
 
 // Declare a test
+TEST(RobotInterfaceTest, testConstructorDefaultValues)
+{
+    RobotInterface ri("robot", "left");
+
+    EXPECT_EQ(ri.isCtrlRunning(), false);
+    EXPECT_EQ(START, int(ri.getState()));
+
+    EXPECT_EQ("robot", ri.getName());
+    EXPECT_EQ( "left", ri.getLimb());
+    EXPECT_EQ(  false, ri.isNoRobot());
+    EXPECT_EQ(  100.0, ri.getCtrlFreq());
+    EXPECT_EQ(   true, ri.useForces());
+    EXPECT_EQ(   true, ri.useTracIK());
+    EXPECT_EQ(   true, ri.useCartCtrl());
+    EXPECT_EQ(  false, ri.isExperimental());
+
+    ri.setTracIK(false);
+    EXPECT_EQ(false, ri.useTracIK());
+}
+
 TEST(RobotInterfaceTest, testConstructorCustomValues)
 {
     string          name = "robot";
