@@ -282,10 +282,10 @@ void RobotInterface::ctrlMsgCb(const baxter_collaboration_msgs::GoToPose& msg)
         {
             if (_is_experimental == false)
             {
-                ROS_ERROR("As of now, the only tested control mode is POSITION_MODE. "
+                ROS_ERROR("[%s] As of now, the only tested control mode is POSITION_MODE. "
                           "To be able to use any other control mode, please set the "
-                          "experimental flag in the constructor to true.");
-                ctrl_mode = baxter_collaboration_msgs::GoToPose::POSITION_MODE;
+                          "experimental flag in the constructor to true.", getLimb().c_str());
+                return;
             }
             else
             {
@@ -294,6 +294,8 @@ void RobotInterface::ctrlMsgCb(const baxter_collaboration_msgs::GoToPose& msg)
             }
         }
 
+        ctrl_mode = msg.ctrl_mode;
+
         setCtrlRunning(true);
         initCtrlParams();
 
@@ -301,7 +303,7 @@ void RobotInterface::ctrlMsgCb(const baxter_collaboration_msgs::GoToPose& msg)
     }
     else
     {
-        ROS_ERROR_THROTTLE(1, "[%s] Received new target pose, but the controller is already"
+        ROS_ERROR_THROTTLE(1, "[%s] Received new target control command, but the controller is already"
                               " in use through the high level interface!", getLimb().c_str());
     }
 
