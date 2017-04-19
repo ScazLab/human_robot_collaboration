@@ -624,7 +624,6 @@ bool RobotInterface::computeIK(double px, double py, double pz,
         ik_srv.request.seed_angles.push_back(_curr_jnts);
         pthread_mutex_unlock(&_mutex_jnts);
 
-        int cnt = 0;
         ros::Time tn = ros::Time::now();
 
         bool result = _use_trac_ik?ik_solver.perform_ik(ik_srv):_ik_client.call(ik_srv);
@@ -634,9 +633,8 @@ bool RobotInterface::computeIK(double px, double py, double pz,
             double te  = ros::Time::now().toSec()-tn.toSec();;
             if (te>0.010)
             {
-                ROS_WARN_ONCE("\t\t\tTime elapsed in computing IK: %g cnt %i",te,cnt);
+                ROS_WARN_ONCE("\t\t\tTime elapsed in computing IK: %g",te);
             }
-            cnt++;
 
             if (ik_srv.response.isValid[0])
             {
