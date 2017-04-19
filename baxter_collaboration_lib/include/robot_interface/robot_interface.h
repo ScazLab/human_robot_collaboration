@@ -564,19 +564,29 @@ public:
     ~RobotInterface();
 
     /*
-     * Self-explaining "setters"
+     * Sets the internal state.
      */
     virtual void setState(int state);
-    void setName(std::string name)          {        _name = name;        };
-    void setTracIK(bool use_trac_ik)        { _use_trac_ik = use_trac_ik; };
-    void setCtrlFreq(double ctrl_freq)      {   _ctrl_freq = ctrl_freq;   };
+
+    /**
+     * Sets the usage of TracIK to true or false. It is one of the few flags
+     * that can be switched at runtime.
+     * @param  use_trac_ik if to use track ik or not
+     */
+    void setTracIK(bool use_trac_ik) { _use_trac_ik = use_trac_ik; };
 
     bool setIKLimits(KDL::JntArray  ll, KDL::JntArray  ul);
+    bool getIKLimits(KDL::JntArray &ll, KDL::JntArray &ul);
 
     /*
      * Self-explaining "getters"
      */
-    bool         noRobot() { return  _no_robot; };
+    bool      isNoRobot() { return        _no_robot; };
+    bool      useForces() { return      _use_forces; };
+    bool      useTracIK() { return     _use_trac_ik; };
+    bool    useCartCtrl() { return   _use_cart_ctrl; };
+    bool isExperimental() { return _is_experimental; };
+
     std::string  getName() { return      _name; };
     std::string  getLimb() { return      _limb; };
     State       getState() { return     _state; };
@@ -596,17 +606,10 @@ public:
      */
     bool isCtrlRunning();
 
-    bool getIKLimits(KDL::JntArray &ll, KDL::JntArray &ul);
-
     /*
      * Check availability of the infrared data
     */
     bool    isIRok() { return ir_ok; };
-
-    /*
-     * Checks if the robot is used or not
-     */
-    bool isNoRobot() { return _no_robot; };
 };
 
 #endif
