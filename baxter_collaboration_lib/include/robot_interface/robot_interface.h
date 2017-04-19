@@ -164,13 +164,6 @@ private:
     void setCtrlRunning(bool _flag);
 
     /**
-     * Return the state of the controller (if it is running or not).
-     *
-     * @return      true/false if the controller is running or not
-     */
-    bool isCtrlRunning();
-
-    /**
      * Callback for the controller server. It receives new poses
      * to move the arm to.
      *
@@ -596,17 +589,24 @@ public:
     sensor_msgs::JointState     getJointStates();
     geometry_msgs::Pose                getPose();
 
+    /**
+     * Return the state of the controller (if it is running or not).
+     *
+     * @return      true/false if the controller is running or not
+     */
+    bool isCtrlRunning();
+
     bool getIKLimits(KDL::JntArray &ll, KDL::JntArray &ul);
 
     /*
      * Check availability of the infrared data
     */
-    bool    is_ir_ok() { return ir_ok; };
+    bool    isIRok() { return ir_ok; };
 
     /*
      * Checks if the robot is used or not
      */
-    bool is_no_robot() { return _no_robot; };
+    bool isNoRobot() { return _no_robot; };
 };
 
 #endif
