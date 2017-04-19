@@ -242,20 +242,49 @@ void RobotInterface::ctrlMsgCb(const baxter_collaboration_msgs::GoToPose& msg)
 {
     if (int(getState()) != WORKING)
     {
-        pose_des.position = msg.pose_stamp.pose.position;
-
-        if (msg.pose_stamp.pose.orientation.x != -100 &&
-            msg.pose_stamp.pose.orientation.y != -100 &&
-            msg.pose_stamp.pose.orientation.z != -100 &&
-            msg.pose_stamp.pose.orientation.w != -100)
+        // First, let's check if the type of the control command is allowed
+        if (msg.type == "stop")
         {
-            pose_des.orientation = msg.pose_stamp.pose.orientation;
+            ROS_INFO("[%s] Stoping cartesian controller server.", getLimb().c_str());
+            setCtrlRunning(false);
+            return;
+        }
+
+        if  (msg.type ==   "position" || msg.type ==       "pose" ||
+             msg.type == "relative_x" || msg.type == "relative_y" || msg.type == "relative_z")
+        {
+            pose_des.position = msg.position;
+
+            if (msg.type == "position")
+            {
+                pose_des.orientation = getOri();
+            }
+            else
+            {
+                pose_des.orientation = msg.orientation;
+            }
+
+            if (msg.type == "relative_x")
+            {
+                pose_des.position.x += msg.increment;
+            }
+            if (msg.type == "relative_y")
+            {
+                pose_des.position.y += msg.increment;
+            }
+            if (msg.type == "relative_z")
+            {
+                pose_des.position.z += msg.increment;
+            }
         }
         else
         {
-            pose_des.orientation = getOri();
+            ROS_ERROR("[%s] Requested command type %s not allowed!",
+                                  getLimb().c_str(), msg.type.c_str());
+            return;
         }
 
+        // Then, let's check if control mode is among the allowed options
         if (msg.ctrl_mode != baxter_collaboration_msgs::GoToPose::POSITION_MODE)
         {
             if (_is_experimental == false)
