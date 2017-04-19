@@ -253,15 +253,23 @@ void RobotInterface::ctrlMsgCb(const baxter_collaboration_msgs::GoToPose& msg)
         if  (msg.type ==   "position" || msg.type ==       "pose" ||
              msg.type == "relative_x" || msg.type == "relative_y" || msg.type == "relative_z")
         {
-            pose_des.position = msg.position;
-
-            if (msg.type == "position")
+            if (msg.type == "pose")
             {
-                pose_des.orientation = getOri();
+                pose_des.position    = msg.position;
+                pose_des.orientation = msg.orientation;
             }
             else
             {
-                pose_des.orientation = msg.orientation;
+                if (msg.type == "position")
+                {
+                    pose_des.position = msg.position;
+                }
+                else
+                {
+                    pose_des.position = getPos();
+                }
+
+                pose_des.orientation = getOri();
             }
 
             if (msg.type == "relative_x")
