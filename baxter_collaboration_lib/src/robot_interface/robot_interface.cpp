@@ -256,23 +256,38 @@ void RobotInterface::ctrlMsgCb(const baxter_collaboration_msgs::GoToPose& msg)
             pose_des.orientation = getOri();
         }
 
-        ctrl_mode = msg.ctrl_mode;
-
-        if (ctrl_mode != baxter_collaboration_msgs::GoToPose::POSITION_MODE)
+        if (msg.ctrl_mode != baxter_collaboration_msgs::GoToPose::POSITION_MODE)
         {
             if (_is_experimental == false)
             {
-                ROS_ERROR("As of now, the only tested control mode is POSITION_MODE. "
+                ROS_ERROR("[%s] As of now, the only tested control mode is POSITION_MODE. "
                           "To be able to use any other control mode, please set the "
-                          "experimental flag in the constructor to true.");
-                ctrl_mode = baxter_collaboration_msgs::GoToPose::POSITION_MODE;
+                          "experimental flag in the constructor to true.", getLimb().c_str());
+                return;
             }
             else
             {
-                ROS_WARN("Experimental VELOCITY_MODE enabled1");
-                ctrl_mode = baxter_collaboration_msgs::GoToPose::VELOCITY_MODE;
+                if (msg.ctrl_mode == baxter_collaboration_msgs::GoToPose::VELOCITY_MODE)
+                {
+                    ROS_WARN("[%s] Experimental VELOCITY_MODE enabled", getLimb().c_str());
+                    ctrl_mode = baxter_collaboration_msgs::GoToPose::VELOCITY_MODE;
+                }
+                else if (msg.ctrl_mode == baxter_collaboration_msgs::GoToPose::RAW_POSITION_MODE)
+                {
+                    ROS_WARN("[%s] Experimental RAW_POSITION_MODE enabled", getLimb().c_str());
+                    ctrl_mode = baxter_collaboration_msgs::GoToPose::RAW_POSITION_MODE;
+                }
+                else
+                {
+                    ROS_ERROR("[%s] Requested control mode %i not allowed!",
+                                          getLimb().c_str(), msg.ctrl_mode);
+                    return;
+                }
+
             }
         }
+
+        ctrl_mode = msg.ctrl_mode;
 
         setCtrlRunning(true);
         initCtrlParams();
@@ -281,7 +296,7 @@ void RobotInterface::ctrlMsgCb(const baxter_collaboration_msgs::GoToPose& msg)
     }
     else
     {
-        ROS_ERROR_THROTTLE(1, "[%s] Received new target pose, but the controller is already"
+        ROS_ERROR_THROTTLE(1, "[%s] Received new target control command, but the controller is already"
                               " in use through the high level interface!", getLimb().c_str());
     }
 
