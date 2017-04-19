@@ -95,7 +95,7 @@ bool CubePicker::pickARTag()
 {
     ROS_INFO("[%s] Start Picking up tag..", getLimb().c_str());
 
-    if (!is_ir_ok())
+    if (!isIRok())
     {
         ROS_ERROR("No callback from the IR sensor! Stopping.");
         return false;
