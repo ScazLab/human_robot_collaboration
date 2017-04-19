@@ -134,10 +134,16 @@ install(DIRECTORY   ${PROJECT_SOURCE_DIR}/include/robot_utils
 #############
 
 ## Add gtest based cpp test target and link libraries
-catkin_add_gtest(utils-test test/test_utils_lib.cpp)
+if(CATKIN_ENABLE_TESTING)
+  find_package(rostest            REQUIRED)
+  find_package(baxter_description REQUIRED)
 
-if(TARGET utils-test)
-  target_link_libraries(utils-test robot_utils)
+  catkin_add_gtest(test_utils test/test_utils_lib.cpp)
+  target_link_libraries(test_utils robot_utils)
+
+  add_rostest_gtest(test_robot_interface test/test_robot_interface.launch
+                                         test/test_robot_interface.cpp)
+  target_link_libraries(test_robot_interface  robot_interface)
 endif()
 
 ## Add folders to be run by python nosetests
