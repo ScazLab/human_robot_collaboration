@@ -198,7 +198,7 @@ private:
      *
      * @param _cmd The desired joint configuration
      */
-    void publish_joint_cmd(baxter_core_msgs::JointCommand _cmd);
+    void publishJointCmd(baxter_core_msgs::JointCommand _cmd);
 
     /*
      * Callback function that sets the current pose to the pose received from
