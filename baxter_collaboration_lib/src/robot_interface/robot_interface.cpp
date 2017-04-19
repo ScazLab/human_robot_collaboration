@@ -245,7 +245,7 @@ void RobotInterface::ctrlMsgCb(const baxter_collaboration_msgs::GoToPose& msg)
         // First, let's check if the type of the control command is allowed
         if (msg.type == "stop")
         {
-            ROS_INFO("[%s] Stoping cartesian controller server.", getLimb().c_str());
+            ROS_INFO("[%s] Stopping cartesian controller server.", getLimb().c_str());
             setCtrlRunning(false);
             return;
         }
