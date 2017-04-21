@@ -195,7 +195,7 @@ private:
 
 public:
 
-    BaxterDisplay(string _name) : name(_name), speech(""), it(nh)
+    explicit BaxterDisplay(string _name) : name(_name), speech(""), it(nh)
     {
         im_pub = it.advertise("/robot/xdisplay", 1);
 
