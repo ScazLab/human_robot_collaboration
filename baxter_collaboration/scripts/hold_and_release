@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
-from htm.hold_and_release import hold_and_release_pomdp
-from htm.lib.pomdp import GraphPolicyRunner
+from task_models.hold_and_release import hold_and_release_pomdp
+from task_models.lib.pomdp import GraphPolicyRunner
 
 import rospy
 from std_msgs.msg import String
