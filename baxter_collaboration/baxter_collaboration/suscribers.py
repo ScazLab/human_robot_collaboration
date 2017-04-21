@@ -17,13 +17,13 @@ class WaitForOneSuscriber(object):
         self._reset_msg()
 
     def _suscribe(self, topic):
-        raise NotImplemented()
+        raise NotImplementedError()
 
     def _reset_msg(self):
         self.last_msg = None
 
     def _handle_msg(self, msg):
-        raise NotImplemented()
+        raise NotImplementedError()
 
     def cb(self, msg):
         if self.listening:

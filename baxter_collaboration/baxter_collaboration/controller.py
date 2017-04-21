@@ -90,7 +90,8 @@ class BaseController(object):
         else:
             return r
 
-    def wait_for_request_returns_or_button_pressed(self, req, button_sub):
+    @staticmethod
+    def wait_for_request_returns_or_button_pressed(req, button_sub):
         button_sub.start_listening()
         while (button_sub.listening and not req.finished):
             rospy.sleep(.1)

@@ -71,7 +71,8 @@ class POMCPController(BaseController):
         self.pol = policy
         self.model = self.pol.tree.model
 
-    def _parse_objects(self, obj_dict):
+    @staticmethod
+    def _parse_objects(obj_dict):
         obj_parser = re.compile('(.*)_[0-9]+$')
         d = {}
         for o in obj_dict:
@@ -251,7 +252,7 @@ print('Saved: ' + EXPORT_DEST)
 
 try:
     input("Press enter to start...")
-except:
+except Exception:
     pass
 
 timer_path = os.path.join(args.path, 'timer-{}.json'.format(args.user))
