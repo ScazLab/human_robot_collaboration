@@ -6,10 +6,10 @@ import json
 import random
 import argparse
 
-from htm.lib.pomdp import (GraphPolicyBeliefRunner, GraphPolicy,
-                           GraphPolicyRunner, POMDP)
-from htm.bring_next_to_pomdp import HTMToPOMDP
-from htm.tower_problem import TowerProblem
+from task_models.lib.pomdp import (GraphPolicyBeliefRunner, GraphPolicy,
+                                   GraphPolicyRunner, POMDP)
+from task_models.bring_next_to_pomdp import HTMToPOMDP
+from task_models.tower_problem import TowerProblem
 
 import rospy
 from std_msgs.msg import String
