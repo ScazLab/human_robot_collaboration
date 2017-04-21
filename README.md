@@ -1,4 +1,4 @@
-# Baxter Collaboration [![Build Status](https://img.shields.io/travis/ScazLab/baxter_collaboration/master.svg?label=Build Status)](https://travis-ci.org/ScazLab/baxter_collaboration) [![Issues](https://img.shields.io/github/issues/ScazLab/baxter_collaboration.svg?label=Issues)](https://github.com/ScazLab/baxter_collaboration/issues)
+# Baxter Collaboration [![Build Status](https://img.shields.io/travis/ScazLab/baxter_collaboration/master.svg?label=Build Status)](https://travis-ci.org/ScazLab/baxter_collaboration) [![Issues](https://img.shields.io/github/issues/ScazLab/baxter_collaboration.svg?label=Issues)](https://github.com/ScazLab/baxter_collaboration/issues) [![Codacy Badge](https://api.codacy.com/project/badge/Grade/89218b1bb7b84e6e821d689fbd5129a8)](https://www.codacy.com/app/Baxter-collaboration/baxter_collaboration?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=ScazLab/baxter_collaboration&amp;utm_campaign=Badge_Grade)
 
 Yet another repository for the Baxter collaboration task.
 
