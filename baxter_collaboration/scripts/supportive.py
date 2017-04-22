@@ -7,11 +7,11 @@ import re
 import sys
 import argparse
 
-from htm.task import (SequentialCombination, LeafCombination)
-from htm.supportive import (SupportivePOMDP, AssembleLeg, AssembleLegToTop,
-                            NHTMHorizon)
-from htm.lib.pomdp import AsyncPOMCPPolicyRunner, export_pomcp
-from htm.lib.belief import format_belief_array
+from task_models.task import (SequentialCombination, LeafCombination)
+from task_models.supportive import (SupportivePOMDP, AssembleLeg, AssembleLegToTop,
+                                    NHTMHorizon)
+from task_models.lib.pomdp import AsyncPOMCPPolicyRunner, export_pomcp
+from task_models.lib.belief import format_belief_array
 
 import rospy
 from baxter_collaboration.srv import DoActionResponse
@@ -71,7 +71,8 @@ class POMCPController(BaseController):
         self.pol = policy
         self.model = self.pol.tree.model
 
-    def _parse_objects(self, obj_dict):
+    @staticmethod
+    def _parse_objects(obj_dict):
         obj_parser = re.compile('(.*)_[0-9]+$')
         d = {}
         for o in obj_dict:
@@ -251,7 +252,7 @@ print('Saved: ' + EXPORT_DEST)
 
 try:
     input("Press enter to start...")
-except:
+except Exception:
     pass
 
 timer_path = os.path.join(args.path, 'timer-{}.json'.format(args.user))

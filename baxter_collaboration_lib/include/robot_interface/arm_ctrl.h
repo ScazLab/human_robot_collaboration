@@ -347,7 +347,7 @@ public:
     /*
      * Destructor
      */
-    ~ArmCtrl();
+    virtual ~ArmCtrl();
 
     /**
      * Callback for the service that requests actions

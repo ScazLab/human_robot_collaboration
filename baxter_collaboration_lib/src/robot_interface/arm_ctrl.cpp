@@ -299,7 +299,7 @@ string ArmCtrl::objectDBToString()
     string res = "";
     map<int, string>::iterator it;
 
-    for ( it = object_db.begin(); it != object_db.end(); it++ )
+    for ( it = object_db.begin(); it != object_db.end(); ++it )
     {
         res = res + "[" + toString(it->first) + "] " + it->second + ", ";
     }
@@ -388,7 +388,7 @@ string ArmCtrl::actionDBToString()
     string res = "";
     map<string, f_action>::iterator it;
 
-    for ( it = action_db.begin(); it != action_db.end(); it++ )
+    for ( it = action_db.begin(); it != action_db.end(); ++it )
     {
         res = res + it->first + ", ";
     }
