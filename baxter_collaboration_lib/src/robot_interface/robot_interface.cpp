@@ -196,7 +196,7 @@ void RobotInterface::ThreadEntry()
             }
             else
             {
-                ROS_INFO("[%s] Pose reached\n", getLimb().c_str());
+                ROS_INFO("[%s] Pose reached!\n", getLimb().c_str());
 
                 if (ctrl_mode == baxter_collaboration_msgs::GoToPose::VELOCITY_MODE)
                 {
@@ -210,8 +210,6 @@ void RobotInterface::ThreadEntry()
                 setCtrlRunning(false);
             }
         }
-        // ++i;
-        // ROS_INFO("i=%d", i);
         r.sleep();
     }
 
@@ -428,6 +426,7 @@ void RobotInterface::jointStatesCb(const sensor_msgs::JointState& msg)
         _curr_jnts.name.clear();
         _curr_jnts.position.clear();
         _curr_jnts.velocity.clear();
+
         for (size_t i = 0; i < joint_cmd.names.size(); ++i)
         {
             for (size_t j = 0; j < msg.name.size(); ++j)
@@ -471,10 +470,6 @@ void RobotInterface::endpointCb(const baxter_core_msgs::EndpointState& msg)
     // ROS_DEBUG("endpointCb");
     _curr_pos      = msg.pose.position;
     _curr_ori      = msg.pose.orientation;
-
-    // tf::Quaternion _marker_quat;
-    // tf::quaternionMsgToTF(_curr_ori, _marker_quat);
-    // tf::Matrix3x3 _marker_mat(_marker_quat);
 
     if (_use_forces == true)
     {
@@ -997,7 +992,6 @@ void RobotInterface::setState(int state)
 void RobotInterface::publishJointCmd(baxter_core_msgs::JointCommand _cmd)
 {
     // cout << "Joint Command: " << _cmd << endl;
-
     _joint_cmd_pub.publish(_cmd);
 }
 
