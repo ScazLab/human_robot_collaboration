@@ -145,7 +145,7 @@ void RobotInterface::ThreadEntry()
             geometry_msgs::Point      p_d =      pose_des.position;
             geometry_msgs::Quaternion o_d =   pose_des.orientation;
 
-            if (!isPoseReached(p_d, o_d, "loose"))
+            if (!isPoseReached(p_d, o_d, "strict"))
             {
                 // Current pose to send to the IK solver.
                 geometry_msgs::Pose pose_curr = pose_des;
