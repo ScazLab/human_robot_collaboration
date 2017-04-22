@@ -186,8 +186,8 @@ private:
     void ThreadEntry();
 
     /**
-     * @brief Publishes the desired joint configuration
-     * @details Publishes the desired joint configuration in the proper topic
+     * Publishes the desired joint configuration in the proper topic, i.e.
+     * /robot/limb/" + _limb + "/joint_command"
      *
      * @param _cmd The desired joint configuration
      */

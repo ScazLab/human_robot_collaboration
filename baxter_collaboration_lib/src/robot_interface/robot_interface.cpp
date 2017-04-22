@@ -2,6 +2,8 @@
 
 #include <tf/transform_datatypes.h>
 
+#include <iostream>
+
 using namespace std;
 using namespace baxter_core_msgs;
 using namespace geometry_msgs;
@@ -143,7 +145,7 @@ void RobotInterface::ThreadEntry()
             geometry_msgs::Point      p_d =      pose_des.position;
             geometry_msgs::Quaternion o_d =   pose_des.orientation;
 
-            if (!isPoseReached(p_d, o_d, "loose"))
+            if (!isPoseReached(p_d, o_d, "strict"))
             {
                 // Current pose to send to the IK solver.
                 geometry_msgs::Pose pose_curr = pose_des;
@@ -181,8 +183,8 @@ void RobotInterface::ThreadEntry()
                     pose_curr.orientation = o_c;
                 }
 
-                // ROS_INFO("[%s] Executing trajectory: time %g/%g pose_curr %s", getLimb.c_str(), time_elap,
-                //                                                      traj_time, print(pose_curr).c_str());
+                // ROS_INFO("[%s] Current Pose: %s Time %g/%g", getLimb().c_str(), print(pose_curr).c_str(),
+                //                                                                    time_elap, traj_time);
 
                 if (!goToPoseNoCheck(pose_curr))
                 {
@@ -194,11 +196,20 @@ void RobotInterface::ThreadEntry()
             }
             else
             {
-                ROS_INFO("[%s] Pose reached", getLimb().c_str());
+                ROS_INFO("[%s] Pose reached!\n", getLimb().c_str());
+
+                if (ctrl_mode == baxter_collaboration_msgs::GoToPose::VELOCITY_MODE)
+                {
+                    std::vector<double> joint_values;
+                    for (int i = 0; i < 7; ++i)
+                    {
+                        joint_values.push_back(0.0);
+                    }
+                    goToJointConfNoCheck(joint_values);
+                }
                 setCtrlRunning(false);
             }
         }
-
         r.sleep();
     }
 
@@ -320,7 +331,6 @@ void RobotInterface::ctrlMsgCb(const baxter_collaboration_msgs::GoToPose& msg)
                                           getLimb().c_str(), msg.ctrl_mode);
                     return;
                 }
-
             }
         }
 
@@ -406,8 +416,17 @@ void RobotInterface::jointStatesCb(const sensor_msgs::JointState& msg)
     if (msg.name.size() >= joint_cmd.names.size())
     {
         pthread_mutex_lock(&_mutex_jnts);
+
+        // cout << "Joint state ";
+        // for (size_t i = 9; i < 16; ++i)
+        // {
+        //     cout << "[" << i << "] " << msg.name[i] << " " << msg.position[i] << "\t";
+        // }
+        // cout << endl;
         _curr_jnts.name.clear();
         _curr_jnts.position.clear();
+        _curr_jnts.velocity.clear();
+
         for (size_t i = 0; i < joint_cmd.names.size(); ++i)
         {
             for (size_t j = 0; j < msg.name.size(); ++j)
@@ -416,6 +435,7 @@ void RobotInterface::jointStatesCb(const sensor_msgs::JointState& msg)
                 {
                     _curr_jnts.name.push_back(msg.name[j]);
                     _curr_jnts.position.push_back(msg.position[j]);
+                    _curr_jnts.velocity.push_back(msg.velocity[j]);
                 }
             }
         }
@@ -451,13 +471,11 @@ void RobotInterface::endpointCb(const baxter_core_msgs::EndpointState& msg)
     _curr_pos      = msg.pose.position;
     _curr_ori      = msg.pose.orientation;
 
-    if (_use_forces == true) _curr_wrench = msg.wrench;
-
-    tf::Quaternion _marker_quat;
-    tf::quaternionMsgToTF(_curr_ori, _marker_quat);
-    tf::Matrix3x3 _marker_mat(_marker_quat);
-
-    if (_use_forces == true) filterForces();
+    if (_use_forces == true)
+    {
+        _curr_wrench = msg.wrench;
+        filterForces();
+    }
 
     return;
 }
@@ -741,15 +759,15 @@ bool RobotInterface::isPositionReached(double px, double py, double pz, string m
 
     if (mode == "strict")
     {
-        if (abs(getPos().x-px) > 0.005) return false;
-        if (abs(getPos().y-py) > 0.005) return false;
-        if (abs(getPos().z-pz) > 0.005) return false;
+        if (abs(getPos().x-px) > 0.002) return false;
+        if (abs(getPos().y-py) > 0.002) return false;
+        if (abs(getPos().z-pz) > 0.002) return false;
     }
     else if (mode == "loose")
     {
-        if (abs(getPos().x-px) >  0.01) return false;
-        if (abs(getPos().y-py) >  0.01) return false;
-        if (abs(getPos().z-pz) >  0.01) return false;
+        if (abs(getPos().x-px) > 0.005) return false;
+        if (abs(getPos().y-py) > 0.005) return false;
+        if (abs(getPos().z-pz) > 0.005) return false;
     }
     else
     {
@@ -973,6 +991,7 @@ void RobotInterface::setState(int state)
 
 void RobotInterface::publishJointCmd(baxter_core_msgs::JointCommand _cmd)
 {
+    // cout << "Joint Command: " << _cmd << endl;
     _joint_cmd_pub.publish(_cmd);
 }
 
