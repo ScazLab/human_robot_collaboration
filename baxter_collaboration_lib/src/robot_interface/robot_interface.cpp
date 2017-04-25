@@ -759,15 +759,15 @@ bool RobotInterface::isPositionReached(double px, double py, double pz, string m
 
     if (mode == "strict")
     {
-        if (abs(getPos().x-px) > 0.002) return false;
-        if (abs(getPos().y-py) > 0.002) return false;
-        if (abs(getPos().z-pz) > 0.002) return false;
+        if (abs(getPos().x-px) > 0.003) return false;
+        if (abs(getPos().y-py) > 0.003) return false;
+        if (abs(getPos().z-pz) > 0.003) return false;
     }
     else if (mode == "loose")
     {
-        if (abs(getPos().x-px) > 0.005) return false;
-        if (abs(getPos().y-py) > 0.005) return false;
-        if (abs(getPos().z-pz) > 0.005) return false;
+        if (abs(getPos().x-px) > 0.010) return false;
+        if (abs(getPos().y-py) > 0.010) return false;
+        if (abs(getPos().z-pz) > 0.010) return false;
     }
     else
     {
