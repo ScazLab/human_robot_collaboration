@@ -789,9 +789,10 @@ bool RobotInterface::isOrientationReached(double ox, double oy, double oz, doubl
     tf::Quaternion cur;
     tf::quaternionMsgToTF(getOri(), cur);
 
-    ROS_DEBUG("[%s] Checking    orientation. Current %g %g %g %g Desired %g %g %g %g Dot %g",
-                           getLimb().c_str(), getOri().x, getOri().y, getOri().z, getOri().w,
-                                                               ox, oy, oz, ow, des.dot(cur));
+    ROS_DEBUG("[%s] Checking %s orientation. Curr %g %g %g %g Des %g %g %g %g Dot %g",
+                                       getLimb().c_str(), mode.c_str(),
+                                       getOri().x, getOri().y, getOri().z, getOri().w,
+                                       ox, oy, oz, ow, des.dot(cur));
 
     if (mode == "strict")
     {
