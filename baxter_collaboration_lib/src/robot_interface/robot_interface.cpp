@@ -29,7 +29,7 @@ RobotInterface::RobotInterface(string name, string limb, bool no_robot, double c
     pthread_mutex_init(&_mutex_jnts, &_mutex_attr);
     pthread_mutex_init(&_mutex_ctrl, &_mutex_attr);
 
-    if (no_robot) return;
+    // if (no_robot) return;
 
     _curr_max_range = 0;
     _curr_min_range = 0;
