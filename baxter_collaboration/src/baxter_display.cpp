@@ -199,8 +199,8 @@ public:
     {
         im_pub = it.advertise("/robot/xdisplay", 1);
 
-        l_sub = nh.subscribe("/action_provider/state_left", 1, &BaxterDisplay::armStateCbL, this);
-        r_sub = nh.subscribe("/action_provider/state_right",1, &BaxterDisplay::armStateCbR, this);
+        l_sub = nh.subscribe( "/action_provider/left/state", 1, &BaxterDisplay::armStateCbL, this);
+        r_sub = nh.subscribe("/action_provider/right/state", 1, &BaxterDisplay::armStateCbR, this);
 
         s_sub = nh.subscribe("/svox_tts/speech_output",1, &BaxterDisplay::speechCb, this);
 

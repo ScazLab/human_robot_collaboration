@@ -88,7 +88,7 @@ RobotInterface::RobotInterface(string name, string limb, bool no_robot, double c
     _coll_det_sub   = _n.subscribe("/robot/limb/" + _limb + "/collision_detection_state",
                                     SUBSCRIBER_BUFFER, &RobotInterface::collDetCb, this);
 
-    std::string topic = "/"+getName()+"/state_"+getLimb();
+    std::string topic = "/"+getName()+"/"+getLimb()+"/state";
     state_pub = _n.advertise<baxter_collaboration_msgs::ArmState>(topic, SUBSCRIBER_BUFFER, true);
     ROS_INFO("[%s] Created state publisher with name : %s", getLimb().c_str(), topic.c_str());
 
