@@ -3,6 +3,8 @@
 
 #include <vector>
 
+#include "gtest/gtest_prod.h"
+
 #include <image_transport/image_transport.h>
 #include <cv_bridge/cv_bridge.h>
 #include <sensor_msgs/image_encodings.h>
@@ -319,9 +321,11 @@ protected:
      *
      * @param  p     requested Pose
      * @param  mode  (strict/loose) the desired level of precision
+     * @param  type  (pose/position/orientation) the desired type of check
      * @return       true/false if success/failure
      */
-    bool isPoseReached(geometry_msgs::Pose p, std::string mode = "loose");
+    bool isPoseReached(geometry_msgs::Pose p,
+                       std::string mode = "loose", std::string type = "pose");
 
     /*
      * Checks if the arm has reached its intended pose by comparing
@@ -330,10 +334,11 @@ protected:
      * @param  p     requested Position
      * @param  o     requested Orientation quaternion
      * @param  mode  (strict/loose) the desired level of precision
+     * @param  type  (pose/position/orientation) the desired type of check
      * @return       true/false if success/failure
      */
-    bool isPoseReached(geometry_msgs::Point p,
-                       geometry_msgs::Quaternion o, std::string mode = "loose");
+    bool isPoseReached(geometry_msgs::Point p, geometry_msgs::Quaternion o,
+                       std::string mode = "loose", std::string type = "pose");
 
     /*
      * Checks if the arm has reached its intended pose by comparing
@@ -342,10 +347,12 @@ protected:
      * @param  px, py, pz     requested Position as set of doubles
      * @param  ox, oy, oz, ow requested Orientation quaternion as set of doubles
      * @param  mode           (strict/loose) the desired level of precision
+     * @param  type           (pose/position/orientation) the desired type of check
      * @return                true/false if success/failure
      */
     bool isPoseReached(double px, double py, double pz,
-                       double ox, double oy, double oz, double ow, std::string mode = "loose");
+                       double ox, double oy, double oz, double ow,
+                       std::string mode = "loose", std::string type = "pose");
 
     /*
      * Checks if the arm has reached its intended position by comparing
@@ -555,6 +562,11 @@ protected:
      * @param _cmd An empty message to be sent
      */
     void suppressCollisionAv();
+
+    /**
+     * Let's add a number of friend tests to test the private methods of this class (without ROS).
+     */
+    FRIEND_TEST(RobotInterfaceTest, testPrivateMethods);
 
 public:
     RobotInterface(std::string           name, std::string                   limb,

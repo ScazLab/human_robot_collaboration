@@ -90,7 +90,7 @@ RobotInterface::RobotInterface(string name, string limb, bool no_robot, double c
 
     if (_use_cart_ctrl)
     {
-        std::string topic = "/" + _name + "/" + _limb + "/go_to_pose";
+        string topic = "/" + _name + "/" + _limb + "/go_to_pose";
         _ctrl_sub      = _n.subscribe(topic, SUBSCRIBER_BUFFER, &RobotInterface::ctrlMsgCb, this);
         ROS_INFO("[%s] Created cartesian controller that listens to : %s", getLimb().c_str(), topic.c_str());
     }
@@ -200,7 +200,7 @@ void RobotInterface::ThreadEntry()
 
                 if (ctrl_mode == baxter_collaboration_msgs::GoToPose::VELOCITY_MODE)
                 {
-                    std::vector<double> joint_values;
+                    vector<double> joint_values;
                     for (int i = 0; i < 7; ++i)
                     {
                         joint_values.push_back(0.0);
@@ -385,7 +385,7 @@ void RobotInterface::collAvCb(const baxter_core_msgs::CollisionAvoidanceState& m
         {
             // Let's remove the first part of the collision object name for visualization
             // purposes, i.e. the part that says "collision_"
-            objects = objects + " " + std::string(msg.collision_object[i]).erase(0,10);
+            objects = objects + " " + string(msg.collision_object[i]).erase(0,10);
         }
         ROS_WARN_THROTTLE(1, "[%s] Collision avoidance with: %s",
                              getLimb().c_str(), objects.c_str());
@@ -499,8 +499,8 @@ void RobotInterface::filterForces()
 {
     double time_elap = ros::Time::now().toSec() - _time_filt_last_updated.toSec();
 
-    std::vector<double> new_filt;
-    std::vector<double> predicted_filt;
+    vector<double> new_filt;
+    vector<double> predicted_filt;
 
     // initial attempt to update filter using a running average of the forces on the arm (exponential moving average)
     new_filt.push_back((1 - FORCE_ALPHA) * _filt_force[0] + FORCE_ALPHA * _curr_wrench.force.x);
@@ -576,7 +576,7 @@ bool RobotInterface::goToJointConfNoCheck(vector<double> joint_values)
 
 bool RobotInterface::goToPose(double px, double py, double pz,
                               double ox, double oy, double oz, double ow,
-                              std::string mode, bool disable_coll_av)
+                              string mode, bool disable_coll_av)
 {
     vector<double> joint_angles;
     if (!computeIK(px, py, pz, ox, oy, oz, ow, joint_angles)) return false;
@@ -610,20 +610,20 @@ bool RobotInterface::goToPose(double px, double py, double pz,
     return false;
 }
 
-bool RobotInterface::computeIK(geometry_msgs::Pose p, std::vector<double>& j)
+bool RobotInterface::computeIK(geometry_msgs::Pose p, vector<double>& j)
 {
     return computeIK(p.position, p.orientation, j);
 }
 
 bool RobotInterface::computeIK(geometry_msgs::Point p, geometry_msgs::Quaternion o,
-                               std::vector<double>& j)
+                               vector<double>& j)
 {
     return computeIK(p.x, p.y, p.z, o.x, o.y, o.z, o.w, j);
 }
 
 bool RobotInterface::computeIK(double px, double py, double pz,
                                double ox, double oy, double oz, double ow,
-                               std::vector<double>& j)
+                               vector<double>& j)
 {
     PoseStamped pose_stamp;
     pose_stamp.header.frame_id = "base";
@@ -727,27 +727,43 @@ bool RobotInterface::hasCollidedCD()
     return is_coll_det_on;
 }
 
-bool RobotInterface::isPoseReached(geometry_msgs::Pose p, std::string mode)
+bool RobotInterface::isPoseReached(geometry_msgs::Pose p, string mode, string type)
 {
-    return isPoseReached(p.position, p.orientation, mode);
+    return isPoseReached(p.position, p.orientation, mode, type);
 }
 
-bool RobotInterface::isPoseReached(geometry_msgs::Point p,
-                                   geometry_msgs::Quaternion o, std::string mode)
+bool RobotInterface::isPoseReached(geometry_msgs::Point p, geometry_msgs::Quaternion o,
+                                   string mode, string type)
 {
-    return isPoseReached(p.x, p.y, p.z, o.x, o.y, o.z, o.w, mode);
+    return isPoseReached(p.x, p.y, p.z, o.x, o.y, o.z, o.w, mode, type);
 }
 
 bool RobotInterface::isPoseReached(double px, double py, double pz,
-                                   double ox, double oy, double oz, double ow, string mode)
+                                   double ox, double oy, double oz, double ow,
+                                   string mode, string type)
 {
-    if (!   isPositionReached(px, py, pz,     mode))  return false;
-    if (!isOrientationReached(ox, oy, oz, ow, mode))  return false;
+    if (type == "pose" || type == "position")
+    {
+        if (!   isPositionReached(px, py, pz,     mode))  return false;
+    }
+
+    if (type == "pose" || type == "orientation")
+    {
+        if (!isOrientationReached(ox, oy, oz, ow, mode))  return false;
+    }
+
+    if (type != "pose" && type != "position" && type != "orientation")
+    {
+        ROS_ERROR("[%s] Type should be either pose, position or orientation."
+                  " Received %s instead.", getLimb().c_str(), type.c_str());
+
+        return false;
+    }
 
     return true;
 }
 
-bool RobotInterface::isPositionReached(geometry_msgs::Point p, std::string mode)
+bool RobotInterface::isPositionReached(geometry_msgs::Point p, string mode)
 {
     return isPositionReached(p.x, p.y, p.z, mode);
 }
@@ -759,26 +775,27 @@ bool RobotInterface::isPositionReached(double px, double py, double pz, string m
 
     if (mode == "strict")
     {
-        if (abs(getPos().x-px) > 0.003) return false;
-        if (abs(getPos().y-py) > 0.003) return false;
-        if (abs(getPos().z-pz) > 0.003) return false;
+        if (abs(getPos().x-px) > 0.003) { return false; }
+        if (abs(getPos().y-py) > 0.003) { return false; }
+        if (abs(getPos().z-pz) > 0.003) { return false; }
     }
     else if (mode == "loose")
     {
-        if (abs(getPos().x-px) > 0.010) return false;
-        if (abs(getPos().y-py) > 0.010) return false;
-        if (abs(getPos().z-pz) > 0.010) return false;
+        if (abs(getPos().x-px) > 0.010) { return false; }
+        if (abs(getPos().y-py) > 0.010) { return false; }
+        if (abs(getPos().z-pz) > 0.010) { return false; }
     }
     else
     {
-        ROS_ERROR("[%s] Please specify a mode of operation!", getLimb().c_str());
+        ROS_ERROR("[%s] Mode should be either strict or loose. Received %s instead.",
+                                                    getLimb().c_str(), mode.c_str());
         return false;
     }
 
     return true;
 }
 
-bool RobotInterface::isOrientationReached(geometry_msgs::Quaternion q, std::string mode)
+bool RobotInterface::isOrientationReached(geometry_msgs::Quaternion q, string mode)
 {
     return isOrientationReached(q.x, q.y, q.z, q.w, mode);
 }
@@ -802,11 +819,17 @@ bool RobotInterface::isOrientationReached(double ox, double oy, double oz, doubl
     {
         if (abs(des.dot(cur)) < 0.95)  { return false; }
     }
+    else
+    {
+        ROS_ERROR("[%s] Mode should be either strict or loose. Received %s instead.",
+                                                    getLimb().c_str(), mode.c_str());
+        return false;
+    }
 
     return true;
 }
 
-bool RobotInterface::isConfigurationReached(std::vector<double> des_jnts, std::string mode)
+bool RobotInterface::isConfigurationReached(vector<double> des_jnts, string mode)
 {
     if (_curr_jnts.position.size() < 7 || des_jnts.size() < 7)
     {
@@ -821,7 +844,7 @@ bool RobotInterface::isConfigurationReached(std::vector<double> des_jnts, std::s
     return isConfigurationReached(dj, mode);
 }
 
-bool RobotInterface::isConfigurationReached(baxter_core_msgs::JointCommand des_jnts, std::string mode)
+bool RobotInterface::isConfigurationReached(baxter_core_msgs::JointCommand des_jnts, string mode)
 {
     if (_curr_jnts.position.size() < 7)
     {

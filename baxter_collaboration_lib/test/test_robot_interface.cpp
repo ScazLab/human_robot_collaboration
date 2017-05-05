@@ -56,6 +56,26 @@ TEST(RobotInterfaceTest, testConstructorCustomValues)
 
 }
 
+TEST(RobotInterfaceTest, testPrivateMethods)
+{
+    string          name = "robot";
+    string          limb =  "left";
+    bool        no_robot =    true;
+    double     ctrl_freq =    50.0;
+    bool      use_forces =   false;
+    bool     use_trac_ik =   false;
+    bool   use_cart_ctrl =   false;
+    bool is_experimental =   false;
+    RobotInterface ri(name, limb, no_robot, ctrl_freq, use_forces,
+                      use_trac_ik, use_cart_ctrl, is_experimental);
+
+    EXPECT_FALSE(ri.isPoseReached(geometry_msgs::Pose(),  "loose",         "sdf"));
+    EXPECT_FALSE(ri.isPoseReached(geometry_msgs::Pose(), "strict",         "sdf"));
+    EXPECT_FALSE(ri.isPoseReached(geometry_msgs::Pose(),    "sdf",        "pose"));
+    EXPECT_FALSE(ri.isPoseReached(geometry_msgs::Pose(),    "sdf",    "position"));
+    EXPECT_FALSE(ri.isPoseReached(geometry_msgs::Pose(),    "sdf", "orientation"));
+}
+
 // Run all the tests that were declared with TEST()
 int main(int argc, char **argv)
 {
