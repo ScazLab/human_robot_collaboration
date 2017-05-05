@@ -2,6 +2,8 @@
 
 #include "robot_utils/utils.h"
 
+using namespace std;
+
 // Declare a test
 TEST(UtilsLib, geometry_msgsPointsOperators)
 {
@@ -43,6 +45,46 @@ TEST(UtilsLib, geometry_msgsPointsOperators)
     EXPECT_EQ(dot(d-o, d-c)/(norm(d-o)*norm(d-c)), +1);
     c = d*2;
     EXPECT_EQ(dot(d-o, d-c)/(norm(d-o)*norm(d-c)), -1);
+}
+
+TEST(UtilsLib, State)
+{
+    vector<int>    s_int;
+    vector<string> s_str;
+
+    s_int.push_back(WORKING);
+    s_int.push_back(ERROR);
+    s_int.push_back(START);
+    s_int.push_back(DONE);
+    s_int.push_back(KILLED);
+    s_int.push_back(RECOVER);
+    s_int.push_back(CTRL_RUNNING);
+    s_int.push_back(CTRL_DONE);
+    s_int.push_back(CTRL_FAIL);
+    s_int.push_back(1e4);
+    s_int.push_back(-1e3);
+    s_int.push_back(-1e-3);
+
+    s_str.push_back("WORKING");
+    s_str.push_back("ERROR");
+    s_str.push_back("START");
+    s_str.push_back("DONE");
+    s_str.push_back("KILLED");
+    s_str.push_back("RECOVER");
+    s_str.push_back("CTRL_RUNNING");
+    s_str.push_back("CTRL_DONE");
+    s_str.push_back("CTRL_FAIL");
+    s_str.push_back("NONE");
+    s_str.push_back("NONE");
+    s_str.push_back("NONE");
+
+    for (size_t i = 0; i < s_str.size(); ++i)
+    {
+        State s(s_int[i]);
+
+        EXPECT_EQ(s_str[i], string(s));
+    }
+
 }
 
 // Run all the tests that were declared with TEST()

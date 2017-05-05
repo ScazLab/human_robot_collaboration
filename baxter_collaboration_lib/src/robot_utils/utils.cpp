@@ -251,14 +251,17 @@ State::operator int()
 
 State::operator std::string()
 {
-    if      ( state == WORKING  ) return "WORKING";
-    else if ( state == ERROR    ) return "ERROR";
-    else if ( state == START    ) return "START";
-    else if ( state == DONE     ) return "DONE";
-    else if ( state == KILLED   ) return "KILLED";
-    else if ( state == RECOVER  ) return "RECOVER";
-    else if ( state == STOPPED  ) return "STOPPED";
-    else                          return "NONE";
+    if      ( state == WORKING     ) { return      "WORKING"; }
+    else if ( state == ERROR       ) { return        "ERROR"; }
+    else if ( state == START       ) { return        "START"; }
+    else if ( state == DONE        ) { return         "DONE"; }
+    else if ( state == KILLED      ) { return       "KILLED"; }
+    else if ( state == RECOVER     ) { return      "RECOVER"; }
+    else if ( state == STOPPED     ) { return      "STOPPED"; }
+    else if ( state == CTRL_RUNNING) { return "CTRL_RUNNING"; }
+    else if ( state == CTRL_DONE   ) { return    "CTRL_DONE"; }
+    else if ( state == CTRL_FAIL   ) { return    "CTRL_FAIL"; }
+    else                             { return         "NONE"; }
 }
 
 State::operator ros::Time()

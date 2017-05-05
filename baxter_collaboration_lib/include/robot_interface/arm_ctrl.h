@@ -8,7 +8,6 @@
 #include "robot_interface/gripper.h"
 
 #include "baxter_collaboration_msgs/AskFeedback.h"
-#include "baxter_collaboration_msgs/ArmState.h"
 
 #define HAND_OVER_START  "handover_start"
 #define HAND_OVER_READY  "handover_ready"
@@ -49,10 +48,6 @@ private:
 
     // Internal service used for multi-arm actions
     ros::ServiceServer service_other_limb;
-
-    // Publisher to publish the high-level state of the controller
-    // (to be shown in the Baxter display)
-    ros::Publisher    state_pub;
 
     // Home configuration. Setting it in any of the children
     // of this class is mandatory (through the virtual method
@@ -337,6 +332,11 @@ protected:
      */
     std::string actionDBToString();
 
+    /**
+     * Publishes the high-level state of the controller (to be shown in the baxter display)
+     */
+    bool publishState();
+
 public:
     /**
      * Constructor
@@ -367,18 +367,19 @@ public:
     virtual bool serviceOtherLimbCb(baxter_collaboration_msgs::AskFeedback::Request  &req,
                                     baxter_collaboration_msgs::AskFeedback::Response &res);
 
-    /**
-     * Publishes the high-level state of the controller (to be shown in the baxter display)
-     */
-    void publishState();
-
     /* Self-explaining "setters" */
     virtual void setSubState(std::string _state);
     virtual void setObjectID(int _obj)                { sel_object_id =  _obj; };
     virtual void setObjectIDs(std::vector<int> _objs) { object_ids    = _objs; };
     void setAction(std::string _action);
     void setPrevAction(std::string _prev_action);
-    void setState(int _state);
+
+    /*
+     * Sets the internal state.
+     *
+     * @return true/false if success/failure
+     */
+    bool setState(int _state);
 
     /* Self-explaining "getters" */
     std::string       getSubState() { return         sub_state; };

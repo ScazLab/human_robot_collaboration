@@ -8,18 +8,14 @@ ArmCtrl::ArmCtrl(string _name, string _limb, bool _no_robot, bool _use_forces, b
                  RobotInterface(_name,_limb, _no_robot, THREAD_FREQ, _use_forces, _use_trac_ik, _use_cart_ctrl),
                  Gripper(_limb, _no_robot), sub_state(""), action(""), sel_object_id(-1)
 {
-    std::string topic = "/"+getName()+"/state_"+_limb;
-    state_pub = _n.advertise<baxter_collaboration_msgs::ArmState>(topic,1);
-    ROS_INFO("[%s] Created state publisher with name : %s", getLimb().c_str(), topic.c_str());
-
     std::string other_limb = getLimb() == "right" ? "left" : "right";
 
-    topic = "/"+getName()+"/service_"+_limb;
+    std::string topic = "/"+getName()+"/service_"+_limb;
     service = _n.advertiseService(topic, &ArmCtrl::serviceCb, this);
     ROS_INFO("[%s] Created service server with name  : %s", getLimb().c_str(), topic.c_str());
 
     topic = "/"+getName()+"/service_"+_limb+"_to_"+other_limb;
-    service_other_limb = _n.advertiseService(topic, &ArmCtrl::serviceOtherLimbCb,this);
+    service_other_limb = _n.advertiseService(topic, &ArmCtrl::serviceOtherLimbCb, this);
     ROS_INFO("[%s] Created service server with name  : %s", getLimb().c_str(), topic.c_str());
 
     insertAction(ACTION_HOME,    &ArmCtrl::goHome);
@@ -590,17 +586,15 @@ void ArmCtrl::recoverFromError()
     }
 }
 
-void ArmCtrl::setState(int _state)
+bool ArmCtrl::setState(int _state)
 {
     ROS_DEBUG("[%s] Setting state to %i", getLimb().c_str(), _state);
 
     if (_state == KILLED && getState() != WORKING)
     {
         ROS_WARN_THROTTLE(2, "[%s] Attempted to kill a non-working controller", getLimb().c_str());
-        return;
+        return false;
     }
-
-    RobotInterface::setState(_state);
 
     if      (_state == DONE)
     {
@@ -611,7 +605,7 @@ void ArmCtrl::setState(int _state)
         setSubState(ACT_FAILED);
     }
 
-    publishState();
+    return RobotInterface::setState(_state);
 }
 
 void ArmCtrl::setSubState(const string _state)
@@ -632,7 +626,7 @@ void ArmCtrl::setPrevAction(string _prev_action)
     prev_action = _prev_action;
 }
 
-void ArmCtrl::publishState()
+bool ArmCtrl::publishState()
 {
     baxter_collaboration_msgs::ArmState msg;
 
@@ -641,6 +635,8 @@ void ArmCtrl::publishState()
     msg.object = getObjectNameFromDB(getObjectID());
 
     state_pub.publish(msg);
+
+    return true;
 }
 
 ArmCtrl::~ArmCtrl()

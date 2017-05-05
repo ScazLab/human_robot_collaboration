@@ -18,13 +18,16 @@
 #define THREAD_FREQ       100 // [Hz]
 
 // Allowed default states for the system
-#define RECOVER  -4
-#define KILLED   -3
-#define STOPPED  -2
-#define ERROR    -1
-#define START     0
-#define WORKING   1
-#define DONE      2
+#define RECOVER       -4
+#define KILLED        -3
+#define STOPPED       -2
+#define ERROR         -1
+#define START          0
+#define WORKING        1
+#define DONE           2
+#define CTRL_RUNNING  10
+#define CTRL_DONE     11
+#define CTRL_FAIL     12
 
 // Both arms
 #define ACTION_HOME         baxter_collaboration_msgs::DoAction::Request::ACTION_HOME

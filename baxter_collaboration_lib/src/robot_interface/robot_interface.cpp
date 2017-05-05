@@ -88,9 +88,13 @@ RobotInterface::RobotInterface(string name, string limb, bool no_robot, double c
     _coll_det_sub   = _n.subscribe("/robot/limb/" + _limb + "/collision_detection_state",
                                     SUBSCRIBER_BUFFER, &RobotInterface::collDetCb, this);
 
+    std::string topic = "/"+getName()+"/state_"+getLimb();
+    state_pub = _n.advertise<baxter_collaboration_msgs::ArmState>(topic, SUBSCRIBER_BUFFER, true);
+    ROS_INFO("[%s] Created state publisher with name : %s", getLimb().c_str(), topic.c_str());
+
     if (_use_cart_ctrl)
     {
-        string topic = "/" + _name + "/" + _limb + "/go_to_pose";
+        string topic = "/" + getName() + "/" + getLimb() + "/go_to_pose";
         _ctrl_sub      = _n.subscribe(topic, SUBSCRIBER_BUFFER, &RobotInterface::ctrlMsgCb, this);
         ROS_INFO("[%s] Created cartesian controller that listens to : %s", getLimb().c_str(), topic.c_str());
     }
@@ -103,7 +107,11 @@ RobotInterface::RobotInterface(string name, string limb, bool no_robot, double c
 
     spinner.start();
 
-    if (_use_cart_ctrl)     startThread();
+    if (_use_cart_ctrl)
+    {
+        startThread();
+        setState(START);
+    }
 
     if (is_experimental)    ROS_WARN("[%s] Experimental mode enabled!", getLimb().c_str());
 }
@@ -190,6 +198,7 @@ void RobotInterface::ThreadEntry()
                 {
                     ROS_WARN("[%s] desired configuration could not be reached.", getLimb().c_str());
                     setCtrlRunning(false);
+                    setState(CTRL_FAIL);
                 }
 
                 if (hasCollidedIR("strict")) ROS_INFO_THROTTLE(2, "[%s] is colliding!", getLimb().c_str());
@@ -208,6 +217,7 @@ void RobotInterface::ThreadEntry()
                     goToJointConfNoCheck(joint_values);
                 }
                 setCtrlRunning(false);
+                setState(CTRL_DONE);
             }
         }
         r.sleep();
@@ -357,6 +367,8 @@ void RobotInterface::setCtrlRunning(bool _flag)
     pthread_mutex_lock(&_mutex_ctrl);
     is_ctrl_running = _flag;
     pthread_mutex_unlock(&_mutex_ctrl);
+
+    if (_flag == true)    { setState(CTRL_RUNNING); }
 
     return;
 }
@@ -895,7 +907,7 @@ bool RobotInterface::setCtrlType(const std::string &_ctrl_type)
     }
 
     ctrl_type = _ctrl_type;
-    ROS_INFO("[%s] Control type set to %s", getLimb().c_str(), ctrl_type.c_str());
+    ROS_DEBUG("[%s] Control type set to %s", getLimb().c_str(), ctrl_type.c_str());
     return true;
 }
 
@@ -1015,7 +1027,7 @@ geometry_msgs::Pose RobotInterface::getPose()
     return res;
 }
 
-void RobotInterface::setState(int state)
+bool RobotInterface::setState(int state)
 {
     _state.set(state);
 
@@ -1025,7 +1037,18 @@ void RobotInterface::setState(int state)
         setCtrlRunning(false);
     }
 
-    return;
+    return publishState();
+}
+
+bool RobotInterface::publishState()
+{
+    baxter_collaboration_msgs::ArmState msg;
+
+    msg.state  = string(getState());
+
+    state_pub.publish(msg);
+
+    return true;
 }
 
 void RobotInterface::publishJointCmd(baxter_core_msgs::JointCommand _cmd)

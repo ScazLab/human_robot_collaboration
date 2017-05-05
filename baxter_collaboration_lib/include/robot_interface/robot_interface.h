@@ -27,6 +27,7 @@
 #include "robot_utils/baxter_trac_ik.h"
 
 #include <baxter_collaboration_msgs/GoToPose.h>
+#include <baxter_collaboration_msgs/ArmState.h>
 
 /**
  * @brief A ROS Thread class
@@ -41,6 +42,7 @@ protected:
 private:
     std::string    _name;
     std::string    _limb;       // Limb (either left or right)
+
     State         _state;       // State of the controller
 
     ros::AsyncSpinner spinner;  // AsyncSpinner to handle callbacks
@@ -273,6 +275,11 @@ private:
 
 
 protected:
+
+    // Publisher to publish the high-level state of the controller
+    // (to be shown in the Baxter display)
+    ros::Publisher    state_pub;
+
     /*
      * Checks for if the system is OK. To be called inside every thread execution,
      * in order to make it exit gracefully if there is any problem.
@@ -568,6 +575,13 @@ protected:
     void suppressCollisionAv();
 
     /**
+     * Publishes the high-level state of the controller (to be shown in the baxter display)
+     *
+     * @return true/false if success/failure
+     */
+    virtual bool publishState();
+
+    /**
      * Let's add a number of friend tests to test the private methods of this class (without ROS).
      */
     FRIEND_TEST(RobotInterfaceTest, testPrivateMethods);
@@ -582,8 +596,10 @@ public:
 
     /*
      * Sets the internal state.
+     *
+     * @return true/false if success/failure
      */
-    virtual void setState(int state);
+    virtual bool setState(int state);
 
     /**
      * Sets the usage of TracIK to true or false. It is one of the few flags
