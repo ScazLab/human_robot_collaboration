@@ -141,7 +141,7 @@ if(CATKIN_ENABLE_TESTING)
   catkin_add_gtest(test_utils test/test_utils_lib.cpp)
   target_link_libraries(test_utils robot_utils)
 
-  add_rostest_gtest(test_robot_interface test/test_robot_interface.launch
+  add_rostest_gtest(test_robot_interface test/test_robot_interface.test
                                          test/test_robot_interface.cpp)
   target_link_libraries(test_robot_interface  robot_interface ${catkin_LIBRARIES})
 endif()

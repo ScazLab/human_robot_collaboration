@@ -949,7 +949,7 @@ bool RobotInterface::waitForForceInteraction(double _wait_time, bool disable_col
 
         if ((ros::Time::now()-_init).toSec() > _wait_time)
         {
-            ROS_ERROR("No force interaction has been detected in %gs!",_wait_time);
+            ROS_WARN("No force interaction has been detected in %gs!",_wait_time);
             return false;
         }
     }
@@ -971,7 +971,7 @@ bool RobotInterface::waitForJointAngles(double _wait_time)
 
         if ((ros::Time::now()-_init).toSec() > _wait_time)
         {
-            ROS_ERROR("No joint angle initialization in %gs!",_wait_time);
+            ROS_WARN("No joint angle initialization in %gs!",_wait_time);
             return false;
         }
     }
