@@ -74,6 +74,24 @@ TEST(RobotInterfaceTest, testPrivateMethods)
     EXPECT_FALSE(ri.isPoseReached(geometry_msgs::Pose(),    "sdf",        "pose"));
     EXPECT_FALSE(ri.isPoseReached(geometry_msgs::Pose(),    "sdf",    "position"));
     EXPECT_FALSE(ri.isPoseReached(geometry_msgs::Pose(),    "sdf", "orientation"));
+
+    std::string type = "pose";
+    EXPECT_FALSE(ri.setCtrlType(""));
+    EXPECT_EQ(ri.getCtrlType(), type);
+    EXPECT_FALSE(ri.setCtrlType(" "));
+    EXPECT_EQ(ri.getCtrlType(), type);
+    EXPECT_FALSE(ri.setCtrlType("asdfa"));
+    EXPECT_EQ(ri.getCtrlType(), type);
+    EXPECT_TRUE(ri.setCtrlType(type));
+    EXPECT_EQ(ri.getCtrlType(), type);
+
+    type = "position";
+    EXPECT_TRUE(ri.setCtrlType(type));
+    EXPECT_EQ(ri.getCtrlType(), type);
+
+    type = "orientation";
+    EXPECT_TRUE(ri.setCtrlType(type));
+    EXPECT_EQ(ri.getCtrlType(), type);
 }
 
 // Run all the tests that were declared with TEST()

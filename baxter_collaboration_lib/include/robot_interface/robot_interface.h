@@ -116,7 +116,7 @@ private:
     ros::Subscriber _cuff_sub_upper; // oval button
 
     /**
-     * Control server
+     * Cartesian Controler server
      */
     // Internal thread that implements the controller server
     ROSThreadObj _thread;
@@ -129,6 +129,10 @@ private:
     // baxter_collaboration_msgs::GoToPose::VELOCITY_MODE , but for
     // now the latter is experimental
     int ctrl_mode;
+
+    // Control type for the controller server. It can be either
+    // pose, position or orientation
+    std::string ctrl_type;
 
     // Desired pose to move the arm to
     geometry_msgs::Pose pose_des;
@@ -588,6 +592,8 @@ public:
      */
     void setTracIK(bool use_trac_ik) { _use_trac_ik = use_trac_ik; };
 
+    bool setCtrlType(const std::string &_ctrl_type);
+
     bool setIKLimits(KDL::JntArray  ll, KDL::JntArray  ul);
     bool getIKLimits(KDL::JntArray &ll, KDL::JntArray &ul);
 
@@ -600,10 +606,11 @@ public:
     bool    useCartCtrl() { return   _use_cart_ctrl; };
     bool isExperimental() { return _is_experimental; };
 
-    std::string  getName() { return      _name; };
-    std::string  getLimb() { return      _limb; };
-    State       getState() { return     _state; };
-    double   getCtrlFreq() { return _ctrl_freq; };
+    std::string     getName() { return      _name; };
+    std::string     getLimb() { return      _limb; };
+    State          getState() { return     _state; };
+    double      getCtrlFreq() { return _ctrl_freq; };
+    std::string getCtrlType() { return  ctrl_type; };
 
     geometry_msgs::Point        getPos()         { return    _curr_pos; };
     geometry_msgs::Quaternion   getOri()         { return    _curr_ori; };

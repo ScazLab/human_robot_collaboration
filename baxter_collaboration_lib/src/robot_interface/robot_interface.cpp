@@ -20,7 +20,7 @@ RobotInterface::RobotInterface(string name, string limb, bool no_robot, double c
                                ir_ok(false), ik_solver(limb, no_robot),_use_trac_ik(use_trac_ik),
                                _ctrl_freq(ctrl_freq), is_coll_av_on(false), is_coll_det_on(false),
                                _use_cart_ctrl(use_cart_ctrl), ctrl_mode(baxter_collaboration_msgs::GoToPose::POSITION_MODE),
-                               is_ctrl_running(false), _is_experimental(is_experimental)
+                               ctrl_type("pose"), is_ctrl_running(false), _is_experimental(is_experimental)
 {
     pthread_mutexattr_t _mutex_attr;
     pthread_mutexattr_init(&_mutex_attr);
@@ -145,7 +145,7 @@ void RobotInterface::ThreadEntry()
             geometry_msgs::Point      p_d =      pose_des.position;
             geometry_msgs::Quaternion o_d =   pose_des.orientation;
 
-            if (!isPoseReached(p_d, o_d, "strict"))
+            if (!isPoseReached(p_d, o_d, "strict", getCtrlType()))
             {
                 // Current pose to send to the IK solver.
                 geometry_msgs::Pose pose_curr = pose_des;
@@ -881,6 +881,21 @@ bool RobotInterface::isConfigurationReached(baxter_core_msgs::JointCommand des_j
         if (res == false)   return false;
     }
 
+    return true;
+}
+
+bool RobotInterface::setCtrlType(const std::string &_ctrl_type)
+{
+    if (_ctrl_type != "pose" && _ctrl_type != "position" && _ctrl_type != "orientation")
+    {
+        ROS_ERROR("[%s] Type should be either pose, position or orientation."
+                  " Received %s instead.", getLimb().c_str(), _ctrl_type.c_str());
+
+        return false;
+    }
+
+    ctrl_type = _ctrl_type;
+    ROS_INFO("[%s] Control type set to %s", getLimb().c_str(), ctrl_type.c_str());
     return true;
 }
 
