@@ -76,12 +76,14 @@ TEST(UtilsLib, State)
     s_str.push_back("CTRL_FAIL");
     s_str.push_back("NONE");
     s_str.push_back("NONE");
-    s_str.push_back("NONE");
+    s_str.push_back("START");
 
     for (size_t i = 0; i < s_str.size(); ++i)
     {
+        ros::Time::init();
         State s(s_int[i]);
 
+        // ROS_INFO("%s", string(s).c_str());
         EXPECT_EQ(s_str[i], string(s));
     }
 
