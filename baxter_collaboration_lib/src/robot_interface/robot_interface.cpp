@@ -2,14 +2,8 @@
 
 #include <tf/transform_datatypes.h>
 
-#include <iostream>
-
 using namespace std;
 using namespace baxter_core_msgs;
-using namespace geometry_msgs;
-using namespace sensor_msgs;
-using namespace std_msgs;
-using namespace cv;
 
 /**************************************************************************/
 /*                         RobotInterface                                 */
@@ -65,7 +59,7 @@ RobotInterface::RobotInterface(string name, string limb, bool _use_robot, double
     ROS_INFO("[%s] Cartesian Controller %s enabled", getLimb().c_str(), _use_cart_ctrl?"is":"is NOT");
 
     _joint_cmd_pub = _n.advertise<JointCommand>("/robot/limb/" + _limb + "/joint_command", 1);
-    _coll_av_pub   = _n.advertise<Empty>("/robot/limb/" + _limb + "/suppress_collision_avoidance", 1);
+    _coll_av_pub   = _n.advertise<std_msgs::Empty>("/robot/limb/" + _limb + "/suppress_collision_avoidance", 1);
 
     _endpt_sub     = _n.subscribe("/robot/limb/" + _limb + "/endpoint_state",
                                    SUBSCRIBER_BUFFER, &RobotInterface::endpointCb, this);
@@ -480,8 +474,8 @@ void RobotInterface::cuffUpperCb(const baxter_core_msgs::DigitalIOState& msg)
 void RobotInterface::endpointCb(const baxter_core_msgs::EndpointState& msg)
 {
     // ROS_DEBUG("endpointCb");
-    _curr_pos      = msg.pose.position;
-    _curr_ori      = msg.pose.orientation;
+    _curr_pos = msg.pose.position;
+    _curr_ori = msg.pose.orientation;
 
     if (_use_forces == true)
     {
@@ -492,12 +486,12 @@ void RobotInterface::endpointCb(const baxter_core_msgs::EndpointState& msg)
     return;
 }
 
-void RobotInterface::IRCb(const sensor_msgs::RangeConstPtr& msg)
+void RobotInterface::IRCb(const sensor_msgs::Range& msg)
 {
-    ROS_DEBUG("IRCb");
-    _curr_range = msg->range;
-    _curr_max_range = msg->max_range;
-    _curr_min_range = msg->min_range;
+    // ROS_DEBUG("IRCb");
+    _curr_range     = msg.range;
+    _curr_max_range = msg.max_range;
+    _curr_min_range = msg.min_range;
 
     if (!ir_ok)
     {
@@ -637,7 +631,7 @@ bool RobotInterface::computeIK(double px, double py, double pz,
                                double ox, double oy, double oz, double ow,
                                vector<double>& j)
 {
-    PoseStamped pose_stamp;
+    geometry_msgs::PoseStamped pose_stamp;
     pose_stamp.header.frame_id = "base";
     pose_stamp.header.stamp    = ros::Time::now();
 
@@ -908,6 +902,7 @@ bool RobotInterface::setCtrlType(const std::string &_ctrl_type)
 
     ctrl_type = _ctrl_type;
     ROS_DEBUG("[%s] Control type set to %s", getLimb().c_str(), ctrl_type.c_str());
+
     return true;
 }
 
@@ -1059,8 +1054,7 @@ void RobotInterface::publishJointCmd(baxter_core_msgs::JointCommand _cmd)
 
 void RobotInterface::suppressCollisionAv()
 {
-    std_msgs::Empty empty_cmd;
-    _coll_av_pub.publish(empty_cmd);
+    _coll_av_pub.publish(std_msgs::Empty());
 }
 
 RobotInterface::~RobotInterface()

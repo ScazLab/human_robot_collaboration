@@ -5,12 +5,6 @@
 
 #include "gtest/gtest_prod.h"
 
-#include <image_transport/image_transport.h>
-#include <cv_bridge/cv_bridge.h>
-#include <sensor_msgs/image_encodings.h>
-#include <opencv2/imgproc/imgproc.hpp>
-#include <opencv2/highgui/highgui.hpp>
-
 #include <baxter_core_msgs/DigitalIOState.h>
 #include <baxter_core_msgs/EndpointState.h>
 #include <baxter_core_msgs/CollisionAvoidanceState.h>
@@ -244,7 +238,7 @@ private:
      * @param      The message
      * @return     N/A
      */
-    void IRCb(const sensor_msgs::RangeConstPtr& msg);
+    void IRCb(const sensor_msgs::Range& msg);
 
     /*
      * Starts thread that executes the control server. For now it is
@@ -604,11 +598,24 @@ public:
     /**
      * Sets the usage of TracIK to true or false. It is one of the few flags
      * that can be switched at runtime.
+     *
      * @param  use_trac_ik if to use track ik or not
      */
     void setTracIK(bool use_trac_ik) { _use_trac_ik = use_trac_ik; };
 
+    /**
+     * Set the type of the cartesian controller server.
+     * @param  _ctrl_type control type (pose, position or orientation)
+     * @return            true/false if success/failure
+     */
     bool setCtrlType(const std::string &_ctrl_type);
+
+    /**
+     * Sets the usage of the robot.
+     *
+     * @param _use_robot if to use the robot or not
+     */
+    void setUseRobot(bool _use_robot) { use_robot = _use_robot; };
 
     bool setIKLimits(KDL::JntArray  ll, KDL::JntArray  ul);
     bool getIKLimits(KDL::JntArray &ll, KDL::JntArray &ul);
@@ -617,6 +624,7 @@ public:
      * Self-explaining "getters"
      */
     bool    isRobotUsed() { return        use_robot; };
+    bool isRobotNotUsed() { return       !use_robot; };
     bool      useForces() { return      _use_forces; };
     bool      useTracIK() { return     _use_trac_ik; };
     bool    useCartCtrl() { return   _use_cart_ctrl; };
