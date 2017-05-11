@@ -16,9 +16,9 @@ int main(int argc, char ** argv)
     ROS_INFO("use_robot flag set to %s", use_robot==true?"true":"false");
 
     printf("\n");
-    RobotInterface  left_ctrl("baxter_controller","left", !use_robot);
+    RobotInterface  left_ctrl("baxter_controller","left", use_robot);
     printf("\n");
-    RobotInterface right_ctrl("baxter_controller","right", !use_robot);
+    RobotInterface right_ctrl("baxter_controller","right", use_robot);
     printf("\n");
     ROS_INFO("READY! Waiting for control messages..\n");
 

@@ -17,9 +17,9 @@ int main(int argc, char ** argv)
     ROS_INFO("use_robot flag set to %s", use_robot==true?"true":"false");
 
     printf("\n");
-    ToolPicker right_ctrl("action_provider", "right", !use_robot);
+    ToolPicker right_ctrl("action_provider", "right", use_robot);
     printf("\n");
-    PartPicker  left_ctrl("action_provider",  "left", !use_robot);
+    PartPicker  left_ctrl("action_provider",  "left", use_robot);
     printf("\n");
     ROS_INFO("READY! Waiting for service messages..\n");
 

@@ -16,9 +16,9 @@ int main(int argc, char ** argv)
     ROS_INFO("use_robot flag set to %s", use_robot==true?"true":"false");
 
     printf("\n");
-    CubePicker  left_ctrl("action_provider","left", !use_robot);
+    CubePicker  left_ctrl("action_provider","left", use_robot);
     printf("\n");
-    // HoldCtrl  right_ctrl("action_provider","right", !use_robot);
+    // HoldCtrl  right_ctrl("action_provider","right", use_robot);
     printf("\n");
     ROS_INFO("READY! Waiting for service messages..\n");
 

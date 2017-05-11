@@ -27,9 +27,9 @@ int main(int argc, char ** argv)
     ROS_INFO("use_robot flag set to %s", use_robot==true?"true":"false");
 
     printf("\n");
-    ARTagCtrlImpl  left_ctrl("action_provider","left", !use_robot);
+    ARTagCtrlImpl  left_ctrl("action_provider","left", use_robot);
     printf("\n");
-    HoldCtrlImpl  right_ctrl("action_provider","right", !use_robot);
+    HoldCtrlImpl  right_ctrl("action_provider","right", use_robot);
     printf("\n");
     ROS_INFO("READY! Waiting for service messages..\n");
 

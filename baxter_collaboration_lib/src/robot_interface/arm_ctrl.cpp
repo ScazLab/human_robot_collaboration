@@ -4,9 +4,9 @@ using namespace std;
 using namespace geometry_msgs;
 using namespace baxter_core_msgs;
 
-ArmCtrl::ArmCtrl(string _name, string _limb, bool _no_robot, bool _use_forces, bool _use_trac_ik, bool _use_cart_ctrl) :
-                 RobotInterface(_name,_limb, _no_robot, THREAD_FREQ, _use_forces, _use_trac_ik, _use_cart_ctrl),
-                 Gripper(_limb, _no_robot), sub_state(""), action(""), sel_object_id(-1)
+ArmCtrl::ArmCtrl(string _name, string _limb, bool _use_robot, bool _use_forces, bool _use_trac_ik, bool _use_cart_ctrl) :
+                 RobotInterface(_name,_limb, _use_robot, THREAD_FREQ, _use_forces, _use_trac_ik, _use_cart_ctrl),
+                 Gripper(_limb, _use_robot), sub_state(""), action(""), sel_object_id(-1)
 {
     std::string other_limb = getLimb() == "right" ? "left" : "right";
 
@@ -36,7 +36,7 @@ void ArmCtrl::InternalThreadEntry()
 
     setState(WORKING);
 
-    if (isNoRobot())
+    if (not isRobotUsed())
     {
         ros::Duration(2.0).sleep();
         setState(DONE);

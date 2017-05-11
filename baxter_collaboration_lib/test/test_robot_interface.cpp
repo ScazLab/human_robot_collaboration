@@ -14,7 +14,7 @@ TEST(RobotInterfaceTest, testConstructorDefaultValues)
 
     EXPECT_EQ("robot", ri.getName());
     EXPECT_EQ( "left", ri.getLimb());
-    EXPECT_EQ(  false, ri.isNoRobot());
+    EXPECT_EQ(   true, ri.isRobotUsed());
     EXPECT_EQ(  100.0, ri.getCtrlFreq());
     EXPECT_EQ(   true, ri.useForces());
     EXPECT_EQ(   true, ri.useTracIK());
@@ -29,13 +29,13 @@ TEST(RobotInterfaceTest, testConstructorCustomValues)
 {
     string          name = "robot";
     string          limb =  "left";
-    bool        no_robot =    true;
+    bool       use_robot =   false;
     double     ctrl_freq =    50.0;
     bool      use_forces =   false;
     bool     use_trac_ik =   false;
     bool   use_cart_ctrl =   false;
     bool is_experimental =   false;
-    RobotInterface ri(name, limb, no_robot, ctrl_freq, use_forces,
+    RobotInterface ri(name, limb, use_robot, ctrl_freq, use_forces,
                       use_trac_ik, use_cart_ctrl, is_experimental);
 
     EXPECT_EQ(ri.isCtrlRunning(), false);
@@ -43,7 +43,7 @@ TEST(RobotInterfaceTest, testConstructorCustomValues)
 
     EXPECT_EQ(           name, ri.getName());
     EXPECT_EQ(           limb, ri.getLimb());
-    EXPECT_EQ(       no_robot, ri.isNoRobot());
+    EXPECT_EQ(      use_robot, ri.isRobotUsed());
     EXPECT_EQ(      ctrl_freq, ri.getCtrlFreq());
     EXPECT_EQ(     use_forces, ri.useForces());
     EXPECT_EQ(    use_trac_ik, ri.useTracIK());
@@ -60,13 +60,13 @@ TEST(RobotInterfaceTest, testPrivateMethods)
 {
     string          name = "robot";
     string          limb =  "left";
-    bool        no_robot =    true;
+    bool       use_robot =   false;
     double     ctrl_freq =    50.0;
     bool      use_forces =   false;
     bool     use_trac_ik =   false;
     bool   use_cart_ctrl =   false;
     bool is_experimental =   false;
-    RobotInterface ri(name, limb, no_robot, ctrl_freq, use_forces,
+    RobotInterface ri(name, limb, use_robot, ctrl_freq, use_forces,
                       use_trac_ik, use_cart_ctrl, is_experimental);
 
     EXPECT_FALSE(ri.isPoseReached(geometry_msgs::Pose(),  "loose",         "sdf"));

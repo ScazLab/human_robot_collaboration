@@ -14,10 +14,10 @@ using namespace cv;
 /**************************************************************************/
 /*                         RobotInterface                                 */
 /**************************************************************************/
-RobotInterface::RobotInterface(string name, string limb, bool no_robot, double ctrl_freq, bool use_forces, bool use_trac_ik,
+RobotInterface::RobotInterface(string name, string limb, bool _use_robot, double ctrl_freq, bool use_forces, bool use_trac_ik,
                                bool use_cart_ctrl, bool is_experimental) : _n(name), _name(name), _limb(limb),
-                               _state(START), spinner(4), _no_robot(no_robot), _use_forces(use_forces),
-                               ir_ok(false), ik_solver(limb, no_robot),_use_trac_ik(use_trac_ik),
+                               _state(START), spinner(4), use_robot(_use_robot), _use_forces(use_forces),
+                               ir_ok(false), ik_solver(limb, _use_robot),_use_trac_ik(use_trac_ik),
                                _ctrl_freq(ctrl_freq), is_coll_av_on(false), is_coll_det_on(false),
                                _use_cart_ctrl(use_cart_ctrl), ctrl_mode(baxter_collaboration_msgs::GoToPose::POSITION_MODE),
                                ctrl_type("pose"), is_ctrl_running(false), _is_experimental(is_experimental)
@@ -29,7 +29,7 @@ RobotInterface::RobotInterface(string name, string limb, bool no_robot, double c
     pthread_mutex_init(&_mutex_jnts, &_mutex_attr);
     pthread_mutex_init(&_mutex_ctrl, &_mutex_attr);
 
-    // if (no_robot) return;
+    // if (not _use_robot) return;
 
     _curr_max_range = 0;
     _curr_min_range = 0;

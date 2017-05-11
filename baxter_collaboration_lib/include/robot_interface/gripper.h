@@ -16,7 +16,7 @@ class Gripper
 private:
     std::string _limb; // Limb of the gripper: left or right
 
-    bool  _no_robot;   // Flag to know if we're going to use the robot or not
+    bool  use_robot;   // Flag to know if we're going to use the robot or not
     bool _first_run;   // Flag to calibrate the gripper at startup if needed
 
     ros::NodeHandle _nh;            // ROS node handle
@@ -57,7 +57,7 @@ public:
      * Constructor of the class
      * \param limb either left or right limb
      **/
-    Gripper(std::string limb, bool no_robot = false);
+    Gripper(std::string limb, bool _use_robot = true);
 
     ~Gripper() {};
 

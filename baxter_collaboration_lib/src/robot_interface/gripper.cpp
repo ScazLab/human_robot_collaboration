@@ -5,10 +5,10 @@
 using namespace baxter_core_msgs;
 using namespace std;
 
-Gripper::Gripper(std::string limb, bool no_robot) :
-                 _limb(limb), _no_robot(no_robot), _first_run(true)
+Gripper::Gripper(std::string limb, bool _use_robot) :
+                 _limb(limb), use_robot(_use_robot), _first_run(true)
 {
-    if (no_robot) return;
+    if (not use_robot) return;
 
     _pub_command = _nh.advertise<EndEffectorCommand>(
                    "/robot/end_effector/" + _limb + "_gripper/command", 1);

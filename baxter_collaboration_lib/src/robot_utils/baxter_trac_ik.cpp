@@ -1,9 +1,10 @@
 #include "robot_utils/baxter_trac_ik.h"
 
-baxterTracIK::baxterTracIK(std::string limb, bool no_robot) : _limb(limb), _urdf_param("/robot_description"),
-                                                              _timeout(0.005), _eps(1e-6), _num_steps(4)
+baxterTracIK::baxterTracIK(std::string limb, bool _use_robot) :
+                _limb(limb), _urdf_param("/robot_description"),
+                _timeout(0.005), _eps(1e-6), _num_steps(4)
 {
-    if (no_robot)
+    if (not _use_robot)
     {
         _tracik_solver = 0;
         _nominal       = 0;
@@ -11,10 +12,14 @@ baxterTracIK::baxterTracIK(std::string limb, bool no_robot) : _limb(limb), _urdf
     }
 
     // TRACK_IK::Speed: returns very quickly the first solution found
-    // TRACK_IK::Distance: runs for the full timeout_in_secs, then returns the solution that minimizes SSE from the seed
-    // TRACK_IK::Manip1: runs for full timeout, returns solution that maximizes sqrt(det(J*J^T))
-    // TRACK_IK::Manip2: runs for full timeout, returns solution that minimizes cond(J) = |J|*|J^-1|);
-    _tracik_solver = new TRAC_IK::TRAC_IK("base", limb + "_gripper", _urdf_param, _timeout, _eps, TRAC_IK::Distance);
+    // TRACK_IK::Distance: runs for the full timeout_in_secs, then
+    //           returns the solution that minimizes SSE from the seed
+    // TRACK_IK::Manip1: runs for full timeout, returns
+    //           solution that maximizes sqrt(det(J*J^T))
+    // TRACK_IK::Manip2: runs for full timeout, returns
+    //           solution that minimizes cond(J) = |J|*|J^-1|);
+    _tracik_solver = new TRAC_IK::TRAC_IK("base", limb + "_gripper", _urdf_param,
+                                          _timeout, _eps, TRAC_IK::Distance);
 
     KDL::JntArray ll, ul; //lower joint limits, upper joint limits
 
@@ -39,7 +44,8 @@ baxterTracIK::baxterTracIK(std::string limb, bool no_robot) : _limb(limb), _urdf
 
     double s1l = -1.35;
     double s1u =  1.0;
-    ROS_INFO("[%s] Setting custom joint limits for %s_s1: [%g %g]", _limb.c_str(), _limb.c_str(), s1l, s1u);
+    ROS_INFO("[%s] Setting custom joint limits for %s_s1: [%g %g]",
+                           _limb.c_str(), _limb.c_str(), s1l, s1u);
     ll.data[1] =  s1l;
     ul.data[1] =  s1u;
 
