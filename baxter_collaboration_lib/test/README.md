@@ -28,22 +28,3 @@ Troubleshooting:
 	```
 * If seeing unchanging results, `catkin build` may be required.
 
-### Checklist
-* /baxter_collaboration_lib/src/robot_utils
-	- [x] utils.cpp
-	- [ ] baxter_trac_ik.cpp
-	- [ ] ros_thread.cpp
-	- [ ] ros_thread_image.cpp
-	- [ ] ros_thread_obj.cpp
-
-* /baxter_collaboration_lib/src/robot_interface
-	- [ ] robot_interface.cpp
-	- [ ] arm_ctrl.cpp
-	- [ ] gripper.cpp
-	
-* /baxter_collaboration_lib/src/robot_perception
-	- [ ] aruco_client.cpp
-	- [ ] cartesian_estimator.cpp
-	- [ ] cartesian_estimator_client.cpp
-	- [ ] cartesian_estimator_hsv.cpp
-

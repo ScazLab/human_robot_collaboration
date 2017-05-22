@@ -89,7 +89,6 @@ TEST(UtilsLib, State)
 
 }
 
-// sarim's tests
 TEST(UtilsLib, toStringConversions)
 {
     int testInt;
