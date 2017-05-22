@@ -147,6 +147,7 @@ if(CATKIN_ENABLE_TESTING)
                                          test/test_robot_interface.cpp)
   target_link_libraries(test_robot_interface  robot_interface ${catkin_LIBRARIES})
 
+  ## Robot gripper tests
   add_rostest_gtest(test_gripper test/test_gripper.test
                                          test/test_gripper.cpp)
   target_link_libraries(test_gripper robot_interface ${catkin_LIBRARIES})

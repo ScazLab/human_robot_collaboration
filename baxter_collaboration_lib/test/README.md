@@ -1,6 +1,6 @@
-## Testing
+# Testing
 
-#### Using [Catkin Tools](https://catkin-tools.readthedocs.io/en/latest/)
+### Using [Catkin Tools](https://catkin-tools.readthedocs.io/en/latest/)
 
 1. Navigate to your workspace: `cd ros_ws`
 2. `REPO_NAME=baxter_collaboration`
@@ -10,7 +10,7 @@
 Troubleshooting:
 * If build fails, make sure prerequisites are installed: [`aruco_ros`](https://github.com/ScazLab/aruco_ros), `nlopt`, [`trac_ik`](https://bitbucket.org/alecive/trac_ik) and [`baxter_common`](http://sdk.rethinkrobotics.com/wiki/Workstation_Setup#adeedda5360641914fe9c5d681c30026).
 
-#### Manual Testing
+### Manual Testing
 
 1. Open a terminal (T1) and run: 
 	```
@@ -28,7 +28,7 @@ Troubleshooting:
 	```
 * If seeing unchanging results, `catkin build` may be required.
 
-#### Checklist
+### Checklist
 * /baxter_collaboration_lib/src/robot_utils
 	- [x] utils.cpp
 	- [ ] baxter_trac_ik.cpp
@@ -37,7 +37,7 @@ Troubleshooting:
 	- [ ] ros_thread_obj.cpp
 
 * /baxter_collaboration_lib/src/robot_interface
-	- [x] robot_interface.cpp
+	- [ ] robot_interface.cpp
 	- [ ] arm_ctrl.cpp
 	- [ ] gripper.cpp
 	
