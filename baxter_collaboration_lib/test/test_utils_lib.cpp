@@ -89,6 +89,62 @@ TEST(UtilsLib, State)
 
 }
 
+// sarim's tests
+TEST(UtilsLib, toStringConversions)
+{
+    int testInt;
+    testInt = 10;
+    EXPECT_EQ("10", toString(testInt));
+
+    std::vector<int> testIntVector;
+    testIntVector.push_back(10);
+    testIntVector.push_back(20);
+    EXPECT_EQ("[10, 20]", toString(testIntVector)); 
+
+    double testDouble;
+    testDouble = 10.123;
+    EXPECT_EQ("10.123", toString(testDouble));
+
+    std::vector<double> testDoubleVector;
+    testDoubleVector.push_back(10.123);
+    testDoubleVector.push_back(20.123);
+    EXPECT_EQ("[10.123, 20.123]", toString(testDoubleVector));
+
+    geometry_msgs::Pose testPose;
+    testPose.position.x = 0; testPose.position.y = 5; testPose.position.z = 10;
+    testPose.orientation.x = 15; testPose.orientation.y = 20; testPose.orientation.z = 25; 
+    testPose.orientation.w = 30;
+    EXPECT_EQ("{position:{x: 0, y: 5, z: 10}, orientation:{x: 15, y: 20, z: 25, w: 30}}", toString(testPose));
+}
+
+TEST(UtilsLib, printFunctions)
+{
+    geometry_msgs::Point testPoint;
+    testPoint.x = 0; testPoint.y = 5; testPoint.z = 10;
+    EXPECT_EQ("[0, 5, 10]", print(testPoint));
+
+    geometry_msgs::Quaternion testQuaternion;
+    testQuaternion.x = 0; testQuaternion.y = 5; testQuaternion.z = 10; testQuaternion.w = 20;
+    EXPECT_EQ("[0, 5, 10, 20]", print(testQuaternion));
+
+    geometry_msgs::Pose testPose;
+    testPose.position.x = 0; testPose.position.y = 5; testPose.position.z = 10;
+    testPose.orientation.x = 15; testPose.orientation.y = 20; testPose.orientation.z = 25; 
+    testPose.orientation.w = 30;
+    EXPECT_EQ("[[0, 5, 10], [15, 20, 25, 30]]", print(testPose));
+}
+
+TEST(UtilsLib, misc)
+{
+    geometry_msgs::Quaternion testQuaternion;
+    testQuaternion.x = 0; testQuaternion.y = 5; testQuaternion.z = 10; testQuaternion.w = 20;
+    quaternionFromDoubles(testQuaternion, 30, 35, 40, 45);
+    EXPECT_EQ(testQuaternion.x, 30);
+    EXPECT_EQ(testQuaternion.y, 35);
+    EXPECT_EQ(testQuaternion.z, 40);
+    EXPECT_EQ(testQuaternion.w, 45);
+}
+
 // Run all the tests that were declared with TEST()
 int main(int argc, char **argv)
 {
