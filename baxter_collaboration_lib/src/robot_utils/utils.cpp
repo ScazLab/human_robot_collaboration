@@ -36,6 +36,18 @@ void setOrientation(Pose& pose, float x, float y, float z, float w)
     pose.orientation.w = w;
 }
 
+void subStringReplace(std::string& target, std::string replaceThis, std::string replaceWith)
+{
+    const std::string s = replaceThis;
+    const std::string t = replaceWith;
+    std::string::size_type n = 0;
+    while ((n = target.find(s, n)) != std::string::npos)
+    {
+        target.replace(n, s.size(), t);
+        n += t.size();
+    }
+}
+
 string toString( const int a )
 {
     stringstream ss;
@@ -62,6 +74,12 @@ string toString( const double a )
 {
     stringstream ss;
     ss << a;
+
+    if (ss.str() == "-0") // handle -0.00, -.0 etc
+    {
+        return "0";
+    }
+
     return ss.str();
 }
 
@@ -75,6 +93,9 @@ string toString(vector<double> const& _v)
 
     res = ss.str();
     res = res.substr(0, res.size()-2); // Remove the last ", "
+
+    subStringReplace(res, "-0,", "0,");
+
     res = "[" + res + "]";
 
     return res;
@@ -94,6 +115,10 @@ string toString(const geometry_msgs::Pose& _p)
     ss <<              "w: " << _p.orientation.w << "}}";
 
     res = ss.str();
+
+    subStringReplace(res, "-0,", "0,");
+    subStringReplace(res, "-0}", "0}");
+
     return res;
 }
 

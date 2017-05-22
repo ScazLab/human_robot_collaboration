@@ -107,6 +107,16 @@ void setPosition(geometry_msgs::Pose& pose, float x, float y, float z);
  */
 void setOrientation(geometry_msgs::Pose& pose, float x, float y, float z, float w);
 
+/**
+ * replaces all instances of a substring with specified substring
+ * @param target      string containing the substring
+ * @param replaceThis substring to be replaced
+ * @param replaceWith substring to replace with
+ *
+ * return N/A
+ */
+void subStringReplace(std::string& target, std::string replaceThis, std::string replaceWith);
+
 /*
  * converts an integer to a string
  *
