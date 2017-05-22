@@ -11,20 +11,15 @@ TEST(GripperTest, testConstructorDefaultValues)
 
 	Gripper gr(limb, use_robot);
 
+	EXPECT_FALSE(gr.is_enabled());
+	EXPECT_FALSE(gr.is_calibrated());
+	EXPECT_FALSE(gr.is_ready_to_grip());
+	EXPECT_FALSE(gr.has_error());
 
-	EXPECT_EQ(false, gr.is_enabled());
-	EXPECT_EQ(false, gr.is_calibrated());
-	EXPECT_EQ(false, gr.is_ready_to_grip());
-	EXPECT_EQ(false, gr.has_error());
-
-	EXPECT_EQ(true, gr.is_sucking());
-	EXPECT_EQ(true, gr.is_gripping());
+	EXPECT_TRUE(gr.is_sucking());
+	EXPECT_TRUE(gr.is_gripping());
 
 	EXPECT_EQ("left", gr.getGripperLimb());
-
-	//EXPECT_EQ(true, gr.gripObject());
-	//EXPECT_EQ(true, gr.releaseObject());
-
 }
 
 

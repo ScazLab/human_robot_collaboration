@@ -9,20 +9,20 @@ TEST(RobotInterfaceTest, testConstructorDefaultValues)
 {
     RobotInterface ri("robot", "left");
 
-    EXPECT_EQ(ri.isCtrlRunning(), false);
+    EXPECT_FALSE(ri.isCtrlRunning());
     EXPECT_EQ(START, int(ri.getState()));
 
     EXPECT_EQ("robot", ri.getName());
     EXPECT_EQ( "left", ri.getLimb());
-    EXPECT_EQ(   true, ri.isRobotUsed());
+    EXPECT_TRUE(ri.isRobotUsed());
     EXPECT_EQ(  100.0, ri.getCtrlFreq());
-    EXPECT_EQ(   true, ri.useForces());
-    EXPECT_EQ(   true, ri.useTracIK());
-    EXPECT_EQ(   true, ri.useCartCtrl());
-    EXPECT_EQ(  false, ri.isExperimental());
+    EXPECT_TRUE(ri.useForces());
+    EXPECT_TRUE(ri.useTracIK());
+    EXPECT_TRUE(ri.useCartCtrl());
+    EXPECT_FALSE(ri.isExperimental());
 
     ri.setTracIK(false);
-    EXPECT_EQ(false, ri.useTracIK());
+    EXPECT_FALSE(ri.useTracIK());
 }
 
 TEST(RobotInterfaceTest, testConstructorCustomValues)
@@ -38,7 +38,7 @@ TEST(RobotInterfaceTest, testConstructorCustomValues)
     RobotInterface ri(name, limb, use_robot, ctrl_freq, use_forces,
                       use_trac_ik, use_cart_ctrl, is_experimental);
 
-    EXPECT_EQ(ri.isCtrlRunning(), false);
+    EXPECT_FALSE(ri.isCtrlRunning());
     EXPECT_EQ(START, int(ri.getState()));
 
     EXPECT_EQ(           name, ri.getName());
