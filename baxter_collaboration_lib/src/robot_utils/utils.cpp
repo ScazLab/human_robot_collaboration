@@ -63,45 +63,38 @@ string toString( const double a )
     stringstream ss;
     ss << a;
 
-    if (ss.str() == "-0") // handle -0.00, -.0 etc
-    {
-        return "0";
-    }
+    // This handles -0.00, -.0 etc
+    if (ss.str() == "-0")    { return "0"; }
 
     return ss.str();
 }
 
 string toString(vector<double> const& _v)
 {
-	string      res;
+	string res = "";
 
 	for(int i = 0, size = _v.size(); i < size; i++)
 	{
-		res.append(toString(_v[i]) += ", ");
+		res = res + toString(_v[i]) + ", ";
 	}
 
-    res = res.substr(0, res.size()-2); // Remove the last ", "
-    res = "[" + res + "]";
-
-    return res;
+    // Remove the last ", "
+    return "[" + res.substr(0, res.size()-2) + "]";
 }
 
 string toString(const geometry_msgs::Pose& _p)
 {
-    string      res;
     stringstream ss;
 
-    ss << "{position:{x: " << toString(_p.position.x) <<  ", ";
-    ss <<            "y: " << toString(_p.position.y) <<  ", ";
-    ss <<            "z: " << toString(_p.position.z) << "}, ";
-    ss << "orientation:{x: " << toString(_p.orientation.x) << ", ";
-    ss <<              "y: " << toString(_p.orientation.y) << ", ";
-    ss <<              "z: " << toString(_p.orientation.z) << ", ";
-    ss <<              "w: " << toString(_p.orientation.w) << "}}";
+    ss <<   "{position:{x: " << toString(_p.position.x)    <<  ", ";
+    ss <<              "y: " << toString(_p.position.y)    <<  ", ";
+    ss <<              "z: " << toString(_p.position.z)    << "}, ";
+    ss << "orientation:{x: " << toString(_p.orientation.x) <<  ", ";
+    ss <<              "y: " << toString(_p.orientation.y) <<  ", ";
+    ss <<              "z: " << toString(_p.orientation.z) <<  ", ";
+    ss <<              "w: " << toString(_p.orientation.w) <<  "}}";
 
-    res = ss.str();
-    
-    return res;
+    return ss.str();
 }
 
 double norm(vector<double> const& _v)
