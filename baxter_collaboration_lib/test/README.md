@@ -8,7 +8,7 @@
 4. Check the results of above: `catkin_test_results build/"$REPO_NAME"_lib || (cat build/"$REPO_NAME"_lib/test_results/"$REPO_NAME"_lib/*.xml ; false)`
 
 Troubleshooting:
-* If build fails, make sure prerequisites are installed: [`aruco_ros`](https://github.com/ScazLab/aruco_ros), `nlopt`, [`trac_ik`](https://bitbucket.org/alecive/trac_ik), [`baxter_common`](http://sdk.rethinkrobotics.com/wiki/Workstation_Setup#adeedda5360641914fe9c5d681c30026) and [`moveit`](http://moveit.ros.org/install/).
+* If build fails, make sure prerequisites are installed: [`aruco_ros`](https://github.com/ScazLab/aruco_ros), `nlopt`, [`trac_ik`](https://bitbucket.org/alecive/trac_ik), [`baxter_common`](http://sdk.rethinkrobotics.com/wiki/Workstation_Setup#adeedda5360641914fe9c5d681c30026).
 
 ### Manual Testing
 

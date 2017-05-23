@@ -36,18 +36,6 @@ void setOrientation(Pose& pose, float x, float y, float z, float w)
     pose.orientation.w = w;
 }
 
-void subStringReplace(std::string& target, std::string replaceThis, std::string replaceWith)
-{
-    const std::string s = replaceThis;
-    const std::string t = replaceWith;
-    std::string::size_type n = 0;
-    while ((n = target.find(s, n)) != std::string::npos)
-    {
-        target.replace(n, s.size(), t);
-        n += t.size();
-    }
-}
-
 string toString( const int a )
 {
     stringstream ss;
@@ -85,17 +73,14 @@ string toString( const double a )
 
 string toString(vector<double> const& _v)
 {
-    string      res;
-    stringstream ss;
+	string      res;
 
-    std::copy(_v.begin(), _v.end(),
-              std::ostream_iterator<double>(ss, ", "));
+	for(int i = 0, size = _v.size(); i < size; i++)
+	{
+		res.append(toString(_v[i]) += ", ");
+	}
 
-    res = ss.str();
     res = res.substr(0, res.size()-2); // Remove the last ", "
-
-    subStringReplace(res, "-0,", "0,");
-
     res = "[" + res + "]";
 
     return res;
@@ -106,19 +91,16 @@ string toString(const geometry_msgs::Pose& _p)
     string      res;
     stringstream ss;
 
-    ss << "{position:{x: " << _p.position.x <<  ", ";
-    ss <<            "y: " << _p.position.y <<  ", ";
-    ss <<            "z: " << _p.position.z << "}, ";
-    ss << "orientation:{x: " << _p.orientation.x << ", ";
-    ss <<              "y: " << _p.orientation.y << ", ";
-    ss <<              "z: " << _p.orientation.z << ", ";
-    ss <<              "w: " << _p.orientation.w << "}}";
+    ss << "{position:{x: " << toString(_p.position.x) <<  ", ";
+    ss <<            "y: " << toString(_p.position.y) <<  ", ";
+    ss <<            "z: " << toString(_p.position.z) << "}, ";
+    ss << "orientation:{x: " << toString(_p.orientation.x) << ", ";
+    ss <<              "y: " << toString(_p.orientation.y) << ", ";
+    ss <<              "z: " << toString(_p.orientation.z) << ", ";
+    ss <<              "w: " << toString(_p.orientation.w) << "}}";
 
     res = ss.str();
-
-    subStringReplace(res, "-0,", "0,");
-    subStringReplace(res, "-0}", "0}");
-
+    
     return res;
 }
 
