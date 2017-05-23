@@ -138,12 +138,20 @@ if(CATKIN_ENABLE_TESTING)
   find_package(rostest            REQUIRED)
   find_package(baxter_description REQUIRED)
 
+  ## Robot util tests
   catkin_add_gtest(test_utils_lib test/test_utils_lib.cpp)
   target_link_libraries(test_utils_lib robot_utils)
 
+  ## Robot interface tests
   add_rostest_gtest(test_robot_interface test/test_robot_interface.test
                                          test/test_robot_interface.cpp)
   target_link_libraries(test_robot_interface  robot_interface ${catkin_LIBRARIES})
+
+  ## Robot gripper tests
+  add_rostest_gtest(test_gripper test/test_gripper.test
+                                         test/test_gripper.cpp)
+  target_link_libraries(test_gripper robot_interface ${catkin_LIBRARIES})
+
 endif()
 
 ## Add folders to be run by python nosetests
