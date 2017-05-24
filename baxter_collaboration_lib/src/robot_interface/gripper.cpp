@@ -10,10 +10,10 @@ Gripper::Gripper(std::string _limb, bool _use_robot) : limb(_limb), use_robot(_u
 {
     if (not use_robot) return;
 
-    pub = nh.advertise<EndEffectorCommand>(
+    pub = rnh.advertise<EndEffectorCommand>(
                    "/robot/end_effector/" + _limb + "_gripper/command", 1);
 
-    sub = nh.subscribe("/robot/end_effector/" + _limb + "_gripper/state",
+    sub = rnh.subscribe("/robot/end_effector/" + _limb + "_gripper/state",
                            SUBSCRIBER_BUFFER, &Gripper::gripperCb, this);
 
     //Initially all the interesting properties of the state are unknown

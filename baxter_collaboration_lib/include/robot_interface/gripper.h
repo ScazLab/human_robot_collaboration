@@ -19,7 +19,7 @@ private:
     bool   use_robot;       // Flag to know if we're going to use the robot or not
     bool   first_run;       // Flag to calibrate the gripper at startup if needed
 
-    ros::NodeHandle  nh;    // ROS node handle
+    ros::NodeHandle rnh;    // ROS node handle
     ros::Subscriber sub;    // Subscriber to receive the state of the gripper
     ros::Publisher  pub;    // Publisher for requesting actions to the gripper
 
