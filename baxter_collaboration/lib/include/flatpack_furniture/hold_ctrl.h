@@ -81,7 +81,7 @@ public:
     /**
      * Constructor
      */
-    HoldCtrl(std::string _name, std::string _limb, bool _no_robot = false);
+    HoldCtrl(std::string _name, std::string _limb, bool _use_robot = true);
 
     /**
      * Callback for the service that lets the two limbs interact

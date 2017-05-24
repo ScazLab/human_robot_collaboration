@@ -3,8 +3,8 @@
 using namespace std;
 using namespace baxter_core_msgs;
 
-CubePicker::CubePicker(std::string _name, std::string _limb, bool _no_robot) :
-                       ArmCtrl(_name,_limb, _no_robot), ARucoClient(_name, _limb), elap_time(0)
+CubePicker::CubePicker(std::string _name, std::string _limb, bool _use_robot) :
+                       ArmCtrl(_name,_limb, _use_robot), ARucoClient(_name, _limb), elap_time(0)
 {
     setHomeConfiguration();
 
@@ -18,7 +18,7 @@ CubePicker::CubePicker(std::string _name, std::string _limb, bool _no_robot) :
     printActionDB();
 
     XmlRpc::XmlRpcValue objects_db;
-    if(!_n.getParam("objects_"+getLimb(), objects_db))
+    if(!nh.getParam("objects_"+getLimb(), objects_db))
     {
         ROS_INFO("No objects' database found in the parameter server. "
                  "Looked up param is %s", ("objects_"+getLimb()).c_str());
@@ -29,7 +29,7 @@ CubePicker::CubePicker(std::string _name, std::string _limb, bool _no_robot) :
         printObjectDB();
     }
 
-    if (_no_robot) return;
+    if (not _use_robot) return;
 
     if (!callAction(ACTION_HOME)) setState(ERROR);
 }

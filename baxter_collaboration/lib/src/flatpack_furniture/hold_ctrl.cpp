@@ -3,8 +3,8 @@
 using namespace std;
 using namespace baxter_core_msgs;
 
-HoldCtrl::HoldCtrl(std::string _name, std::string _limb, bool _no_robot) :
-                   ArmCtrl(_name,_limb, _no_robot), cuff_button_pressed(false)
+HoldCtrl::HoldCtrl(std::string _name, std::string _limb, bool _use_robot) :
+                   ArmCtrl(_name,_limb, _use_robot), cuff_button_pressed(false)
 {
     setHomeConfiguration();
     setState(START);
@@ -14,7 +14,7 @@ HoldCtrl::HoldCtrl(std::string _name, std::string _limb, bool _no_robot) :
     insertAction(ACTION_HOLD,       static_cast<f_action>(&HoldCtrl::holdObject));
 
     XmlRpc::XmlRpcValue objects_db;
-    if(!_n.getParam("objects_"+getLimb(), objects_db))
+    if(!nh.getParam("objects_"+getLimb(), objects_db))
     {
         ROS_INFO("No objects' database found in the parameter server. "
                  "Looked up param is %s", ("objects_"+getLimb()).c_str());
@@ -25,7 +25,7 @@ HoldCtrl::HoldCtrl(std::string _name, std::string _limb, bool _no_robot) :
         printObjectDB();
     }
 
-    if (_no_robot) return;
+    if (not _use_robot) return;
 }
 
 bool HoldCtrl::handOver()

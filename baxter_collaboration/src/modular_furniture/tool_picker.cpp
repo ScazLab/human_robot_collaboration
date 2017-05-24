@@ -5,8 +5,8 @@ using namespace baxter_core_msgs;
 
 #define VERTICAL_ORI_R2         0.1, 1.0, 0.0, 0.0
 
-ToolPicker::ToolPicker(std::string _name, std::string _limb, bool _no_robot) :
-                       HoldCtrl(_name,_limb, _no_robot), CartesianEstimatorClient(_name, _limb),
+ToolPicker::ToolPicker(std::string _name, std::string _limb, bool _use_robot) :
+                       HoldCtrl(_name,_limb, _use_robot), CartesianEstimatorClient(_name, _limb),
                        elap_time(0)
 {
     setHomeConfiguration();
@@ -25,7 +25,7 @@ ToolPicker::ToolPicker(std::string _name, std::string _limb, bool _no_robot) :
 
     printActionDB();
 
-    if (_no_robot) return;
+    if (not _use_robot) return;
 
     // reduceSquish();
 
@@ -364,7 +364,7 @@ void ToolPicker::reduceSquish()
 {
     XmlRpc::XmlRpcValue squish_params;
     // store the initial squish thresholds from the parameter server
-    _n.getParam("/collision/"+getLimb()+"/baxter/squish_thresholds", squish_params);
+    nh.getParam("/collision/"+getLimb()+"/baxter/squish_thresholds", squish_params);
 
     ROS_ASSERT_MSG(squish_params.getType()==XmlRpc::XmlRpcValue::TypeArray,
                           "[%s] Squish params is not an array! Type is %i",
@@ -387,7 +387,7 @@ void ToolPicker::reduceSquish()
                                                static_cast<double>(squish_params[5]));
 
     // set the squish thresholds in the parameter server to the new values
-    _n.setParam("/collision/"+getLimb()+"/baxter/squish_thresholds", squish_params);
+    nh.setParam("/collision/"+getLimb()+"/baxter/squish_thresholds", squish_params);
 }
 
 void ToolPicker::resetSquish()
@@ -405,7 +405,7 @@ void ToolPicker::resetSquish()
                                                 static_cast<double>(squish_params[5]));
 
     // reset squish thresholds in the parameter server to the new values
-    _n.setParam("/collision/"+getLimb()+"/baxter/squish_thresholds", squish_params);
+    nh.setParam("/collision/"+getLimb()+"/baxter/squish_thresholds", squish_params);
 }
 
 bool ToolPicker::goHoldPose(double height)

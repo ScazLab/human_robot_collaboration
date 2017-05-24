@@ -41,7 +41,7 @@ public:
     /**
      * Constructor
      */
-    PartPicker(std::string _name, std::string _limb, bool _no_robot = false);
+    PartPicker(std::string _name, std::string _limb, bool _use_robot = true);
 
     /**
      * Destructor

@@ -1,7 +1,7 @@
 #include "hold_ctrl_impl.h"
 
-HoldCtrlImpl::HoldCtrlImpl(std::string _name, std::string _limb, bool _no_robot) :
-                           HoldCtrl(_name,_limb, _no_robot)
+HoldCtrlImpl::HoldCtrlImpl(std::string _name, std::string _limb, bool _use_robot) :
+                           HoldCtrl(_name,_limb, _use_robot)
 {
     setHomeConfiguration();
 
@@ -15,7 +15,7 @@ HoldCtrlImpl::HoldCtrlImpl(std::string _name, std::string _limb, bool _no_robot)
 
     printActionDB();
 
-    if (_no_robot) return;
+    if (not _use_robot) return;
 
     if (!callAction(ACTION_HOME)) setState(ERROR);
 }

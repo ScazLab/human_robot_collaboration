@@ -5,8 +5,8 @@
 using namespace std;
 using namespace baxter_collaboration_msgs;
 
-ARTagCtrl::ARTagCtrl(std::string _name, std::string _limb, bool _no_robot) :
-                     ArmCtrl(_name,_limb, _no_robot), ARucoClient(_name, _limb),
+ARTagCtrl::ARTagCtrl(std::string _name, std::string _limb, bool _use_robot) :
+                     ArmCtrl(_name,_limb, _use_robot), ARucoClient(_name, _limb),
                      elap_time(0)
 {
     setHomeConfiguration();
@@ -17,7 +17,7 @@ ARTagCtrl::ARTagCtrl(std::string _name, std::string _limb, bool _no_robot) :
     insertAction(ACTION_GET_PASS,  static_cast<f_action>(&ARTagCtrl::getPassObject));
 
     XmlRpc::XmlRpcValue objects_db;
-    if(!_n.getParam("objects_"+getLimb(), objects_db))
+    if(!nh.getParam("objects_"+getLimb(), objects_db))
     {
         ROS_INFO("No objects' database found in the parameter server. "
                  "Looked up param is %s", ("objects_"+getLimb()).c_str());
@@ -28,7 +28,7 @@ ARTagCtrl::ARTagCtrl(std::string _name, std::string _limb, bool _no_robot) :
         printObjectDB();
     }
 
-    if (_no_robot) return;
+    if (not _use_robot) return;
 
     // moveArm("up",0.2,"strict");
     // moveArm("down",0.2,"strict");
@@ -124,7 +124,7 @@ bool ARTagCtrl::waitForOtherArm(double _wait_time, bool disable_coll_av)
 
     ros::ServiceClient _c;
     string service_name = "/"+getName()+"/service_"+other_limb+"_to_"+getLimb();
-    _c = _n.serviceClient<AskFeedback>(service_name);
+    _c = nh.serviceClient<AskFeedback>(service_name);
 
     AskFeedback srv;
     srv.request.ask = HAND_OVER_READY;

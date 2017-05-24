@@ -114,7 +114,7 @@ public:
     /**
      * Constructor
      */
-    ARTagCtrl(std::string _name, std::string _limb, bool _no_robot = false);
+    ARTagCtrl(std::string _name, std::string _limb, bool _use_robot = true);
 
     /**
      * Destructor

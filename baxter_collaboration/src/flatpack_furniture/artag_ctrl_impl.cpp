@@ -1,7 +1,7 @@
 #include "artag_ctrl_impl.h"
 
-ARTagCtrlImpl::ARTagCtrlImpl(std::string _name, std::string _limb, bool _no_robot) :
-                             ARTagCtrl(_name,_limb, _no_robot)
+ARTagCtrlImpl::ARTagCtrlImpl(std::string _name, std::string _limb, bool _use_robot) :
+                             ARTagCtrl(_name,_limb, _use_robot)
 {
     setHomeConfiguration();
 
@@ -19,7 +19,7 @@ ARTagCtrlImpl::ARTagCtrlImpl(std::string _name, std::string _limb, bool _no_robo
 
     printActionDB();
 
-    if (_no_robot) return;
+    if (_use_robot) return;
 
     if (!callAction(ACTION_HOME)) setState(ERROR);
 
