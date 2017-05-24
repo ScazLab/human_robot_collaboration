@@ -1,7 +1,7 @@
 #ifndef __GRIPPER_H__
 #define __GRIPPER_H__
 
-#include <pthread.h>
+#include <stdlib.h>
 
 #include <std_msgs/Empty.h>
 #include <std_msgs/Float32.h>
@@ -14,18 +14,16 @@
 class Gripper
 {
 private:
-    std::string _limb; // Limb of the gripper: left or right
+    std::string limb;       // Limb of the gripper: left or right
 
-    bool  use_robot;   // Flag to know if we're going to use the robot or not
-    bool _first_run;   // Flag to calibrate the gripper at startup if needed
+    bool   use_robot;       // Flag to know if we're going to use the robot or not
+    bool   first_run;       // Flag to calibrate the gripper at startup if needed
 
-    ros::NodeHandle _nh;            // ROS node handle
-    ros::Subscriber _sub_state;     // Subscriber to receive the state of the gripper
-    ros::Publisher  _pub_command;   // Publisher for requesting actions to the gripper
+    ros::NodeHandle  nh;    // ROS node handle
+    ros::Subscriber sub;    // Subscriber to receive the state of the gripper
+    ros::Publisher  pub;    // Publisher for requesting actions to the gripper
 
-    pthread_mutex_t _mutex;
-
-    baxter_core_msgs::EndEffectorState _state;  // State of the gripper
+    std::unique_ptr<baxter_core_msgs::EndEffectorState> state;  // State of the gripper
 
     // Callback that handles the gripper state messages.
     void gripperCb(const baxter_core_msgs::EndEffectorState &msg);
@@ -57,9 +55,9 @@ public:
      * Constructor of the class
      * \param limb either left or right limb
      **/
-    Gripper(std::string limb, bool _use_robot = true);
+    Gripper(std::string _limb, bool _use_robot = true);
 
-    ~Gripper() {};
+    ~Gripper();
 
     bool gripObject();
 
@@ -105,7 +103,7 @@ public:
      * This function returns the limb the gripper belongs to
      * @return the limb, either "left" or "right"
      **/
-    std::string getGripperLimb()  { return _limb; };
+    std::string getGripperLimb()  { return limb; };
 };
 
 #endif // __GRIPPER_H__

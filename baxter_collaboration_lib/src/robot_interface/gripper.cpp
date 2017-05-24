@@ -5,16 +5,16 @@
 using namespace baxter_core_msgs;
 using namespace std;
 
-Gripper::Gripper(std::string limb, bool _use_robot) :
-                 _limb(limb), use_robot(_use_robot), _first_run(true)
+Gripper::Gripper(std::string _limb, bool _use_robot) : limb(_limb), use_robot(_use_robot),
+                                           first_run(true), state(new EndEffectorState())
 {
     if (not use_robot) return;
 
-    _pub_command = _nh.advertise<EndEffectorCommand>(
+    pub = nh.advertise<EndEffectorCommand>(
                    "/robot/end_effector/" + _limb + "_gripper/command", 1);
 
-    _sub_state = _nh.subscribe("/robot/end_effector/" + _limb + "_gripper/state",
-                                SUBSCRIBER_BUFFER, &Gripper::gripperCb, this);
+    sub = nh.subscribe("/robot/end_effector/" + _limb + "_gripper/state",
+                           SUBSCRIBER_BUFFER, &Gripper::gripperCb, this);
 
     //Initially all the interesting properties of the state are unknown
     EndEffectorState initial_gripper_state;
@@ -26,9 +26,7 @@ Gripper::Gripper(std::string limb, bool _use_robot) :
     initial_gripper_state.ready=        \
     initial_gripper_state.moving=EndEffectorState::STATE_UNKNOWN;
 
-    _state = initial_gripper_state;
-
-    pthread_mutex_init(&_mutex, NULL);
+    state.reset(new EndEffectorState(initial_gripper_state));
 }
 
 bool Gripper::gripObject()
@@ -59,45 +57,46 @@ bool Gripper::releaseObject()
         return true;
     }
 
-    ROS_WARN("[%s_gripper] Requested a release of the gripper, but the gripper is not sucking.", getGripperLimb().c_str());
+    ROS_WARN("[%s_gripper] Requested a release of the gripper, "
+             "but the gripper is not sucking.", getGripperLimb().c_str());
     return false;
 }
 
 void Gripper::gripperCb(const EndEffectorState &msg)
 {
-    pthread_mutex_lock(&_mutex);
-    _state = msg;
-    pthread_mutex_unlock(&_mutex);
+    state.reset(new EndEffectorState(msg));
 
-    if (_first_run)
+    if (first_run)
     {
         if (!is_calibrated())
         {
-            ROS_INFO("[%s_gripper] Calibrating the gripper..", getGripperLimb().c_str());
+            ROS_INFO("[%s_gripper] Calibrating the gripper..",
+                                    getGripperLimb().c_str());
             calibrate();
         }
-        _first_run=false;
+
+        first_run=false;
     }
 }
 
 void Gripper::calibrate()
 {
-    EndEffectorCommand sucking_command;
-    sucking_command.id=get_id();
-    sucking_command.command=EndEffectorCommand::CMD_CALIBRATE;
-    _pub_command.publish(sucking_command);
+    EndEffectorCommand cmd;
+    cmd.id=get_id();
+    cmd.command=EndEffectorCommand::CMD_CALIBRATE;
+    pub.publish(cmd);
 }
 
 void Gripper::suck()
 {
-    EndEffectorCommand sucking_command;
-    sucking_command.id=get_id();
-    sucking_command.command=EndEffectorCommand::CMD_GRIP;
-    if (_limb == "left")
+    EndEffectorCommand cmd;
+    cmd.id=get_id();
+    cmd.command=EndEffectorCommand::CMD_GRIP;
+    if (limb == "left")
     {
-        sucking_command.args="{\"grip_attempt_seconds\": 5.0}";
+        cmd.args="{\"grip_attempt_seconds\": 5.0}";
     }
-    _pub_command.publish(sucking_command);
+    pub.publish(cmd);
 }
 
 void Gripper::blow()
@@ -105,42 +104,47 @@ void Gripper::blow()
     EndEffectorCommand release_command;
     release_command.id=get_id();
     release_command.command=EndEffectorCommand::CMD_RELEASE;
-    _pub_command.publish(release_command);
+    pub.publish(release_command);
 }
 
 int Gripper::get_id()
 {
-    return _state.id;
+    return state->id;
 }
 
 bool Gripper::is_enabled()
 {
-    return _state.enabled==EndEffectorState::STATE_TRUE;
+    return state->enabled==EndEffectorState::STATE_TRUE;
 }
 
 bool Gripper::is_calibrated()
 {
-    return _state.calibrated==EndEffectorState::STATE_TRUE;
+    return state->calibrated==EndEffectorState::STATE_TRUE;
 }
 
 bool Gripper::is_ready_to_grip()
 {
-    return _state.ready==EndEffectorState::STATE_TRUE;
+    return state->ready==EndEffectorState::STATE_TRUE;
 }
 
 bool Gripper::has_error()
 {
-    return _state.error==EndEffectorState::STATE_TRUE;
+    return state->error==EndEffectorState::STATE_TRUE;
 }
 
 bool Gripper::is_sucking()
 {
-    // ROS_INFO("force is: %g\n",_state.force);
-    return _state.position<80;
+    // ROS_INFO("force is: %g\n",state->force);
+    return state->position<80;
 }
 
 bool Gripper::is_gripping()
 {
     return true;
-    return _state.gripping==EndEffectorState::STATE_TRUE;
+    return state->gripping==EndEffectorState::STATE_TRUE;
+}
+
+Gripper::~Gripper()
+{
+
 }
