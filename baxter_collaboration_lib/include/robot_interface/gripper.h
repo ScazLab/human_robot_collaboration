@@ -3,9 +3,6 @@
 
 #include <memory>
 
-#include <std_msgs/Empty.h>
-#include <std_msgs/Float32.h>
-
 #include <baxter_core_msgs/EndEffectorState.h>
 #include <baxter_core_msgs/EndEffectorCommand.h>
 
