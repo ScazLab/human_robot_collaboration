@@ -141,7 +141,7 @@ bool Gripper::is_sucking()
 bool Gripper::is_gripping()
 {
     return true;
-    return state->gripping==EndEffectorState::STATE_TRUE;
+    // return state->gripping==EndEffectorState::STATE_TRUE;
 }
 
 Gripper::~Gripper()
