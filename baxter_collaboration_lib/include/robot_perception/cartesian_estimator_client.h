@@ -11,7 +11,7 @@
 class CartesianEstimatorClient
 {
 private:
-    ros::NodeHandle  nh;
+    ros::NodeHandle rnh;
 
     std::string    limb; // Limb of the gripper: left or right
 

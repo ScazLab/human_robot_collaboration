@@ -11,17 +11,17 @@ ArmCtrl::ArmCtrl(string _name, string _limb, bool _use_robot, bool _use_forces, 
     std::string other_limb = getLimb() == "right" ? "left" : "right";
 
     std::string topic = "/"+getName()+"/service_"+_limb;
-    service = _n.advertiseService(topic, &ArmCtrl::serviceCb, this);
+    service = nh.advertiseService(topic, &ArmCtrl::serviceCb, this);
     ROS_INFO("[%s] Created service server with name  : %s", getLimb().c_str(), topic.c_str());
 
     topic = "/"+getName()+"/service_"+_limb+"_to_"+other_limb;
-    service_other_limb = _n.advertiseService(topic, &ArmCtrl::serviceOtherLimbCb, this);
+    service_other_limb = nh.advertiseService(topic, &ArmCtrl::serviceOtherLimbCb, this);
     ROS_INFO("[%s] Created service server with name  : %s", getLimb().c_str(), topic.c_str());
 
     insertAction(ACTION_HOME,    &ArmCtrl::goHome);
     insertAction(ACTION_RELEASE, &ArmCtrl::releaseObject);
 
-    _n.param<bool>("internal_recovery",  internal_recovery, true);
+    nh.param<bool>("internal_recovery",  internal_recovery, true);
     ROS_INFO("[%s] Internal_recovery flag set to %s", getLimb().c_str(),
                                 internal_recovery==true?"true":"false");
 }
@@ -29,7 +29,7 @@ ArmCtrl::ArmCtrl(string _name, string _limb, bool _use_robot, bool _use_forces, 
 void ArmCtrl::InternalThreadEntry()
 {
     pthread_setcanceltype(PTHREAD_CANCEL_ASYNCHRONOUS,NULL);
-    _n.param<bool>("internal_recovery",  internal_recovery, true);
+    nh.param<bool>("internal_recovery",  internal_recovery, true);
 
     std::string a =     getAction();
     int         s = int(getState());

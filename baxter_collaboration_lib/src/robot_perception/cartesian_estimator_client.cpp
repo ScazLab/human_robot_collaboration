@@ -5,10 +5,10 @@
 using namespace std;
 
 CartesianEstimatorClient::CartesianEstimatorClient(string _name, string _limb) :
-               nh(_name), limb(_limb), cartest_ok(false), objects_found(false),
+              rnh(_name), limb(_limb), cartest_ok(false), objects_found(false),
                                           object_found(false), object_name("")
 {
-    cartest_sub = nh.subscribe("/hsv_detector/objects", SUBSCRIBER_BUFFER,
+    cartest_sub = rnh.subscribe("/hsv_detector/objects", SUBSCRIBER_BUFFER,
                                 &CartesianEstimatorClient::ObjectCb, this);
 }
 

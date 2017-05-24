@@ -8,13 +8,15 @@ using namespace baxter_core_msgs;
 /**************************************************************************/
 /*                         RobotInterface                                 */
 /**************************************************************************/
-RobotInterface::RobotInterface(string name, string limb, bool _use_robot, double ctrl_freq, bool use_forces, bool use_trac_ik,
-                               bool use_cart_ctrl, bool is_experimental) : _n(name), _name(name), _limb(limb),
-                               _state(START), spinner(4), use_robot(_use_robot), _use_forces(use_forces),
-                               ir_ok(false), ik_solver(limb, _use_robot),_use_trac_ik(use_trac_ik),
-                               _ctrl_freq(ctrl_freq), is_coll_av_on(false), is_coll_det_on(false),
-                               _use_cart_ctrl(use_cart_ctrl), ctrl_mode(baxter_collaboration_msgs::GoToPose::POSITION_MODE),
-                               ctrl_type("pose"), is_ctrl_running(false), _is_experimental(is_experimental)
+RobotInterface::RobotInterface(string _name, string _limb, bool _use_robot, double _ctrl_freq, bool _use_forces,
+                               bool _use_trac_ik, bool _use_cart_ctrl, bool _is_experimental) : nh(_name), name(_name),
+                               limb(_limb), state(START), spinner(4), use_robot(_use_robot), use_forces(_use_forces),
+                               ir_ok(false), curr_range(0.0), curr_min_range(0.0), curr_max_range(0.0),
+                               ik_solver(_limb, _use_robot), use_trac_ik(_use_trac_ik), ctrl_freq(_ctrl_freq),
+                               filt_force{0.0, 0.0, 0.0}, filt_change{0.0, 0.0, 0.0}, time_filt_last_updated(ros::Time::now()),
+                               is_coll_av_on(false), is_coll_det_on(false), use_cart_ctrl(_use_cart_ctrl), is_ctrl_running(false),
+                               is_experimental(_is_experimental), ctrl_mode(baxter_collaboration_msgs::GoToPose::POSITION_MODE),
+                               ctrl_type("pose")
 {
     pthread_mutexattr_t _mutex_attr;
     pthread_mutexattr_init(&_mutex_attr);
@@ -25,30 +27,17 @@ RobotInterface::RobotInterface(string name, string limb, bool _use_robot, double
 
     // if (not _use_robot) return;
 
-    _curr_max_range = 0;
-    _curr_min_range = 0;
-    _curr_range     = 0;
-
-    _filt_force.push_back(0.0);
-    _filt_force.push_back(0.0);
-    _filt_force.push_back(0.0);
-
-    _time_filt_last_updated = ros::Time::now();
-    _filt_change.push_back(0.0);
-    _filt_change.push_back(0.0);
-    _filt_change.push_back(0.0);
-
     if (getLimb()=="left")
     {
-        _n.param<double>("force_threshold_left",  force_thres, FORCE_THRES_L);
-        _n.param<double>("force_filter_variance_left", filt_variance, FORCE_FILT_VAR_L);
-        _n.param<double>("relative_force_threshold_left", rel_force_thres, REL_FORCE_THRES_L);
+        nh.param<double>("force_threshold_left",  force_thres, FORCE_THRES_L);
+        nh.param<double>("force_filter_variance_left", filt_variance, FORCE_FILT_VAR_L);
+        nh.param<double>("relative_force_threshold_left", rel_force_thres, REL_FORCE_THRES_L);
     }
     else if (getLimb()=="right")
     {
-        _n.param<double>("force_threshold_right", force_thres, FORCE_THRES_R);
-        _n.param<double>("force_filter_variance_right", filt_variance, FORCE_FILT_VAR_R);
-        _n.param<double>("relative_force_threshold_right", rel_force_thres, REL_FORCE_THRES_R);
+        nh.param<double>("force_threshold_right", force_thres, FORCE_THRES_R);
+        nh.param<double>("force_filter_variance_right", filt_variance, FORCE_FILT_VAR_R);
+        nh.param<double>("relative_force_threshold_right", rel_force_thres, REL_FORCE_THRES_R);
     }
 
     ROS_INFO("[%s] ctrlFreq set to %g [Hz]", getLimb().c_str(), getCtrlFreq());
@@ -56,52 +45,52 @@ RobotInterface::RobotInterface(string name, string limb, bool _use_robot, double
     ROS_INFO("[%s] Force Filter Variance: %g", getLimb().c_str(), filt_variance);
     ROS_INFO("[%s] Relative Force Threshold: %g", getLimb().c_str(), rel_force_thres);
 
-    ROS_INFO("[%s] Cartesian Controller %s enabled", getLimb().c_str(), _use_cart_ctrl?"is":"is NOT");
+    ROS_INFO("[%s] Cartesian Controller %s enabled", getLimb().c_str(), use_cart_ctrl?"is":"is NOT");
 
-    _joint_cmd_pub = _n.advertise<JointCommand>("/robot/limb/" + _limb + "/joint_command", 1);
-    _coll_av_pub   = _n.advertise<std_msgs::Empty>("/robot/limb/" + _limb + "/suppress_collision_avoidance", 1);
+    joint_cmd_pub  = nh.advertise<JointCommand>("/robot/limb/" + getLimb() + "/joint_command", 1);
+    coll_av_pub    = nh.advertise<std_msgs::Empty>("/robot/limb/" + getLimb() + "/suppress_collision_avoidance", 1);
 
-    _endpt_sub     = _n.subscribe("/robot/limb/" + _limb + "/endpoint_state",
+    endpt_sub      = nh.subscribe("/robot/limb/" + getLimb() + "/endpoint_state",
                                    SUBSCRIBER_BUFFER, &RobotInterface::endpointCb, this);
 
-    _ir_sub        = _n.subscribe("/robot/range/" + _limb + "_hand_range/state",
-                                    SUBSCRIBER_BUFFER, &RobotInterface::IRCb, this);
+    ir_sub         = nh.subscribe("/robot/range/" + getLimb() + "_hand_range/state",
+                                   SUBSCRIBER_BUFFER, &RobotInterface::IRCb, this);
 
-    _cuff_sub_lower = _n.subscribe("/robot/digital_io/" + _limb + "_lower_button/state",
-                                    SUBSCRIBER_BUFFER, &RobotInterface::cuffLowerCb, this);
+    cuff_sub_lower = nh.subscribe("/robot/digital_io/" + getLimb() + "_lower_button/state",
+                                   SUBSCRIBER_BUFFER, &RobotInterface::cuffLowerCb, this);
 
-    _cuff_sub_upper = _n.subscribe("/robot/digital_io/" + _limb + "_upper_button/state",
-                                    SUBSCRIBER_BUFFER, &RobotInterface::cuffUpperCb, this);
+    cuff_sub_upper = nh.subscribe("/robot/digital_io/" + getLimb() + "_upper_button/state",
+                                   SUBSCRIBER_BUFFER, &RobotInterface::cuffUpperCb, this);
 
-    _jntstate_sub  = _n.subscribe("/robot/joint_states",
-                                    SUBSCRIBER_BUFFER, &RobotInterface::jointStatesCb, this);
+    jntstate_sub   = nh.subscribe("/robot/joint_states",
+                                   SUBSCRIBER_BUFFER, &RobotInterface::jointStatesCb, this);
 
-    _coll_av_sub   = _n.subscribe("/robot/limb/" + _limb + "/collision_avoidance_state",
-                                    SUBSCRIBER_BUFFER, &RobotInterface::collAvCb, this);
+    coll_av_sub    = nh.subscribe("/robot/limb/" + getLimb() + "/collision_avoidance_state",
+                                   SUBSCRIBER_BUFFER, &RobotInterface::collAvCb, this);
 
-    _coll_det_sub   = _n.subscribe("/robot/limb/" + _limb + "/collision_detection_state",
-                                    SUBSCRIBER_BUFFER, &RobotInterface::collDetCb, this);
+    coll_det_sub   = nh.subscribe("/robot/limb/" + getLimb() + "/collision_detection_state",
+                                   SUBSCRIBER_BUFFER, &RobotInterface::collDetCb, this);
 
     std::string topic = "/"+getName()+"/"+getLimb()+"/state";
-    state_pub = _n.advertise<baxter_collaboration_msgs::ArmState>(topic, SUBSCRIBER_BUFFER, true);
+    state_pub = nh.advertise<baxter_collaboration_msgs::ArmState>(topic, SUBSCRIBER_BUFFER, true);
     ROS_INFO("[%s] Created state publisher with name : %s", getLimb().c_str(), topic.c_str());
 
-    if (_use_cart_ctrl)
+    if (use_cart_ctrl)
     {
         string topic = "/" + getName() + "/" + getLimb() + "/go_to_pose";
-        _ctrl_sub      = _n.subscribe(topic, SUBSCRIBER_BUFFER, &RobotInterface::ctrlMsgCb, this);
+        ctrl_sub     = nh.subscribe(topic, SUBSCRIBER_BUFFER, &RobotInterface::ctrlMsgCb, this);
         ROS_INFO("[%s] Created cartesian controller that listens to : %s", getLimb().c_str(), topic.c_str());
     }
 
-    if (!_use_trac_ik)
+    if (not use_trac_ik)
     {
-        _ik_client = _n.serviceClient<SolvePositionIK>("/ExternalTools/" + _limb +
+        ik_client = nh.serviceClient<SolvePositionIK>("/ExternalTools/" + getLimb() +
                                                        "/PositionKinematicsNode/IKService");
     }
 
     spinner.start();
 
-    if (_use_cart_ctrl)
+    if (use_cart_ctrl)
     {
         startThread();
         setState(START);
@@ -112,24 +101,24 @@ RobotInterface::RobotInterface(string name, string limb, bool _use_robot, double
 
 bool RobotInterface::startThread()
 {
-    return _thread.start(ThreadEntryFunc, this);
+    return thread.start(ThreadEntryFunc, this);
 }
 
 bool RobotInterface::closeThread()
 {
-    return _thread.close();
+    return thread.close();
 }
 
 bool RobotInterface::killThread()
 {
-    return _thread.kill();
+    return thread.kill();
 }
 
 void RobotInterface::ThreadEntry()
 {
     pthread_setcanceltype(PTHREAD_CANCEL_ASYNCHRONOUS, NULL);
 
-    ros::Rate r(_ctrl_freq);
+    ros::Rate r(ctrl_freq);
 
     while (RobotInterface::ok())
     {
@@ -310,7 +299,7 @@ void RobotInterface::ctrlMsgCb(const baxter_collaboration_msgs::GoToPose& msg)
         // Then, let's check if control mode is among the allowed options
         if (msg.ctrl_mode != baxter_collaboration_msgs::GoToPose::POSITION_MODE)
         {
-            if (_is_experimental == false)
+            if (not is_experimental)
             {
                 ROS_ERROR("[%s] As of now, the only tested control mode is POSITION_MODE. "
                           "To be able to use any other control mode, please set the "
@@ -430,9 +419,9 @@ void RobotInterface::jointStatesCb(const sensor_msgs::JointState& msg)
         //     cout << "[" << i << "] " << msg.name[i] << " " << msg.position[i] << "\t";
         // }
         // cout << endl;
-        _curr_jnts.name.clear();
-        _curr_jnts.position.clear();
-        _curr_jnts.velocity.clear();
+        curr_jnts.name.clear();
+        curr_jnts.position.clear();
+        curr_jnts.velocity.clear();
 
         for (size_t i = 0; i < joint_cmd.names.size(); ++i)
         {
@@ -440,9 +429,9 @@ void RobotInterface::jointStatesCb(const sensor_msgs::JointState& msg)
             {
                 if (joint_cmd.names[i] == msg.name[j])
                 {
-                    _curr_jnts.name.push_back(msg.name[j]);
-                    _curr_jnts.position.push_back(msg.position[j]);
-                    _curr_jnts.velocity.push_back(msg.velocity[j]);
+                    curr_jnts.name.push_back(msg.name[j]);
+                    curr_jnts.position.push_back(msg.position[j]);
+                    curr_jnts.velocity.push_back(msg.velocity[j]);
                 }
             }
         }
@@ -475,12 +464,12 @@ void RobotInterface::cuffUpperCb(const baxter_core_msgs::DigitalIOState& msg)
 void RobotInterface::endpointCb(const baxter_core_msgs::EndpointState& msg)
 {
     // ROS_DEBUG("endpointCb");
-    _curr_pos = msg.pose.position;
-    _curr_ori = msg.pose.orientation;
+    curr_pos = msg.pose.position;
+    curr_ori = msg.pose.orientation;
 
-    if (_use_forces == true)
+    if (use_forces == true)
     {
-        _curr_wrench = msg.wrench;
+        curr_wrench = msg.wrench;
         filterForces();
     }
 
@@ -490,9 +479,9 @@ void RobotInterface::endpointCb(const baxter_core_msgs::EndpointState& msg)
 void RobotInterface::IRCb(const sensor_msgs::Range& msg)
 {
     // ROS_DEBUG("IRCb");
-    _curr_range     = msg.range;
-    _curr_max_range = msg.max_range;
-    _curr_min_range = msg.min_range;
+    curr_range     = msg.range;
+    curr_max_range = msg.max_range;
+    curr_min_range = msg.min_range;
 
     if (!ir_ok)
     {
@@ -504,30 +493,30 @@ void RobotInterface::IRCb(const sensor_msgs::Range& msg)
 
 void RobotInterface::filterForces()
 {
-    double time_elap = ros::Time::now().toSec() - _time_filt_last_updated.toSec();
+    double time_elap = ros::Time::now().toSec() - time_filt_last_updated.toSec();
 
     vector<double> new_filt;
     vector<double> predicted_filt;
 
     // initial attempt to update filter using a running average of the forces on the arm (exponential moving average)
-    new_filt.push_back((1 - FORCE_ALPHA) * _filt_force[0] + FORCE_ALPHA * _curr_wrench.force.x);
-    new_filt.push_back((1 - FORCE_ALPHA) * _filt_force[1] + FORCE_ALPHA * _curr_wrench.force.y);
-    new_filt.push_back((1 - FORCE_ALPHA) * _filt_force[2] + FORCE_ALPHA * _curr_wrench.force.z);
+    new_filt.push_back((1 - FORCE_ALPHA) * filt_force[0] + FORCE_ALPHA * curr_wrench.force.x);
+    new_filt.push_back((1 - FORCE_ALPHA) * filt_force[1] + FORCE_ALPHA * curr_wrench.force.y);
+    new_filt.push_back((1 - FORCE_ALPHA) * filt_force[2] + FORCE_ALPHA * curr_wrench.force.z);
 
     for (int i = 0; i < 3; ++i)
     {
         // extrapolate a predicted new filter value using the previous rate of change of the filter value:
         // new value = old value + rate of change * elapsed time
-        predicted_filt.push_back(_filt_force[i] + (_filt_change[i] * time_elap));
+        predicted_filt.push_back(filt_force[i] + (filt_change[i] * time_elap));
 
         // update the rate of change of the filter using the new value from the initial attempt above
-        _filt_change[i] = (new_filt[i] - _filt_force[i])/time_elap;
+        filt_change[i] = (new_filt[i] - filt_force[i])/time_elap;
 
         // if the predicted filter value is very small or 0, this is most likely the first time the filter is updated
         // (the filter values and rate of change start at 0), so set the filter to the new value from the initial attempt above
         if (predicted_filt[i] < FILTER_EPSILON)
         {
-            _filt_force[i] = new_filt[i];
+            filt_force[i] = new_filt[i];
         }
         else
         {
@@ -536,12 +525,12 @@ void RobotInterface::filterForces()
             // otherwise, the filter is not changed; this keeps the filter from changing wildly while maintaining trends in the data
             if (abs((new_filt[i] - predicted_filt[i])/predicted_filt[i]) < filt_variance)
             {
-                _filt_force[i] = new_filt[i];
+                filt_force[i] = new_filt[i];
             }
         }
     }
 
-    _time_filt_last_updated = ros::Time::now();
+    time_filt_last_updated = ros::Time::now();
 
 }
 
@@ -654,12 +643,12 @@ bool RobotInterface::computeIK(double px, double py, double pz,
 
         ik_srv.request.pose_stamp.push_back(pose_stamp);
         pthread_mutex_lock(&_mutex_jnts);
-        ik_srv.request.seed_angles.push_back(_curr_jnts);
+        ik_srv.request.seed_angles.push_back(curr_jnts);
         pthread_mutex_unlock(&_mutex_jnts);
 
         ros::Time tn = ros::Time::now();
 
-        bool result = _use_trac_ik?ik_solver.perform_ik(ik_srv):_ik_client.call(ik_srv);
+        bool result = use_trac_ik?ik_solver.perform_ik(ik_srv):ik_client.call(ik_srv);
 
         if(result)
         {
@@ -722,9 +711,9 @@ bool RobotInterface::hasCollidedIR(string mode)
         return false;
     }
 
-    if (_curr_range <= _curr_max_range &&
-        _curr_range >= _curr_min_range &&
-        _curr_range <= thres             ) return true;
+    if (curr_range <= curr_max_range &&
+        curr_range >= curr_min_range &&
+        curr_range <= thres             ) return true;
 
     return false;
 }
@@ -838,7 +827,7 @@ bool RobotInterface::isOrientationReached(double ox, double oy, double oz, doubl
 
 bool RobotInterface::isConfigurationReached(vector<double> des_jnts, string mode)
 {
-    if (_curr_jnts.position.size() < 7 || des_jnts.size() < 7)
+    if (curr_jnts.position.size() < 7 || des_jnts.size() < 7)
     {
         return false;
     }
@@ -853,34 +842,34 @@ bool RobotInterface::isConfigurationReached(vector<double> des_jnts, string mode
 
 bool RobotInterface::isConfigurationReached(baxter_core_msgs::JointCommand des_jnts, string mode)
 {
-    if (_curr_jnts.position.size() < 7)
+    if (curr_jnts.position.size() < 7)
     {
         return false;
     }
 
     ROS_DEBUG("[%s] Checking configuration: Current %g %g %g %g %g %g %g\tDesired %g %g %g %g %g %g %g",
                                                                                       getLimb().c_str(),
-         _curr_jnts.position[0], _curr_jnts.position[1], _curr_jnts.position[2], _curr_jnts.position[3],
-                                 _curr_jnts.position[4], _curr_jnts.position[5], _curr_jnts.position[6],
-            des_jnts.command[0],    des_jnts.command[1],    des_jnts.command[2],    des_jnts.command[3],
-                                    des_jnts.command[4],    des_jnts.command[5],    des_jnts.command[6]);
+             curr_jnts.position[0], curr_jnts.position[1], curr_jnts.position[2], curr_jnts.position[3],
+                                    curr_jnts.position[4], curr_jnts.position[5], curr_jnts.position[6],
+               des_jnts.command[0],   des_jnts.command[1],   des_jnts.command[2],   des_jnts.command[3],
+                                      des_jnts.command[4],   des_jnts.command[5],   des_jnts.command[6]);
 
     for (size_t i = 0; i < des_jnts.names.size(); ++i)
     {
         bool res = false;
-        for (size_t j = 0; j < _curr_jnts.name.size(); ++j)
+        for (size_t j = 0; j < curr_jnts.name.size(); ++j)
         {
-            if (des_jnts.names[i] == _curr_jnts.name[j])
+            if (des_jnts.names[i] == curr_jnts.name[j])
             {
                 if (mode == "strict")
                 {
                     // It's approximatively half a degree
-                    if (abs(des_jnts.command[i]-_curr_jnts.position[j]) > 0.010) return false;
+                    if (abs(des_jnts.command[i]-curr_jnts.position[j]) > 0.010) return false;
                 }
                 else if (mode == "loose")
                 {
                     // It's approximatively a degree
-                    if (abs(des_jnts.command[i]-_curr_jnts.position[j]) > 0.020) return false;
+                    if (abs(des_jnts.command[i]-curr_jnts.position[j]) > 0.020) return false;
                 }
                 res = true;
             }
@@ -931,7 +920,7 @@ void RobotInterface::setJointCommands(double s0, double s1, double e0, double e1
     joint_cmd.command.push_back(w2);
 }
 
-double RobotInterface::findRelativeDifference(double a, double b)
+double RobotInterface::relativeDiff(double a, double b)
 {
     // returns the relative difference of a to b
     // 0.01 is added to b in case it is very small (this will not affect large values of b)
@@ -940,16 +929,16 @@ double RobotInterface::findRelativeDifference(double a, double b)
 
 bool RobotInterface::detectForceInteraction()
 {
-    // ROS_INFO("Filt Forces: %g, %g, %g", _filt_force[0], _filt_force[1], _filt_force[2]);
+    // ROS_INFO("Filt Forces: %g, %g, %g", filt_force[0], filt_force[1], filt_force[2]);
 
     // compare the current force to the filter force. if the relative difference is above a
     // threshold defined in utils.h, return true
 
-    if (findRelativeDifference(_curr_wrench.force.x, _filt_force[0]) > rel_force_thres ||
-        findRelativeDifference(_curr_wrench.force.y, _filt_force[1]) > rel_force_thres ||
-        findRelativeDifference(_curr_wrench.force.z, _filt_force[2]) > rel_force_thres)
+    if (relativeDiff(curr_wrench.force.x, filt_force[0]) > rel_force_thres ||
+        relativeDiff(curr_wrench.force.y, filt_force[1]) > rel_force_thres ||
+        relativeDiff(curr_wrench.force.z, filt_force[2]) > rel_force_thres)
     {
-        ROS_INFO("Interaction: %g %g %g", _curr_wrench.force.x, _curr_wrench.force.y, _curr_wrench.force.z);
+        ROS_INFO("Interaction: %g %g %g", curr_wrench.force.x, curr_wrench.force.y, curr_wrench.force.z);
         return true;
     }
     else
@@ -1007,7 +996,7 @@ sensor_msgs::JointState RobotInterface::getJointStates()
     sensor_msgs::JointState cj;
 
     pthread_mutex_lock(&_mutex_jnts);
-    cj = _curr_jnts;
+    cj = curr_jnts;
     pthread_mutex_unlock(&_mutex_jnts);
 
     return   cj;
@@ -1023,9 +1012,9 @@ geometry_msgs::Pose RobotInterface::getPose()
     return res;
 }
 
-bool RobotInterface::setState(int state)
+bool RobotInterface::setState(int _state)
 {
-    _state.set(state);
+    state.set(_state);
 
     // disable the cartesian controller server
     if (state == WORKING)
@@ -1050,12 +1039,12 @@ bool RobotInterface::publishState()
 void RobotInterface::publishJointCmd(baxter_core_msgs::JointCommand _cmd)
 {
     // cout << "Joint Command: " << _cmd << endl;
-    _joint_cmd_pub.publish(_cmd);
+    joint_cmd_pub.publish(_cmd);
 }
 
 void RobotInterface::suppressCollisionAv()
 {
-    _coll_av_pub.publish(std_msgs::Empty());
+    coll_av_pub.publish(std_msgs::Empty());
 }
 
 RobotInterface::~RobotInterface()
@@ -1063,6 +1052,6 @@ RobotInterface::~RobotInterface()
     pthread_mutex_destroy(&_mutex_jnts);
     pthread_mutex_destroy(&_mutex_ctrl);
 
-    _thread.kill();
+    thread.kill();
 }
 

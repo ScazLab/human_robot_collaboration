@@ -31,30 +31,30 @@
 class RobotInterface
 {
 protected:
-    ros::NodeHandle _n;
+    ros::NodeHandle nh;
 
 private:
-    std::string    _name;
-    std::string    _limb;       // Limb (either left or right)
+    std::string    name;
+    std::string    limb;       // Limb (either left or right)
 
-    State         _state;       // State of the controller
+    State         state;       // State of the controller
 
     ros::AsyncSpinner spinner;  // AsyncSpinner to handle callbacks
 
-    bool       use_robot;       // Flag to know if we're going to use the robot or not
-    bool     _use_forces;       // Flag to know if we're going to use the force feedback
+    bool      use_robot;       // Flag to know if we're going to use the robot or not
+    bool     use_forces;       // Flag to know if we're going to use the force feedback
 
-    ros::Publisher  _joint_cmd_pub; // Publisher to control the robot in joint space
-    ros::Publisher    _coll_av_pub; // Publisher to suppress collision avoidance behavior
+    ros::Publisher  joint_cmd_pub; // Publisher to control the robot in joint space
+    ros::Publisher    coll_av_pub; // Publisher to suppress collision avoidance behavior
 
     /**
      * IR Sensor
      */
-    ros::Subscriber _ir_sub;
-    bool              ir_ok;
-    float       _curr_range;
-    float   _curr_min_range;
-    float   _curr_max_range;
+    ros::Subscriber ir_sub;
+    bool             ir_ok;
+    float       curr_range;
+    float   curr_min_range;
+    float   curr_max_range;
 
     /**
      * Inverse Kinematics
@@ -63,32 +63,32 @@ private:
     baxterTracIK ik_solver;
 
     // Alternative IK: baxter-provided IK solver (for the TTT demo)
-    bool             _use_trac_ik;
-    ros::ServiceClient _ik_client;
+    bool             use_trac_ik;
+    ros::ServiceClient ik_client;
 
     // Rate [Hz] of the control loop. Default 100Hz.
-    double _ctrl_freq;
+    double ctrl_freq;
 
     /**
      * End-effector state
      */
-    ros::Subscriber            _endpt_sub;
-    std::vector<double>       _filt_force;
-    double                    force_thres;
-    std::vector<double>      _filt_change; // rate of change of filter
-    ros::Time     _time_filt_last_updated; // time of last update to filter
-    double                rel_force_thres; // relative threshold for force interaction
-    double                  filt_variance; // variance threshold for force filter
+    ros::Subscriber            endpt_sub;
+    std::vector<double>       filt_force;
+    double                   force_thres;
+    std::vector<double>      filt_change; // rate of change of filter
+    ros::Time     time_filt_last_updated; // time of last update to filter
+    double               rel_force_thres; // relative threshold for force interaction
+    double                 filt_variance; // variance threshold for force filter
 
-    geometry_msgs::Point        _curr_pos;
-    geometry_msgs::Quaternion   _curr_ori;
-    geometry_msgs::Wrench    _curr_wrench;
+    geometry_msgs::Point        curr_pos;
+    geometry_msgs::Quaternion   curr_ori;
+    geometry_msgs::Wrench    curr_wrench;
 
     /**
      * Joint States
      */
-    ros::Subscriber         _jntstate_sub;
-    sensor_msgs::JointState    _curr_jnts;
+    ros::Subscriber         jntstate_sub;
+    sensor_msgs::JointState    curr_jnts;
 
     // Mutex to protect joint state variable
     pthread_mutex_t _mutex_jnts;
@@ -96,29 +96,30 @@ private:
     /**
      * Collision avoidance State
      */
-    ros::Subscriber _coll_av_sub;
-    bool           is_coll_av_on;
+    ros::Subscriber coll_av_sub;
+    bool          is_coll_av_on;
 
     /**
      * Collision Detection State
      */
-    ros::Subscriber _coll_det_sub;
-    bool           is_coll_det_on;
+    ros::Subscriber coll_det_sub;
+    bool          is_coll_det_on;
 
     /**
      * Cuff buttons
      */
-    ros::Subscriber _cuff_sub_lower; // circle button
-    ros::Subscriber _cuff_sub_upper; // oval button
+    ros::Subscriber cuff_sub_lower; // circle button
+    ros::Subscriber cuff_sub_upper; // oval button
 
     /**
-     * Cartesian Controler server
+     * Cartesian Controller server
      */
-    // Internal thread that implements the controller server
-    ROSThreadObj _thread;
+    ROSThreadObj thread;        // Internal thread that implements the controller server
+    ros::Subscriber ctrl_sub;   // Subscriber that receives desired poses from other nodes
 
-    // Flag to know if we're using the cartesian controller or not
-    bool _use_cart_ctrl;
+    bool   use_cart_ctrl;   // Flag to know if we're using the cartesian controller or not
+    bool is_ctrl_running;   // Flag to know if the controller is running
+    bool is_experimental;   // Flag to know if the robot is running in experimental mode
 
     // Control mode for the controller server. It can be either
     // baxter_collaboration_msgs::GoToPose::POSITION_MODE or
@@ -126,30 +127,15 @@ private:
     // now the latter is experimental
     int ctrl_mode;
 
-    // Control type for the controller server. It can be either
-    // pose, position or orientation
-    std::string ctrl_type;
+    std::string ctrl_type;  // Control type (either "pose", "position" or "orientation")
 
-    // Desired pose to move the arm to
-    geometry_msgs::Pose pose_des;
+    geometry_msgs::Pose pose_des;       // Desired pose to move the arm to
+    geometry_msgs::Pose pose_start;     // Starting pose
 
-    // Flag to know if the controller is running
-    bool is_ctrl_running;
-
-    // Subscriber that receives desired poses from other nodes
-    ros::Subscriber _ctrl_sub;
+    ros::Time time_start;   // Time when the controller started
 
     // Mutex to protect the control flag
     pthread_mutex_t _mutex_ctrl;
-
-    // Time when the controller started
-    ros::Time time_start;
-
-    // Starting pose
-    geometry_msgs::Pose pose_start;
-
-    // Flag to know if the robot is running in experimental mode
-    bool _is_experimental;
 
     /**
      * Initializes some control parameters when the controller starts.
@@ -189,7 +175,7 @@ private:
 
     /**
      * Publishes the desired joint configuration in the proper topic, i.e.
-     * /robot/limb/" + _limb + "/joint_command"
+     * /robot/limb/" + limb + "/joint_command"
      *
      * @param _cmd The desired joint configuration
      */
@@ -242,7 +228,7 @@ private:
 
     /*
      * Starts thread that executes the control server. For now it is
-     * just a wrapper for _thread.start(), but further functionality
+     * just a wrapper for thread.start(), but further functionality
      * may be added in the future.
      *
      * @return  true/false if success failure (NOT in the POSIX way)
@@ -251,7 +237,7 @@ private:
 
     /**
      * Closes the control server thread gracefully. For now it is
-     * just a wrapper for _thread.close(), but further functionality
+     * just a wrapper for thread.close(), but further functionality
      * may be added in the future.
      *
      * @return  true/false if success failure (NOT in the POSIX way)
@@ -260,7 +246,7 @@ private:
 
     /**
      * Kills the control server thread gracefully. For now it is
-     * just a wrapper for _thread.kill(), but further functionality
+     * just a wrapper for thread.kill(), but further functionality
      * may be added in the future.
      *
      * @return  true/false if success failure (NOT in the POSIX way)
@@ -529,7 +515,7 @@ protected:
      * @param  b  value to which first value is compared relatively
      * @return value of the relative difference
      */
-    double findRelativeDifference(double a, double b);
+    double relativeDiff(double a, double b);
 
     /*
      * Detects if the force overcame a relative threshold in either one of its three axis
@@ -547,10 +533,9 @@ protected:
     bool waitForForceInteraction(double _wait_time = 20.0, bool disable_coll_av = false);
 
     /*
-     * Waits for _curr_jnts to be populated by jointStatesCb().
+     * Waits for curr_jnts to be populated by jointStatesCb().
      *
-     * @return true when _curr_jnts has values
-     * @return false if _curr_jnts not initialized within 20 s
+     * @return true when curr_jnts has values, false if curr_jnts not initialized within 20 s
      */
     bool waitForJointAngles(double _wait_time = 20.0);
 
@@ -581,10 +566,10 @@ protected:
     FRIEND_TEST(RobotInterfaceTest, testPrivateMethods);
 
 public:
-    RobotInterface(std::string          name, std::string                   limb,
-                   bool    _use_robot = true, double     ctrl_freq = THREAD_FREQ,
-                   bool    use_forces = true, bool     use_trac_ik =        true,
-                   bool use_cart_ctrl = true, bool is_experimental =       false);
+    RobotInterface(std::string          _name, std::string                   _limb,
+                   bool     _use_robot = true, double     _ctrl_freq = THREAD_FREQ,
+                   bool    _use_forces = true, bool     _use_trac_ik =        true,
+                   bool _use_cart_ctrl = true, bool _is_experimental =       false);
 
     ~RobotInterface();
 
@@ -593,7 +578,7 @@ public:
      *
      * @return true/false if success/failure
      */
-    virtual bool setState(int state);
+    virtual bool setState(int _state);
 
     /**
      * Sets the usage of TracIK to true or false. It is one of the few flags
@@ -601,7 +586,7 @@ public:
      *
      * @param  use_trac_ik if to use track ik or not
      */
-    void setTracIK(bool use_trac_ik) { _use_trac_ik = use_trac_ik; };
+    void setTracIK(bool _use_trac_ik) { use_trac_ik = _use_trac_ik; };
 
     /**
      * Set the type of the cartesian controller server.
@@ -623,22 +608,22 @@ public:
     /*
      * Self-explaining "getters"
      */
-    bool    isRobotUsed() { return        use_robot; };
-    bool isRobotNotUsed() { return       !use_robot; };
-    bool      useForces() { return      _use_forces; };
-    bool      useTracIK() { return     _use_trac_ik; };
-    bool    useCartCtrl() { return   _use_cart_ctrl; };
-    bool isExperimental() { return _is_experimental; };
+    bool    isRobotUsed() { return       use_robot; };
+    bool isRobotNotUsed() { return      !use_robot; };
+    bool      useForces() { return      use_forces; };
+    bool      useTracIK() { return     use_trac_ik; };
+    bool    useCartCtrl() { return   use_cart_ctrl; };
+    bool isExperimental() { return is_experimental; };
 
-    std::string     getName() { return      _name; };
-    std::string     getLimb() { return      _limb; };
-    State          getState() { return     _state; };
-    double      getCtrlFreq() { return _ctrl_freq; };
-    std::string getCtrlType() { return  ctrl_type; };
+    std::string     getName() { return      name; };
+    std::string     getLimb() { return      limb; };
+    State          getState() { return     state; };
+    double      getCtrlFreq() { return ctrl_freq; };
+    std::string getCtrlType() { return ctrl_type; };
 
-    geometry_msgs::Point        getPos()         { return    _curr_pos; };
-    geometry_msgs::Quaternion   getOri()         { return    _curr_ori; };
-    geometry_msgs::Wrench       getWrench()      { return _curr_wrench; };
+    geometry_msgs::Point        getPos()         { return    curr_pos; };
+    geometry_msgs::Quaternion   getOri()         { return    curr_ori; };
+    geometry_msgs::Wrench       getWrench()      { return curr_wrench; };
 
     sensor_msgs::JointState     getJointStates();
     geometry_msgs::Pose                getPose();
