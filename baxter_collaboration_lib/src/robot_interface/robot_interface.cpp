@@ -363,6 +363,7 @@ void RobotInterface::setCtrlRunning(bool _flag)
     pthread_mutex_unlock(&_mutex_ctrl);
 
     if (_flag == true)    { setState(CTRL_RUNNING); }
+    else                  { setState(   CTRL_DONE); }
 
     return;
 }
@@ -993,7 +994,7 @@ bool RobotInterface::waitForJointAngles(double _wait_time)
 
         if ((ros::Time::now()-_init).toSec() > _wait_time)
         {
-            ROS_WARN("No joint angle initialization in %gs!",_wait_time);
+            ROS_WARN("No joint angles received in %gs!",_wait_time);
             return false;
         }
     }
