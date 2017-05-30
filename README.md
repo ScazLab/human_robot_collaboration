@@ -89,3 +89,14 @@ Similarly to Mode A, these same services can be requested directly _within_ your
   * Call the `action_provider` with the argument `--no_robot`, e.g. `rosrun baxter_collaboration baxter_controller --no_robot`. In this mode, only the service to request actions is enabled. It will always return with a 2s delay and it will always succeed.
   * Change the `useRobot` flag to `false` in the `launch` file.
   * Launch the `launch` file with the argument `useRobot:=false`, e.g. `roslaunch baxter_collaboration baxter_controller.launch useRobot:=false`
+
+
+# Experiments
+
+## ICRA 2017
+
+To reproduce the experiment from the following paper on the Baxter research robot, we provide the script `baxter_collaboration/scripts/icra_experiment`.
+
+    [Roncone2017] Roncone Alessandro, Mangin Olivier, Scassellati Brian **Transparent Role Assignment and Task Allocation in Human Robot Collaboration** *IEEE International Conference on Robotics and Automation (ICRA 2017)*, Singapore.
+
+It needs to be given the path to an offline computed policy, as possible with [github.com/ScazLab/task-models](https://github.com/ScazLab/task-models).

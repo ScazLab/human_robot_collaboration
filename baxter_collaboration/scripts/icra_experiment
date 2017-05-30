@@ -1,11 +1,19 @@
 #!/usr/bin/env python
 
+
+"""
+This scripts run the experiment from the following paper on the baxter robot.
+    [Roncone2017] Roncone Alessandro, Mangin Olivier, Scassellati Brian **Transparent Role Assignment and Task Allocation in Human Robot Collaboration** *IEEE International Conference on Robotics and Automation (ICRA 2017)*, Singapore.
+
+It needs to be given the path to an offline computed policy, as possible with `github.com/ScazLab/task-models <https://github.com/ScazLab/task-models>`_.
+"""
+
+
 import os
 import sys
 import argparse
 
-from task_models.lib.pomdp import (POMDP, GraphPolicy, GraphPolicyRunner,
-                           GraphPolicyBeliefRunner)
+from task_models.lib.pomdp import POMDP, GraphPolicy, GraphPolicyRunner
 
 import rospy
 from baxter_collaboration.graph_policy_controller import BaseGPController
@@ -136,6 +144,7 @@ class GPController(BaseGPController):
         else:
             raise ValueError('Unknown verbal action: {}'.format(v))
         return sentence
+
 
 args = parser.parse_args(sys.argv[1:])
 p = POMDP.load_from_json(os.path.join(args.path, 'pomdp.json'))
