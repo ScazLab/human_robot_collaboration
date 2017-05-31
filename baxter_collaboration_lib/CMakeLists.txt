@@ -152,6 +152,10 @@ if(CATKIN_ENABLE_TESTING)
                                          test/test_gripper.cpp)
   target_link_libraries(test_gripper robot_interface ${catkin_LIBRARIES})
 
+  ## ROS thread obj tests
+  catkin_add_gtest(test_ros_thread_obj test/test_ros_thread_obj.cpp)
+  target_link_libraries(test_ros_thread_obj robot_utils)
+
 endif()
 
 ## Add folders to be run by python nosetests
