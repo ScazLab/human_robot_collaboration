@@ -17,9 +17,10 @@ std::mutex m;
 class ROSThreadObjTest
 {
 private:
-    std::shared_ptr<int> var; // shared_ptr of an integer (to be modified by different threads)
-    std::vector<ROSThreadObj> threads; // a vector of ROSThreadObj to accept thread entry functions
-    std::vector<void *(*)(void *)> functions; // a vector of thread entry functions
+    std::shared_ptr<int> var;                   // integer to be modified by different threads
+    std::vector<ROSThreadObj> threads;          // a vector of ROSThreadObj to accept thread entry functions
+    std::vector<void *(*)(void *)> functions;   // a vector of thread entry functions
+
 public:
     /**
      * constructors
@@ -90,8 +91,8 @@ public:
         // each thread is started with a corresponding thread entry function
         for(int i=0, size=threads.size(); i < size; i++)
         {
-            // the raw_ptr is retrieved from the shared_ptr for casting (according to pthread specs)
-            // and sent to the thread entry function
+            // the raw_ptr is retrieved from the shared_ptr for casting
+            // (according to pthread specs) and sent to the thread entry function
             threads[i].start(functions[i], static_cast<void*>(var.get()));
         }
 
@@ -231,12 +232,12 @@ void* slow_hundred_adder(void* var)
 
 TEST(ROSThreadObjTest, testSingleThread)
 {
-    ROSThreadObjTest rtot(10, 0); // create a test object with value of var==0 and threads_no==0
-    rtot.add_function(ten_adder); // push ten_adder onto functions vector
-    rtot.add_thread(); // push a ROSThreadObj onto threads vector
-    rtot.start_threads(); // start the thread with matching function
-    rtot.join_threads(); // join the thread to the main thread
-    EXPECT_EQ(20, rtot.var_value()); // check final value of var
+    ROSThreadObjTest rtot(10, 0);       // create a test object with var==10 and threads_no==0
+    rtot.add_function(ten_adder);       // push ten_adder onto functions vector
+    rtot.add_thread();                  // push a ROSThreadObj onto threads vector
+    rtot.start_threads();               // start the thread with matching function
+    rtot.join_threads();                // join the thread to the main thread
+    EXPECT_EQ(20, rtot.var_value());    // check final value of var
 }
 
 TEST(ROSThreadObjTest, testConcurrentThreads)
