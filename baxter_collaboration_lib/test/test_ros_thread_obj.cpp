@@ -77,8 +77,7 @@ public:
         // each thread is started with a corresponding thread entry function
         for(int i=0, size=threads.size(); i < size; i++)
         {
-            // the raw_ptr is retrieved from the shared_ptr for casting
-            // (according to pthread specs) and sent to the thread entry function
+            // passing this as an argument binds the thread function to an object instance
             threads[i].start(functions[i], this);
         }
 
@@ -222,9 +221,10 @@ public:
 
     /**
     * pushes a specified function onto the functions vector
+    * this is done indirectly by pushing the thread function wrapper
     * @param func: the pointer to a thread entry function
     */
-    bool add_function(const std::string& func_name) // accepts functions with void* input and output
+    bool add_function(const std::string& func_name)
     {
         if(func_name == "print_var")
         {
@@ -244,7 +244,6 @@ public:
         }
         else if(func_name == "slow_hundred_adder")
         {
-            //std::function<void*(void*)> f = &ROSThreadObjTest::slow_hundred_adder;
             functions.push_back(slow_hundred_adder_wrapper);
         }
         else
