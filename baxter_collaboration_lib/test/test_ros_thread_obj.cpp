@@ -3,12 +3,7 @@
 
 #include "robot_utils/ros_thread_obj.h"
 
-#include <mutex>
-
 using namespace std;
-
-// pthreads prevent use of shared_ptr. So for now, mutex is needed for concurrent threads
-std::mutex m;
 
 /**
  * the purpose of this class is to provide an object that can contain multiple ROSThreadObj
@@ -51,15 +46,6 @@ public:
     }
 
     /**
-     * pushes a specified function onto the functions vector
-     * @param func: the pointer to a thread entry function
-     */
-    void add_function(void *(* func)(void *)) // accepts functions with void* input and output
-    {
-        functions.push_back(func);
-    }
-
-    /**
     * @return: the value pointed to by the shared_ptr var
     */
     int var_value()
@@ -93,7 +79,7 @@ public:
         {
             // the raw_ptr is retrieved from the shared_ptr for casting
             // (according to pthread specs) and sent to the thread entry function
-            threads[i].start(functions[i], static_cast<void*>(var.get()));
+            threads[i].start(functions[i], this);
         }
 
         return true;
@@ -143,97 +129,136 @@ public:
         cout << "The functions vector size is: " << functions.size() << endl;
         cout << "functions[0] has a type: " << typeid(functions[0]).name() << endl;
     }
+
+    /**
+     * thread entry function that prints the value of var
+     */
+    static void* print_var_wrapper(void* obj)
+    {
+        ((ROSThreadObjTest*) obj)->print_var();
+        return NULL;
+    }
+    void print_var()
+    {
+        auto var_instance(var);
+        cout << *var_instance << endl;
+    }
+
+    /**
+     * thread entry function that adds 10 to the value of var in 10 milliseconds
+     */
+    static void* ten_adder_wrapper(void* obj)
+    {
+        ((ROSThreadObjTest*) obj)->ten_adder();
+        return NULL;
+    }
+    void ten_adder()
+    {
+        auto var_instance(var);
+        for(int i = 0; i < 10; i++)
+        {
+            *var_instance = *var_instance + 1;
+            sleep(0.1);
+        }
+    }
+
+    /**
+     * thread entry function that multiplies the value of var by 10 in 20 milliseconds
+     */
+    static void* ten_multiplier_wrapper(void* obj)
+    {
+        ((ROSThreadObjTest*) obj)->ten_multiplier();
+        return NULL;
+    }
+    void ten_multiplier()
+    {
+        auto var_instance(var);
+        int multiplier = 0;
+        for(int i = 0; i < 10; i++)
+        {
+            multiplier = multiplier + 1;
+            sleep(0.2);
+        }
+        *var_instance = *var_instance * multiplier;
+    }
+
+    /**
+     * thread entry function that divides the value of var by 10 in 30 milliseconds
+     */
+    static void* ten_divider_wrapper(void* obj)
+    {
+        ((ROSThreadObjTest*) obj)->ten_divider();
+        return NULL;
+    }
+    void ten_divider()
+    {
+        auto var_instance(var);
+        int multiplier = 0;
+        for(int i = 0; i < 10; i++)
+        {
+            multiplier = multiplier + 1;
+            sleep(0.3);
+        }
+        *var_instance = *var_instance / multiplier; // careful: truncation
+    }
+
+    /**
+     * thread entry function that adds 100 to the value of var in 10 seconds
+     */
+    static void* slow_hundred_adder_wrapper(void* obj)
+    {
+        ((ROSThreadObjTest*) obj)->slow_hundred_adder();
+        return NULL;
+    }
+    void slow_hundred_adder()
+    {
+        auto var_instance(var);
+        for(int i = 0; i < 100; i++)
+        {
+            *var_instance = *var_instance + 1;
+            sleep(0.1);
+        }
+    }
+
+    /**
+    * pushes a specified function onto the functions vector
+    * @param func: the pointer to a thread entry function
+    */
+    bool add_function(const std::string& func_name) // accepts functions with void* input and output
+    {
+        if(func_name == "print_var")
+        {
+            functions.push_back(print_var_wrapper);
+        }
+        else if(func_name == "ten_adder")
+        {
+            functions.push_back(ten_adder_wrapper);
+        }
+        else if(func_name == "ten_multiplier")
+        {
+            functions.push_back(ten_multiplier_wrapper);
+        }
+        else if(func_name == "ten_divider")
+        {
+            functions.push_back(ten_divider_wrapper);
+        }
+        else if(func_name == "slow_hundred_adder")
+        {
+            //std::function<void*(void*)> f = &ROSThreadObjTest::slow_hundred_adder;
+            functions.push_back(slow_hundred_adder_wrapper);
+        }
+        else
+        {
+            return false;
+        }
+        return true;
+    }
 };
-
-/**
- * thread entry function that prints the value of var
- * @param var: the value pointed to by shared_ptr var
- */
-void* print_var(void* var)
-{
-    auto var_instance = static_cast<int*>(var);
-    m.lock();
-    cout << *var_instance << endl;
-    m.unlock();
-    return (void*) 1;
-}
-
-/**
- * thread entry function that adds 10 to the value of var in 10 milliseconds
- * @param var: the value pointed to by shared_ptr var
- */
-void* ten_adder(void* var)
-{
-    auto var_instance = static_cast<int*>(var);
-    m.lock();
-    for(int i = 0; i < 10; i++)
-    {
-        *var_instance = *var_instance + 1;
-        sleep(0.1);
-    }
-    m.unlock();
-    return (void*) 1;
-}
-
-/**
- * thread entry function that multiplies the value of var by 10 in 20 milliseconds
- * @param var: the value pointed to by shared_ptr var
- */
-void* ten_multiplier(void* var)
-{
-    auto var_instance = static_cast<int*>(var);
-    int multiplier = 0;
-    m.lock();
-    for(int i = 0; i < 10; i++)
-    {
-        multiplier = multiplier + 1;
-        sleep(0.2);
-    }
-    *var_instance = *var_instance * multiplier;
-    m.unlock();
-    return (void*) 1;
-}
-
-/**
- * thread entry function that divides the value of var by 10 in 30 milliseconds
- * @param var: the value pointed to by shared_ptr var
- */
-void* ten_divider(void* var)
-{
-    auto var_instance = static_cast<int*>(var);
-    int multiplier = 0;
-    m.lock();
-    for(int i = 0; i < 10; i++)
-    {
-        multiplier = multiplier + 1;
-        sleep(0.3);
-    }
-    *var_instance = *var_instance / multiplier; // careful: truncation
-    m.unlock();
-    return (void*) 1;
-}
-
-/**
- * thread entry function that adds 100 to the value of var in 10 seconds
- * @param var: the value pointed to by shared_ptr var
- */
-void* slow_hundred_adder(void* var)
-{
-    auto var_instance = static_cast<int*>(var);
-    m.lock();
-    for(int i = 0; i < 100; i++)
-    {
-        *var_instance = *var_instance + 1;
-        sleep(0.1);
-    }
-    m.unlock();
-    return (void*) 1;
-}
 
 TEST(ROSThreadObjTest, testSingleThread)
 {
     ROSThreadObjTest rtot(10, 0);       // create a test object with var==10 and threads_no==0
-    rtot.add_function(ten_adder);       // push ten_adder onto functions vector
+    rtot.add_function("ten_adder");     // push ten_adder onto functions vector
     rtot.add_thread();                  // push a ROSThreadObj onto threads vector
     rtot.start_threads();               // start the thread with matching function
     rtot.join_threads();                // join the thread to the main thread
@@ -243,25 +268,25 @@ TEST(ROSThreadObjTest, testSingleThread)
 TEST(ROSThreadObjTest, testConcurrentThreads)
 {
     ROSThreadObjTest rtot(0, 2);
-    rtot.add_function(ten_adder);
-    rtot.add_function(ten_adder);
+    rtot.add_function("ten_adder");
+    rtot.add_function("ten_adder");
     rtot.start_threads();
     rtot.join_threads();
     EXPECT_EQ(20, rtot.var_value());
 
     ROSThreadObjTest rtot2(100, 4);
-    rtot2.add_function(ten_multiplier);
-    rtot2.add_function(ten_divider);
-    rtot2.add_function(ten_divider);
-    rtot2.add_function(ten_multiplier);
+    rtot2.add_function("ten_multiplier");
+    rtot2.add_function("ten_divider");
+    rtot2.add_function("ten_divider");
+    rtot2.add_function("ten_multiplier");
     rtot2.start_threads();
     rtot2.join_threads();
     EXPECT_EQ(100, rtot2.var_value());
 
     ROSThreadObjTest rtot3(-50, 3);
-    rtot3.add_function(slow_hundred_adder);
-    rtot3.add_function(slow_hundred_adder);
-    rtot3.add_function(slow_hundred_adder);
+    rtot3.add_function("slow_hundred_adder");
+    rtot3.add_function("slow_hundred_adder");
+    rtot3.add_function("slow_hundred_adder");
     rtot3.start_threads();
     rtot3.join_threads();
     EXPECT_EQ(250, rtot3.var_value());
