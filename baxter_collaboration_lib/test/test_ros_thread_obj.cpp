@@ -13,46 +13,43 @@ using namespace std;
 class ROSThreadObjTest
 {
 private:
-    int var;                                    // integer to be modified by different threads
-    std::vector<ROSThreadObj> threads;          // a vector of ROSThreadObj to accept thread entry functions
-    std::vector<void *(*)(void *)> functions;   // a vector of thread entry functions
+    int var;                                    // variable to be modified by different threads
     std::mutex mtx;                             // mutex for controlled thread access
 
+    std::vector<ROSThreadObj>        threads;   // vector of ROSThreadObj
+    std::vector<void *(*)(void *)> functions;   // vector of thread entry functions
+
 public:
+
     /**
-     * constructors
-     * @param var_value: value of var
-     * @param threads_no: number of threads in the threads vector
-     * the default constructor creates an object with var_value==0 and threads_no==0
-     * both these arguments can be specified using the custom constructor
+     * Class constructor
+     *
+     * @param _var: value of var (default 0)
+     * @param _n_threads: number of threads in the threads vector (default 0)
      */
-    ROSThreadObjTest()
+    ROSThreadObjTest(int _var=0, size_t _n_threads=0) : var(_var)
     {
-        var = 0;
-    }
-    ROSThreadObjTest(int var_value, int threads_no)
-    {
-        var = var_value;
-        for(int i=0; i < threads_no; i++)
+        for (size_t i=0; i < _n_threads; ++i)
         {
             threads.push_back(ROSThreadObj());
         }
     }
 
     /**
-     * pushes a specified number (one by default) of threads onto the threads vector
-     * @param threads_no: number of threads to add
+     * Pushes a specified number of threads onto the threads vector
+     *
+     * @param _n_threads number of threads to add (default 1)
      */
-    void add_thread(int threads_no=1)
+    void add_thread(size_t _n_threads=1)
     {
-        for(int i=0; i < threads_no; i++)
+        for (size_t i=0; i < _n_threads; ++i)
         {
             threads.push_back(ROSThreadObj());
         }
     }
 
     /**
-     * does an arithmetic operation on the value of var thread-safely
+     * Does an arithmetic operation on the value of var thread-safely
      */
     bool safe_arithmetic(const std::string& operation, int arg)
     {
@@ -81,8 +78,10 @@ public:
     }
 
     /**
-    * @return: gets the value of var thread-safely
-    */
+     * Gets the value of var thread-safely
+     *
+     * @return the value of var
+     */
     int get_var()
     {
         std::lock_guard<std::mutex> lk(mtx);
@@ -90,9 +89,10 @@ public:
     }
 
     /**
-     * starts each ROSThreadObj thread with matching thread entry function
+     * Starts each ROSThreadObj thread with matching thread entry function,
      * then joins all threads to the main thread in order
-     * @return: true if success, false if failure
+     *
+     * @return: true/false if success/failure
      */
     bool start_threads()
     {
@@ -103,7 +103,7 @@ public:
         }
 
         // each thread is started with a corresponding thread entry function
-        for(int i=0, size=threads.size(); i < size; i++)
+        for (size_t i=0, size=threads.size(); i < size; ++i)
         {
             // passing this as an argument binds the thread function to an object instance
             threads[i].start(functions[i], this);
@@ -113,23 +113,24 @@ public:
     }
 
     /**
-     * joins each ROSThreadObj thread to the main thread in order
+     * Joins each ROSThreadObj thread to the main thread in order
      */
     void join_threads()
     {
-        for(int i=0, size=threads.size(); i < size; i++)
+        for (size_t i=0, size=threads.size(); i < size; ++i)
         {
             threads[i].join();
         }
     }
 
     /**
-     * kills all running threads
-     * @return: true if success, false if failure
+     * Kills all running threads
+     *
+     * @return: true/false if success/failure
      */
     bool kill_threads()
     {
-        for(int i=0, size=threads.size(); i < size; i++)
+        for (size_t i=0, size=threads.size(); i < size; ++i)
         {
             threads[i].kill();
         }
@@ -138,29 +139,36 @@ public:
     }
 
     /**
-     * thread entry function that prints the value of var
+     * Thread entry function that prints the value of var
      */
     static void* print_var_wrapper(void* obj)
     {
         ((ROSThreadObjTest*) obj)->print_var();
+
         return NULL;
     }
+
+    /**
+     * Prints the variable to stdout
+     */
     void print_var()
     {
         cout << get_var() << endl;
     }
 
     /**
-     * thread entry function that adds 10 to the value of var in 10 milliseconds
+     * Thread entry function that adds 10 to the value of var in 10 milliseconds
      */
     static void* ten_adder_wrapper(void* obj)
     {
         ((ROSThreadObjTest*) obj)->ten_adder();
         return NULL;
     }
+
+
     void ten_adder()
     {
-        for(int i = 0; i < 10; i++)
+        for (size_t i = 0; i < 10; ++i)
         {
             safe_arithmetic("addition", 1);
             sleep(0.1);
@@ -168,54 +176,62 @@ public:
     }
 
     /**
-     * thread entry function that multiplies the value of var by 10 in 20 milliseconds
+     * Thread entry function that multiplies the value of var by 10 in 20 milliseconds
      */
     static void* ten_multiplier_wrapper(void* obj)
     {
         ((ROSThreadObjTest*) obj)->ten_multiplier();
         return NULL;
     }
+
     void ten_multiplier()
     {
         int multiplier = 0;
-        for(int i = 0; i < 10; i++)
+
+        for (size_t i = 0; i < 10; ++i)
         {
             multiplier = multiplier + 1;
             sleep(0.2);
         }
+
         safe_arithmetic("multiplication", multiplier);
     }
 
     /**
-     * thread entry function that divides the value of var by 10 in 30 milliseconds
+     * Thread entry function that divides the value of var by 10 in 30 milliseconds
      */
     static void* ten_divider_wrapper(void* obj)
     {
         ((ROSThreadObjTest*) obj)->ten_divider();
+
         return NULL;
     }
+
     void ten_divider()
     {
-        int multiplier = 0;
-        for(int i = 0; i < 10; i++)
+        int divider = 0;
+
+        for (size_t i = 0; i < 10; ++i)
         {
-            multiplier = multiplier + 1;
+            divider = divider + 1;
             sleep(0.3);
         }
-        safe_arithmetic("division", multiplier);
+
+        safe_arithmetic("division", divider);
     }
 
     /**
-     * thread entry function that adds 100 to the value of var in 10 seconds
+     * Thread entry function that adds 100 to the value of var in 10 seconds
      */
     static void* slow_hundred_adder_wrapper(void* obj)
     {
         ((ROSThreadObjTest*) obj)->slow_hundred_adder();
         return NULL;
     }
+
     void slow_hundred_adder()
     {
-        for(int i = 0; i < 100; i++)
+        for (size_t i = 0; i < 100; ++i)
         {
             safe_arithmetic("addition", 1);
             sleep(0.1);
@@ -253,18 +269,19 @@ public:
         {
             return false;
         }
+
         return true;
     }
 };
 
 TEST(ROSThreadObjTest, testSingleThread)
 {
-    ROSThreadObjTest rtot(10, 0);       // create a test object with var==10 and threads_no==0
+    ROSThreadObjTest rtot(10, 0);       // create test object with var==10 and threads_no==0
     rtot.add_function("ten_adder");     // push ten_adder onto functions vector
     rtot.add_thread();                  // push a ROSThreadObj onto threads vector
     rtot.start_threads();               // start the thread with matching function
     rtot.join_threads();                // join the thread to the main thread
-    EXPECT_EQ(20, rtot.get_var());    // check final value of var
+    EXPECT_EQ(20, rtot.get_var());      // check final value of var
 }
 
 TEST(ROSThreadObjTest, testConcurrentThreads)
