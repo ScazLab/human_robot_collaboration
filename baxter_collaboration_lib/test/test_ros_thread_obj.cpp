@@ -1,5 +1,6 @@
 #include <gtest/gtest.h>
 #include <memory>
+#include <mutex>
 
 #include "robot_utils/ros_thread_obj.h"
 
@@ -12,21 +13,26 @@ using namespace std;
 class ROSThreadObjTest
 {
 private:
-    std::shared_ptr<int> var;                   // integer to be modified by different threads
+    int var;                                    // integer to be modified by different threads
     std::vector<ROSThreadObj> threads;          // a vector of ROSThreadObj to accept thread entry functions
     std::vector<void *(*)(void *)> functions;   // a vector of thread entry functions
+    std::mutex mtx;                             // mutex for controlled thread access
 
 public:
     /**
      * constructors
-     * @param var_value: value of shared_ptr var
+     * @param var_value: value of var
      * @param threads_no: number of threads in the threads vector
      * the default constructor creates an object with var_value==0 and threads_no==0
      * both these arguments can be specified using the custom constructor
      */
-    ROSThreadObjTest(): var(std::make_shared<int>(0)) {}
-    ROSThreadObjTest(int var_value, int threads_no): var(std::make_shared<int>(var_value))
+    ROSThreadObjTest()
     {
+        var = 0;
+    }
+    ROSThreadObjTest(int var_value, int threads_no)
+    {
+        var = var_value;
         for(int i=0; i < threads_no; i++)
         {
             threads.push_back(ROSThreadObj());
@@ -46,19 +52,41 @@ public:
     }
 
     /**
-    * @return: the value pointed to by the shared_ptr var
-    */
-    int var_value()
+     * does an arithmetic operation on the value of var thread-safely
+     */
+    bool safe_arithmetic(const std::string& operation, int arg)
     {
-        return *var;
+        std::lock_guard<std::mutex> lk(mtx);
+        if(operation=="addition")
+        {
+            var = var + arg;
+        }
+        else if(operation=="subtraction")
+        {
+            var = var - arg;
+        }
+        else if(operation=="division")
+        {
+            var = var / arg; // careful: truncation
+        }
+        else if(operation=="multiplication")
+        {
+            var = var * arg;
+        }
+        else
+        {
+            return false; // no valid operation
+        }
+        return true;
     }
 
     /**
-    * @return: the reference/use count of the shared_ptr
+    * @return: gets the value of var thread-safely
     */
-    int var_count()
+    int get_var()
     {
-        return var.use_count();
+        std::lock_guard<std::mutex> lk(mtx);
+        return var;
     }
 
     /**
@@ -110,26 +138,6 @@ public:
     }
 
     /**
-     * Provides useful output for debugging
-     */
-    void test_info()
-    {
-        cout << "This ROSThreadObjTest object's address is: " << this << endl;
-        cout << "### VAR INFO ###" << endl;
-        cout << "*var is: " << *var << endl;
-        cout << "&var is: " << &var << endl;
-        cout << "var is: " << var << endl;
-        cout << "var.get() is: " << var.get() << endl;
-        cout << "### THREADS INFO ###" << endl;
-        cout << "The threads vector size is: " << threads.size() << endl;
-        cout << "The threads vector address is: " << &threads << endl;
-        cout << "threads[0] has a type: " << typeid(threads[0]).name() << endl;
-        cout << "### FUNCTIONS INFO ###" << endl;
-        cout << "The functions vector size is: " << functions.size() << endl;
-        cout << "functions[0] has a type: " << typeid(functions[0]).name() << endl;
-    }
-
-    /**
      * thread entry function that prints the value of var
      */
     static void* print_var_wrapper(void* obj)
@@ -139,8 +147,7 @@ public:
     }
     void print_var()
     {
-        auto var_instance(var);
-        cout << *var_instance << endl;
+        cout << get_var() << endl;
     }
 
     /**
@@ -153,10 +160,9 @@ public:
     }
     void ten_adder()
     {
-        auto var_instance(var);
         for(int i = 0; i < 10; i++)
         {
-            *var_instance = *var_instance + 1;
+            safe_arithmetic("addition", 1);
             sleep(0.1);
         }
     }
@@ -171,14 +177,13 @@ public:
     }
     void ten_multiplier()
     {
-        auto var_instance(var);
         int multiplier = 0;
         for(int i = 0; i < 10; i++)
         {
             multiplier = multiplier + 1;
             sleep(0.2);
         }
-        *var_instance = *var_instance * multiplier;
+        safe_arithmetic("multiplication", multiplier);
     }
 
     /**
@@ -191,14 +196,13 @@ public:
     }
     void ten_divider()
     {
-        auto var_instance(var);
         int multiplier = 0;
         for(int i = 0; i < 10; i++)
         {
             multiplier = multiplier + 1;
             sleep(0.3);
         }
-        *var_instance = *var_instance / multiplier; // careful: truncation
+        safe_arithmetic("division", multiplier);
     }
 
     /**
@@ -211,10 +215,9 @@ public:
     }
     void slow_hundred_adder()
     {
-        auto var_instance(var);
         for(int i = 0; i < 100; i++)
         {
-            *var_instance = *var_instance + 1;
+            safe_arithmetic("addition", 1);
             sleep(0.1);
         }
     }
@@ -261,7 +264,7 @@ TEST(ROSThreadObjTest, testSingleThread)
     rtot.add_thread();                  // push a ROSThreadObj onto threads vector
     rtot.start_threads();               // start the thread with matching function
     rtot.join_threads();                // join the thread to the main thread
-    EXPECT_EQ(20, rtot.var_value());    // check final value of var
+    EXPECT_EQ(20, rtot.get_var());    // check final value of var
 }
 
 TEST(ROSThreadObjTest, testConcurrentThreads)
@@ -271,7 +274,7 @@ TEST(ROSThreadObjTest, testConcurrentThreads)
     rtot.add_function("ten_adder");
     rtot.start_threads();
     rtot.join_threads();
-    EXPECT_EQ(20, rtot.var_value());
+    EXPECT_EQ(20, rtot.get_var());
 
     ROSThreadObjTest rtot2(100, 4);
     rtot2.add_function("ten_multiplier");
@@ -280,7 +283,7 @@ TEST(ROSThreadObjTest, testConcurrentThreads)
     rtot2.add_function("ten_multiplier");
     rtot2.start_threads();
     rtot2.join_threads();
-    EXPECT_EQ(100, rtot2.var_value());
+    EXPECT_EQ(100, rtot2.get_var());
 
     ROSThreadObjTest rtot3(-50, 3);
     rtot3.add_function("slow_hundred_adder");
@@ -288,7 +291,7 @@ TEST(ROSThreadObjTest, testConcurrentThreads)
     rtot3.add_function("slow_hundred_adder");
     rtot3.start_threads();
     rtot3.join_threads();
-    EXPECT_EQ(250, rtot3.var_value());
+    EXPECT_EQ(250, rtot3.get_var());
 }
 
 // Run all the tests that were declared with TEST()
