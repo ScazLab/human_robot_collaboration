@@ -123,7 +123,7 @@ public:
      *
      * @param _var: value of var (default 0)
      */
-    ROSThreadObjTest(int _var = 0) : var(_var) {}
+    explicit ROSThreadObjTest(int _var = 0) : var(_var) {}
 
     /**
      * Gets the value of var thread-safely
