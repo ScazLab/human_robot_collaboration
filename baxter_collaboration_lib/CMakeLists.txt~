@@ -156,16 +156,6 @@ if(CATKIN_ENABLE_TESTING)
   catkin_add_gtest(test_ros_thread_obj test/test_ros_thread_obj.cpp)
   target_link_libraries(test_ros_thread_obj robot_utils)
 
-  ## Robot ROS thread image test
-  add_rostest_gtest(test_ros_thread_image test/test_ros_thread_image.test
-                                          test/test_ros_thread_image.cpp)
-  target_link_libraries(test_ros_thread_image robot_utils)
-
-  ## Robot Arm Test
-  add_rostest_gtest(test_robot_arm test/test_robot_arm.test
-  test/test_robot_arm.cpp)
-  target_link_libraries(test_robot_arm robot_interface ${catkin_LIBRARIES})
-
 endif()
 
 ## Add folders to be run by python nosetests
