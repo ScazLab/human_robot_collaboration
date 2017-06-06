@@ -162,9 +162,11 @@ if(CATKIN_ENABLE_TESTING)
   target_link_libraries(test_ros_thread_image robot_utils)
 
   ## Robot Arm Test
-  add_rostest_gtest(test_robot_arm test/test_robot_arm.test
-  test/test_robot_arm.cpp)
-  target_link_libraries(test_robot_arm robot_interface ${catkin_LIBRARIES})
+  add_rostest_gtest(test_arm_ctrl test/test_arm_ctrl.test
+  test/test_arm_ctrl.cpp)
+  target_link_libraries(test_arm_ctrl robot_interface)
+
+  ##target_link_libraries(test_robot_arm robot_interface ${catkin_LIBRARIES})
 
 endif()
 
