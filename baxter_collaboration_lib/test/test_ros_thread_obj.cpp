@@ -49,7 +49,7 @@ private:
     {
         for (size_t i = 0; i < 10; ++i)
         {
-            safeArithmetic("addition", 1);
+            EXPECT_TRUE(safeArithmetic("addition", 1));
             sleep(0.01);
         }
     }
@@ -65,15 +65,7 @@ private:
 
     void tenMultiplier()
     {
-        int multiplier = 0;
-
-        for (size_t i = 0; i < 10; ++i)
-        {
-            multiplier = multiplier + 1;
-            sleep(0.02);
-        }
-
-        safeArithmetic("multiplication", multiplier);
+        EXPECT_TRUE(safeArithmetic("multiplication", 10));
     }
 
     /**
@@ -87,15 +79,7 @@ private:
 
     void tenDivider()
     {
-        int divider = 0;
-
-        for (size_t i = 0; i < 10; ++i)
-        {
-            divider = divider + 1;
-            sleep(0.03);
-        }
-
-        safeArithmetic("division", divider);
+        EXPECT_TRUE(safeArithmetic("division", 10));
     }
 
     /**
@@ -111,7 +95,7 @@ private:
     {
         for (size_t i = 0; i < 100; ++i)
         {
-            safeArithmetic("addition", 1);
+            EXPECT_TRUE(safeArithmetic("addition", 1));
             sleep(0.01);
         }
     }
@@ -144,26 +128,11 @@ public:
     */
     bool addFunction(const std::string& _name)
     {
-        if     (_name ==         "tenAdder")
-        {
-            funcs.push_back(tenAdderWrapper);
-        }
-        else if(_name ==    "tenMultiplier")
-        {
-            funcs.push_back(tenMultiplierWrapper);
-        }
-        else if(_name ==       "tenDivider")
-        {
-            funcs.push_back(tenDividerWrapper);
-        }
-        else if(_name == "slowHundredAdder")
-        {
-            funcs.push_back(slowHundredAdderWrapper);
-        }
-        else
-        {
-            return false;
-        }
+        if     (_name ==         "tenAdder") { funcs.push_back(tenAdderWrapper);         }
+        else if(_name ==    "tenMultiplier") { funcs.push_back(tenMultiplierWrapper);    }
+        else if(_name ==       "tenDivider") { funcs.push_back(tenDividerWrapper);       }
+        else if(_name == "slowHundredAdder") { funcs.push_back(slowHundredAdderWrapper); }
+        else                                 {                             return false; }
 
         threads.push_back(ROSThreadObj());
 
@@ -174,15 +143,12 @@ public:
      * Starts each ROSThreadObj thread with matching thread entry function,
      * then joins all threads to the main thread in order
      *
-     * @return: true/false if success/failure
+     * @return true/false if success/failure
      */
     bool startThreads()
     {
         // condition to check each thread can be matched to a thread entry function
-        if(threads.size() != funcs.size())
-        {
-            return false;
-        }
+        if(threads.size() != funcs.size()) { return false; }
 
         // each thread is started with a corresponding thread entry function
         for (size_t i=0; i < threads.size(); ++i)
@@ -196,6 +162,8 @@ public:
 
     /**
      * Joins each ROSThreadObj thread to the main thread in order
+     *
+     * @return always true
      */
     bool joinThreads()
     {
@@ -210,7 +178,7 @@ public:
     /**
      * Kills all running threads
      *
-     * @return: true/false if success/failure
+     * @return true/false if success/failure
      */
     bool killThreads()
     {
