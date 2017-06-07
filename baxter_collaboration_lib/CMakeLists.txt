@@ -158,10 +158,8 @@ if(CATKIN_ENABLE_TESTING)
 
   ## Robot Arm Test
   add_rostest_gtest(test_arm_ctrl test/test_arm_ctrl.test
-  test/test_arm_ctrl.cpp)
+  test/test_arm_ctrl.cpp) 
   target_link_libraries(test_arm_ctrl robot_interface)
-
-  ##target_link_libraries(test_robot_arm robot_interface ${catkin_LIBRARIES})
 
 endif()
 
