@@ -23,6 +23,17 @@ We use the new Catkin Command Line Tools `catkin_tools`, a Python package that p
  1. Compile the repo: `catkin build baxter_collaboration`
  2. Compile tests and run them (to be done after compiling the repo with command #1): `catkin build baxter_collaboration --catkin-make-args run_tests`
  3. Check the results of step #2: `catkin build baxter_collaboration_lib --catkin-make-args run_tests && catkin_test_results build/baxter_collaboration_lib`
+ 
+### Tested environments
+
+| ROS distro | Ubuntu Distro | Compiler | Status   |
+| ---------- | ------------- | -------- | -------- |
+| `indigo`   | 14.04 Trusty  |`gcc`    |  working |
+| `indigo`   | 14.04 Trusty  | `clang`  |  working |
+| `kinetic`  | 16.04 Xenial  | `gcc`    | disabled |
+| `kinetic`  | 16.04 Xenial  | `clang`  | disabled |
+
+**NOTE:** As of today (June 7th 2017), `kinetic` builds are disabled, since [travis](travis-ci.org) does not support Ubuntu 16.04 Xenial Xerus yet. 16.04 support should come on Q2 2017.
 
 ## Execution
 
