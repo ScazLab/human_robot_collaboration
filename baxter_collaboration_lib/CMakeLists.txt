@@ -145,16 +145,21 @@ if(CATKIN_ENABLE_TESTING)
   ## Robot interface tests
   add_rostest_gtest(test_robot_interface test/test_robot_interface.test
                                          test/test_robot_interface.cpp)
-  target_link_libraries(test_robot_interface  robot_interface ${catkin_LIBRARIES})
+  target_link_libraries(test_robot_interface robot_interface)
 
   ## Robot gripper tests
   add_rostest_gtest(test_gripper test/test_gripper.test
-                                         test/test_gripper.cpp)
-  target_link_libraries(test_gripper robot_interface ${catkin_LIBRARIES})
+                                 test/test_gripper.cpp)
+  target_link_libraries(test_gripper robot_interface)
 
   ## ROS thread obj tests
   catkin_add_gtest(test_ros_thread_obj test/test_ros_thread_obj.cpp)
   target_link_libraries(test_ros_thread_obj robot_utils)
+
+  ## Robot Arm Test
+  add_rostest_gtest(test_arm_ctrl test/test_arm_ctrl.test
+                                  test/test_arm_ctrl.cpp)
+  target_link_libraries(test_arm_ctrl robot_interface)
 
 endif()
 

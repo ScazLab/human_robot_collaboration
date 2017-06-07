@@ -337,12 +337,28 @@ protected:
      */
     bool publishState();
 
+    /**
+     * Sets the previous action to (usually) the last action that has been requested.
+     *
+     * @param _prev_action the last action that has been requested
+     * @return             true/false if success/failure
+     */
+    bool setPrevAction(const std::string& _prev_action);
+
+    /**
+     * Sets the sub state to a new sub state
+     *
+     * @param _sub_state the new sub state
+     */
+    virtual void setSubState(const std::string& _sub_state);
+
 public:
     /**
      * Constructor
      */
-    ArmCtrl(std::string _name, std::string _limb, bool _use_robot = true,
-            bool _use_forces = true, bool _use_trac_ik = true, bool _use_cart_ctrl = false);
+    ArmCtrl(std::string        _name, std::string           _limb,
+            bool   _use_robot = true, bool    _use_forces =  true,
+            bool _use_trac_ik = true, bool _use_cart_ctrl = false);
 
     /*
      * Destructor
@@ -368,11 +384,16 @@ public:
                                     baxter_collaboration_msgs::AskFeedback::Response &res);
 
     /* Self-explaining "setters" */
-    virtual void setSubState(std::string _state);
     virtual void setObjectID(int _obj)                { sel_object_id =  _obj; };
     virtual void setObjectIDs(std::vector<int> _objs) { object_ids    = _objs; };
-    void setAction(std::string _action);
-    void setPrevAction(std::string _prev_action);
+
+    /**
+     * Sets the action
+     *
+     * @param _action the new action
+     * @return        true/false if success/failure
+     */
+    bool setAction(const std::string& _action);
 
     /*
      * Sets the internal state.
