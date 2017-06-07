@@ -341,8 +341,9 @@ public:
     /**
      * Constructor
      */
-    ArmCtrl(std::string _name, std::string _limb, bool _use_robot = true,
-            bool _use_forces = true, bool _use_trac_ik = true, bool _use_cart_ctrl = false);
+    ArmCtrl(std::string        _name, std::string           _limb,
+            bool   _use_robot = true, bool    _use_forces =  true,
+            bool _use_trac_ik = true, bool _use_cart_ctrl = false);
 
     /*
      * Destructor
