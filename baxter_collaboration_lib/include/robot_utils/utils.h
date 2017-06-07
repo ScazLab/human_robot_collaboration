@@ -269,28 +269,28 @@ std::string print(geometry_msgs::Quaternion q);
 std::string print(geometry_msgs::Pose p);
 
 /**
- * Struct that handles the state of the RobotInterface Class
+ * Struct that wrap a generic state and provides useful methods around it
  */
 struct State
 {
 private:
-
-    int       state;
-    ros::Time  time;
+    int state;
 
 public:
 
     /**
      * Constructor, with default initializations of the state and time
+     *
+     * @param _state the new state
      */
-    State(int _s = START, ros::Time _t = ros::Time::now()) : state(_s), time(_t) { };
+    State(int _state = START) : state(_state) { };
 
     /**
      * Sets the state to a new state. Updates the time accordingly.
      *
-     * @param _s the new state
+     * @param _state the new state
      */
-    void set(int _s);
+    void set(int _state);
 
     /**
      * Returns the state as an integer
@@ -301,11 +301,6 @@ public:
      * Returns the state as a std::string (i.e. a text description of the state)
      */
     operator std::string();
-
-    /**
-     * Returns the state as a ros::Time object (i.e. when the state was last set)
-     */
-    operator ros::Time();
 };
 
 #endif

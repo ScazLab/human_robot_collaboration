@@ -233,13 +233,12 @@ void quaternionFromDoubles(geometry_msgs::Quaternion &q,
 }
 
 /**************************************************************************/
-/*                               Utils                                    */
+/*                               State                                    */
 /**************************************************************************/
 
-void State::set(int _s)
+void State::set(int _state)
 {
-    state = _s;
-    time  = ros::Time::now();
+    state = _state;
 
     return;
 }
@@ -262,9 +261,4 @@ State::operator std::string()
     else if ( state == CTRL_DONE   ) { return    "CTRL_DONE"; }
     else if ( state == CTRL_FAIL   ) { return    "CTRL_FAIL"; }
     else                             { return         "NONE"; }
-}
-
-State::operator ros::Time()
-{
-    return time;
 }
