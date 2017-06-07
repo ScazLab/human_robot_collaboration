@@ -1,7 +1,7 @@
 #ifndef __GRIPPER_H__
 #define __GRIPPER_H__
 
-#include <memory>
+#include <mutex>
 
 #include <baxter_core_msgs/EndEffectorState.h>
 #include <baxter_core_msgs/EndEffectorCommand.h>
@@ -20,9 +20,12 @@ private:
     ros::Subscriber sub;    // Subscriber to receive the state of the gripper
     ros::Publisher  pub;    // Publisher for requesting actions to the gripper
 
-    std::unique_ptr<baxter_core_msgs::EndEffectorState> state;  // State of the gripper
+    std::mutex mutex;                          // mutex for controlled thread access
+    baxter_core_msgs::EndEffectorState state;  // State of the gripper
 
-    // Callback that handles the gripper state messages.
+    /**
+     * Callback that handles the gripper state messages.
+     */
     void gripperCb(const baxter_core_msgs::EndEffectorState &msg);
 
     /**
@@ -50,11 +53,24 @@ private:
 public:
     /**
      * Constructor of the class
-     * \param limb either left or right limb
+     *
+     * @param      _limb either left or right
+     * @param _use_robot if to use the robot or not
      **/
     Gripper(std::string _limb, bool _use_robot = true);
 
-    ~Gripper();
+    /**
+     * Sets the state to the new state, thread-safely
+     *
+     * @param _state the new state
+     */
+    void setGripperState(const baxter_core_msgs::EndEffectorState& _state);
+
+    /**
+     * Gets the state of the gripper, thread-safely.
+     * @return the state of the gripper
+     */
+    baxter_core_msgs::EndEffectorState getGripperState();
 
     bool gripObject();
 
@@ -62,7 +78,7 @@ public:
 
     /**
      * Returns a value indicating if the vacuum gripper is enable, so it can be operated.
-     * @return True if enabled, false otherwise.
+     * @return true/false if enabled or not.
      **/
     bool is_enabled();
 
@@ -97,10 +113,15 @@ public:
     bool is_gripping();
 
     /**
-     * This function returns the limb the gripper belongs to
+     * Returns the limb the gripper belongs to
      * @return the limb, either "left" or "right"
      **/
     std::string getGripperLimb()  { return limb; };
+
+    /**
+     * Destructor
+     */
+    ~Gripper();
 };
 
 #endif // __GRIPPER_H__
