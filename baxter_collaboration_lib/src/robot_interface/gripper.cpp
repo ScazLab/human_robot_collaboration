@@ -5,8 +5,8 @@
 using namespace baxter_core_msgs;
 using namespace std;
 
-Gripper::Gripper(std::string _limb, bool _use_robot) : limb(_limb), use_robot(_use_robot),
-                                           first_run(true), state(new EndEffectorState())
+Gripper::Gripper(std::string _limb, bool _use_robot) :
+                 limb(_limb), use_robot(_use_robot), first_run(true)
 {
     if (not use_robot) return;
 
@@ -17,16 +17,28 @@ Gripper::Gripper(std::string _limb, bool _use_robot) : limb(_limb), use_robot(_u
                            SUBSCRIBER_BUFFER, &Gripper::gripperCb, this);
 
     //Initially all the interesting properties of the state are unknown
-    EndEffectorState initial_gripper_state;
-    initial_gripper_state.calibrated=   \
-    initial_gripper_state.enabled=      \
-    initial_gripper_state.error=        \
-    initial_gripper_state.gripping=     \
-    initial_gripper_state.missed=       \
-    initial_gripper_state.ready=        \
-    initial_gripper_state.moving=EndEffectorState::STATE_UNKNOWN;
+    EndEffectorState init_state;
+    init_state.calibrated = EndEffectorState::STATE_UNKNOWN;
+    init_state.enabled    = EndEffectorState::STATE_UNKNOWN;
+    init_state.error      = EndEffectorState::STATE_UNKNOWN;
+    init_state.gripping   = EndEffectorState::STATE_UNKNOWN;
+    init_state.missed     = EndEffectorState::STATE_UNKNOWN;
+    init_state.ready      = EndEffectorState::STATE_UNKNOWN;
+    init_state.moving     = EndEffectorState::STATE_UNKNOWN;
 
-    state.reset(new EndEffectorState(initial_gripper_state));
+    setGripperState(init_state);
+}
+
+void Gripper::setGripperState(const baxter_core_msgs::EndEffectorState& _state)
+{
+    std::lock_guard<std::mutex> lock(mutex);
+    state = _state;
+}
+
+baxter_core_msgs::EndEffectorState Gripper::getGripperState()
+{
+    std::lock_guard<std::mutex> lock(mutex);
+    return state;
 }
 
 bool Gripper::gripObject()
@@ -64,7 +76,7 @@ bool Gripper::releaseObject()
 
 void Gripper::gripperCb(const EndEffectorState &msg)
 {
-    state.reset(new EndEffectorState(msg));
+    setGripperState(msg);
 
     if (first_run)
     {
@@ -109,39 +121,39 @@ void Gripper::blow()
 
 int Gripper::get_id()
 {
-    return state->id;
+    return getGripperState().id;
 }
 
 bool Gripper::is_enabled()
 {
-    return state->enabled==EndEffectorState::STATE_TRUE;
+    return getGripperState().enabled==EndEffectorState::STATE_TRUE;
 }
 
 bool Gripper::is_calibrated()
 {
-    return state->calibrated==EndEffectorState::STATE_TRUE;
+    return getGripperState().calibrated==EndEffectorState::STATE_TRUE;
 }
 
 bool Gripper::is_ready_to_grip()
 {
-    return state->ready==EndEffectorState::STATE_TRUE;
+    return getGripperState().ready==EndEffectorState::STATE_TRUE;
 }
 
 bool Gripper::has_error()
 {
-    return state->error==EndEffectorState::STATE_TRUE;
+    return getGripperState().error==EndEffectorState::STATE_TRUE;
 }
 
 bool Gripper::is_sucking()
 {
-    // ROS_INFO("force is: %g\n",state->force);
-    return state->position<80;
+    // ROS_INFO("force is: %g\n",getGripperState().force);
+    return getGripperState().position<80;
 }
 
 bool Gripper::is_gripping()
 {
     return true;
-    // return state->gripping==EndEffectorState::STATE_TRUE;
+    // return getGripperState().gripping==EndEffectorState::STATE_TRUE;
 }
 
 Gripper::~Gripper()
