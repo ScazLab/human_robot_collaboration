@@ -5,90 +5,79 @@ using namespace std;
 
 TEST(ArmControlTest, testConstructorDefaultValues)
 {
-    std::string _name = "robot"; 
-    std::string _limb =  "left";
-    bool  _use_forces =    true; 
-    //Since we are actually not using the robot, _use_robot 
-    //needs to be set to 'false' even though by default it should be true
-    //Setting this to true yields a KDL chain error
-    //Perhaps this could be tested using a simulation?
-    bool     _use_robot  = false; 
-    bool   _use_trac_ik  =  true;
-    bool _use_cart_ctrl  = false;
+    ArmCtrl ac ("robot", "left");
 
-    ArmCtrl ac (_name, _limb, _use_robot, _use_forces, _use_trac_ik, _use_cart_ctrl);
-
-    EXPECT_EQ(ac.isCtrlRunning(), false);
-    EXPECT_EQ(START, int(ac.getState())); 
-    EXPECT_EQ("robot", ac.getName());
-    EXPECT_EQ("left", ac.getLimb());
-    EXPECT_FALSE(ac.isRobotUsed());
-    EXPECT_TRUE(ac.useForces()); 
-    EXPECT_TRUE(ac.useTracIK());
-    EXPECT_FALSE(ac.useCartCtrl()); 
+    EXPECT_EQ   ("robot", ac.getName());
+    EXPECT_EQ   ( "left", ac.getLimb());
+    EXPECT_TRUE (ac.isRobotUsed());
+    EXPECT_EQ   (100.0, ac.getCtrlFreq());
+    EXPECT_TRUE (ac.useForces());
+    EXPECT_TRUE (ac.useTracIK());
+    EXPECT_FALSE(ac.useCartCtrl());
+    EXPECT_FALSE(ac.isExperimental());
+    EXPECT_FALSE(ac.isCtrlRunning());
+    EXPECT_EQ   (START, int(ac.getState()));
 }
 
-TEST(ArmControlTest, testConstructorCustomValues) 
+TEST(ArmControlTest, testConstructorCustomValues)
 {
-    std::string _name =  "robot"; 
-    std::string _limb =   "left";
-    //overrides default constructor values for these variables; these values 
-    //are the opposite of the default values bool _use_forces = false; 
-    bool    _use_forces =  false;
-    bool     _use_robot =  false;      
-    bool   _use_trac_ik =  false;
-    bool _use_cart_ctrl =   true; 
+    std::string   name = "robot";
+    std::string   limb =  "left";
+    bool    use_forces =   false;
+    bool     use_robot =   false;
+    bool   use_trac_ik =   false;
+    bool use_cart_ctrl =   false;
 
-    ArmCtrl ac (_name, _limb, _use_robot, _use_forces, _use_trac_ik, _use_cart_ctrl);
+    ArmCtrl ac (name, limb, use_robot, use_forces, use_trac_ik, use_cart_ctrl);
 
-    EXPECT_EQ("robot", ac.getName());
-	EXPECT_EQ("left", ac.getLimb());
+    EXPECT_EQ   (name, ac.getName());
+	EXPECT_EQ   (limb, ac.getLimb());
     EXPECT_FALSE(ac.isRobotUsed());
     EXPECT_FALSE(ac.useForces());
-    EXPECT_FALSE(ac.useTracIK()); 
-    EXPECT_TRUE(ac.useCartCtrl());
-    EXPECT_TRUE(ac.getInternalRecovery());
+    EXPECT_FALSE(ac.useTracIK());
+    EXPECT_FALSE(ac.useCartCtrl());
+    EXPECT_TRUE (ac.getInternalRecovery());
 }
 
 TEST(ArmControlTest, testPublicSetterGetterMethods)
 {
-    std::string _name = "robot"; 
-    std::string _limb =  "left";
+    std::string name = "robot";
+    std::string limb =  "left";
     //overrides default constructor values for these variables; these
     // values are the opposite of the default values
-    bool    _use_forces =  true; 
-    bool     _use_robot = false;      
-    bool   _use_trac_ik =  true;
-    bool _use_cart_ctrl = false;
+    bool    use_forces =  true;
+    bool     use_robot = false;
+    bool   use_trac_ik =  true;
+    bool use_cart_ctrl = false;
 
-    ArmCtrl ac (_name, _limb, _use_robot, _use_forces, _use_trac_ik, _use_cart_ctrl);
+    ArmCtrl ac (name, limb, use_robot, use_forces, use_trac_ik, use_cart_ctrl);
 
     //Setter Methods
-    std::string _state = "teststate";
-    int _obj = 5;               //some random obj id number
-    vector<int> _objs (4, 100); //some random value vector
-    
-    std::string      _action =     "testaction";
-    std::string _prev_action = "testprevaction";
+    std::string state = "teststate";
+    int obj = 5;               //some random obj id number
+    vector<int> objs (4, 100); //some random value vector
 
-    ac.setSubState(       _state);
-    ac.setObjectID(         _obj);
-    ac.setObjectIDs(       _objs);
-    ac.setAction(        _action);
-    ac.setPrevAction(_prev_action);
+    std::string      action =     "testaction";
+    std::string prev_action = "testprevaction";
+
+    ac.setSubState(       state);
+    ac.setObjectID(         obj);
+    ac.setObjectIDs(       objs);
+    ac.setAction(        action);
+    ac.setPrevAction(prev_action);
 
     //Getter methods
-    EXPECT_EQ(     "teststate", ac.getSubState()); 
-    EXPECT_EQ(    "testaction", ac.getAction());  
-    EXPECT_EQ("testprevaction", ac.getPrevAction());  
-    EXPECT_EQ(            _obj, ac.getObjectID());
-    EXPECT_EQ(           _objs, ac.getObjectIDs());
+    EXPECT_EQ   (     "teststate", ac.getSubState());
+    EXPECT_EQ   (    "testaction", ac.getAction());
+    EXPECT_EQ   ("testprevaction", ac.getPrevAction());
+    EXPECT_EQ   (             obj, ac.getObjectID());
+    EXPECT_EQ   (            objs, ac.getObjectIDs());
 }
 
 // Run all the tests that were declared with TEST()
 int main(int argc, char **argv)
 {
-    ros::init(argc, argv, "arm_control_test"); 
+    ros::init(argc, argv, "arm_control_test");
     testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();
 }
