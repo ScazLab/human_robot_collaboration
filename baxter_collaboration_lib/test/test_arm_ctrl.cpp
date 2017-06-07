@@ -28,7 +28,7 @@ TEST(ArmControlTest, testConstructorCustomValues)
     bool   use_trac_ik =   false;
     bool use_cart_ctrl =   false;
 
-    ArmCtrl ac (name, limb, use_robot, use_forces, use_trac_ik, use_cart_ctrl);
+    ArmCtrl ac(name, limb, use_robot, use_forces, use_trac_ik, use_cart_ctrl);
 
     EXPECT_EQ   (name, ac.getName());
 	EXPECT_EQ   (limb, ac.getLimb());
@@ -50,28 +50,23 @@ TEST(ArmControlTest, testPublicSetterGetterMethods)
     bool   use_trac_ik =  true;
     bool use_cart_ctrl = false;
 
-    ArmCtrl ac (name, limb, use_robot, use_forces, use_trac_ik, use_cart_ctrl);
+    ArmCtrl ac(name, limb, use_robot, use_forces, use_trac_ik, use_cart_ctrl);
 
     //Setter Methods
-    std::string state = "teststate";
     int obj = 5;               //some random obj id number
     vector<int> objs (4, 100); //some random value vector
 
-    std::string      action =     "testaction";
-    std::string prev_action = "testprevaction";
-
-    ac.setSubState(       state);
-    ac.setObjectID(         obj);
-    ac.setObjectIDs(       objs);
-    ac.setAction(        action);
-    ac.setPrevAction(prev_action);
+    ac.setState     (       DONE);
+    ac.setObjectID  (        obj);
+    ac.setObjectIDs (       objs);
+    ac.setAction    (ACTION_HOME);
 
     //Getter methods
-    EXPECT_EQ   (     "teststate", ac.getSubState());
-    EXPECT_EQ   (    "testaction", ac.getAction());
-    EXPECT_EQ   ("testprevaction", ac.getPrevAction());
-    EXPECT_EQ   (             obj, ac.getObjectID());
-    EXPECT_EQ   (            objs, ac.getObjectIDs());
+    EXPECT_EQ   (       DONE, int(ac.getState()));
+    EXPECT_EQ   (ACTION_HOME,     ac.getAction());
+    EXPECT_EQ   (         "",     ac.getPrevAction());
+    EXPECT_EQ   (        obj,     ac.getObjectID());
+    EXPECT_EQ   (       objs,     ac.getObjectIDs());
 }
 
 // Run all the tests that were declared with TEST()
