@@ -6,7 +6,7 @@ using namespace baxter_core_msgs;
 
 ArmCtrl::ArmCtrl(string _name, string _limb, bool _use_robot, bool _use_forces, bool _use_trac_ik, bool _use_cart_ctrl) :
                  RobotInterface(_name,_limb, _use_robot, THREAD_FREQ, _use_forces, _use_trac_ik, _use_cart_ctrl),
-                 Gripper(_limb, _use_robot), sub_state(""), action(""), sel_object_id(-1)
+                 Gripper(_limb, _use_robot), sub_state(""), action(""), prev_action(""), sel_object_id(-1)
 {
     std::string other_limb = getLimb() == "right" ? "left" : "right";
 
@@ -608,22 +608,26 @@ bool ArmCtrl::setState(int _state)
     return RobotInterface::setState(_state);
 }
 
-void ArmCtrl::setSubState(const string _state)
+void ArmCtrl::setSubState(const string& _sub_state)
 {
-    ROS_DEBUG("[%s] Setting sub state to: %s", getLimb().c_str(), _state.c_str());
-    sub_state =  _state;
+    // ROS_DEBUG("[%s] Setting sub state to: %s", getLimb().c_str(), _sub_state.c_str());
+    sub_state =  _sub_state;
 }
 
-void ArmCtrl::setAction(string _action)
+bool ArmCtrl::setAction(const string& _action)
 {
     setPrevAction(getAction());
     action = _action;
     publishState();
+
+    return true;
 }
 
-void ArmCtrl::setPrevAction(string _prev_action)
+bool ArmCtrl::setPrevAction(const string& _prev_action)
 {
     prev_action = _prev_action;
+
+    return true;
 }
 
 bool ArmCtrl::publishState()
