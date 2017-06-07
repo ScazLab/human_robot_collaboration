@@ -5,7 +5,7 @@
 class ROSImageObject: public ROSThreadImage
 {
 public:    
-    ROSImageObject(std::string namenew): ROSThreadImage(namenew) {}
+    explicit ROSImageObject(std::string namenew): ROSThreadImage(namenew) {}
     void InternalThreadEntry(); 
 };
 
