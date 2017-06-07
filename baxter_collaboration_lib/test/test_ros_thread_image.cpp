@@ -18,7 +18,7 @@ void ROSImageObject::InternalThreadEntry() {
 TEST(rosimagetest, testsetname)
 {
    ROSImageObject rt("test");
-   rt.joinInternalThread(); //
+   rt.joinInternalThread();
 
    rt.setName("newtestname");
    EXPECT_EQ("newtestname", rt.getName());
