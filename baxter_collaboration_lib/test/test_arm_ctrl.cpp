@@ -31,7 +31,7 @@ TEST(ArmControlTest, testConstructorCustomValues)
     ArmCtrl ac(name, limb, use_robot, use_forces, use_trac_ik, use_cart_ctrl);
 
     EXPECT_EQ   (name, ac.getName());
-	EXPECT_EQ   (limb, ac.getLimb());
+    EXPECT_EQ   (limb, ac.getLimb());
     EXPECT_FALSE(ac.isRobotUsed());
     EXPECT_FALSE(ac.useForces());
     EXPECT_FALSE(ac.useTracIK());
