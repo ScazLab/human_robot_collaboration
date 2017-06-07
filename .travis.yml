@@ -43,12 +43,8 @@
 ################################################################################
 
 # Use ubuntu trusty (14.04) with sudo privileges.
-dist: trusty
 sudo: required
 language: generic
-compiler:
-  - clang
-  - gcc
 cache:
   - apt
 notifications:
@@ -60,14 +56,31 @@ notifications:
 # trigger a build matrix for different ROS distributions if desired.
 env:
   global:
-    - ROS_DISTRO=indigo
-    - ROS_DISTRO=kinetic
     - ROS_CI_DESKTOP="`lsb_release -cs`"  # e.g. [precise|trusty|...]
     - CI_SOURCE_PATH=$(pwd)
     - ROSINSTALL_FILE=$CI_SOURCE_PATH/dependencies.rosinstall
     - CATKIN_OPTIONS=$CI_SOURCE_PATH/catkin.options
     - ROS_PARALLEL_JOBS='-j8 -l6'
     - REPO_NAME=$(echo $TRAVIS_REPO_SLUG | cut -d"/" -f2) # if you have multiple packages per repo, change this variable accordingly
+
+matrix:
+  include:
+    - os: linux
+      dist: trusty
+      env: ROS_DISTRO=indigo
+      compiler: gcc
+    - os: linux
+      dist: xenial
+      env: ROS_DISTRO=kinetic
+      compiler: gcc
+    - os: linux
+      dist: trusty
+      env: ROS_DISTRO=indigo
+      compiler: clang
+    - os: linux
+      dist: xenial
+      env: ROS_DISTRO=kinetic
+      compiler: clang
 
 ################################################################################
 
