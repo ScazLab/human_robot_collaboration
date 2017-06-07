@@ -155,11 +155,11 @@ if(CATKIN_ENABLE_TESTING)
   ## ROS thread obj tests
   catkin_add_gtest(test_ros_thread_obj test/test_ros_thread_obj.cpp)
   target_link_libraries(test_ros_thread_obj robot_utils)
- 
+
   ## Robot ROS thread image test
   add_rostest_gtest(test_ros_thread_image test/test_ros_thread_image.test
-  test/test_ros_thread_image.cpp)
-  target_link_libraries(test_ros_thread_image robot_utils ${catkin_LIBRARIES})
+                                          test/test_ros_thread_image.cpp)
+  target_link_libraries(test_ros_thread_image robot_utils)
 
 endif()
 
