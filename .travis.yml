@@ -70,25 +70,26 @@ matrix:
       env: ROS_DISTRO=indigo
       compiler: gcc
     - os: linux
-      dist: xenial
-      env: ROS_DISTRO=kinetic
-      compiler: gcc
-    - os: linux
       dist: trusty
       env: ROS_DISTRO=indigo
       compiler: clang
-    - os: linux
-      dist: xenial
-      env: ROS_DISTRO=kinetic
-      compiler: clang
+    # kinetic/xenial builds are not enabled as of now since travis does not support xenial 16.04
+    # - os: linux
+    #   dist: xenial
+    #   env: ROS_DISTRO=kinetic
+    #   compiler: gcc
+    # - os: linux
+    #   dist: xenial
+    #   env: ROS_DISTRO=kinetic
+    #   compiler: clang
 
 ################################################################################
 
 # Install system dependencies, namely a very barebones ROS setup.
 before_install:
-  - echo $ROS_CI_DESKTOP
-  - echo $ROS_DISTRO
-  - echo "`lsb_release -cs`"
+  # - echo $ROS_CI_DESKTOP
+  # - echo $ROS_DISTRO
+  # - echo `lsb_release -cs`
   - sudo sh -c "echo \"deb http://packages.ros.org/ros/ubuntu $ROS_CI_DESKTOP main\" > /etc/apt/sources.list.d/ros-latest.list"
   - wget http://packages.ros.org/ros.key -O - | sudo apt-key add -
   - sudo apt-get update -qq
