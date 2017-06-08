@@ -12,6 +12,8 @@
 #include <baxter_core_msgs/JointCommand.h>
 #include <baxter_core_msgs/SolvePositionIK.h>
 
+#include <visualization_msgs/MarkerArray.h>
+
 #include <geometry_msgs/Point.h>
 #include <sensor_msgs/Range.h>
 #include <std_msgs/Empty.h>
@@ -116,6 +118,7 @@ private:
      */
     ROSThreadObj ctrl_thread;   // Internal thread that implements the controller server
     ros::Subscriber ctrl_sub;   // Subscriber that receives desired poses from other nodes
+    ros::Publisher  rviz_pub;   // Published that publishes the current target on rviz
 
     bool   use_cart_ctrl;   // Flag to know if we're using the cartesian controller or not
     bool is_ctrl_running;   // Flag to know if the controller is running
@@ -160,6 +163,13 @@ private:
      * @param msg the topic message
      */
     void ctrlMsgCb(const baxter_collaboration_msgs::GoToPose& msg);
+
+    /**
+     * Publishes a vector of markers to RVIZ for visualization
+     *
+     * @param _obj the vector of markers to publish
+     */
+    void publishRVIZMarkers(std::vector<geometry_msgs::Pose> _obj);
 
     /**
      * Internal thread entry that gets called when the thread is started.
