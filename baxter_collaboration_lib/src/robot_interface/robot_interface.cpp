@@ -79,6 +79,8 @@ RobotInterface::RobotInterface(string _name, string _limb, bool _use_robot, doub
     {
         string topic = "/" + getName() + "/" + getLimb() + "/go_to_pose";
         ctrl_sub     = nh.subscribe(topic, SUBSCRIBER_BUFFER, &RobotInterface::ctrlMsgCb, this);
+        rviz_pub     = nh.advertise<visualization_msgs::MarkerArray>("/visualization_marker_array",
+                                                                        SUBSCRIBER_BUFFER, true );
         ROS_INFO("[%s] Created cartesian controller that listens to : %s", getLimb().c_str(), topic.c_str());
     }
 
@@ -173,6 +175,8 @@ void RobotInterface::ThreadEntry()
 
                     pose_curr.orientation = o_c;
                 }
+
+                publishRVIZMarkers(std::vector<geometry_msgs::Pose>{pose_des, pose_curr});
 
                 // ROS_INFO("[%s] Current Pose: %s Time %g/%g", getLimb().c_str(), print(pose_curr).c_str(),
                 //                                                                    time_elap, traj_time);
@@ -353,6 +357,52 @@ void RobotInterface::ctrlMsgCb(const baxter_collaboration_msgs::GoToPose& msg)
     }
 
     return;
+}
+
+void RobotInterface::publishRVIZMarkers(std::vector<geometry_msgs::Pose> _obj)
+{
+    visualization_msgs::MarkerArray markers;
+
+    for (size_t i = 0; i < _obj.size(); ++i)
+    {
+        visualization_msgs::Marker marker;
+        marker.header.frame_id =         "base";
+        marker.header.stamp    =    ros::Time();
+        marker.ns     = getName()+"/"+getLimb();
+        marker.id     =         int(i);
+        marker.type   = visualization_msgs::Marker::CUBE;
+        marker.action = visualization_msgs::Marker:: ADD;
+        marker.pose.position.x    = _obj[i].position.x;
+        marker.pose.position.y    = _obj[i].position.y;
+        marker.pose.position.z    = _obj[i].position.z;
+        marker.pose.orientation.x = _obj[i].orientation.x;
+        marker.pose.orientation.y = _obj[i].orientation.y;
+        marker.pose.orientation.z = _obj[i].orientation.z;
+        marker.pose.orientation.w = _obj[i].orientation.w;
+        marker.scale.x = 0.05;
+        marker.scale.y = 0.05;
+        marker.scale.z = 0.05;
+        marker.color.a =  1.0;
+
+        if (i == 0)
+        {
+            marker.color.r =  1.0;
+            marker.color.g =  1.0;
+            marker.color.b =  0.0;
+        }
+        else
+        {
+            marker.color.r =  0.0;
+            marker.color.g =  1.0;
+            marker.color.b =  1.0;
+        }
+
+        marker.lifetime = ros::Duration(5.0);
+
+        markers.markers.push_back(marker);
+    }
+
+    rviz_pub.publish(markers);
 }
 
 void RobotInterface::setCtrlRunning(bool _flag)
