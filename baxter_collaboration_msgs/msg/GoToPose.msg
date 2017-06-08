@@ -28,3 +28,9 @@ geometry_msgs/Quaternion orientation
 # direction, specified by the type
 float64 increment
 
+# Mode to check if the position/pose has been reached successfully.
+# Either "strict" or "loose"
+string STRICT_CHECK = strict
+string  LOOSE_CHECK = loose
+
+string check_mode

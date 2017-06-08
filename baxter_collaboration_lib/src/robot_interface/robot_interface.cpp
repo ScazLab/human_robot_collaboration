@@ -16,7 +16,7 @@ RobotInterface::RobotInterface(string _name, string _limb, bool _use_robot, doub
                                filt_force{0.0, 0.0, 0.0}, filt_change{0.0, 0.0, 0.0}, time_filt_last_updated(ros::Time::now()),
                                is_coll_av_on(false), is_coll_det_on(false), use_cart_ctrl(_use_cart_ctrl), is_ctrl_running(false),
                                is_experimental(_is_experimental), ctrl_mode(baxter_collaboration_msgs::GoToPose::POSITION_MODE),
-                               ctrl_type("pose")
+                               ctrl_check_mode("strict"), ctrl_type("pose")
 {
     pthread_mutexattr_t _mutex_attr;
     pthread_mutexattr_init(&_mutex_attr);
@@ -101,17 +101,17 @@ RobotInterface::RobotInterface(string _name, string _limb, bool _use_robot, doub
 
 bool RobotInterface::startThread()
 {
-    return thread.start(ThreadEntryFunc, this);
+    return ctrl_thread.start(ThreadEntryFunc, this);
 }
 
 bool RobotInterface::closeThread()
 {
-    return thread.close();
+    return ctrl_thread.close();
 }
 
 bool RobotInterface::killThread()
 {
-    return thread.kill();
+    return ctrl_thread.kill();
 }
 
 void RobotInterface::ThreadEntry()
@@ -136,7 +136,7 @@ void RobotInterface::ThreadEntry()
             geometry_msgs::Point      p_d =      pose_des.position;
             geometry_msgs::Quaternion o_d =   pose_des.orientation;
 
-            if (!isPoseReached(p_d, o_d, "strict", getCtrlType()))
+            if (!isPoseReached(p_d, o_d, ctrl_check_mode, getCtrlType()))
             {
                 // Current pose to send to the IK solver.
                 geometry_msgs::Pose pose_curr = pose_des;
@@ -328,6 +328,18 @@ void RobotInterface::ctrlMsgCb(const baxter_collaboration_msgs::GoToPose& msg)
         }
 
         ctrl_mode = msg.ctrl_mode;
+
+        // Finally, let's check if check mode is among the allowed options
+        if (msg.check_mode != "strict" && msg.check_mode != "loose")
+        {
+            ctrl_check_mode = "strict";
+            ROS_WARN("[%s] Requested check mode %s not allowed! Using strict by default",
+                                              getLimb().c_str(), msg.check_mode.c_str());
+        }
+        else
+        {
+            ctrl_check_mode = msg.check_mode;
+        }
 
         setCtrlRunning(true);
         initCtrlParams();
@@ -766,8 +778,8 @@ bool RobotInterface::isPositionReached(geometry_msgs::Point p, string mode)
 
 bool RobotInterface::isPositionReached(double px, double py, double pz, string mode)
 {
-    ROS_DEBUG("[%s] Checking %s position. Error: %g %g %g", getLimb().c_str(),
-                   mode.c_str(), px-getPos().x, py-getPos().y, pz-getPos().z);
+    // ROS_INFO("[%s] Checking %s position. Error: %g %g %g", getLimb().c_str(),
+    //               mode.c_str(), px-getPos().x, py-getPos().y, pz-getPos().z);
 
     if (mode == "strict")
     {
@@ -802,10 +814,10 @@ bool RobotInterface::isOrientationReached(double ox, double oy, double oz, doubl
     tf::Quaternion cur;
     tf::quaternionMsgToTF(getOri(), cur);
 
-    ROS_DEBUG("[%s] Checking %s orientation. Curr %g %g %g %g Des %g %g %g %g Dot %g",
-                                       getLimb().c_str(), mode.c_str(),
-                                       getOri().x, getOri().y, getOri().z, getOri().w,
-                                       ox, oy, oz, ow, des.dot(cur));
+    // ROS_INFO("[%s] Checking %s orientation. Curr %g %g %g %g Des %g %g %g %g Dot %g",
+    //                                   getLimb().c_str(), mode.c_str(),
+    //                                   getOri().x, getOri().y, getOri().z, getOri().w,
+    //                                   ox, oy, oz, ow, des.dot(cur));
 
     if (mode == "strict")
     {
@@ -1052,6 +1064,6 @@ RobotInterface::~RobotInterface()
     pthread_mutex_destroy(&_mutex_jnts);
     pthread_mutex_destroy(&_mutex_ctrl);
 
-    thread.kill();
+    ctrl_thread.kill();
 }
 

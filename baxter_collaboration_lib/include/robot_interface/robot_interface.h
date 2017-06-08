@@ -114,7 +114,7 @@ private:
     /**
      * Cartesian Controller server
      */
-    ROSThreadObj thread;        // Internal thread that implements the controller server
+    ROSThreadObj ctrl_thread;   // Internal thread that implements the controller server
     ros::Subscriber ctrl_sub;   // Subscriber that receives desired poses from other nodes
 
     bool   use_cart_ctrl;   // Flag to know if we're using the cartesian controller or not
@@ -122,12 +122,14 @@ private:
     bool is_experimental;   // Flag to know if the robot is running in experimental mode
 
     // Control mode for the controller server. It can be either
-    // baxter_collaboration_msgs::GoToPose::POSITION_MODE or
-    // baxter_collaboration_msgs::GoToPose::VELOCITY_MODE , but for
-    // now the latter is experimental
+    // baxter_collaboration_msgs::GoToPose::POSITION_MODE,
+    // baxter_collaboration_msgs::GoToPose::VELOCITY_MODE, or
+    // baxter_collaboration_msgs::GoToPose::RAW_POSITION_MODE,
+    // but for now only POSITION_MODE is not experimental
     int ctrl_mode;
 
-    std::string ctrl_type;  // Control type (either "pose", "position" or "orientation")
+    std::string ctrl_check_mode; // Control check mode (either "loose" or "strict")
+    std::string       ctrl_type; // Control type (either "pose", "position" or "orientation")
 
     geometry_msgs::Pose pose_des;       // Desired pose to move the arm to
     geometry_msgs::Pose pose_start;     // Starting pose
