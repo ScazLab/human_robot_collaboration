@@ -98,16 +98,16 @@ RobotInterface::RobotInterface(string _name, string _limb, bool _use_robot, doub
 bool RobotInterface::startThread()
 {
     ctrl_thread = std::thread(ThreadEntryFunc, this);
-	return ctrl_thread.joinable(); // std::thread::joinable checks if thread identifies as active thread of execution
+    return ctrl_thread.joinable(); // std::thread::joinable checks if thread identifies as active thread of execution
 }
 
-void RobotInterface::setThreadKill(bool arg)
+void RobotInterface::setCtrlThreadCloseFlag(bool arg)
 {
     std::lock_guard<std::mutex> lck(mtx_ctrl_thread_close_flag);
     ctrl_thread_close_flag = arg;
 }
 
-bool RobotInterface::getThreadKill()
+bool RobotInterface::getCtrlThreadCloseFlag()
 {
     std::lock_guard<std::mutex> lck(mtx_ctrl_thread_close_flag);
     return ctrl_thread_close_flag;
@@ -117,7 +117,7 @@ void RobotInterface::ThreadEntry()
 {
     ros::Rate r(ctrl_freq);
 
-    while ((ros::ok()) && (getThreadKill() == false))
+    while (ros::ok() && not getCtrlThreadCloseFlag())
     {
         // ROS_INFO("Time: %g", (ros::Time::now() - initTime).toSec());
 
@@ -402,7 +402,7 @@ void RobotInterface::setCtrlRunning(bool _flag)
 {
     // ROS_INFO("[%s] Setting is_ctrl_running to: %i", getLimb().c_str(), _flag);
 
-    std::lock_guard<std::mutex> lck(_mtx_ctrl);
+    std::lock_guard<std::mutex> lck(mtx_ctrl);
     is_ctrl_running = _flag;
 
     if (_flag == true)    { setState(CTRL_RUNNING); }
@@ -415,7 +415,7 @@ bool RobotInterface::isCtrlRunning()
 {
     bool res;
 
-    std::lock_guard<std::mutex> lck(_mtx_ctrl);
+    std::lock_guard<std::mutex> lck(mtx_ctrl);
     res = is_ctrl_running;
 
     // ROS_INFO("[%s] is_ctrl_running equal to: %i", "left", res);
@@ -464,7 +464,7 @@ void RobotInterface::jointStatesCb(const sensor_msgs::JointState& msg)
 
     if (msg.name.size() >= joint_cmd.names.size())
     {
-        std::lock_guard<std::mutex> lck(mutex_jnts);
+        std::lock_guard<std::mutex> lck(mtx_jnts);
 
         // cout << "Joint state ";
         // for (size_t i = 9; i < 16; ++i)
@@ -694,9 +694,8 @@ bool RobotInterface::computeIK(double px, double py, double pz,
         ik_srv.request.seed_mode=0;         // i.e. SEED_AUTO
 
         ik_srv.request.pose_stamp.push_back(pose_stamp);
-        mutex_jnts.lock();
+        std::lock_guard<std::mutex> lck(mtx_jnts);
         ik_srv.request.seed_angles.push_back(curr_jnts);
-        mutex_jnts.unlock();
 
         ros::Time tn = ros::Time::now();
 
@@ -1047,7 +1046,7 @@ sensor_msgs::JointState RobotInterface::getJointStates()
 {
     sensor_msgs::JointState cj;
 
-    std::lock_guard<std::mutex> lck(mutex_jnts);
+    std::lock_guard<std::mutex> lck(mtx_jnts);
     cj = curr_jnts;
 
     return   cj;
@@ -1100,7 +1099,7 @@ void RobotInterface::suppressCollisionAv()
 
 RobotInterface::~RobotInterface()
 {
-    setThreadKill(true);
+    setCtrlThreadCloseFlag(true);
     if (ctrl_thread.joinable())
     {
         ctrl_thread.join();
