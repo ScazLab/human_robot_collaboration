@@ -145,7 +145,7 @@ private:
     ros::Time time_start;   // Time when the controller started
 
     // Mutex to protect the control flag
-    std::mutex mtx_ctrl;
+    std::mutex _mtx_ctrl;
 
     /**
      * Initializes some control parameters when the controller starts.
@@ -641,8 +641,8 @@ public:
     /**
      * Safely manipulate the boolean needed to kill the thread entry
      */
-    void setCtrlThreadCloseFlag(bool arg);
-    bool getCtrlThreadCloseFlag();
+    void setThreadKill(bool arg);
+    bool getThreadKill();
 };
 
 #endif
