@@ -18,12 +18,12 @@ RobotInterface::RobotInterface(string _name, string _limb, bool _use_robot, doub
                                is_experimental(_is_experimental), ctrl_mode(baxter_collaboration_msgs::GoToPose::POSITION_MODE),
                                ctrl_check_mode("strict"), ctrl_type("pose")
 {
-    pthread_mutexattr_t _mutex_attr;
-    pthread_mutexattr_init(&_mutex_attr);
-    pthread_mutexattr_settype(&_mutex_attr, PTHREAD_MUTEX_RECURSIVE_NP);
+    //pthread_mutexattr_t _mutex_attr;
+    //pthread_mutexattr_init(&_mutex_attr);
+    //pthread_mutexattr_settype(&_mutex_attr, PTHREAD_MUTEX_RECURSIVE_NP);
 
-    pthread_mutex_init(&_mutex_jnts, &_mutex_attr);
-    pthread_mutex_init(&_mutex_ctrl, &_mutex_attr);
+    //pthread_mutex_init(&_mutex_jnts, &_mutex_attr);
+    //pthread_mutex_init(&_mutex_ctrl, &_mutex_attr);
 
     // if (not _use_robot) return;
 
@@ -103,9 +103,12 @@ RobotInterface::RobotInterface(string _name, string _limb, bool _use_robot, doub
 
 bool RobotInterface::startThread()
 {
-    return ctrl_thread.start(ThreadEntryFunc, this);
+    // return ctrl_thread.start(ThreadEntryFunc, this);
+    ctrl_thread = std::thread(ThreadEntryFunc, this);
+	return ctrl_thread.joinable(); // std::thread::joinable checks if thread identifies as active thread of execution
 }
 
+/**
 bool RobotInterface::closeThread()
 {
     return ctrl_thread.close();
@@ -113,16 +116,29 @@ bool RobotInterface::closeThread()
 
 bool RobotInterface::killThread()
 {
-    return ctrl_thread.kill();
+    // return ctrl_thread.kill();
+}
+**/
+
+void RobotInterface::setThreadKill(bool arg)
+{
+    std::lock_guard<std::mutex> lck(_mtx_thread_kill);
+    _thread_kill = arg;
+}
+
+bool RobotInterface::getThreadKill()
+{
+    std::lock_guard<std::mutex> lck(_mtx_thread_kill);
+    return _thread_kill;
 }
 
 void RobotInterface::ThreadEntry()
 {
-    pthread_setcanceltype(PTHREAD_CANCEL_ASYNCHRONOUS, NULL);
+    // pthread_setcanceltype(PTHREAD_CANCEL_ASYNCHRONOUS, NULL);
 
     ros::Rate r(ctrl_freq);
 
-    while (RobotInterface::ok())
+    while ((not ros::isShuttingDown()) && (getThreadKill() == false))
     {
         // ROS_INFO("Time: %g", (ros::Time::now() - initTime).toSec());
 
@@ -207,10 +223,12 @@ void RobotInterface::ThreadEntry()
                 setState(CTRL_DONE);
             }
         }
+
         r.sleep();
+        ROS_INFO("[%s] This is the value of r: %g", getLimb().c_str(), r.expectedCycleTime().toSec());
     }
 
-    closeThread();
+    printf("[%s] Closing Control thread.\n", getLimb().c_str());
     return;
 }
 
@@ -409,9 +427,11 @@ void RobotInterface::setCtrlRunning(bool _flag)
 {
     // ROS_INFO("[%s] Setting is_ctrl_running to: %i", getLimb().c_str(), _flag);
 
-    pthread_mutex_lock(&_mutex_ctrl);
+    // pthread_mutex_lock(&_mutex_ctrl);
+    _mtx_ctrl.lock();
     is_ctrl_running = _flag;
-    pthread_mutex_unlock(&_mutex_ctrl);
+    _mtx_ctrl.unlock();
+    // pthread_mutex_unlock(&_mutex_ctrl);
 
     if (_flag == true)    { setState(CTRL_RUNNING); }
     else                  { setState(   CTRL_DONE); }
@@ -423,9 +443,11 @@ bool RobotInterface::isCtrlRunning()
 {
     bool res;
 
-    pthread_mutex_lock(&_mutex_ctrl);
+    //pthread_mutex_lock(&_mutex_ctrl);
+    _mtx_ctrl.lock();
     res = is_ctrl_running;
-    pthread_mutex_unlock(&_mutex_ctrl);
+    _mtx_ctrl.unlock();
+    //pthread_mutex_unlock(&_mutex_ctrl);
 
     // ROS_INFO("[%s] is_ctrl_running equal to: %i", "left", res);
 
@@ -473,7 +495,8 @@ void RobotInterface::jointStatesCb(const sensor_msgs::JointState& msg)
 
     if (msg.name.size() >= joint_cmd.names.size())
     {
-        pthread_mutex_lock(&_mutex_jnts);
+        // pthread_mutex_lock(&_mutex_jnts);
+        _mtx_jnts.lock();
 
         // cout << "Joint state ";
         // for (size_t i = 9; i < 16; ++i)
@@ -497,7 +520,8 @@ void RobotInterface::jointStatesCb(const sensor_msgs::JointState& msg)
                 }
             }
         }
-        pthread_mutex_unlock(&_mutex_jnts);
+        // pthread_mutex_unlock(&_mutex_jnts);
+        _mtx_jnts.unlock();
     }
 
     return;
@@ -704,9 +728,11 @@ bool RobotInterface::computeIK(double px, double py, double pz,
         ik_srv.request.seed_mode=0;         // i.e. SEED_AUTO
 
         ik_srv.request.pose_stamp.push_back(pose_stamp);
-        pthread_mutex_lock(&_mutex_jnts);
+        // pthread_mutex_lock(&_mutex_jnts);
+        _mtx_jnts.lock();
         ik_srv.request.seed_angles.push_back(curr_jnts);
-        pthread_mutex_unlock(&_mutex_jnts);
+        // pthread_mutex_unlock(&_mutex_jnts);
+        _mtx_jnts.unlock();
 
         ros::Time tn = ros::Time::now();
 
@@ -1057,9 +1083,11 @@ sensor_msgs::JointState RobotInterface::getJointStates()
 {
     sensor_msgs::JointState cj;
 
-    pthread_mutex_lock(&_mutex_jnts);
+    // pthread_mutex_lock(&_mutex_jnts);
+    _mtx_jnts.lock();
     cj = curr_jnts;
-    pthread_mutex_unlock(&_mutex_jnts);
+    // pthread_mutex_unlock(&_mutex_jnts);
+    _mtx_jnts.unlock();
 
     return   cj;
 }
@@ -1111,9 +1139,13 @@ void RobotInterface::suppressCollisionAv()
 
 RobotInterface::~RobotInterface()
 {
-    pthread_mutex_destroy(&_mutex_jnts);
-    pthread_mutex_destroy(&_mutex_ctrl);
+    //pthread_mutex_destroy(&_mutex_jnts);
+    //pthread_mutex_destroy(&_mutex_ctrl);
 
-    ctrl_thread.kill();
+    setThreadKill(true);
+    if (ctrl_thread.joinable())
+    {
+        ctrl_thread.join();
+    }
 }
 

@@ -2,6 +2,8 @@
 #define __ROBOT_INTERFACE_H__
 
 #include <vector>
+#include <thread>
+#include <mutex>
 
 #include "gtest/gtest_prod.h"
 
@@ -93,7 +95,8 @@ private:
     sensor_msgs::JointState    curr_jnts;
 
     // Mutex to protect joint state variable
-    pthread_mutex_t _mutex_jnts;
+    //pthread_mutex_t _mutex_jnts;
+    std::mutex _mtx_jnts;
 
     /**
      * Collision avoidance State
@@ -116,7 +119,12 @@ private:
     /**
      * Cartesian Controller server
      */
-    ROSThreadObj ctrl_thread;   // Internal thread that implements the controller server
+    //ROSThreadObj ctrl_thread;   // Internal thread that implements the controller server
+    std::thread ctrl_thread;
+
+    bool _thread_kill = false;
+    std::mutex _mtx_thread_kill;
+
     ros::Subscriber ctrl_sub;   // Subscriber that receives desired poses from other nodes
     ros::Publisher  rviz_pub;   // Published that publishes the current target on rviz
 
@@ -140,7 +148,8 @@ private:
     ros::Time time_start;   // Time when the controller started
 
     // Mutex to protect the control flag
-    pthread_mutex_t _mutex_ctrl;
+    //pthread_mutex_t _mutex_ctrl;
+    std::mutex _mtx_ctrl;
 
     /**
      * Initializes some control parameters when the controller starts.
@@ -254,7 +263,7 @@ private:
      *
      * @return  true/false if success failure (NOT in the POSIX way)
      */
-    bool closeThread();
+    //bool closeThread();
 
     /**
      * Kills the control server thread gracefully. For now it is
@@ -263,7 +272,7 @@ private:
      *
      * @return  true/false if success failure (NOT in the POSIX way)
      */
-    bool killThread();
+    // bool killThread();
 
 
 protected:
@@ -651,6 +660,12 @@ public:
      * Check availability of the infrared data
     */
     bool    isIRok() { return ir_ok; };
+
+    /**
+     * Safely manipulate the boolean needed to kill the thread entry
+     */
+    void setThreadKill(bool arg);
+    bool getThreadKill();
 };
 
 #endif
