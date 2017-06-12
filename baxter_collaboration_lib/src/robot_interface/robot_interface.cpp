@@ -18,7 +18,6 @@ RobotInterface::RobotInterface(string _name, string _limb, bool _use_robot, doub
                                is_ctrl_running(false), is_experimental(_is_experimental),
                                ctrl_mode(baxter_collaboration_msgs::GoToPose::POSITION_MODE), ctrl_check_mode("strict"), ctrl_type("pose")
 {
-
     // if (not _use_robot) return;
 
     if (getLimb()=="left")
@@ -409,7 +408,7 @@ void RobotInterface::setCtrlRunning(bool _flag)
 
 bool RobotInterface::isCtrlRunning()
 {
-    bool res;
+    bool res = false;
 
     std::lock_guard<std::mutex> lck(mtx_ctrl);
     res = is_ctrl_running;
@@ -690,8 +689,7 @@ bool RobotInterface::computeIK(double px, double py, double pz,
         ik_srv.request.seed_mode=0;         // i.e. SEED_AUTO
 
         ik_srv.request.pose_stamp.push_back(pose_stamp);
-        std::lock_guard<std::mutex> lck(mtx_jnts);
-        ik_srv.request.seed_angles.push_back(curr_jnts);
+        ik_srv.request.seed_angles.push_back(getJointStates());
 
         ros::Time tn = ros::Time::now();
 
