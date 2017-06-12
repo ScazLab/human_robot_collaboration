@@ -9,14 +9,14 @@ using namespace baxter_core_msgs;
 /*                         RobotInterface                                 */
 /**************************************************************************/
 RobotInterface::RobotInterface(string _name, string _limb, bool _use_robot, double _ctrl_freq, bool _use_forces,
-                               bool _use_trac_ik, bool _use_cart_ctrl, bool _is_experimental) : nh(_name), name(_name),
-                               limb(_limb), state(START), spinner(4), use_robot(_use_robot), use_forces(_use_forces),
-                               ir_ok(false), curr_range(0.0), curr_min_range(0.0), curr_max_range(0.0),
-                               ik_solver(_limb, _use_robot), use_trac_ik(_use_trac_ik), ctrl_freq(_ctrl_freq),
-                               filt_force{0.0, 0.0, 0.0}, filt_change{0.0, 0.0, 0.0}, time_filt_last_updated(ros::Time::now()),
-                               is_coll_av_on(false), is_coll_det_on(false), ctrl_thread_close_flag(false), use_cart_ctrl(_use_cart_ctrl), is_ctrl_running(false),
-                               is_experimental(_is_experimental), ctrl_mode(baxter_collaboration_msgs::GoToPose::POSITION_MODE),
-                               ctrl_check_mode("strict"), ctrl_type("pose")
+ bool _use_trac_ik, bool _use_cart_ctrl, bool _is_experimental) : nh(_name), name(_name),
+limb(_limb), state(START), spinner(4), use_robot(_use_robot), use_forces(_use_forces),
+ir_ok(false), curr_range(0.0), curr_min_range(0.0), curr_max_range(0.0),
+ik_solver(_limb, _use_robot), use_trac_ik(_use_trac_ik), ctrl_freq(_ctrl_freq),
+filt_force{0.0, 0.0, 0.0}, filt_change{0.0, 0.0, 0.0}, time_filt_last_updated(ros::Time::now()),
+is_coll_av_on(false), is_coll_det_on(false), ctrl_thread_close_flag(false), use_cart_ctrl(_use_cart_ctrl), is_ctrl_running(false),
+is_experimental(_is_experimental), ctrl_mode(baxter_collaboration_msgs::GoToPose::POSITION_MODE),
+ctrl_check_mode("strict"), ctrl_type("pose")
 {
 
     // if (not _use_robot) return;
@@ -45,25 +45,25 @@ RobotInterface::RobotInterface(string _name, string _limb, bool _use_robot, doub
     coll_av_pub    = nh.advertise<std_msgs::Empty>("/robot/limb/" + getLimb() + "/suppress_collision_avoidance", 1);
 
     endpt_sub      = nh.subscribe("/robot/limb/" + getLimb() + "/endpoint_state",
-                                   SUBSCRIBER_BUFFER, &RobotInterface::endpointCb, this);
+     SUBSCRIBER_BUFFER, &RobotInterface::endpointCb, this);
 
     ir_sub         = nh.subscribe("/robot/range/" + getLimb() + "_hand_range/state",
-                                   SUBSCRIBER_BUFFER, &RobotInterface::IRCb, this);
+     SUBSCRIBER_BUFFER, &RobotInterface::IRCb, this);
 
     cuff_sub_lower = nh.subscribe("/robot/digital_io/" + getLimb() + "_lower_button/state",
-                                   SUBSCRIBER_BUFFER, &RobotInterface::cuffLowerCb, this);
+     SUBSCRIBER_BUFFER, &RobotInterface::cuffLowerCb, this);
 
     cuff_sub_upper = nh.subscribe("/robot/digital_io/" + getLimb() + "_upper_button/state",
-                                   SUBSCRIBER_BUFFER, &RobotInterface::cuffUpperCb, this);
+     SUBSCRIBER_BUFFER, &RobotInterface::cuffUpperCb, this);
 
     jntstate_sub   = nh.subscribe("/robot/joint_states",
-                                   SUBSCRIBER_BUFFER, &RobotInterface::jointStatesCb, this);
+     SUBSCRIBER_BUFFER, &RobotInterface::jointStatesCb, this);
 
     coll_av_sub    = nh.subscribe("/robot/limb/" + getLimb() + "/collision_avoidance_state",
-                                   SUBSCRIBER_BUFFER, &RobotInterface::collAvCb, this);
+     SUBSCRIBER_BUFFER, &RobotInterface::collAvCb, this);
 
     coll_det_sub   = nh.subscribe("/robot/limb/" + getLimb() + "/collision_detection_state",
-                                   SUBSCRIBER_BUFFER, &RobotInterface::collDetCb, this);
+     SUBSCRIBER_BUFFER, &RobotInterface::collDetCb, this);
 
     std::string topic = "/"+getName()+"/"+getLimb()+"/state";
     state_pub = nh.advertise<baxter_collaboration_msgs::ArmState>(topic, SUBSCRIBER_BUFFER, true);
@@ -74,14 +74,14 @@ RobotInterface::RobotInterface(string _name, string _limb, bool _use_robot, doub
         string topic = "/" + getName() + "/" + getLimb() + "/go_to_pose";
         ctrl_sub     = nh.subscribe(topic, SUBSCRIBER_BUFFER, &RobotInterface::ctrlMsgCb, this);
         rviz_pub     = nh.advertise<visualization_msgs::MarkerArray>("/visualization_marker_array",
-                                                                        SUBSCRIBER_BUFFER, true );
+            SUBSCRIBER_BUFFER, true );
         ROS_INFO("[%s] Created cartesian controller that listens to : %s", getLimb().c_str(), topic.c_str());
     }
 
     if (not use_trac_ik)
     {
         ik_client = nh.serviceClient<SolvePositionIK>("/ExternalTools/" + getLimb() +
-                                                       "/PositionKinematicsNode/IKService");
+         "/PositionKinematicsNode/IKService");
     }
 
     spinner.start();
@@ -98,16 +98,16 @@ RobotInterface::RobotInterface(string _name, string _limb, bool _use_robot, doub
 bool RobotInterface::startThread()
 {
     ctrl_thread = std::thread(ThreadEntryFunc, this);
-	return ctrl_thread.joinable(); // std::thread::joinable checks if thread identifies as active thread of execution
+    return ctrl_thread.joinable(); // std::thread::joinable checks if thread identifies as active thread of execution
 }
 
-void RobotInterface::setThreadKill(bool arg)
+void RobotInterface::setCtrlThreadCloseFlag(bool arg)
 {
     std::lock_guard<std::mutex> lck(mtx_ctrl_thread_close_flag);
     ctrl_thread_close_flag = arg;
 }
 
-bool RobotInterface::getThreadKill()
+bool RobotInterface::getCtrlThreadCloseFlag()
 {
     std::lock_guard<std::mutex> lck(mtx_ctrl_thread_close_flag);
     return ctrl_thread_close_flag;
@@ -117,7 +117,7 @@ void RobotInterface::ThreadEntry()
 {
     ros::Rate r(ctrl_freq);
 
-    while ((ros::ok()) && (getThreadKill() == false))
+    while (ros::ok() && not getCtrlThreadCloseFlag())
     {
         // ROS_INFO("Time: %g", (ros::Time::now() - initTime).toSec());
 
@@ -252,7 +252,7 @@ void RobotInterface::ctrlMsgCb(const baxter_collaboration_msgs::GoToPose& msg)
         }
 
         if  (msg.type ==   "position" || msg.type ==       "pose" ||
-             msg.type == "relative_x" || msg.type == "relative_y" || msg.type == "relative_z")
+           msg.type == "relative_x" || msg.type == "relative_y" || msg.type == "relative_z")
         {
             if (msg.type == "pose")
             {
@@ -289,7 +289,7 @@ void RobotInterface::ctrlMsgCb(const baxter_collaboration_msgs::GoToPose& msg)
         else
         {
             ROS_ERROR("[%s] Requested command type %s not allowed!",
-                                  getLimb().c_str(), msg.type.c_str());
+              getLimb().c_str(), msg.type.c_str());
             return;
         }
 
@@ -299,8 +299,8 @@ void RobotInterface::ctrlMsgCb(const baxter_collaboration_msgs::GoToPose& msg)
             if (not is_experimental)
             {
                 ROS_ERROR("[%s] As of now, the only tested control mode is POSITION_MODE. "
-                          "To be able to use any other control mode, please set the "
-                          "experimental flag in the constructor to true.", getLimb().c_str());
+                  "To be able to use any other control mode, please set the "
+                  "experimental flag in the constructor to true.", getLimb().c_str());
                 return;
             }
             else
@@ -318,7 +318,7 @@ void RobotInterface::ctrlMsgCb(const baxter_collaboration_msgs::GoToPose& msg)
                 else
                 {
                     ROS_ERROR("[%s] Requested control mode %i not allowed!",
-                                          getLimb().c_str(), msg.ctrl_mode);
+                      getLimb().c_str(), msg.ctrl_mode);
                     return;
                 }
             }
@@ -331,7 +331,7 @@ void RobotInterface::ctrlMsgCb(const baxter_collaboration_msgs::GoToPose& msg)
         {
             ctrl_check_mode = "strict";
             ROS_WARN("[%s] Requested check mode %s not allowed! Using strict by default",
-                                              getLimb().c_str(), msg.check_mode.c_str());
+              getLimb().c_str(), msg.check_mode.c_str());
         }
         else
         {
@@ -346,7 +346,7 @@ void RobotInterface::ctrlMsgCb(const baxter_collaboration_msgs::GoToPose& msg)
     else
     {
         ROS_ERROR_THROTTLE(1, "[%s] Received new target control command, but the controller is already"
-                              " in use through the high level interface!", getLimb().c_str());
+          " in use through the high level interface!", getLimb().c_str());
     }
 
     return;
@@ -402,7 +402,7 @@ void RobotInterface::setCtrlRunning(bool _flag)
 {
     // ROS_INFO("[%s] Setting is_ctrl_running to: %i", getLimb().c_str(), _flag);
 
-    std::lock_guard<std::mutex> lck(_mtx_ctrl);
+    std::lock_guard<std::mutex> lck(mtx_ctrl);
     is_ctrl_running = _flag;
 
     if (_flag == true)    { setState(CTRL_RUNNING); }
@@ -415,7 +415,7 @@ bool RobotInterface::isCtrlRunning()
 {
     bool res;
 
-    std::lock_guard<std::mutex> lck(_mtx_ctrl);
+    std::lock_guard<std::mutex> lck(mtx_ctrl);
     res = is_ctrl_running;
 
     // ROS_INFO("[%s] is_ctrl_running equal to: %i", "left", res);
@@ -437,7 +437,7 @@ void RobotInterface::collAvCb(const baxter_core_msgs::CollisionAvoidanceState& m
             objects = objects + " " + string(msg.collision_object[i]).erase(0,10);
         }
         ROS_WARN_THROTTLE(1, "[%s] Collision avoidance with: %s",
-                             getLimb().c_str(), objects.c_str());
+           getLimb().c_str(), objects.c_str());
     }
     else is_coll_av_on = false;
 
@@ -597,7 +597,7 @@ bool RobotInterface::goToPoseNoCheck(geometry_msgs::Point p, geometry_msgs::Quat
 }
 
 bool RobotInterface::goToPoseNoCheck(double px, double py, double pz,
-                                     double ox, double oy, double oz, double ow)
+   double ox, double oy, double oz, double ow)
 {
     vector<double> joint_angles;
     if (!computeIK(px, py, pz, ox, oy, oz, ow, joint_angles)) return false;
@@ -623,8 +623,8 @@ bool RobotInterface::goToJointConfNoCheck(vector<double> joint_values)
 }
 
 bool RobotInterface::goToPose(double px, double py, double pz,
-                              double ox, double oy, double oz, double ow,
-                              string mode, bool disable_coll_av)
+  double ox, double oy, double oz, double ow,
+  string mode, bool disable_coll_av)
 {
     vector<double> joint_angles;
     if (!computeIK(px, py, pz, ox, oy, oz, ow, joint_angles)) return false;
@@ -664,14 +664,14 @@ bool RobotInterface::computeIK(geometry_msgs::Pose p, vector<double>& j)
 }
 
 bool RobotInterface::computeIK(geometry_msgs::Point p, geometry_msgs::Quaternion o,
-                               vector<double>& j)
+ vector<double>& j)
 {
     return computeIK(p.x, p.y, p.z, o.x, o.y, o.z, o.w, j);
 }
 
 bool RobotInterface::computeIK(double px, double py, double pz,
-                               double ox, double oy, double oz, double ow,
-                               vector<double>& j)
+ double ox, double oy, double oz, double ow,
+ vector<double>& j)
 {
     geometry_msgs::PoseStamped pose_stamp;
     pose_stamp.header.frame_id = "base";
@@ -694,9 +694,8 @@ bool RobotInterface::computeIK(double px, double py, double pz,
         ik_srv.request.seed_mode=0;         // i.e. SEED_AUTO
 
         ik_srv.request.pose_stamp.push_back(pose_stamp);
-        mutex_jnts.lock();
+        std::lock_guard<std::mutex> lck(mutex_jnts);
         ik_srv.request.seed_angles.push_back(curr_jnts);
-        mutex_jnts.unlock();
 
         ros::Time tn = ros::Time::now();
 
@@ -721,9 +720,9 @@ bool RobotInterface::computeIK(double px, double py, double pz,
                 // if position cannot be reached, try a position with the same x-y coordinates
                 // but higher z (useful when placing tokens)
                 ROS_DEBUG("[%s] IK solution not valid: %g %g %g", getLimb().c_str(),
-                                                         pose_stamp.pose.position.x,
-                                                         pose_stamp.pose.position.y,
-                                                         pose_stamp.pose.position.z);
+                   pose_stamp.pose.position.x,
+                   pose_stamp.pose.position.y,
+                   pose_stamp.pose.position.z);
                 pose_stamp.pose.position.z += 0.001;
             }
         }
@@ -733,10 +732,10 @@ bool RobotInterface::computeIK(double px, double py, double pz,
         if ((ros::Time::now() - start).toSec() > 0.05 || pose_stamp.pose.position.z > thresh_z)
         {
             ROS_WARN("[%s] Did not find a suitable IK solution! Final Position %g %g %g",
-                                                                       getLimb().c_str(),
-                                                              pose_stamp.pose.position.x,
-                                                              pose_stamp.pose.position.y,
-                                                              pose_stamp.pose.position.z);
+             getLimb().c_str(),
+             pose_stamp.pose.position.x,
+             pose_stamp.pose.position.y,
+             pose_stamp.pose.position.z);
             return false;
         }
     }
@@ -767,7 +766,7 @@ bool RobotInterface::hasCollidedIR(string mode)
         curr_range >= curr_min_range &&
         curr_range <= thres             ) return true;
 
-    return false;
+        return false;
 }
 
 bool RobotInterface::hasCollidedCD()
@@ -781,14 +780,14 @@ bool RobotInterface::isPoseReached(geometry_msgs::Pose p, string mode, string ty
 }
 
 bool RobotInterface::isPoseReached(geometry_msgs::Point p, geometry_msgs::Quaternion o,
-                                   string mode, string type)
+ string mode, string type)
 {
     return isPoseReached(p.x, p.y, p.z, o.x, o.y, o.z, o.w, mode, type);
 }
 
 bool RobotInterface::isPoseReached(double px, double py, double pz,
-                                   double ox, double oy, double oz, double ow,
-                                   string mode, string type)
+ double ox, double oy, double oz, double ow,
+ string mode, string type)
 {
     if (type == "pose" || type == "position")
     {
@@ -803,7 +802,7 @@ bool RobotInterface::isPoseReached(double px, double py, double pz,
     if (type != "pose" && type != "position" && type != "orientation")
     {
         ROS_ERROR("[%s] Type should be either pose, position or orientation."
-                  " Received %s instead.", getLimb().c_str(), type.c_str());
+          " Received %s instead.", getLimb().c_str(), type.c_str());
 
         return false;
     }
@@ -836,7 +835,7 @@ bool RobotInterface::isPositionReached(double px, double py, double pz, string m
     else
     {
         ROS_ERROR("[%s] Mode should be either strict or loose. Received %s instead.",
-                                                    getLimb().c_str(), mode.c_str());
+            getLimb().c_str(), mode.c_str());
         return false;
     }
 
@@ -870,7 +869,7 @@ bool RobotInterface::isOrientationReached(double ox, double oy, double oz, doubl
     else
     {
         ROS_ERROR("[%s] Mode should be either strict or loose. Received %s instead.",
-                                                    getLimb().c_str(), mode.c_str());
+            getLimb().c_str(), mode.c_str());
         return false;
     }
 
@@ -887,7 +886,7 @@ bool RobotInterface::isConfigurationReached(vector<double> des_jnts, string mode
     baxter_core_msgs::JointCommand dj;
     setJointNames(dj);
     setJointCommands(des_jnts[0], des_jnts[1], des_jnts[2],
-                     des_jnts[3], des_jnts[4], des_jnts[5], des_jnts[6], dj);
+       des_jnts[3], des_jnts[4], des_jnts[5], des_jnts[6], dj);
 
     return isConfigurationReached(dj, mode);
 }
@@ -900,11 +899,11 @@ bool RobotInterface::isConfigurationReached(baxter_core_msgs::JointCommand des_j
     }
 
     ROS_DEBUG("[%s] Checking configuration: Current %g %g %g %g %g %g %g\tDesired %g %g %g %g %g %g %g",
-                                                                                      getLimb().c_str(),
-             curr_jnts.position[0], curr_jnts.position[1], curr_jnts.position[2], curr_jnts.position[3],
-                                    curr_jnts.position[4], curr_jnts.position[5], curr_jnts.position[6],
-               des_jnts.command[0],   des_jnts.command[1],   des_jnts.command[2],   des_jnts.command[3],
-                                      des_jnts.command[4],   des_jnts.command[5],   des_jnts.command[6]);
+      getLimb().c_str(),
+      curr_jnts.position[0], curr_jnts.position[1], curr_jnts.position[2], curr_jnts.position[3],
+      curr_jnts.position[4], curr_jnts.position[5], curr_jnts.position[6],
+      des_jnts.command[0],   des_jnts.command[1],   des_jnts.command[2],   des_jnts.command[3],
+      des_jnts.command[4],   des_jnts.command[5],   des_jnts.command[6]);
 
     for (size_t i = 0; i < des_jnts.names.size(); ++i)
     {
@@ -937,7 +936,7 @@ bool RobotInterface::setCtrlType(const std::string &_ctrl_type)
     if (_ctrl_type != "pose" && _ctrl_type != "position" && _ctrl_type != "orientation")
     {
         ROS_ERROR("[%s] Type should be either pose, position or orientation."
-                  " Received %s instead.", getLimb().c_str(), _ctrl_type.c_str());
+          " Received %s instead.", getLimb().c_str(), _ctrl_type.c_str());
 
         return false;
     }
@@ -960,8 +959,8 @@ void RobotInterface::setJointNames(JointCommand& joint_cmd)
 }
 
 void RobotInterface::setJointCommands(double s0, double s1, double e0, double e1,
-                                                 double w0, double w1, double w2,
-                                      baxter_core_msgs::JointCommand& joint_cmd)
+   double w0, double w1, double w2,
+   baxter_core_msgs::JointCommand& joint_cmd)
 {
     joint_cmd.command.push_back(s0);
     joint_cmd.command.push_back(s1);
@@ -1100,7 +1099,7 @@ void RobotInterface::suppressCollisionAv()
 
 RobotInterface::~RobotInterface()
 {
-    setThreadKill(true);
+    setCtrlThreadCloseFlag(true);
     if (ctrl_thread.joinable())
     {
         ctrl_thread.join();
