@@ -21,7 +21,6 @@
 #include <std_msgs/Empty.h>
 
 #include "robot_utils/utils.h"
-#include "robot_utils/ros_thread_obj.h"
 #include "robot_utils/baxter_trac_ik.h"
 
 #include <baxter_collaboration_msgs/GoToPose.h>
@@ -95,8 +94,7 @@ private:
     sensor_msgs::JointState    curr_jnts;
 
     // Mutex to protect joint state variable
-    //pthread_mutex_t _mutex_jnts;
-    std::mutex _mtx_jnts;
+    std::mutex mutex_jnts;
 
     /**
      * Collision avoidance State
@@ -119,11 +117,10 @@ private:
     /**
      * Cartesian Controller server
      */
-    //ROSThreadObj ctrl_thread;   // Internal thread that implements the controller server
-    std::thread ctrl_thread;
+    std::thread ctrl_thread; // Internal thread that implements the controller server
 
-    bool _thread_kill = false;
-    std::mutex _mtx_thread_kill;
+    bool ctrl_thread_close_flag;              // Flag to close the thread entry function
+    std::mutex mtx_ctrl_thread_close_flag;    // Mutex to protect the thread close flag
 
     ros::Subscriber ctrl_sub;   // Subscriber that receives desired poses from other nodes
     ros::Publisher  rviz_pub;   // Published that publishes the current target on rviz
@@ -148,7 +145,6 @@ private:
     ros::Time time_start;   // Time when the controller started
 
     // Mutex to protect the control flag
-    //pthread_mutex_t _mutex_ctrl;
     std::mutex _mtx_ctrl;
 
     /**
@@ -255,25 +251,6 @@ private:
      * @return  true/false if success failure (NOT in the POSIX way)
      */
     bool startThread();
-
-    /**
-     * Closes the control server thread gracefully. For now it is
-     * just a wrapper for thread.close(), but further functionality
-     * may be added in the future.
-     *
-     * @return  true/false if success failure (NOT in the POSIX way)
-     */
-    //bool closeThread();
-
-    /**
-     * Kills the control server thread gracefully. For now it is
-     * just a wrapper for thread.kill(), but further functionality
-     * may be added in the future.
-     *
-     * @return  true/false if success failure (NOT in the POSIX way)
-     */
-    // bool killThread();
-
 
 protected:
 
