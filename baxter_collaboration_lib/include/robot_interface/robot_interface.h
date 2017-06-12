@@ -2,6 +2,8 @@
 #define __ROBOT_INTERFACE_H__
 
 #include <vector>
+#include <thread>
+#include <mutex>
 
 #include "gtest/gtest_prod.h"
 
@@ -19,7 +21,6 @@
 #include <std_msgs/Empty.h>
 
 #include "robot_utils/utils.h"
-#include "robot_utils/ros_thread_obj.h"
 #include "robot_utils/baxter_trac_ik.h"
 
 #include <baxter_collaboration_msgs/GoToPose.h>
@@ -93,7 +94,7 @@ private:
     sensor_msgs::JointState    curr_jnts;
 
     // Mutex to protect joint state variable
-    pthread_mutex_t _mutex_jnts;
+    std::mutex mtx_jnts;
 
     /**
      * Collision avoidance State
@@ -116,7 +117,11 @@ private:
     /**
      * Cartesian Controller server
      */
-    ROSThreadObj ctrl_thread;   // Internal thread that implements the controller server
+    std::thread ctrl_thread; // Internal thread that implements the controller server
+
+    bool ctrl_thread_close_flag;              // Flag to close the thread entry function
+    std::mutex mtx_ctrl_thread_close_flag;    // Mutex to protect the thread close flag
+
     ros::Subscriber ctrl_sub;   // Subscriber that receives desired poses from other nodes
     ros::Publisher  rviz_pub;   // Published that publishes the current target on rviz
 
@@ -140,7 +145,7 @@ private:
     ros::Time time_start;   // Time when the controller started
 
     // Mutex to protect the control flag
-    pthread_mutex_t _mutex_ctrl;
+    std::mutex mtx_ctrl;
 
     /**
      * Initializes some control parameters when the controller starts.
@@ -170,13 +175,6 @@ private:
      * @param _obj the vector of markers to publish
      */
     void publishRVIZMarkers(std::vector<geometry_msgs::Pose> _obj);
-
-    /**
-     * Internal thread entry that gets called when the thread is started.
-     * It is used to implement the control server to manage the Baxter's
-     * arm from a separate thread.
-     */
-    static void* ThreadEntryFunc(void *obj);
 
     /**
      * Internal thread entry that gets called when the thread is started.
@@ -246,25 +244,6 @@ private:
      * @return  true/false if success failure (NOT in the POSIX way)
      */
     bool startThread();
-
-    /**
-     * Closes the control server thread gracefully. For now it is
-     * just a wrapper for thread.close(), but further functionality
-     * may be added in the future.
-     *
-     * @return  true/false if success failure (NOT in the POSIX way)
-     */
-    bool closeThread();
-
-    /**
-     * Kills the control server thread gracefully. For now it is
-     * just a wrapper for thread.kill(), but further functionality
-     * may be added in the future.
-     *
-     * @return  true/false if success failure (NOT in the POSIX way)
-     */
-    bool killThread();
-
 
 protected:
 
@@ -651,6 +630,12 @@ public:
      * Check availability of the infrared data
     */
     bool    isIRok() { return ir_ok; };
+
+    /**
+     * Safely manipulate the boolean needed to kill the thread entry
+     */
+    void setCtrlThreadCloseFlag(bool arg);
+    bool getCtrlThreadCloseFlag();
 };
 
 #endif
