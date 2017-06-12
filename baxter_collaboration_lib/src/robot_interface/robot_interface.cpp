@@ -14,9 +14,9 @@ RobotInterface::RobotInterface(string _name, string _limb, bool _use_robot, doub
                                ir_ok(false), curr_range(0.0), curr_min_range(0.0), curr_max_range(0.0),
                                ik_solver(_limb, _use_robot), use_trac_ik(_use_trac_ik), ctrl_freq(_ctrl_freq),
                                filt_force{0.0, 0.0, 0.0}, filt_change{0.0, 0.0, 0.0}, time_filt_last_updated(ros::Time::now()),
-                               is_coll_av_on(false), is_coll_det_on(false), ctrl_thread_close_flag(false), use_cart_ctrl(_use_cart_ctrl), is_ctrl_running(false),
-                               is_experimental(_is_experimental), ctrl_mode(baxter_collaboration_msgs::GoToPose::POSITION_MODE),
-                               ctrl_check_mode("strict"), ctrl_type("pose")
+                               is_coll_av_on(false), is_coll_det_on(false), ctrl_thread_close_flag(false), use_cart_ctrl(_use_cart_ctrl),
+                               is_ctrl_running(false), is_experimental(_is_experimental),
+                               ctrl_mode(baxter_collaboration_msgs::GoToPose::POSITION_MODE), ctrl_check_mode("strict"), ctrl_type("pose")
 {
 
     // if (not _use_robot) return;
@@ -97,20 +97,10 @@ RobotInterface::RobotInterface(string _name, string _limb, bool _use_robot, doub
 
 bool RobotInterface::startThread()
 {
-    ctrl_thread = std::thread(ThreadEntryFunc, this);
-    return ctrl_thread.joinable(); // std::thread::joinable checks if thread identifies as active thread of execution
-}
+    ctrl_thread = std::thread(&RobotInterface::ThreadEntry, this);
 
-void RobotInterface::setCtrlThreadCloseFlag(bool arg)
-{
-    std::lock_guard<std::mutex> lck(mtx_ctrl_thread_close_flag);
-    ctrl_thread_close_flag = arg;
-}
-
-bool RobotInterface::getCtrlThreadCloseFlag()
-{
-    std::lock_guard<std::mutex> lck(mtx_ctrl_thread_close_flag);
-    return ctrl_thread_close_flag;
+    // joinable checks if thread identifies as active thread of execution
+    return ctrl_thread.joinable();
 }
 
 void RobotInterface::ThreadEntry()
@@ -207,10 +197,16 @@ void RobotInterface::ThreadEntry()
     return;
 }
 
-void * RobotInterface::ThreadEntryFunc(void * obj)
+void RobotInterface::setCtrlThreadCloseFlag(bool arg)
 {
-    ((RobotInterface *)obj)->ThreadEntry();
-    return NULL;
+    std::lock_guard<std::mutex> lck(mtx_ctrl_thread_close_flag);
+    ctrl_thread_close_flag = arg;
+}
+
+bool RobotInterface::getCtrlThreadCloseFlag()
+{
+    std::lock_guard<std::mutex> lck(mtx_ctrl_thread_close_flag);
+    return ctrl_thread_close_flag;
 }
 
 bool RobotInterface::ok()

@@ -181,13 +181,6 @@ private:
      * It is used to implement the control server to manage the Baxter's
      * arm from a separate thread.
      */
-    static void* ThreadEntryFunc(void *obj);
-
-    /**
-     * Internal thread entry that gets called when the thread is started.
-     * It is used to implement the control server to manage the Baxter's
-     * arm from a separate thread.
-     */
     void ThreadEntry();
 
     /**
