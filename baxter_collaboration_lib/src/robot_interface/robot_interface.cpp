@@ -243,6 +243,7 @@ void RobotInterface::ctrlMsgCb(const baxter_collaboration_msgs::GoToPose& msg)
         {
             ROS_INFO("[%s] Stopping cartesian controller server.", getLimb().c_str());
             setCtrlRunning(false);
+            setState(CTRL_DONE);
             return;
         }
 
@@ -401,7 +402,7 @@ void RobotInterface::setCtrlRunning(bool _flag)
     is_ctrl_running = _flag;
 
     if (_flag == true)    { setState(CTRL_RUNNING); }
-    else                  { setState(   CTRL_DONE); }
+    // else                  { setState(   CTRL_DONE); }
 
     return;
 }
