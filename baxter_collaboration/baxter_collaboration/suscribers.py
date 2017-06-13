@@ -2,6 +2,7 @@ import rospy
 from std_msgs.msg import String
 
 from baxter_core_msgs.msg import DigitalIOState
+from ros_speech2text.msg import transcript
 
 
 class WaitForOneSuscriber(object):
@@ -69,6 +70,23 @@ class CommunicationSuscriber(WaitForOneSuscriber):
     def cb(self, msg):
         if msg.data == self.STOP:
             self.stop_cb()
+        if self.listening:
+            self._handle_msg(msg)
+        else:
+            pass
+
+
+class ListenSuscriber(CommunicationSuscriber):
+
+    STOP = 'stop'
+
+    def _suscribe(self, topic):
+        self.sub = rospy.Subscriber(topic, transcript, self.cb)
+
+    def _handle_msg(self, msg):
+        self.found_message(msg.data.transcript)
+
+    def cb(self, msg):
         if self.listening:
             self._handle_msg(msg)
         else:
