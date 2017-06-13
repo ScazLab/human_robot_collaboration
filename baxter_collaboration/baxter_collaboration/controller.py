@@ -2,7 +2,7 @@ import rospy
 
 from .timer import Timer
 from .service_request import ServiceRequest, finished_request
-from .suscribers import CommunicationSuscriber, ButtonSuscriber
+from .suscribers import CommunicationSuscriber, ButtonSuscriber, ListenSuscriber
 from baxter_collaboration_msgs.srv import DoAction, DoActionRequest
 from svox_tts.srv import Speech, SpeechRequest
 
@@ -24,7 +24,7 @@ class BaseController(object):
     NODE_NAME = "experiment_controller"
 
     COM_TOPIC = '/web_interface/pub'
-    LISTEN_TOPIC = '/user_input'
+    LISTEN_TOPIC = '/ros_speech2text/user_output'
     ERR_TOPIC = '/robot/digital_io/left_lower_button/state'
     LEFT_BUTTON = '/robot/digital_io/left_upper_button/state'
     RIGHT_BUTTON = '/robot/digital_io/right_upper_button/state'
@@ -58,7 +58,7 @@ class BaseController(object):
         self._last_say_req = finished_request
         # Suscriber to human answers
         if listen:
-            self.answer_sub = CommunicationSuscriber(self.LISTEN_TOPIC, self._stop)
+            self.answer_sub = ListenSuscriber(self.LISTEN_TOPIC, self._stop)
         else:
             self.answer_sub = CommunicationSuscriber(self.COM_TOPIC, self._stop)
         # Suscriber to errors
