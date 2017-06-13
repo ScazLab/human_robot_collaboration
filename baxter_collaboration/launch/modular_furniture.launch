@@ -16,10 +16,10 @@
     <param name="hsv_detector/camera_frame"    value="/right_hand_camera"/>
     <param name="hsv_detector/area_threshold"  value="250"/>
 
-    <!-- <node pkg="baxter_collaboration" type="hsv_detector" name="hsv_detector" output="screen" respawn="true">
+    <node pkg="baxter_collaboration" type="hsv_detector" name="hsv_detector" output="screen" respawn="true">
         <remap from="hsv_detector/image" to="/cameras/right_hand_camera/image"/>
         <remap from="hsv_detector/camera_info" to="/cameras/right_hand_camera/camera_info"/>
-    </node> -->
+    </node>
 
     <!-- Objects database for the left arm -->
     <rosparam param = "action_provider/objects_left">
