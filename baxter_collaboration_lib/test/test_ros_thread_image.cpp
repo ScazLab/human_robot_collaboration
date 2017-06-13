@@ -53,7 +53,7 @@ public:
         {
             cv::Mat img_in;
 
-            if (!_img_empty)
+            if (not _img_empty)
             {
                 ROS_INFO("Processing image");
                 pthread_mutex_lock(&_mutex_img);
