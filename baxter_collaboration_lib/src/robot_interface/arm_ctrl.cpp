@@ -26,9 +26,14 @@ ArmCtrl::ArmCtrl(string _name, string _limb, bool _use_robot, bool _use_forces, 
                                 internal_recovery==true?"true":"false");
 }
 
+bool ArmCtrl::startThread()
+{
+    arm_thread = std::thread(&ArmCtrl::InternalThreadEntry, this);
+    return arm_thread.joinable();
+}
+
 void ArmCtrl::InternalThreadEntry()
 {
-    pthread_setcanceltype(PTHREAD_CANCEL_ASYNCHRONOUS,NULL);
     nh.param<bool>("internal_recovery",  internal_recovery, true);
 
     std::string a =     getAction();
@@ -67,7 +72,6 @@ void ArmCtrl::InternalThreadEntry()
                                           string(getState()).c_str(), getSubState().c_str());
     }
 
-    closeInternalThread();
     return;
 }
 
@@ -150,7 +154,7 @@ bool ArmCtrl::serviceCb(baxter_collaboration_msgs::DoAction::Request  &req,
         setObjectIDs(object_ids);
     }
 
-    startInternalThread();
+    startThread();
 
     // This is there for the current thread to avoid overlapping
     // with the internal thread that just started
@@ -645,5 +649,5 @@ bool ArmCtrl::publishState()
 
 ArmCtrl::~ArmCtrl()
 {
-    killInternalThread();
+    if (arm_thread.joinable()) { arm_thread.join(); }
 }

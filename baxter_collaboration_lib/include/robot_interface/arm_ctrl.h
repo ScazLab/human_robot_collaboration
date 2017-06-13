@@ -2,8 +2,9 @@
 #define __ARM_CONTROLLER_H__
 
 #include <map>
+#include <thread>
+#include <mutex>
 
-#include "robot_utils/ros_thread.h"
 #include "robot_interface/robot_interface.h"
 #include "robot_interface/gripper.h"
 
@@ -14,7 +15,7 @@
 #define HAND_OVER_DONE   "handover_done"
 #define HAND_OVER_WAIT   "handover_wait"
 
-class ArmCtrl : public RobotInterface, public Gripper, public ROSThread
+class ArmCtrl : public RobotInterface, public Gripper
 {
 private:
     // Substate of the controller (useful to keep track of
@@ -60,6 +61,8 @@ private:
      * itself in human terms.
      */
     std::map<int, std::string> object_db;
+
+    std::thread arm_thread; // internal thread functionality
 
     /**
      * Provides basic functionalities for the object, such as a goHome and releaseObject.
@@ -364,6 +367,11 @@ public:
      * Destructor
      */
     virtual ~ArmCtrl();
+
+    /**
+     * Starts thread that executes the control server.
+     */
+    bool startThread();
 
     /**
      * Callback for the service that requests actions
