@@ -28,6 +28,13 @@ ArmCtrl::ArmCtrl(string _name, string _limb, bool _use_robot, bool _use_forces, 
 
 bool ArmCtrl::startThread()
 {
+    // This allows to call multiple threads within the same thread object.
+    // As written in http://en.cppreference.com/w/cpp/thread/thread/joinable :
+    //      A thread that has finished executing code, but has not yet been joined is still considered
+    //      an active thread of execution and is therefore joinable.
+    // So, we need to join the thread in order to spun out a new one anyways.
+    if (arm_thread.joinable())    { arm_thread.join(); };
+
     arm_thread = std::thread(&ArmCtrl::InternalThreadEntry, this);
     return arm_thread.joinable();
 }
