@@ -82,7 +82,7 @@ bool HoldCtrl::waitForUserFb(double _wait_time)
     ros::Time _init = ros::Time::now();
 
     ros::Rate(THREAD_FREQ);
-    while(RobotInterface::ok())
+    while(RobotInterface::ok() && not isClosing())
     {
         if (cuff_button_pressed == true)        return true;
 

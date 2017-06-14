@@ -14,7 +14,7 @@ RobotInterface::RobotInterface(string _name, string _limb, bool _use_robot, doub
                                ir_ok(false), curr_range(0.0), curr_min_range(0.0), curr_max_range(0.0),
                                ik_solver(_limb, _use_robot), use_trac_ik(_use_trac_ik), ctrl_freq(_ctrl_freq),
                                filt_force{0.0, 0.0, 0.0}, filt_change{0.0, 0.0, 0.0}, time_filt_last_updated(ros::Time::now()),
-                               is_coll_av_on(false), is_coll_det_on(false), ctrl_thread_close_flag(false), use_cart_ctrl(_use_cart_ctrl),
+                               is_coll_av_on(false), is_coll_det_on(false), is_closing(false), use_cart_ctrl(_use_cart_ctrl),
                                is_ctrl_running(false), is_experimental(_is_experimental),
                                ctrl_mode(baxter_collaboration_msgs::GoToPose::POSITION_MODE), ctrl_check_mode("strict"), ctrl_type("pose")
 {
@@ -106,7 +106,7 @@ void RobotInterface::ThreadEntry()
 {
     ros::Rate r(ctrl_freq);
 
-    while (ros::ok() && not getCtrlThreadCloseFlag())
+    while (ros::ok() && not isClosing())
     {
         // ROS_INFO("Time: %g", (ros::Time::now() - initTime).toSec());
 
@@ -196,16 +196,16 @@ void RobotInterface::ThreadEntry()
     return;
 }
 
-void RobotInterface::setCtrlThreadCloseFlag(bool arg)
+void RobotInterface::setIsClosing(bool arg)
 {
-    std::lock_guard<std::mutex> lck(mtx_ctrl_thread_close_flag);
-    ctrl_thread_close_flag = arg;
+    std::lock_guard<std::mutex> lck(mtx_is_closing);
+    is_closing = arg;
 }
 
-bool RobotInterface::getCtrlThreadCloseFlag()
+bool RobotInterface::isClosing()
 {
-    std::lock_guard<std::mutex> lck(mtx_ctrl_thread_close_flag);
-    return ctrl_thread_close_flag;
+    std::lock_guard<std::mutex> lck(mtx_is_closing);
+    return is_closing;
 }
 
 bool RobotInterface::ok()
@@ -626,7 +626,7 @@ bool RobotInterface::goToPose(double px, double py, double pz,
     if (!computeIK(px, py, pz, ox, oy, oz, ow, joint_angles)) return false;
 
     ros::Rate r(100);
-    while (RobotInterface::ok())
+    while (RobotInterface::ok() && not isClosing())
     {
         if (disable_coll_av)
         {
@@ -998,7 +998,7 @@ bool RobotInterface::waitForForceInteraction(double _wait_time, bool disable_col
     ros::Time _init = ros::Time::now();
 
     ros::Rate r(100);
-    while (RobotInterface::ok())
+    while (RobotInterface::ok() && not isClosing())
     {
         if (disable_coll_av)          suppressCollisionAv();
         if (detectForceInteraction())           return true;
@@ -1094,7 +1094,7 @@ void RobotInterface::suppressCollisionAv()
 
 RobotInterface::~RobotInterface()
 {
-    setCtrlThreadCloseFlag(true);
+    setIsClosing(true);
     if (ctrl_thread.joinable())
     {
         ctrl_thread.join();

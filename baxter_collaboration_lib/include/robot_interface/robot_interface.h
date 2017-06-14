@@ -119,8 +119,8 @@ private:
      */
     std::thread ctrl_thread; // Internal thread that implements the controller server
 
-    bool ctrl_thread_close_flag;              // Flag to close the thread entry function
-    std::mutex mtx_ctrl_thread_close_flag;    // Mutex to protect the thread close flag
+    bool           is_closing;  // Flag to close the thread entry function
+    std::mutex mtx_is_closing;  // Mutex to protect the thread close flag
 
     ros::Subscriber ctrl_sub;   // Subscriber that receives desired poses from other nodes
     ros::Publisher  rviz_pub;   // Published that publishes the current target on rviz
@@ -634,8 +634,8 @@ public:
     /**
      * Safely manipulate the boolean needed to kill the thread entry
      */
-    void setCtrlThreadCloseFlag(bool arg);
-    bool getCtrlThreadCloseFlag();
+    void setIsClosing(bool arg);
+    bool isClosing();
 };
 
 #endif
