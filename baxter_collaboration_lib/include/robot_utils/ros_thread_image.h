@@ -7,7 +7,6 @@
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/highgui/highgui.hpp>
 
-// #include "robot_utils/ros_thread.h"
 #include "robot_utils/utils.h"
 
 #include <mutex>
@@ -24,8 +23,8 @@ protected:
     ros::NodeHandle _n;
 
 private:
-    std::string    _name;
-    std::thread     image_thread;
+    std::string       name;
+    std::thread img_thread;
 
     bool           is_closing;  // Flag to close the thread entry function
     std::mutex mtx_is_closing;  // Mutex to protect the thread close flag
@@ -50,7 +49,7 @@ protected:
     virtual void InternalThreadEntry() = 0;
 
 public:
-    ROSThreadImage(std::string name);
+    ROSThreadImage(std::string _name);
     ~ROSThreadImage();
 
     /*
@@ -64,12 +63,12 @@ public:
     /*
      * Self-explaining "setters"
      */
-    void setName(std::string name) { _name = name; };
+    void setName(std::string _name) { name = _name; };
 
     /*
      * Self-explaining "getters"
      */
-    std::string  getName() { return  _name; };
+    std::string  getName() { return name; };
 
     /*
      * Starts thread

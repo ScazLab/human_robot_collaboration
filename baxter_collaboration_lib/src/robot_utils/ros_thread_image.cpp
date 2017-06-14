@@ -4,7 +4,7 @@
 /*                          ROSThreadImage                                */
 /**************************************************************************/
 
-ROSThreadImage::ROSThreadImage(std::string name) :  _n(name), _name(name),
+ROSThreadImage::ROSThreadImage(std::string _name) :  _n(_name), name(_name),
                                      spinner(4), _img_trp(_n), _img_empty(true), r(30) // 30Hz
 {
 
@@ -12,14 +12,13 @@ ROSThreadImage::ROSThreadImage(std::string name) :  _n(name), _name(name),
                            SUBSCRIBER_BUFFER, &ROSThreadImage::imageCb, this);
 
     spinner.start();
-    // startInternalThread();
     startThread();
 }
 
 bool ROSThreadImage::startThread()
 {
-    image_thread = std::thread(&ROSThreadImage::InternalThreadEntry, this);
-    return image_thread.joinable();
+    img_thread = std::thread(&ROSThreadImage::InternalThreadEntry, this);
+    return img_thread.joinable();
 }
 
 void ROSThreadImage::setIsClosing(bool arg)
@@ -37,7 +36,7 @@ bool ROSThreadImage::isClosing()
 ROSThreadImage::~ROSThreadImage()
 {
     setIsClosing(true);
-    if (image_thread.joinable()) { image_thread.join(); }
+    if (img_thread.joinable()) { img_thread.join(); }
 }
 
 void ROSThreadImage::imageCb(const sensor_msgs::ImageConstPtr& msg)
