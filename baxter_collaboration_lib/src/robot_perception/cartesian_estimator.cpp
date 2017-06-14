@@ -209,7 +209,7 @@ void CartesianEstimator::InternalThreadEntry()
     // before the derived class finishes initialization
     ros::Duration(0.2).sleep();
 
-    while(ros::ok())
+    while(ros::ok() && not isClosing())
     {
         // ROS_INFO_THROTTLE(120, "I'm running, and everything is fine..."
         //                        " Number of objects: %i", getNumValidObjects());
@@ -217,9 +217,8 @@ void CartesianEstimator::InternalThreadEntry()
         cv::Mat img_out;
         if (!_img_empty)
         {
-            pthread_mutex_lock(&_mutex_img);
+            std::lock_guard<std::mutex> lock(mutex_img);
             img_in=_curr_img;
-            pthread_mutex_unlock(&_mutex_img);
             img_out = img_in.clone();
 
             detectObjects(img_in, img_out);

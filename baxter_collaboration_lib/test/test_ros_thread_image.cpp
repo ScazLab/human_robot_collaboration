@@ -43,16 +43,15 @@ public:
 
     void InternalThreadEntry()
     {
-        while(ros::ok())
+        while(ros::ok() && not isClosing())
         {
             cv::Mat img_in;
 
             if (not _img_empty)
             {
                 // ROS_INFO("Processing image");
-                pthread_mutex_lock(&_mutex_img);
+                std::lock_guard<std::mutex> lock(mutex_img);
                 img_in=_curr_img;
-                pthread_mutex_unlock(&_mutex_img);
 
                 // Convert image to black and white
                 cv::Mat gray;
