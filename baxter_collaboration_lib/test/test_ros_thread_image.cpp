@@ -11,7 +11,7 @@ class ROSThreadImageTester
     image_transport::Publisher image_pub;
 
 public:
-    explicit ROSThreadImageTester(std::string _name = "test") : it(nh), name(_name)
+    explicit ROSThreadImageTester(std::string _name = "test") : name(_name), it(nh)
     {
         image_pub = it.advertise("/"+name+"/image", 1);
     }
