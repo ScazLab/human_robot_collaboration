@@ -417,7 +417,7 @@ bool ArmCtrl::moveArm(string dir, double dist, string mode, bool disable_coll_av
     bool finish = false;
 
     ros::Rate r(100);
-    while(RobotInterface::ok() && !isPositionReached(p_f, mode))
+    while(RobotInterface::ok() && !isPositionReached(p_f, mode) && not getIsClosing())
     {
         if (disable_coll_av)    suppressCollisionAv();
 
@@ -517,7 +517,7 @@ bool ArmCtrl::homePoseStrict(bool disable_coll_av)
     ROS_INFO("[%s] Going to home position strict..", getLimb().c_str());
 
     ros::Rate r(100);
-    while(RobotInterface::ok() && !isConfigurationReached(home_conf))
+    while(RobotInterface::ok() && !isConfigurationReached(home_conf) && not getIsClosing())
     {
         if (disable_coll_av)    suppressCollisionAv();
 
@@ -649,5 +649,6 @@ bool ArmCtrl::publishState()
 
 ArmCtrl::~ArmCtrl()
 {
+    setIsClosing(false);
     if (arm_thread.joinable()) { arm_thread.join(); }
 }
