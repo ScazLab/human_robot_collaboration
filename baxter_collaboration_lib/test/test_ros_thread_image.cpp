@@ -1,27 +1,19 @@
 #include <gtest/gtest.h>
 #include "robot_utils/ros_thread_image.h"
-#include <ros/ros.h>
-#include <image_transport/image_transport.h>
-#include <cv_bridge/cv_bridge.h>
-#include <sensor_msgs/image_encodings.h>
-#include <opencv2/imgproc/imgproc.hpp>
-#include <opencv2/highgui/highgui.hpp>
 
-using namespace cv;
-using namespace std;
 
 class ROSThreadImageTester
 {
-    ros::NodeHandle nh_;
-    image_transport::ImageTransport it_;
-    image_transport::Publisher image_pub_;
+    ros::NodeHandle nh;
+    image_transport::ImageTransport it;
+    image_transport::Publisher image_pub;
     std::string name;
 
 public:
     explicit ROSThreadImageTester(std::string _name)
-    : it_(nh_), name(_name)
+    : it(nh), name(_name)
     {
-        image_pub_ = it_.advertise("/"+name+"/image", 1);
+        image_pub = it.advertise("/"+name+"/image", 1);
     }
 
     ~ROSThreadImageTester() {}
@@ -32,17 +24,20 @@ public:
         cv::waitKey(30);
         cv::circle(img, cv::Point(100, 100), 20, CV_RGB(255,0,0), -1); 
         sensor_msgs::ImagePtr msg = cv_bridge::CvImage(std_msgs::Header(), "bgr8", img).toImageMsg();
-        image_pub_.publish(msg); 
+        image_pub.publish(msg); 
     }
 };
 
 class ROSImageInstance: public ROSThreadImage
 {
 private:
-    Point avg_coords = Point(-1, -1);
+    cv::Point avg_coords;
 
 public:
-    explicit ROSImageInstance(std::string namenew): ROSThreadImage(namenew) {}
+    explicit ROSImageInstance(std::string _name): ROSThreadImage(_name) 
+    {
+        avg_coords = cv::Point(-1,-1);
+    }
     
     void InternalThreadEntry()
     {
@@ -58,21 +53,21 @@ public:
                 pthread_mutex_unlock(&_mutex_img);
                 cv::Mat gray;
                 cv::cvtColor(img_in, gray, CV_BGR2GRAY);
-                std::vector<vector<Point>> contours;
-                findContours(gray, contours, CV_RETR_TREE, CV_CHAIN_APPROX_NONE, Point(0,0));
+                std::vector<std::vector<cv::Point>> contours;
+                findContours(gray, contours, CV_RETR_TREE, CV_CHAIN_APPROX_NONE, cv::Point(0,0));
 
                 //Finds the moments
-                vector<Moments> mu(contours.size() );
+                std::vector<cv::Moments> mu(contours.size() );
                 for(size_t i = 0; i < contours.size(); i++ )
                 {
                     mu[i] = moments(contours[i], false );
                 }
 
                 //Finds the Centroid
-                vector<Point2f> mc(contours.size());
+                std::vector<cv::Point2f> mc(contours.size());
                 for( size_t i = 0; i < contours.size(); i++ )
                 { 
-                    mc[i] = Point2f( mu[i].m10/mu[i].m00 , mu[i].m01/mu[i].m00 ); 
+                    mc[i] = cv::Point2f( mu[i].m10/mu[i].m00 , mu[i].m01/mu[i].m00 ); 
                     avg_coords.x = mu[i].m10/mu[i].m00;
                     avg_coords.y = mu[i].m01/mu[i].m00;
                 }
@@ -84,11 +79,7 @@ public:
     }
 
     //Self explaining return methods  
-    int returnx() { return avg_coords.x; }
-
-    int returny() { return avg_coords.y; }
-
-    Point returnpoint() {return avg_coords; }
+    cv::Point centroid() {return avg_coords; }
     
 };
 
@@ -108,14 +99,14 @@ TEST(rosimagetest, testinternalthreadentry)
     //Waits so that threads can finish
     ros::Rate rate(100);
 
-    while(ros::ok() && (rtii.returnx() == -1 || rtii.returny() == -1))
+    while(ros::ok() && (rtii.centroid() == cv::Point(-1,-1)))
     {
         //ROS_INFO("Waiting for ROSThreadImage loop. [x y]: [%i %i]", rtii.getx(), rtii.gety());
         rate.sleep();
     }
 
     //Checks that x and y coordinates are correct against expected values
-    EXPECT_EQ(rtii.returnpoint(), Point(100, 100));
+    EXPECT_EQ(rtii.centroid(), cv::Point(100, 100));
 }
 
 // Run all the tests that were declared with TEST()
