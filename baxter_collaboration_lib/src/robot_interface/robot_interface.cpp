@@ -106,7 +106,7 @@ void RobotInterface::ThreadEntry()
 {
     ros::Rate r(ctrl_freq);
 
-    while (ros::ok() && not getIsClosing())
+    while (ros::ok() && not isClosing())
     {
         // ROS_INFO("Time: %g", (ros::Time::now() - initTime).toSec());
 
@@ -202,7 +202,7 @@ void RobotInterface::setIsClosing(bool arg)
     is_closing = arg;
 }
 
-bool RobotInterface::getIsClosing()
+bool RobotInterface::isClosing()
 {
     std::lock_guard<std::mutex> lck(mtx_is_closing);
     return is_closing;
@@ -626,7 +626,7 @@ bool RobotInterface::goToPose(double px, double py, double pz,
     if (!computeIK(px, py, pz, ox, oy, oz, ow, joint_angles)) return false;
 
     ros::Rate r(100);
-    while (RobotInterface::ok() && not getIsClosing())
+    while (RobotInterface::ok() && not isClosing())
     {
         if (disable_coll_av)
         {
@@ -998,7 +998,7 @@ bool RobotInterface::waitForForceInteraction(double _wait_time, bool disable_col
     ros::Time _init = ros::Time::now();
 
     ros::Rate r(100);
-    while (RobotInterface::ok() && not getIsClosing())
+    while (RobotInterface::ok() && not isClosing())
     {
         if (disable_coll_av)          suppressCollisionAv();
         if (detectForceInteraction())           return true;
