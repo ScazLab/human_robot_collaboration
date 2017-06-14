@@ -52,7 +52,7 @@ public:
 
             if (not _img_empty)
             {
-                ROS_INFO("Processing image");
+                //ROS_INFO("Processing image");
                 pthread_mutex_lock(&_mutex_img);
                 img_in=_curr_img;
                 pthread_mutex_unlock(&_mutex_img);
@@ -83,12 +83,12 @@ public:
         } 
     }
 
-//Self explaining return methods  
-int returnx() { return avg_coords.x; }
+    //Self explaining return methods  
+    int returnx() { return avg_coords.x; }
 
-int returny() { return avg_coords.y; }
+    int returny() { return avg_coords.y; }
 
-Point returnpoint() {return avg_coords; }
+    Point returnpoint() {return avg_coords; }
     
 };
 
