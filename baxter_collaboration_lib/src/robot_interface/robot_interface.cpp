@@ -626,7 +626,7 @@ bool RobotInterface::goToPose(double px, double py, double pz,
     if (!computeIK(px, py, pz, ox, oy, oz, ow, joint_angles)) return false;
 
     ros::Rate r(100);
-    while (RobotInterface::ok())
+    while (RobotInterface::ok() && not getIsClosing())
     {
         if (disable_coll_av)
         {
@@ -998,7 +998,7 @@ bool RobotInterface::waitForForceInteraction(double _wait_time, bool disable_col
     ros::Time _init = ros::Time::now();
 
     ros::Rate r(100);
-    while (RobotInterface::ok())
+    while (RobotInterface::ok() && not getIsClosing())
     {
         if (disable_coll_av)          suppressCollisionAv();
         if (detectForceInteraction())           return true;
