@@ -20,7 +20,7 @@
 class ROSThreadImage
 {
 protected:
-    ros::NodeHandle _n;
+    ros::NodeHandle nh;
 
 private:
     std::string       name;

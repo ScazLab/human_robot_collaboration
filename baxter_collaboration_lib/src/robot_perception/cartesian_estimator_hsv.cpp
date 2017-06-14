@@ -124,7 +124,7 @@ SegmentedObjHSV::~SegmentedObjHSV()
 CartesianEstimatorHSV::CartesianEstimatorHSV(string  _name) : CartesianEstimator(_name)
 {
     XmlRpc::XmlRpcValue objects_db;
-    if(!_n.getParam("/"+getName()+"/objects_db", objects_db))
+    if(!nh.getParam("/"+getName()+"/objects_db", objects_db))
     {
         ROS_INFO("No objects' database found in the parameter server. "
                  "Looked up param is %s", ("/"+getName()+"/objects_db").c_str());

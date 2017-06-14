@@ -4,8 +4,8 @@
 /*                          ROSThreadImage                                */
 /**************************************************************************/
 
-ROSThreadImage::ROSThreadImage(std::string _name) :  _n(_name), name(_name),
-                                     spinner(4), _img_trp(_n), _img_empty(true), r(30) // 30Hz
+ROSThreadImage::ROSThreadImage(std::string _name) :  nh(_name), name(_name),
+                                     spinner(4), _img_trp(nh), _img_empty(true), r(30) // 30Hz
 {
 
     _img_sub = _img_trp.subscribe("/"+getName()+"/image", // "/cameras/right_hand_camera/image",

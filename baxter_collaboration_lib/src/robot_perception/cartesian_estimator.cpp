@@ -151,11 +151,11 @@ void CartesianEstimator::init()
 {
     img_pub        = _img_trp.advertise(      "/"+getName()+"/image_result", SUBSCRIBER_BUFFER);
     img_pub_thres  = _img_trp.advertise("/"+getName()+"/image_result_thres", SUBSCRIBER_BUFFER);
-    objs_pub       = _n.advertise<baxter_collaboration_msgs::ObjectsArray>("/"+getName()+"/objects", 1);
+    objs_pub       = nh.advertise<baxter_collaboration_msgs::ObjectsArray>("/"+getName()+"/objects", 1);
 
-    _n.param<string>("/"+getName()+"/reference_frame", reference_frame,         "");
-    _n.param<string>("/"+getName()+   "/camera_frame",    camera_frame,         "");
-    _n.param<int>   ("/"+getName()+ "/area_threshold",  area_threshold, AREA_THRES);
+    nh.param<string>("/"+getName()+"/reference_frame", reference_frame,         "");
+    nh.param<string>("/"+getName()+   "/camera_frame",    camera_frame,         "");
+    nh.param<int>   ("/"+getName()+ "/area_threshold",  area_threshold, AREA_THRES);
 
     ROS_INFO("Reference Frame: %s", reference_frame.c_str());
     ROS_INFO("Camera Frame   : %s",    camera_frame.c_str());
@@ -166,8 +166,8 @@ void CartesianEstimator::init()
     if(reference_frame.empty()) reference_frame = camera_frame;
 
     sensor_msgs::CameraInfoConstPtr msg = ros::topic::waitForMessage<sensor_msgs::CameraInfo>
-                                                           ("/"+getName()+"/camera_info", _n);
-                                                           // ("/cameras/right_hand_camera/camera_info", _n);
+                                                           ("/"+getName()+"/camera_info", nh);
+                                                           // ("/cameras/right_hand_camera/camera_info", nh);
 
     // For now, we'll assume images that are always rectified
     cam_param = aruco_ros::rosCameraInfo2ArucoCamParams(*msg, true);
