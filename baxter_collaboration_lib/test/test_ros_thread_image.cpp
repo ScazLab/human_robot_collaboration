@@ -18,7 +18,7 @@ public:
 
     void sendTestImage()
     {
-        // Let's create an 200x200 black image with a red circle in the center
+        // Let's create a 200x200 black image with a red circle in the center
         cv::Mat img(200, 200, CV_8UC3, cv::Scalar(0,0,0));
         cv::circle(img, cv::Point(100, 100), 20, CV_RGB(255,0,0), -1);
 
@@ -49,7 +49,7 @@ public:
 
             if (not _img_empty)
             {
-                //ROS_INFO("Processing image");
+                // ROS_INFO("Processing image");
                 pthread_mutex_lock(&_mutex_img);
                 img_in=_curr_img;
                 pthread_mutex_unlock(&_mutex_img);
@@ -62,14 +62,14 @@ public:
                 std::vector<std::vector<cv::Point>> contours;
                 findContours(gray, contours, CV_RETR_TREE, CV_CHAIN_APPROX_NONE, cv::Point(0,0));
 
-                //Finds the moments
+                // Finds the moments
                 std::vector<cv::Moments> mu(contours.size() );
                 for(size_t i = 0; i < contours.size(); i++ )
                 {
                     mu[i] = moments(contours[i], false );
                 }
 
-                //Finds the centroid
+                // Finds the centroid
                 std::vector<cv::Point2f> mc(contours.size());
                 for( size_t i = 0; i < contours.size(); i++ )
                 {
