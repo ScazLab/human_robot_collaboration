@@ -133,22 +133,6 @@ SegmentedObj::~SegmentedObj()
 /************************************************************************************/
 CartesianEstimator::CartesianEstimator(string _name) : ROSThreadImage(_name)
 {
-    init();
-}
-
-CartesianEstimator::CartesianEstimator(string _name, vector<string> _objs_name,
-                                       cv::Mat _objs_size) : ROSThreadImage(_name)
-{
-    ROS_ASSERT_MSG(_objs_size.cols == 2, "Objects' sizes should have two columns. "
-                   "%i found instead", _objs_size.cols);
-
-    addObjects(_objs_name, _objs_size);
-
-    init();
-}
-
-void CartesianEstimator::init()
-{
     img_pub        = _img_trp.advertise(      "/"+getName()+"/image_result", SUBSCRIBER_BUFFER);
     img_pub_thres  = _img_trp.advertise("/"+getName()+"/image_result_thres", SUBSCRIBER_BUFFER);
     objs_pub       = _n.advertise<baxter_collaboration_msgs::ObjectsArray>("/"+getName()+"/objects", 1);
@@ -174,6 +158,15 @@ void CartesianEstimator::init()
 
     objects_msg.header.frame_id = reference_frame;
     objects_msg.header.seq = 0;
+}
+
+CartesianEstimator::CartesianEstimator(string _name, vector<string> _objs_name,
+                                       cv::Mat _objs_size) : CartesianEstimator(_name)
+{
+    ROS_ASSERT_MSG(_objs_size.cols == 2, "Objects' sizes should have two columns. "
+                                         "%i found instead", _objs_size.cols);
+
+    addObjects(_objs_name, _objs_size);
 }
 
 bool CartesianEstimator::publishObjects()

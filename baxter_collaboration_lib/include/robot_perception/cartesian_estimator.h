@@ -199,11 +199,6 @@ private:
     tf::Transform object2Tf(int idx);
 
     /**
-     * Class initializer
-     */
-    void init();
-
-    /**
      * Publishes the array of objects on the proper topic
      *
      * @return true/false if success/failure
