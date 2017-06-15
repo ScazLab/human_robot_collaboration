@@ -174,6 +174,7 @@ void CartesianEstimator::init()
 
     objects_msg.header.frame_id = reference_frame;
     objects_msg.header.seq = 0;
+    startThread();
 }
 
 bool CartesianEstimator::publishObjects()
@@ -217,8 +218,10 @@ void CartesianEstimator::InternalThreadEntry()
         cv::Mat img_out;
         if (!_img_empty)
         {
-            std::lock_guard<std::mutex> lock(mutex_img);
-            img_in=_curr_img;
+            {
+                std::lock_guard<std::mutex> lock(mutex_img);
+                img_in  = _curr_img;
+            }
             img_out = img_in.clone();
 
             detectObjects(img_in, img_out);
