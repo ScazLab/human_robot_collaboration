@@ -7,7 +7,6 @@
 ROSThreadImage::ROSThreadImage(std::string _name, std::string _encoding) :  
     nh(_name), name(_name), is_closing(false),spinner(4), img_trp(nh), img_empty(true), encoding(_encoding), r(50) // 20Hz
 {
-    //encoding = _encoding;
     img_sub = img_trp.subscribe("/"+getName()+"/image", // "/cameras/right_hand_camera/image",
                                   SUBSCRIBER_BUFFER, &ROSThreadImage::imageCb, this);
 
