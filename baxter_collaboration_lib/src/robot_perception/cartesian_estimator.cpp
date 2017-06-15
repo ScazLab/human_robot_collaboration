@@ -133,22 +133,6 @@ SegmentedObj::~SegmentedObj()
 /************************************************************************************/
 CartesianEstimator::CartesianEstimator(string _name) : ROSThreadImage(_name)
 {
-    init();
-}
-
-CartesianEstimator::CartesianEstimator(string _name, vector<string> _objs_name,
-                                       cv::Mat _objs_size) : ROSThreadImage(_name)
-{
-    ROS_ASSERT_MSG(_objs_size.cols == 2, "Objects' sizes should have two columns. "
-                   "%i found instead", _objs_size.cols);
-
-    addObjects(_objs_name, _objs_size);
-
-    init();
-}
-
-void CartesianEstimator::init()
-{
     img_pub        = img_trp.advertise(      "/"+getName()+"/image_result", SUBSCRIBER_BUFFER);
     img_pub_thres  = img_trp.advertise("/"+getName()+"/image_result_thres", SUBSCRIBER_BUFFER);
     objs_pub       = nh.advertise<baxter_collaboration_msgs::ObjectsArray>("/"+getName()+"/objects", 1);
@@ -173,7 +157,7 @@ void CartesianEstimator::init()
     cam_param = aruco_ros::rosCameraInfo2ArucoCamParams(*msg, true);
 
     objects_msg.header.frame_id = reference_frame;
-    objects_msg.header.seq = 0;
+    objects_msg.header.seq      = 0;
     startThread();
 }
 
@@ -181,7 +165,7 @@ CartesianEstimator::CartesianEstimator(string _name, vector<string> _objs_name,
                                        cv::Mat _objs_size) : CartesianEstimator(_name)
 {
     ROS_ASSERT_MSG(_objs_size.cols == 2, "Objects' sizes should have two columns. "
-                                         "%i found instead", _objs_size.cols);
+                   "%i found instead", _objs_size.cols);
 
     addObjects(_objs_name, _objs_size);
 }
