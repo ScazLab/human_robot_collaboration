@@ -19,7 +19,7 @@ public:
     void sendTestImage(std::string encoding = "bgr8")
     {
         // Let's create a 200x200 black image with a red circle
-        // (white cirlce for mono / 1-channel images) in the center
+        // (white circle for mono / 1-channel images) in the center
         // Checks encoding and correctly creates an image with
         // the requested encoding and publishes it
         if (encoding == "mono8")
@@ -173,7 +173,7 @@ TEST(rosimagetest, testmono8image)
     // and finding the centroid of a contour
     ROSThreadImageInstance rtii("test");
 
-    // Sends a 200x200 image encoding with mono8 with a red circle overlayed in the middle
+    // Sends a 200x200 image encoding with mono8 with a white circle overlayed in the middle
     rtit.sendTestImage("mono8");
 
     // Waits so that threads can finish
