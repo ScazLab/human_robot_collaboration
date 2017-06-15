@@ -30,13 +30,13 @@ public:
     ~ROSThreadImageTester() {}
 };
 
-class ROSImageInstance: public ROSThreadImage
+class ROSThreadImageInstance: public ROSThreadImage
 {
 private:
     cv::Point avg_coords;
 
 public:
-    explicit ROSImageInstance(std::string _name): ROSThreadImage(_name)
+    explicit ROSThreadImageInstance(std::string _name): ROSThreadImage(_name)
     {
         avg_coords = cv::Point(-1,-1);
         startThread();
@@ -99,7 +99,7 @@ TEST(rosimagetest, testinternalthreadentry)
 
     // Creates an object responsible for receiving an image
     // and finding the centroid of a contour
-    ROSImageInstance rtii("test");
+    ROSThreadImageInstance rtii("test");
 
     // Sends a 200x200 image with a red circle overlayed in the middle
     rtit.sendTestImage();
