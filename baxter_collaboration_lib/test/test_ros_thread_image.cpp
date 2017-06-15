@@ -39,6 +39,7 @@ public:
     explicit ROSImageInstance(std::string _name): ROSThreadImage(_name)
     {
         avg_coords = cv::Point(-1,-1);
+        startThread();
     }
 
     void InternalThreadEntry()
@@ -50,8 +51,10 @@ public:
             if (not _img_empty)
             {
                 // ROS_INFO("Processing image");
-                std::lock_guard<std::mutex> lock(mutex_img);
-                img_in=_curr_img;
+                {
+                    std::lock_guard<std::mutex> lock(mutex_img);
+                    img_in=_curr_img;
+                }
 
                 // Convert image to black and white
                 cv::Mat gray;
