@@ -37,10 +37,10 @@ protected:
 
     std::mutex mutex_img;
 
-    cv::Mat     curr_img;   //Current image
-    cv::Size    img_size;   //Size of current image
-    bool       img_empty;   //Returns true if current image is empty, false otherwise
-    std::string encoding;   //Encoding that will be used for some image
+    cv::Mat     curr_img;   // Current image
+    cv::Size    img_size;   // Size of current image
+    bool       img_empty;   // Returns true if current image is empty, false otherwise
+    std::string encoding;   // Encoding for the image read by the subscriber
 
     ros::Rate r;
 
@@ -50,17 +50,21 @@ protected:
     virtual void InternalThreadEntry() = 0;
 
 public:
-    /*
-     *Default constructor
+    /**
+     * Constructor
      *
-     *@param A name, and an encoding for the image
+     * @param _name     name of the object
+     * @param _encoding encoding for the image
      */
-
     ROSThreadImage(std::string _name, std::string _encoding = "bgr8");
+
+    /**
+     * Destructor
+     */
     ~ROSThreadImage();
 
     /*
-     * image callback function that displays the image stream from the hand camera
+     * image callback function that displays the image stream from the image topic
      *
      * @param      The image
      * @return     N/A

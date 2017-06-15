@@ -24,25 +24,26 @@ public:
         // the requested encoding and publishes it
         sensor_msgs::ImagePtr msg;
 
-        if (_encoding == "mono8")
+        if      (_encoding == "mono8")
         {
             cv::Mat img(200, 200, CV_8UC1, cv::Scalar(0,0,0));
-            cv::circle(img, cv::Point(100, 100), 20, CV_RGB(255,255,255), -1);       
-            msg = cv_bridge::CvImage(std_msgs::Header(), _encoding, img).toImageMsg();      
+            cv::circle(img, cv::Point(100, 100), 20, CV_RGB(255,255,255), -1);
+            msg = cv_bridge::CvImage(std_msgs::Header(), _encoding, img).toImageMsg();
         }
 
-        else if (_encoding == "bgr8")
+        else if (_encoding ==  "bgr8")
         {
             cv::Mat img(200, 200, CV_8UC3, cv::Scalar(0,0,0));
             cv::circle(img, cv::Point(100, 100), 20, CV_RGB(255,0,0), -1);
-            msg = cv_bridge::CvImage(std_msgs::Header(), _encoding, img).toImageMsg();        
+            msg = cv_bridge::CvImage(std_msgs::Header(), _encoding, img).toImageMsg();
         }
-        
         else
         {
-            ROS_INFO("Error: Incorrect encoding provided");
+            ROS_ERROR("Encoding provided [%s] is not among the allowed ones."
+                      "Please use either bgr8 or mono8", _encoding.c_str());
         }
-            image_pub.publish(msg); 
+
+        image_pub.publish(msg);
     }
 
     ~ROSThreadImageTester() {}
