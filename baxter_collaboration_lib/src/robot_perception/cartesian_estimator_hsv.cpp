@@ -224,3 +224,8 @@ bool CartesianEstimatorHSV::addObjects(XmlRpc::XmlRpcValue _params)
 
     return res;
 }
+
+CartesianEstimatorHSV::~CartesianEstimatorHSV()
+{
+
+}
