@@ -149,8 +149,8 @@ CartesianEstimator::CartesianEstimator(string _name, vector<string> _objs_name,
 
 void CartesianEstimator::init()
 {
-    img_pub        = _img_trp.advertise(      "/"+getName()+"/image_result", SUBSCRIBER_BUFFER);
-    img_pub_thres  = _img_trp.advertise("/"+getName()+"/image_result_thres", SUBSCRIBER_BUFFER);
+    img_pub        = img_trp.advertise(      "/"+getName()+"/image_result", SUBSCRIBER_BUFFER);
+    img_pub_thres  = img_trp.advertise("/"+getName()+"/image_result_thres", SUBSCRIBER_BUFFER);
     objs_pub       = nh.advertise<baxter_collaboration_msgs::ObjectsArray>("/"+getName()+"/objects", 1);
 
     nh.param<string>("/"+getName()+"/reference_frame", reference_frame,         "");
@@ -216,11 +216,11 @@ void CartesianEstimator::InternalThreadEntry()
         //                        " Number of objects: %i", getNumValidObjects());
         cv::Mat img_in;
         cv::Mat img_out;
-        if (!_img_empty)
+        if (!img_empty)
         {
             {
                 std::lock_guard<std::mutex> lock(mutex_img);
-                img_in  = _curr_img;
+                img_in  = curr_img;
             }
             img_out = img_in.clone();
 

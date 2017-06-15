@@ -32,14 +32,14 @@ private:
     ros::AsyncSpinner spinner;  // AsyncSpinner to handle callbacks
 
 protected:
-    image_transport::ImageTransport _img_trp;
-    image_transport::Subscriber     _img_sub;
+    image_transport::ImageTransport img_trp;
+    image_transport::Subscriber     img_sub;
 
     std::mutex mutex_img;
 
-    cv::Mat  _curr_img;
-    cv::Size _img_size;
-    bool    _img_empty;
+    cv::Mat  curr_img;
+    cv::Size img_size;
+    bool    img_empty;
 
     ros::Rate r;
 
@@ -58,7 +58,7 @@ public:
      * @param      The image
      * @return     N/A
      */
-    void imageCb(const sensor_msgs::ImageConstPtr& msg);
+    void imageCb(const sensor_msgs::ImageConstPtr& _msg);
 
     /*
      * Self-explaining "setters"
@@ -78,7 +78,7 @@ public:
     /**
      * Safely manipulate the boolean needed to kill the thread entry
      */
-    void setIsClosing(bool arg);
+    void setIsClosing(bool _arg);
     bool isClosing();
 };
 
