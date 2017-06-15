@@ -40,6 +40,7 @@ protected:
     cv::Mat  curr_img;
     cv::Size img_size;
     bool    img_empty;
+    std::string _encoding;
 
     ros::Rate r;
 
@@ -49,7 +50,7 @@ protected:
     virtual void InternalThreadEntry() = 0;
 
 public:
-    ROSThreadImage(std::string _name);
+    ROSThreadImage(std::string _name, std::string encoding = "bgr8");
     ~ROSThreadImage();
 
     /*

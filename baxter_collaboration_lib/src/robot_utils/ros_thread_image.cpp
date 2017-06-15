@@ -4,10 +4,11 @@
 /*                          ROSThreadImage                                */
 /**************************************************************************/
 
-ROSThreadImage::ROSThreadImage(std::string _name) :  nh(_name), name(_name), is_closing(false),
+ROSThreadImage::ROSThreadImage(std::string _name, std::string encoding) :  nh(_name), name(_name), is_closing(false),
                                                      spinner(4), img_trp(nh),
                                                      img_empty(true), r(50) // 20Hz
 {
+    _encoding = encoding;
     img_sub = img_trp.subscribe("/"+getName()+"/image", // "/cameras/right_hand_camera/image",
                                   SUBSCRIBER_BUFFER, &ROSThreadImage::imageCb, this);
 
@@ -39,7 +40,7 @@ void ROSThreadImage::imageCb(const sensor_msgs::ImageConstPtr& _msg)
 
     try
     {
-        cv_ptr = cv_bridge::toCvShare(_msg, "bgr8");
+        cv_ptr = cv_bridge::toCvShare(_msg, _encoding);
     }
     catch(cv_bridge::Exception& e)
     {

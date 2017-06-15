@@ -16,16 +16,61 @@ public:
         image_pub = it.advertise("/"+name+"/image", 1);
     }
 
-    void sendTestImage()
+    void sendTestImage(std::string encoding = "bgr8")
     {
-        // Let's create a 200x200 black image with a red circle in the center
-        cv::Mat img(200, 200, CV_8UC3, cv::Scalar(0,0,0));
-        cv::circle(img, cv::Point(100, 100), 20, CV_RGB(255,0,0), -1);
+        // Let's create a 200x200 black image with a red circle
+        // (white cirlce for mono / 1-channel images) in the center
+        // Checks encoding and correctly creates an image with
+        // the requested encoding and publishes it
+        if (encoding == "mono8")
+        {
+            cv::Mat img(200, 200, CV_8UC1, cv::Scalar(0,0,0));
+            cv::circle(img, cv::Point(100, 100), 20, CV_RGB(255,255,255), -1);
+            sensor_msgs::ImagePtr msg = cv_bridge::CvImage(std_msgs::Header(), encoding, img).toImageMsg();
+            image_pub.publish(msg);       
+        }
+        /*
+        if (encoding == "mono16")
+        {
+            cv::Mat img(200, 200, CV_16UC1, cv::Scalar(0,0,0));
+            cv::circle(img, cv::Point(100, 100), 20, CV_RGB(255,0,0), -1);
+            sensor_msgs::ImagePtr msg = cv_bridge::CvImage(std_msgs::Header(), encoding, img).toImageMsg();
+            image_pub.publish(msg);        
+        }
 
-        // Publish the image
-        sensor_msgs::ImagePtr msg = cv_bridge::CvImage(std_msgs::Header(), "bgr8", img).toImageMsg();
-        image_pub.publish(msg);
+        if (encoding == "rgb8")
+        {
+            cv::Mat img(200, 200, CV_8UC3, cv::Scalar(0,0,0));
+            cv::circle(img, cv::Point(100, 100), 20, CV_RGB(255,0,0), -1);
+            sensor_msgs::ImagePtr msg = cv_bridge::CvImage(std_msgs::Header(), encoding, img).toImageMsg();
+            image_pub.publish(msg);       
+        }
+
+        if (encoding == "bgra8")
+        {
+            cv::Mat img(200, 200, CV_8UC4, cv::Scalar(0,0,0));
+            cv::circle(img, cv::Point(100, 100), 20, CV_RGB(255,0,0), -1);
+            sensor_msgs::ImagePtr msg = cv_bridge::CvImage(std_msgs::Header(), encoding, img).toImageMsg();
+            image_pub.publish(msg);       
+        }
+
+        if (encoding == "rgba8")
+        {
+            cv::Mat img(200, 200, CV_8UC4, cv::Scalar(0,0,0));
+            cv::circle(img, cv::Point(100, 100), 20, CV_RGB(255,0,0), -1);
+            sensor_msgs::ImagePtr msg = cv_bridge::CvImage(std_msgs::Header(), encoding, img).toImageMsg();
+            image_pub.publish(msg);        
+        }  */
+        else
+        {
+            cv::Mat img(200, 200, CV_8UC3, cv::Scalar(0,0,0));
+            cv::circle(img, cv::Point(100, 100), 20, CV_RGB(255,0,0), -1);
+            sensor_msgs::ImagePtr msg = cv_bridge::CvImage(std_msgs::Header(), encoding, img).toImageMsg();
+            image_pub.publish(msg);
+        }
+
     }
+
 
     ~ROSThreadImageTester() {}
 };
@@ -34,6 +79,7 @@ class ROSThreadImageInstance: public ROSThreadImage
 {
 private:
     cv::Point avg_coords;
+  //  std::string encoding;
 
 public:
     explicit ROSThreadImageInstance(std::string _name): ROSThreadImage(_name)
@@ -103,6 +149,32 @@ TEST(rosimagetest, testinternalthreadentry)
 
     // Sends a 200x200 image with a red circle overlayed in the middle
     rtit.sendTestImage();
+
+    // Waits so that threads can finish
+    ros::Rate rate(100);
+
+    while(ros::ok() && (rtii.centroid() == cv::Point(-1,-1)))
+    {
+        // ROS_INFO("Waiting for ROSThreadImage loop. [x y]: [%i %i]",
+        //                  rtii.centroid().x, rtii.centroid(),y);
+        rate.sleep();
+    }
+
+    // Checks that x and y coordinates are correct against expected values
+    EXPECT_EQ(rtii.centroid(), cv::Point(100, 100));
+}
+
+TEST(rosimagetest, testmono8image)
+{
+    // Creates an object that sends a 200x200 black image with a red circle overlaid
+    ROSThreadImageTester rtit("test");
+
+    // Creates an object responsible for receiving an image
+    // and finding the centroid of a contour
+    ROSThreadImageInstance rtii("test");
+
+    // Sends a 200x200 image encoding with mono8 with a red circle overlayed in the middle
+    rtit.sendTestImage("mono8");
 
     // Waits so that threads can finish
     ros::Rate rate(100);
