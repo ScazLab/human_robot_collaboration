@@ -48,12 +48,12 @@ public:
         {
             cv::Mat img_in;
 
-            if (not _img_empty)
+            if (not img_empty)
             {
                 // ROS_INFO("Processing image");
                 {
                     std::lock_guard<std::mutex> lock(mutex_img);
-                    img_in=_curr_img;
+                    img_in=curr_img;
                 }
 
                 // Convert image to black and white
