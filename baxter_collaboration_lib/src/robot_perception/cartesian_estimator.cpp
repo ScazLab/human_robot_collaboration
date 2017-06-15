@@ -177,6 +177,15 @@ void CartesianEstimator::init()
     startThread();
 }
 
+CartesianEstimator::CartesianEstimator(string _name, vector<string> _objs_name,
+                                       cv::Mat _objs_size) : CartesianEstimator(_name)
+{
+    ROS_ASSERT_MSG(_objs_size.cols == 2, "Objects' sizes should have two columns. "
+                                         "%i found instead", _objs_size.cols);
+
+    addObjects(_objs_name, _objs_size);
+}
+
 bool CartesianEstimator::publishObjects()
 {
     ros::Time curr_stamp(ros::Time::now());

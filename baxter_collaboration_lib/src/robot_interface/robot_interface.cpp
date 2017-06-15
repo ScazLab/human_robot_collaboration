@@ -409,10 +409,8 @@ void RobotInterface::setCtrlRunning(bool _flag)
 
 bool RobotInterface::isCtrlRunning()
 {
-    bool res = false;
-
     std::lock_guard<std::mutex> lck(mtx_ctrl);
-    res = is_ctrl_running;
+    bool res = is_ctrl_running;
 
     // ROS_INFO("[%s] is_ctrl_running equal to: %i", "left", res);
 
