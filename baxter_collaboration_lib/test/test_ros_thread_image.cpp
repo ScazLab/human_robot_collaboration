@@ -16,61 +16,34 @@ public:
         image_pub = it.advertise("/"+name+"/image", 1);
     }
 
-    void sendTestImage(std::string encoding = "bgr8")
+    void sendTestImage(std::string _encoding = "bgr8")
     {
         // Let's create a 200x200 black image with a red circle
         // (white circle for mono / 1-channel images) in the center
         // Checks encoding and correctly creates an image with
         // the requested encoding and publishes it
-        if (encoding == "mono8")
+        sensor_msgs::ImagePtr msg;
+
+        if (_encoding == "mono8")
         {
             cv::Mat img(200, 200, CV_8UC1, cv::Scalar(0,0,0));
-            cv::circle(img, cv::Point(100, 100), 20, CV_RGB(255,255,255), -1);
-            sensor_msgs::ImagePtr msg = cv_bridge::CvImage(std_msgs::Header(), encoding, img).toImageMsg();
-            image_pub.publish(msg);       
-        }
-        /*
-        if (encoding == "mono16")
-        {
-            cv::Mat img(200, 200, CV_16UC1, cv::Scalar(0,0,0));
-            cv::circle(img, cv::Point(100, 100), 20, CV_RGB(255,0,0), -1);
-            sensor_msgs::ImagePtr msg = cv_bridge::CvImage(std_msgs::Header(), encoding, img).toImageMsg();
-            image_pub.publish(msg);        
+            cv::circle(img, cv::Point(100, 100), 20, CV_RGB(255,255,255), -1);       
+            msg = cv_bridge::CvImage(std_msgs::Header(), _encoding, img).toImageMsg();      
         }
 
-        if (encoding == "rgb8")
+        else if (_encoding == "bgr8")
         {
             cv::Mat img(200, 200, CV_8UC3, cv::Scalar(0,0,0));
             cv::circle(img, cv::Point(100, 100), 20, CV_RGB(255,0,0), -1);
-            sensor_msgs::ImagePtr msg = cv_bridge::CvImage(std_msgs::Header(), encoding, img).toImageMsg();
-            image_pub.publish(msg);       
+            msg = cv_bridge::CvImage(std_msgs::Header(), _encoding, img).toImageMsg();        
         }
-
-        if (encoding == "bgra8")
-        {
-            cv::Mat img(200, 200, CV_8UC4, cv::Scalar(0,0,0));
-            cv::circle(img, cv::Point(100, 100), 20, CV_RGB(255,0,0), -1);
-            sensor_msgs::ImagePtr msg = cv_bridge::CvImage(std_msgs::Header(), encoding, img).toImageMsg();
-            image_pub.publish(msg);       
-        }
-
-        if (encoding == "rgba8")
-        {
-            cv::Mat img(200, 200, CV_8UC4, cv::Scalar(0,0,0));
-            cv::circle(img, cv::Point(100, 100), 20, CV_RGB(255,0,0), -1);
-            sensor_msgs::ImagePtr msg = cv_bridge::CvImage(std_msgs::Header(), encoding, img).toImageMsg();
-            image_pub.publish(msg);        
-        }  */
+        
         else
         {
-            cv::Mat img(200, 200, CV_8UC3, cv::Scalar(0,0,0));
-            cv::circle(img, cv::Point(100, 100), 20, CV_RGB(255,0,0), -1);
-            sensor_msgs::ImagePtr msg = cv_bridge::CvImage(std_msgs::Header(), encoding, img).toImageMsg();
-            image_pub.publish(msg);
+            ROS_INFO("Error: Incorrect encoding provided");
         }
-
+            image_pub.publish(msg); 
     }
-
 
     ~ROSThreadImageTester() {}
 };
@@ -79,7 +52,6 @@ class ROSThreadImageInstance: public ROSThreadImage
 {
 private:
     cv::Point avg_coords;
-  //  std::string encoding;
 
 public:
     explicit ROSThreadImageInstance(std::string _name): ROSThreadImage(_name)

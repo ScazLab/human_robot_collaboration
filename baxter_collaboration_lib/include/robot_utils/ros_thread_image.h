@@ -37,10 +37,10 @@ protected:
 
     std::mutex mutex_img;
 
-    cv::Mat  curr_img;
-    cv::Size img_size;
-    bool    img_empty;
-    std::string _encoding;
+    cv::Mat     curr_img;   //Current image
+    cv::Size    img_size;   //Size of current image
+    bool       img_empty;   //Returns true if current image is empty, false otherwise
+    std::string encoding;   //Encoding that will be used for some image
 
     ros::Rate r;
 
@@ -50,7 +50,13 @@ protected:
     virtual void InternalThreadEntry() = 0;
 
 public:
-    ROSThreadImage(std::string _name, std::string encoding = "bgr8");
+    /*
+     *Default constructor
+     *
+     *@param A name, and an encoding for the image
+     */
+
+    ROSThreadImage(std::string _name, std::string _encoding = "bgr8");
     ~ROSThreadImage();
 
     /*
