@@ -4,15 +4,14 @@
 /*                          ROSThreadImage                                */
 /**************************************************************************/
 
-ROSThreadImage::ROSThreadImage(std::string _name) :  nh(_name), name(_name),
-                                     spinner(4), _img_trp(nh), _img_empty(true), r(30) // 30Hz
+ROSThreadImage::ROSThreadImage(std::string _name) :  nh(_name), name(_name), is_closing(false),
+                                                     spinner(4), _img_trp(nh),
+                                                     _img_empty(true), r(50) // 20Hz
 {
-
     _img_sub = _img_trp.subscribe("/"+getName()+"/image", // "/cameras/right_hand_camera/image",
-                           SUBSCRIBER_BUFFER, &ROSThreadImage::imageCb, this);
+                                  SUBSCRIBER_BUFFER, &ROSThreadImage::imageCb, this);
 
     spinner.start();
-    startThread();
 }
 
 bool ROSThreadImage::startThread()
@@ -31,12 +30,6 @@ bool ROSThreadImage::isClosing()
 {
     std::lock_guard<std::mutex> lock(mtx_is_closing);
     return is_closing;
-}
-
-ROSThreadImage::~ROSThreadImage()
-{
-    setIsClosing(true);
-    if (img_thread.joinable()) { img_thread.join(); }
 }
 
 void ROSThreadImage::imageCb(const sensor_msgs::ImageConstPtr& msg)
@@ -58,5 +51,12 @@ void ROSThreadImage::imageCb(const sensor_msgs::ImageConstPtr& msg)
     _curr_img  = cv_ptr->image.clone();
     _img_size  =      _curr_img.size();
     _img_empty =     _curr_img.empty();
+}
+
+ROSThreadImage::~ROSThreadImage()
+{
+    setIsClosing(true);
+
+    if (img_thread.joinable()) { img_thread.join(); }
 }
 
