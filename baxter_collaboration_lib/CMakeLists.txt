@@ -63,13 +63,9 @@ include_directories(include
 # which would be an unnecessary overhead.
 add_library(robot_utils     include/robot_utils/utils.h
                             include/robot_utils/baxter_trac_ik.h
-                            include/robot_utils/ros_thread.h
-                            include/robot_utils/ros_thread_obj.h
                             include/robot_utils/ros_thread_image.h
                             src/robot_utils/utils.cpp
                             src/robot_utils/baxter_trac_ik.cpp
-                            src/robot_utils/ros_thread.cpp
-                            src/robot_utils/ros_thread_obj.cpp
                             src/robot_utils/ros_thread_image.cpp)
 
 add_library(robot_interface include/robot_interface/robot_interface.h
@@ -151,10 +147,6 @@ if(CATKIN_ENABLE_TESTING)
   add_rostest_gtest(test_gripper test/test_gripper.test
                                  test/test_gripper.cpp)
   target_link_libraries(test_gripper robot_interface)
-
-  ## ROS thread obj tests
-  catkin_add_gtest(test_ros_thread_obj test/test_ros_thread_obj.cpp)
-  target_link_libraries(test_ros_thread_obj robot_utils)
 
   ## Robot ROS thread image test
   add_rostest_gtest(test_ros_thread_image test/test_ros_thread_image.test

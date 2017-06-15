@@ -656,6 +656,6 @@ bool ArmCtrl::publishState()
 
 ArmCtrl::~ArmCtrl()
 {
-    setIsClosing(false);
+    setIsClosing(true);
     if (arm_thread.joinable()) { arm_thread.join(); }
 }
