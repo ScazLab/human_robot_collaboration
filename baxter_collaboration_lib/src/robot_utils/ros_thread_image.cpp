@@ -4,35 +4,42 @@
 /*                          ROSThreadImage                                */
 /**************************************************************************/
 
-ROSThreadImage::ROSThreadImage(std::string name) :  ROSThread(), _n(name), _name(name),
-                                     spinner(4), _img_trp(_n), _img_empty(true), r(30) // 30Hz
+ROSThreadImage::ROSThreadImage(std::string _name) :  nh(_name), name(_name), is_closing(false),
+                                                     spinner(4), img_trp(nh),
+                                                     img_empty(true), r(50) // 20Hz
 {
-    pthread_mutexattr_t _mutex_attr;
-    pthread_mutexattr_init(&_mutex_attr);
-    pthread_mutexattr_settype(&_mutex_attr, PTHREAD_MUTEX_RECURSIVE_NP);
-    pthread_mutex_init(&_mutex_img, &_mutex_attr);
-
-    _img_sub = _img_trp.subscribe("/"+getName()+"/image", // "/cameras/right_hand_camera/image",
-                           SUBSCRIBER_BUFFER, &ROSThreadImage::imageCb, this);
+    img_sub = img_trp.subscribe("/"+getName()+"/image", // "/cameras/right_hand_camera/image",
+                                  SUBSCRIBER_BUFFER, &ROSThreadImage::imageCb, this);
 
     spinner.start();
-    startInternalThread();
 }
 
-ROSThreadImage::~ROSThreadImage()
+bool ROSThreadImage::startThread()
 {
-    // closeInternalThread();
-    pthread_mutex_destroy(&_mutex_img);
+    img_thread = std::thread(&ROSThreadImage::InternalThreadEntry, this);
+    return img_thread.joinable();
 }
 
-void ROSThreadImage::imageCb(const sensor_msgs::ImageConstPtr& msg)
+void ROSThreadImage::setIsClosing(bool _arg)
+{
+    std::lock_guard<std::mutex> lock(mtx_is_closing);
+    is_closing = _arg;
+}
+
+bool ROSThreadImage::isClosing()
+{
+    std::lock_guard<std::mutex> lock(mtx_is_closing);
+    return is_closing;
+}
+
+void ROSThreadImage::imageCb(const sensor_msgs::ImageConstPtr& _msg)
 {
     // ROS_INFO("imageCb");
     cv_bridge::CvImageConstPtr cv_ptr;
 
     try
     {
-        cv_ptr = cv_bridge::toCvShare(msg, "bgr8");
+        cv_ptr = cv_bridge::toCvShare(_msg, "bgr8");
     }
     catch(cv_bridge::Exception& e)
     {
@@ -40,10 +47,16 @@ void ROSThreadImage::imageCb(const sensor_msgs::ImageConstPtr& msg)
         return;
     }
 
-    pthread_mutex_lock(&_mutex_img);
-    _curr_img  = cv_ptr->image.clone();
-    _img_size  =      _curr_img.size();
-    _img_empty =     _curr_img.empty();
-    pthread_mutex_unlock(&_mutex_img);
+    std::lock_guard<std::mutex> lock(mutex_img);
+    curr_img  = cv_ptr->image.clone();
+    img_size  =       curr_img.size();
+    img_empty =      curr_img.empty();
+}
+
+ROSThreadImage::~ROSThreadImage()
+{
+    setIsClosing(true);
+
+    if (img_thread.joinable()) { img_thread.join(); }
 }
 

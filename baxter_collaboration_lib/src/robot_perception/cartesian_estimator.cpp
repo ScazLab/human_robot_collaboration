@@ -133,13 +133,13 @@ SegmentedObj::~SegmentedObj()
 /************************************************************************************/
 CartesianEstimator::CartesianEstimator(string _name) : ROSThreadImage(_name)
 {
-    img_pub        = _img_trp.advertise(      "/"+getName()+"/image_result", SUBSCRIBER_BUFFER);
-    img_pub_thres  = _img_trp.advertise("/"+getName()+"/image_result_thres", SUBSCRIBER_BUFFER);
-    objs_pub       = _n.advertise<baxter_collaboration_msgs::ObjectsArray>("/"+getName()+"/objects", 1);
+    img_pub        = img_trp.advertise(      "/"+getName()+"/image_result", SUBSCRIBER_BUFFER);
+    img_pub_thres  = img_trp.advertise("/"+getName()+"/image_result_thres", SUBSCRIBER_BUFFER);
+    objs_pub       = nh.advertise<baxter_collaboration_msgs::ObjectsArray>("/"+getName()+"/objects", 1);
 
-    _n.param<string>("/"+getName()+"/reference_frame", reference_frame,         "");
-    _n.param<string>("/"+getName()+   "/camera_frame",    camera_frame,         "");
-    _n.param<int>   ("/"+getName()+ "/area_threshold",  area_threshold, AREA_THRES);
+    nh.param<string>("/"+getName()+"/reference_frame", reference_frame,         "");
+    nh.param<string>("/"+getName()+   "/camera_frame",    camera_frame,         "");
+    nh.param<int>   ("/"+getName()+ "/area_threshold",  area_threshold, AREA_THRES);
 
     ROS_INFO("Reference Frame: %s", reference_frame.c_str());
     ROS_INFO("Camera Frame   : %s",    camera_frame.c_str());
@@ -150,21 +150,22 @@ CartesianEstimator::CartesianEstimator(string _name) : ROSThreadImage(_name)
     if(reference_frame.empty()) reference_frame = camera_frame;
 
     sensor_msgs::CameraInfoConstPtr msg = ros::topic::waitForMessage<sensor_msgs::CameraInfo>
-                                                           ("/"+getName()+"/camera_info", _n);
-                                                           // ("/cameras/right_hand_camera/camera_info", _n);
+                                                           ("/"+getName()+"/camera_info", nh);
+                                                           // ("/cameras/right_hand_camera/camera_info", nh);
 
     // For now, we'll assume images that are always rectified
     cam_param = aruco_ros::rosCameraInfo2ArucoCamParams(*msg, true);
 
     objects_msg.header.frame_id = reference_frame;
-    objects_msg.header.seq = 0;
+    objects_msg.header.seq      = 0;
+    startThread();
 }
 
 CartesianEstimator::CartesianEstimator(string _name, vector<string> _objs_name,
                                        cv::Mat _objs_size) : CartesianEstimator(_name)
 {
     ROS_ASSERT_MSG(_objs_size.cols == 2, "Objects' sizes should have two columns. "
-                                         "%i found instead", _objs_size.cols);
+                   "%i found instead", _objs_size.cols);
 
     addObjects(_objs_name, _objs_size);
 }
@@ -202,17 +203,18 @@ void CartesianEstimator::InternalThreadEntry()
     // before the derived class finishes initialization
     ros::Duration(0.2).sleep();
 
-    while(ros::ok())
+    while(ros::ok() && not isClosing())
     {
         // ROS_INFO_THROTTLE(120, "I'm running, and everything is fine..."
         //                        " Number of objects: %i", getNumValidObjects());
         cv::Mat img_in;
         cv::Mat img_out;
-        if (!_img_empty)
+        if (!img_empty)
         {
-            pthread_mutex_lock(&_mutex_img);
-            img_in=_curr_img;
-            pthread_mutex_unlock(&_mutex_img);
+            {
+                std::lock_guard<std::mutex> lock(mutex_img);
+                img_in  = curr_img;
+            }
             img_out = img_in.clone();
 
             detectObjects(img_in, img_out);

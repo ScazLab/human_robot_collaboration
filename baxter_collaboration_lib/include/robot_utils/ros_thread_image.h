@@ -7,33 +7,39 @@
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/highgui/highgui.hpp>
 
-#include "robot_utils/ros_thread.h"
 #include "robot_utils/utils.h"
+
+#include <mutex>
+#include <thread>
 
 /**
  * @brief A ROS Thread with an image callback
  * @details This class inherits from ROSThread, but it adds also an image callback
  *          to be overwritten by its children. Useful to to visual processing.
  */
-class ROSThreadImage : public ROSThread
+class ROSThreadImage
 {
 protected:
-    ros::NodeHandle _n;
+    ros::NodeHandle nh;
 
 private:
-    std::string    _name;
+    std::string       name;
+    std::thread img_thread;
+
+    bool           is_closing;  // Flag to close the thread entry function
+    std::mutex mtx_is_closing;  // Mutex to protect the thread close flag
 
     ros::AsyncSpinner spinner;  // AsyncSpinner to handle callbacks
 
 protected:
-    image_transport::ImageTransport _img_trp;
-    image_transport::Subscriber     _img_sub;
+    image_transport::ImageTransport img_trp;
+    image_transport::Subscriber     img_sub;
 
-    pthread_mutex_t _mutex_img;
+    std::mutex mutex_img;
 
-    cv::Mat  _curr_img;
-    cv::Size _img_size;
-    bool    _img_empty;
+    cv::Mat  curr_img;
+    cv::Size img_size;
+    bool    img_empty;
 
     ros::Rate r;
 
@@ -43,7 +49,7 @@ protected:
     virtual void InternalThreadEntry() = 0;
 
 public:
-    ROSThreadImage(std::string name);
+    ROSThreadImage(std::string _name);
     ~ROSThreadImage();
 
     /*
@@ -52,17 +58,28 @@ public:
      * @param      The image
      * @return     N/A
      */
-    void imageCb(const sensor_msgs::ImageConstPtr& msg);
+    void imageCb(const sensor_msgs::ImageConstPtr& _msg);
 
     /*
      * Self-explaining "setters"
      */
-    void setName(std::string name) { _name = name; };
+    void setName(std::string _name) { name = _name; };
 
     /*
      * Self-explaining "getters"
      */
-    std::string  getName() { return  _name; };
+    std::string  getName() { return name; };
+
+    /*
+     * Starts thread
+     */
+    bool startThread();
+
+    /**
+     * Safely manipulate the boolean needed to kill the thread entry
+     */
+    void setIsClosing(bool _arg);
+    bool isClosing();
 };
 
 #endif

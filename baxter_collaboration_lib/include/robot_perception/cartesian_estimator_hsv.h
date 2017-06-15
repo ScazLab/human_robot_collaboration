@@ -99,6 +99,8 @@ protected:
 public:
     /* CONSTRUCTORS */
     CartesianEstimatorHSV(std::string  _name);
+
+    ~CartesianEstimatorHSV();
 };
 
 #endif

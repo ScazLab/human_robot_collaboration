@@ -98,7 +98,7 @@ KDL::JntArray baxterTracIK::JointState2JntArray(const sensor_msgs::JointState &j
 
 bool baxterTracIK::perform_ik(baxter_core_msgs::SolvePositionIK &ik_srv)
 {
-    int rc;
+    int rc = -1;
     KDL::JntArray result;
     sensor_msgs::JointState joint_state;
 

@@ -30,29 +30,31 @@ public:
     ~ROSThreadImageTester() {}
 };
 
-class ROSImageInstance: public ROSThreadImage
+class ROSThreadImageInstance: public ROSThreadImage
 {
 private:
     cv::Point avg_coords;
 
 public:
-    explicit ROSImageInstance(std::string _name): ROSThreadImage(_name)
+    explicit ROSThreadImageInstance(std::string _name): ROSThreadImage(_name)
     {
         avg_coords = cv::Point(-1,-1);
+        startThread();
     }
 
     void InternalThreadEntry()
     {
-        while(ros::ok())
+        while(ros::ok() && not isClosing())
         {
             cv::Mat img_in;
 
-            if (not _img_empty)
+            if (not img_empty)
             {
                 // ROS_INFO("Processing image");
-                pthread_mutex_lock(&_mutex_img);
-                img_in=_curr_img;
-                pthread_mutex_unlock(&_mutex_img);
+                {
+                    std::lock_guard<std::mutex> lock(mutex_img);
+                    img_in=curr_img;
+                }
 
                 // Convert image to black and white
                 cv::Mat gray;
@@ -97,7 +99,7 @@ TEST(rosimagetest, testinternalthreadentry)
 
     // Creates an object responsible for receiving an image
     // and finding the centroid of a contour
-    ROSImageInstance rtii("test");
+    ROSThreadImageInstance rtii("test");
 
     // Sends a 200x200 image with a red circle overlayed in the middle
     rtit.sendTestImage();
