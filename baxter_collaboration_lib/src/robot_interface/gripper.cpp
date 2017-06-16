@@ -156,6 +156,20 @@ bool Gripper::is_gripping()
     // return getGripperState().gripping==EndEffectorState::STATE_TRUE;
 }
 
+// sarim's edits:
+
+bool Gripper::reboot()
+{
+    return true;
+}
+
+bool Gripper::cmd_reboot()
+{
+    return true;
+}
+
+
+
 Gripper::~Gripper()
 {
 
