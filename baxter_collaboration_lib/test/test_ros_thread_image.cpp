@@ -29,7 +29,7 @@ public:
         if      (_encoding == "mono8")
         {
             img = cv::Mat(200, 200, CV_8UC1, cv::Scalar(0));
-            cv::circle(img, cv::Point(100, 100), 20, CV_RGB(255,255,255), -1);
+            cv::circle(img, cv::Point(100, 100), 20, cv::Scalar(255), -1);
         }
         else if (_encoding ==  "bgr8")
         {
@@ -53,9 +53,10 @@ class ROSThreadImageInstance: public ROSThreadImage
 {
 private:
     cv::Point avg_coords;
+    std::string encoding;
 
 public:
-    explicit ROSThreadImageInstance(std::string _name): ROSThreadImage(_name)
+    explicit ROSThreadImageInstance(std::string _name, std::string _encoding = "bgr8"): ROSThreadImage(_name, _encoding), encoding(_encoding)
     {
         avg_coords = cv::Point(-1,-1);
         startThread();
@@ -77,7 +78,18 @@ public:
 
                 // Convert image to black and white
                 cv::Mat gray;
+                
+                // This is needed because an error will occur if you
+                // attempt to convert a mono8 image to black and white
+                // (It's already in grayscale!)
+                if (encoding not_eq "mono8")
+                {
                 cv::cvtColor(img_in, gray, CV_BGR2GRAY);
+                }
+                else
+                {
+                    gray = img_in;
+                }
 
                 // Find contours
                 std::vector<std::vector<cv::Point>> contours;
@@ -144,7 +156,7 @@ TEST(rosimagetest, testmono8image)
 
     // Creates an object responsible for receiving an image
     // and finding the centroid of a contour
-    ROSThreadImageInstance rtii("test");
+    ROSThreadImageInstance rtii("test", "mono8");
 
     // Sends a 200x200 image encoding with mono8 with a white circle overlayed in the middle
     rtit.sendTestImage("mono8");
