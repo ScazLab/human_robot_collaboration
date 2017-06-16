@@ -28,12 +28,13 @@ int main(int argc, char** argv)
             ROS_INFO("Available commands: (lowercase for left gripper, uppercase for right gripper)");
             ROS_INFO("q / Q : close gripper");
             ROS_INFO("w / W : open gripper");
+            ROS_INFO("t / T : type of gripper");
             ROS_INFO("z / Z : is gripper enabled?");
-            ROS_INFO("x / X: is gripper calibrated?");
-            ROS_INFO("c / C: is gripper ready to grip?");
-            ROS_INFO("v / V: does gripper have error?");
-            ROS_INFO("b / B: is gripper sucking?");
-            ROS_INFO("n / N: is gripper gripping?");
+            ROS_INFO("x / X : is gripper calibrated?");
+            ROS_INFO("c / C : is gripper ready to grip?");
+            ROS_INFO("v / V : does gripper have error?");
+            ROS_INFO("b / B : is gripper sucking?");
+            ROS_INFO("n / N : is gripper gripping?");
             ROS_INFO("? : help");
             ROS_INFO("e : exit");
             break;
@@ -52,6 +53,14 @@ int main(int argc, char** argv)
         case 'W':
             ROS_INFO("Opening right gripper");
             right_gripper->releaseObject();
+            break;
+        case 't':
+            ROS_INFO("Left gripper type:");
+            left_gripper->type();
+            break;
+        case 'T':
+            ROS_INFO("Right gripper type:");
+            right_gripper->type();
             break;
         case 'z':
             ROS_INFO("Is left enabled? %s", (left_gripper->is_enabled()? "Yes" : "No"));
