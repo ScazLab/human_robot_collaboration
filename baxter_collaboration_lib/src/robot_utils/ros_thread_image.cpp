@@ -17,7 +17,7 @@ ROSThreadImage::ROSThreadImage(std::string _name, std::string _encoding) :
 
 bool ROSThreadImage::startThread()
 {
-    img_thread = std::thread(&ROSThreadImage::InternalThreadEntry, this);
+    img_thread = std::thread(&ROSThreadImage::internalThread, this);
     return img_thread.joinable();
 }
 

@@ -213,7 +213,7 @@ protected:
     /*
      * Function that will be spun out as a thread
      */
-    void InternalThreadEntry();
+    void internalThread();
 
     /**
      * Adds an object to the database of objects.

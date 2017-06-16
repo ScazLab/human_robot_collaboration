@@ -47,7 +47,7 @@ protected:
     /*
      * Function that will be spun out as a thread
      */
-    virtual void InternalThreadEntry() = 0;
+    virtual void internalThread() = 0;
 
 public:
     /**
@@ -79,7 +79,8 @@ public:
     /*
      * Self-explaining "getters"
      */
-    std::string  getName() { return name; };
+    std::string getName()     { return     name; };
+    std::string getEncoding() { return encoding; };
 
     /*
      * Starts thread

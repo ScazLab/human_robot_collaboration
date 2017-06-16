@@ -1,7 +1,6 @@
 #include <gtest/gtest.h>
 #include "robot_utils/ros_thread_image.h"
 
-
 class ROSThreadImageTester
 {
     ros::NodeHandle nh;
@@ -53,16 +52,16 @@ class ROSThreadImageInstance: public ROSThreadImage
 {
 private:
     cv::Point avg_coords;
-    std::string encoding;
 
 public:
-    explicit ROSThreadImageInstance(std::string _name, std::string _encoding = "bgr8"): ROSThreadImage(_name, _encoding), encoding(_encoding)
+    explicit ROSThreadImageInstance(std::string _name, std::string _encoding = "bgr8"):
+                                    ROSThreadImage(_name, _encoding)
     {
         avg_coords = cv::Point(-1,-1);
         startThread();
     }
 
-    void InternalThreadEntry()
+    void internalThread()
     {
         while(ros::ok() && not isClosing())
         {
@@ -78,13 +77,13 @@ public:
 
                 // Convert image to black and white
                 cv::Mat gray;
-                
+
                 // This is needed because an error will occur if you
                 // attempt to convert a mono8 image to black and white
                 // (It's already in grayscale!)
-                if (encoding not_eq "mono8")
+                if (getEncoding() == "bgr8")
                 {
-                cv::cvtColor(img_in, gray, CV_BGR2GRAY);
+                    cv::cvtColor(img_in, gray, CV_BGR2GRAY);
                 }
                 else
                 {
@@ -93,7 +92,8 @@ public:
 
                 // Find contours
                 std::vector<std::vector<cv::Point>> contours;
-                findContours(gray, contours, CV_RETR_TREE, CV_CHAIN_APPROX_NONE, cv::Point(0,0));
+                findContours(gray, contours, CV_RETR_TREE, CV_CHAIN_APPROX_NONE,
+                                                                cv::Point(0,0));
 
                 // Finds the moments
                 std::vector<cv::Moments> mu(contours.size() );
