@@ -1,7 +1,6 @@
 #include <gtest/gtest.h>
 #include "robot_utils/ros_thread_image.h"
 
-
 class ROSThreadImageTester
 {
     ros::NodeHandle nh;
@@ -16,14 +15,33 @@ public:
         image_pub = it.advertise("/"+name+"/image", 1);
     }
 
-    void sendTestImage()
+    void sendTestImage(std::string _encoding = "bgr8")
     {
-        // Let's create a 200x200 black image with a red circle in the center
-        cv::Mat img(200, 200, CV_8UC3, cv::Scalar(0,0,0));
-        cv::circle(img, cv::Point(100, 100), 20, CV_RGB(255,0,0), -1);
+        // Let's create a 200x200 black image with a red circle
+        // (white circle for mono / 1-channel images) in the center
+        // Checks encoding and correctly creates an image with
+        // the requested encoding and publishes it
+        sensor_msgs::ImagePtr msg;
 
-        // Publish the image
-        sensor_msgs::ImagePtr msg = cv_bridge::CvImage(std_msgs::Header(), "bgr8", img).toImageMsg();
+        cv::Mat img;
+
+        if      (_encoding == "mono8")
+        {
+            img = cv::Mat(200, 200, CV_8UC1, cv::Scalar(0));
+            cv::circle(img, cv::Point(100, 100), 20, cv::Scalar(255), -1);
+        }
+        else if (_encoding ==  "bgr8")
+        {
+            img = cv::Mat(200, 200, CV_8UC3, cv::Scalar(0,0,0));
+            cv::circle(img, cv::Point(100, 100), 20, CV_RGB(255,0,0), -1);
+        }
+        else
+        {
+            ROS_ERROR("Encoding provided [%s] is not among the allowed ones."
+                      "Please use either bgr8 or mono8", _encoding.c_str());
+        }
+
+        msg = cv_bridge::CvImage(std_msgs::Header(), _encoding, img).toImageMsg();
         image_pub.publish(msg);
     }
 
@@ -36,13 +54,14 @@ private:
     cv::Point avg_coords;
 
 public:
-    explicit ROSThreadImageInstance(std::string _name): ROSThreadImage(_name)
+    explicit ROSThreadImageInstance(std::string _name, std::string _encoding = "bgr8"):
+                                    ROSThreadImage(_name, _encoding)
     {
         avg_coords = cv::Point(-1,-1);
         startThread();
     }
 
-    void InternalThreadEntry()
+    void internalThread()
     {
         while(ros::ok() && not isClosing())
         {
@@ -58,11 +77,23 @@ public:
 
                 // Convert image to black and white
                 cv::Mat gray;
-                cv::cvtColor(img_in, gray, CV_BGR2GRAY);
+
+                // This is needed because an error will occur if you
+                // attempt to convert a mono8 image to black and white
+                // (It's already in grayscale!)
+                if (getEncoding() == "bgr8")
+                {
+                    cv::cvtColor(img_in, gray, CV_BGR2GRAY);
+                }
+                else
+                {
+                    gray = img_in;
+                }
 
                 // Find contours
                 std::vector<std::vector<cv::Point>> contours;
-                findContours(gray, contours, CV_RETR_TREE, CV_CHAIN_APPROX_NONE, cv::Point(0,0));
+                findContours(gray, contours, CV_RETR_TREE, CV_CHAIN_APPROX_NONE,
+                                                                cv::Point(0,0));
 
                 // Finds the moments
                 std::vector<cv::Moments> mu(contours.size() );
@@ -92,7 +123,7 @@ public:
 };
 
 
-TEST(rosimagetest, testinternalthreadentry)
+TEST(rosimagetest, testbgr8image)
 {
     // Creates an object that sends a 200x200 black image with a red circle overlaid
     ROSThreadImageTester rtit("test");
@@ -103,6 +134,32 @@ TEST(rosimagetest, testinternalthreadentry)
 
     // Sends a 200x200 image with a red circle overlayed in the middle
     rtit.sendTestImage();
+
+    // Waits so that threads can finish
+    ros::Rate rate(100);
+
+    while(ros::ok() && (rtii.centroid() == cv::Point(-1,-1)))
+    {
+        // ROS_INFO("Waiting for ROSThreadImage loop. [x y]: [%i %i]",
+        //                  rtii.centroid().x, rtii.centroid(),y);
+        rate.sleep();
+    }
+
+    // Checks that x and y coordinates are correct against expected values
+    EXPECT_EQ(rtii.centroid(), cv::Point(100, 100));
+}
+
+TEST(rosimagetest, testmono8image)
+{
+    // Creates an object that sends a 200x200 black image with a red circle overlaid
+    ROSThreadImageTester rtit("test");
+
+    // Creates an object responsible for receiving an image
+    // and finding the centroid of a contour
+    ROSThreadImageInstance rtii("test", "mono8");
+
+    // Sends a 200x200 image encoding with mono8 with a white circle overlayed in the middle
+    rtit.sendTestImage("mono8");
 
     // Waits so that threads can finish
     ros::Rate rate(100);

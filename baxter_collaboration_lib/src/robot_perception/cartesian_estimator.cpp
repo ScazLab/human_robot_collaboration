@@ -197,7 +197,7 @@ bool CartesianEstimator::publishObjects()
     return true;
 }
 
-void CartesianEstimator::InternalThreadEntry()
+void CartesianEstimator::internalThread()
 {
     // This is introduced to avoid starting the execution of the thread
     // before the derived class finishes initialization
