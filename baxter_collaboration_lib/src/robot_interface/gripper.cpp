@@ -28,8 +28,12 @@ Gripper::Gripper(std::string _limb, bool _use_robot) :
 
     setGripperState(init_state);
 
+    // create a subscriber to the gripper's properties
+    // since the properties are fixed ,the callback is unsubscribed immediately afterwards
     sub_prop = rnh.subscribe("/robot/end_effector/" + _limb + "_gripper/properties",
                                 SUBSCRIBER_BUFFER, &Gripper::gripperCbProp, this);
+    sub_prop.shutdown();
+
 }
 
 void Gripper::setGripperState(const baxter_core_msgs::EndEffectorState& _state)
