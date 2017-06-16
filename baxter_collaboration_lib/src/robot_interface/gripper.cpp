@@ -27,6 +27,9 @@ Gripper::Gripper(std::string _limb, bool _use_robot) :
     init_state.moving     = EndEffectorState::STATE_UNKNOWN;
 
     setGripperState(init_state);
+
+    sub_prop = rnh.subscribe("/robot/end_effector/" + _limb + "_gripper/properties",
+                                SUBSCRIBER_BUFFER, &Gripper::gripperCbProp, this);
 }
 
 void Gripper::setGripperState(const baxter_core_msgs::EndEffectorState& _state)
@@ -39,6 +42,18 @@ baxter_core_msgs::EndEffectorState Gripper::getGripperState()
 {
     std::lock_guard<std::mutex> lock(mutex);
     return state;
+}
+
+void Gripper::setGripperProperties(const baxter_core_msgs::EndEffectorProperties& _properties)
+{
+    std::lock_guard<std::mutex> lock(mutex);
+    properties = _properties;
+}
+
+baxter_core_msgs::EndEffectorProperties Gripper::getGripperProperties()
+{
+    std::lock_guard<std::mutex> lock(mutex);
+    return properties;
 }
 
 bool Gripper::gripObject()
@@ -87,6 +102,21 @@ void Gripper::gripperCb(const EndEffectorState &msg)
             calibrate();
         }
 
+        first_run=false;
+    }
+}
+
+void Gripper::gripperCbProp(const EndEffectorProperties &msg)
+{
+    setGripperProperties(msg);
+    if (first_run)
+    {
+        if (!is_calibrated())
+        {
+            ROS_INFO("[%s_gripper] Calibrating the gripper..",
+                                    getGripperLimb().c_str());
+            calibrate();
+        }
         first_run=false;
     }
 }
@@ -167,6 +197,24 @@ bool Gripper::cmd_reboot()
 {
     return true;
 }
+
+std::string Gripper::type()
+{
+    int ui_code = getGripperProperties().ui_type;
+    if(ui_code == 1)
+    {
+        return "suction";
+    }
+    else if(ui_code == 2)
+    {
+        return "electric";
+    }
+    else
+    {
+        return "custom";
+    }
+}
+
 
 
 

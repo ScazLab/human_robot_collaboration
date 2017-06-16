@@ -5,6 +5,7 @@
 
 #include <baxter_core_msgs/EndEffectorState.h>
 #include <baxter_core_msgs/EndEffectorCommand.h>
+#include <baxter_core_msgs/EndEffectorProperties.h>
 
 #include "robot_utils/utils.h"
 
@@ -16,12 +17,14 @@ private:
     bool   use_robot;       // Flag to know if we're going to use the robot or not
     bool   first_run;       // Flag to calibrate the gripper at startup if needed
 
-    ros::NodeHandle rnh;    // ROS node handle
-    ros::Subscriber sub;    // Subscriber to receive the state of the gripper
-    ros::Publisher  pub;    // Publisher for requesting actions to the gripper
+    ros::NodeHandle rnh;      // ROS node handle
+    ros::Subscriber sub;      // Subscriber to receive the state of the gripper
+    ros::Publisher  pub;      // Publisher for requesting actions to the gripper
+    ros::Subscriber sub_prop; // Subscriber to receive the properties of the gripper
 
-    std::mutex mutex;                          // mutex for controlled thread access
-    baxter_core_msgs::EndEffectorState state;  // State of the gripper
+    std::mutex mutex;                              // mutex for controlled thread access
+    baxter_core_msgs::EndEffectorState state;      // State of the gripper
+    baxter_core_msgs::EndEffectorProperties properties; // properties of the gripper
 
     /**
      * Callback that handles the gripper state messages.
@@ -72,6 +75,12 @@ public:
      */
     baxter_core_msgs::EndEffectorState getGripperState();
 
+    /**
+     * sets and gets the properties of the gripper, thread-safely
+     */
+    void setGripperProperties(const baxter_core_msgs::EndEffectorProperties& _properties);
+    baxter_core_msgs::EndEffectorProperties getGripperProperties();
+
     bool gripObject();
 
     bool releaseObject();
@@ -120,6 +129,8 @@ public:
 
     bool reboot();
     bool cmd_reboot();
+    std::string type();
+    void gripperCbProp(const baxter_core_msgs::EndEffectorProperties &msg);
 
     /**
      * Destructor
