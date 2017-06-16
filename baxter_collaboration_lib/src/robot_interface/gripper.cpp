@@ -135,6 +135,11 @@ void Gripper::calibrate()
 
 void Gripper::suck()
 {
+    if(type() != "suction")
+    {
+        ROS_INFO("warning: this is not a suction gripper");
+    }
+
     EndEffectorCommand cmd;
     cmd.id=get_id();
     cmd.command=EndEffectorCommand::CMD_GRIP;
@@ -192,14 +197,13 @@ bool Gripper::is_gripping()
 
 // sarim's edits:
 
-bool Gripper::reboot()
+void Gripper::reboot()
 {
-    return true;
-}
-
-bool Gripper::cmd_reboot()
-{
-    return true;
+    EndEffectorCommand reboot;
+    reboot.id=get_id();
+    reboot.command=EndEffectorCommand::CMD_REBOOT;
+    pub.publish(reboot);
+    sleep(1.0);
 }
 
 std::string Gripper::type()

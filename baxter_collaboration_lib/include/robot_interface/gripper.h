@@ -127,8 +127,7 @@ public:
      **/
     std::string getGripperLimb()  { return limb; };
 
-    bool reboot();
-    bool cmd_reboot();
+    void reboot();
     std::string type();
     void gripperCbProp(const baxter_core_msgs::EndEffectorProperties &msg);
 
