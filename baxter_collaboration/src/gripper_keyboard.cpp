@@ -11,29 +11,32 @@ int main(int argc, char** argv)
     left_gripper = new Gripper("left");
     right_gripper = new Gripper("right");
 
+    ROS_INFO("You are now controlling the robot grippers");
+
     // gripper keys
     while(ros::ok())
     {
-        ROS_INFO("Enter your command...");
+        ROS_INFO("Enter your command (or press ? for help)...");
 
         char c = std::cin.get();
-        ROS_INFO("Key entered: %c", c);
         std::cin.ignore();
+        ROS_INFO("Key entered: %c", c);
 
         switch(c)
         {
         case '?':
             ROS_INFO("Available commands: (lowercase for left gripper, uppercase for right gripper)");
-            ROS_INFO("q : close gripper");
-            ROS_INFO("w : open gripper");
-            ROS_INFO("z : is gripper enabled?");
-            ROS_INFO("x : is gripper calibrated?");
-            ROS_INFO("c : is gripper ready to grip?");
-            ROS_INFO("v : does gripper have error?");
-            ROS_INFO("b : is gripper sucking?");
-            ROS_INFO("n : is gripper gripping?");
+            ROS_INFO("q / Q : close gripper");
+            ROS_INFO("w / W : open gripper");
+            ROS_INFO("z / Z : is gripper enabled?");
+            ROS_INFO("x / X: is gripper calibrated?");
+            ROS_INFO("c / C: is gripper ready to grip?");
+            ROS_INFO("v / V: does gripper have error?");
+            ROS_INFO("b / B: is gripper sucking?");
+            ROS_INFO("n / N: is gripper gripping?");
             ROS_INFO("? : help");
             ROS_INFO("e : exit");
+            break;
         case 'q':
             ROS_INFO("Closing left gripper");
             left_gripper->gripObject();
