@@ -80,6 +80,7 @@ add_executable(modular_action_provider  src/modular_furniture/tool_picker.h
                                         src/modular_furniture/part_picker.cpp
                                         src/modular_furniture/action_provider.cpp)
 add_executable(baxter_display           src/baxter_display.cpp)
+add_executable(gripper_keyboard         src/gripper_keyboard.cpp)
 
 ## Add cmake target dependencies of the executable
 ## same as for the library above
@@ -103,6 +104,7 @@ target_link_libraries(tower_action_provider                        ${catkin_LIBR
 target_link_libraries(hsv_detector                                 ${catkin_LIBRARIES} )
 target_link_libraries(modular_action_provider   flatpack_furniture ${catkin_LIBRARIES} )
 target_link_libraries(baxter_display            ${OpenCV_LIBS}     ${catkin_LIBRARIES} )
+target_link_libraries(gripper_keyboard                             ${catkin_LIBRARIES} )
 
 #############
 ## Install ##

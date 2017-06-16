@@ -118,6 +118,9 @@ public:
      **/
     std::string getGripperLimb()  { return limb; };
 
+    bool reboot();
+    bool cmd_reboot();
+
     /**
      * Destructor
      */
