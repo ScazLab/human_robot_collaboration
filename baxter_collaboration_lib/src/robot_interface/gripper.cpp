@@ -206,6 +206,24 @@ void Gripper::reboot()
     sleep(1.0);
 }
 
+void Gripper::command(std::string _cmd, bool _block,
+    double _timeout, std::string _args)
+{
+    EndEffectorCommand ee_cmd;
+    ee_cmd.id = get_id();
+    ee_cmd.command = _cmd;
+    ee_cmd.args = "";
+    if(_args != "")
+    {
+        ee_cmd.args = _args;
+    }
+    pub.publish(ee_cmd);
+    if(_block == true)
+    {
+        sleep(_timeout);
+    }
+}
+
 std::string Gripper::type()
 {
     int ui_code = getGripperProperties().ui_type;
