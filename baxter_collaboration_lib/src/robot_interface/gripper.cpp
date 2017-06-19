@@ -32,8 +32,6 @@ Gripper::Gripper(std::string _limb, bool _use_robot) :
     // since the properties are fixed ,the callback is unsubscribed immediately afterwards
     sub_prop = rnh.subscribe("/robot/end_effector/" + _limb + "_gripper/properties",
                                 SUBSCRIBER_BUFFER, &Gripper::gripperCbProp, this);
-    sub_prop.shutdown();
-
 }
 
 void Gripper::setGripperState(const baxter_core_msgs::EndEffectorState& _state)
@@ -226,7 +224,7 @@ void Gripper::command(std::string _cmd, bool _block,
 
 std::string Gripper::type()
 {
-    int ui_code = getGripperProperties().ui_type;
+    int ui_code = (int) getGripperProperties().ui_type;
     if(ui_code == 1)
     {
         return "suction";
