@@ -55,12 +55,10 @@ int main(int argc, char** argv)
             right_gripper->releaseObject();
             break;
         case 't':
-            ROS_INFO("Left gripper type:");
-            left_gripper->type();
+            ROS_INFO("Left gripper type: %s", left_gripper->type().c_str());
             break;
         case 'T':
-            ROS_INFO("Right gripper type:");
-            right_gripper->type();
+            ROS_INFO("Right gripper type: %s", right_gripper->type().c_str());
             break;
         case 'z':
             ROS_INFO("Is left enabled? %s", (left_gripper->is_enabled()? "Yes" : "No"));
