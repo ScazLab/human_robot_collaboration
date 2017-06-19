@@ -44,6 +44,16 @@ private:
     int get_id();
 
     /**
+     * Raw command call to directly control gripper
+     * @param _cmd     string of known gripper commands
+     * @param _block   command is blocking or non-blocking
+     * @param _timeout timeout in seconds for command evaluation
+     * @param _args    parameters and their values in JSON
+     */
+    void command(std::string _cmd, bool _block=false,
+        double _timeout=0.0, std::string _args="");
+
+    /**
      * Closes the gripper
      **/
     void suck();
