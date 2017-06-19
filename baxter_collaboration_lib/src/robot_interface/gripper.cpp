@@ -177,7 +177,6 @@ void Gripper::close(bool _block, double _timeout)
     }
     else if (type() == "suction")
     {
-        // default block=False, default timeout=5.0
         command_suction(_block, _timeout);
     }
     else
@@ -212,7 +211,6 @@ void Gripper::command_suction(bool _block, double _timeout)
         ROS_WARN("Gripper is not a suction type");
     }
     std::string suction_cmd = EndEffectorCommand::CMD_GO;
-    cout << std::to_string(_timeout) << endl;
     std::string suction_args =
         "{\"grip_attempt_seconds\": " + std::to_string(_timeout) + "}";// default timeout=5.0
     cout << suction_args << endl;
