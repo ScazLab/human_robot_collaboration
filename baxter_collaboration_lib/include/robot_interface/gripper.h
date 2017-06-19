@@ -22,8 +22,8 @@ private:
     ros::Publisher  pub;      // Publisher for requesting actions to the gripper
     ros::Subscriber sub_prop; // Subscriber to receive the properties of the gripper
 
-    std::mutex mutex;                              // mutex for controlled thread access
-    baxter_core_msgs::EndEffectorState state;      // State of the gripper
+    std::mutex mutex;                                   // mutex for controlled thread access
+    baxter_core_msgs::EndEffectorState state;           // State of the gripper
     baxter_core_msgs::EndEffectorProperties properties; // properties of the gripper
 
     /**
@@ -34,7 +34,7 @@ private:
     /**
      * Callback that handles the gripper properties messages
      */
-    void gripperCbProp(const baxter_core_msgs::EndEffectorProperties &msg);
+    void gripperPropCb(const baxter_core_msgs::EndEffectorProperties &msg);
 
     /**
      * @brief Calibrates the gripper
@@ -47,6 +47,13 @@ private:
      * @return The ID of the gripper
      */
     int get_id();
+
+    /**
+     * Stop the gripper at the current position and apply the holding force
+     * @param _block   is the command blocking or non-blocking
+     * @param _timeout timeout in seconds for command success
+     */
+    void stop(bool _block=true, double _timeout=5.0);
 
     /**
      * Command the gripper suction
@@ -73,6 +80,7 @@ private:
     void command(std::string _cmd, bool _block=false,
         double _timeout=0.0, std::string _args="");
 
+    /** Legacy code */
     /**
      * Closes the gripper
      **/
@@ -115,8 +123,8 @@ public:
 
     /**
      * Commands minimum gripper position
-     * @param _block   is the command blocking or non-blocking [False]
-     * @param _timeout timeout in seconds for open command success [5.0]
+     * @param _block   is the command blocking or non-blocking
+     * @param _timeout timeout in seconds for open command success
      */
     void close(bool _block=false, double _timeout=5.0);
 
@@ -124,8 +132,8 @@ public:
 
     /**
      * Commands maximum gripper position
-     * @param _block   is the command blocking or non-blocking [False]
-     * @param _timeout timeout in seconds for open command success [5.0]
+     * @param _block   is the command blocking or non-blocking
+     * @param _timeout timeout in seconds for open command success
      */
     void open(bool _block=false, double _timeout=5.0);
 
