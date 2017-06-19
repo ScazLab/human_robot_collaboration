@@ -32,6 +32,11 @@ private:
     void gripperCb(const baxter_core_msgs::EndEffectorState &msg);
 
     /**
+     * Callback that handles the gripper properties messages
+     */
+    void gripperCbProp(const baxter_core_msgs::EndEffectorProperties &msg);
+
+    /**
      * @brief Calibrates the gripper
      * @details It calibrates the gripper on startup if not already calibrated.
      */
@@ -44,9 +49,24 @@ private:
     int get_id();
 
     /**
+     * Command the gripper suction
+     * @param _block   is the command blocking or non-blocking
+     * @param _timeout timeout in seconds for command success
+     */
+    void command_suction(bool _block=false, double _timeout=5.0);
+
+    /**
+     * Command the gripper position movement
+     * @param _position in % 0=close, 100=open
+     * @param _block    is the command blocking or non-blocking
+     * @param _timeout  timeout in seconds for command success
+     */
+    void command_position(double _position, bool _block=false, double _timeout=5.0);
+
+    /**
      * Raw command call to directly control gripper
      * @param _cmd     string of known gripper commands
-     * @param _block   command is blocking or non-blocking
+     * @param _block   is the command blocking or non-blocking
      * @param _timeout timeout in seconds for command evaluation
      * @param _args    parameters and their values in JSON
      */
@@ -93,7 +113,21 @@ public:
 
     bool gripObject();
 
+    /**
+     * Commands minimum gripper position
+     * @param _block   is the command blocking or non-blocking [False]
+     * @param _timeout timeout in seconds for open command success [5.0]
+     */
+    void close(bool _block=false, double _timeout=5.0);
+
     bool releaseObject();
+
+    /**
+     * Commands maximum gripper position
+     * @param _block   is the command blocking or non-blocking [False]
+     * @param _timeout timeout in seconds for open command success [5.0]
+     */
+    void open(bool _block=false, double _timeout=5.0);
 
     /**
      * Returns a value indicating if the vacuum gripper is enable, so it can be operated.
@@ -137,9 +171,14 @@ public:
      **/
     std::string getGripperLimb()  { return limb; };
 
-    void reboot();
+    /**
+     * Returns the type of the gripper
+     * @return the type, "electric", "suction" or "custom"
+     */
     std::string type();
-    void gripperCbProp(const baxter_core_msgs::EndEffectorProperties &msg);
+
+
+    void reboot();
 
     /**
      * Destructor

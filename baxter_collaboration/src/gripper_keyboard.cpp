@@ -40,19 +40,19 @@ int main(int argc, char** argv)
             break;
         case 'q':
             ROS_INFO("Closing left gripper");
-            left_gripper->gripObject();
+            left_gripper->close();
             break;
         case 'Q':
             ROS_INFO("Closing right gripper");
-            right_gripper->gripObject();
+            right_gripper->close();
             break;
         case 'w':
             ROS_INFO("Opening left gripper");
-            left_gripper->releaseObject();
+            left_gripper->open();
             break;
         case 'W':
             ROS_INFO("Opening right gripper");
-            right_gripper->releaseObject();
+            right_gripper->open();
             break;
         case 't':
             ROS_INFO("Left gripper type: %s", left_gripper->type().c_str());
