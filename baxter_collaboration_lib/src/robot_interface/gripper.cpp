@@ -1,6 +1,7 @@
 #include "robot_interface/gripper.h"
 
 #include <iostream>
+#include <string>
 
 using namespace baxter_core_msgs;
 using namespace std;
@@ -195,6 +196,23 @@ bool Gripper::is_gripping()
 
 // sarim's edits:
 
+std::string Gripper::type()
+{
+    int ui_code = (int) getGripperProperties().ui_type;
+    if(ui_code == 1)
+    {
+        return "suction";
+    }
+    else if(ui_code == 2)
+    {
+        return "electric";
+    }
+    else
+    {
+        return "custom";
+    }
+}
+
 void Gripper::reboot()
 {
     EndEffectorCommand reboot;
@@ -202,6 +220,71 @@ void Gripper::reboot()
     reboot.command=EndEffectorCommand::CMD_REBOOT;
     pub.publish(reboot);
     sleep(1.0);
+}
+
+void Gripper::open(bool _block, double _timeout)
+{
+    if(type() == "electric")
+    {
+        command_position(100.0, _block, _timeout);
+    }
+    else if (type() == "suction")
+    {
+        std::string release_cmd = EndEffectorCommand::CMD_RELEASE;
+        command(release_cmd);
+    }
+    else
+    {
+        ROS_WARN("Gripper is not an electric or suction type");
+    }
+}
+
+void Gripper::close(bool _block, double _timeout)
+{
+    if(type() == "electric")
+    {
+        command_position(0.0, _block, _timeout);
+    }
+    else if (type() == "suction")
+    {
+        // default block=False, default timeout=5.0
+        command_suction(_block, _timeout);
+    }
+    else
+    {
+        ROS_WARN("Gripper is not an electric or suction type");
+    }
+}
+
+void Gripper::command_position(double _position, bool _block, double _timeout)
+{
+    if(type() != "electric")
+    {
+        ROS_WARN("Gripper is not an electric type");
+    }
+    if(_position > 100.0 || _position < 0.0)
+    {
+        std::string position_cmd = EndEffectorCommand::CMD_GO;
+        std::string position_args =
+            "{\"position\": " + std::to_string(_position);
+        command(position_cmd, _block, _timeout, position_args);
+    }
+    else
+    {
+        ROS_WARN("Gripper position can only be between 0.0 and 100.0");
+    }
+}
+
+void Gripper::command_suction(bool _block, double _timeout)
+{
+    if(type() != "suction")
+    {
+        ROS_WARN("Gripper is not a suction type");
+    }
+    std::string suction_cmd = EndEffectorCommand::CMD_GO;
+    std::string suction_args =
+        "{\"grip_attempt_seconds\": " + std::to_string(_timeout); // default timeout=5.0
+    command(suction_cmd, _block, _timeout, suction_args);
 }
 
 void Gripper::command(std::string _cmd, bool _block,
@@ -222,22 +305,6 @@ void Gripper::command(std::string _cmd, bool _block,
     }
 }
 
-std::string Gripper::type()
-{
-    int ui_code = (int) getGripperProperties().ui_type;
-    if(ui_code == 1)
-    {
-        return "suction";
-    }
-    else if(ui_code == 2)
-    {
-        return "electric";
-    }
-    else
-    {
-        return "custom";
-    }
-}
 
 
 
