@@ -22,9 +22,9 @@ private:
     ros::Publisher  pub;      // Publisher for requesting actions to the gripper
     ros::Subscriber sub_prop; // Subscriber to receive the properties of the gripper
 
-    std::mutex state_mutex;                             // mutex for controlled thread access
+    std::mutex mutex_state;                             // mutex for controlled thread access
     baxter_core_msgs::EndEffectorState state;           // State of the gripper
-    std::mutex properties_mutex;
+    std::mutex mutex_properties;
     baxter_core_msgs::EndEffectorProperties properties; // properties of the gripper
 
     /**
@@ -61,7 +61,7 @@ private:
      * @param _block   is the command blocking or non-blocking
      * @param _timeout timeout in seconds for command success
      */
-    void command_suction(bool _block=false, double _timeout=5.0);
+    void commandSuction(bool _block=false, double _timeout=5.0);
 
     /**
      * Command the gripper position movement
@@ -69,7 +69,7 @@ private:
      * @param _block    is the command blocking or non-blocking
      * @param _timeout  timeout in seconds for command success
      */
-    void command_position(double _position, bool _block=false, double _timeout=5.0);
+    void commandPosition(double _position, bool _block=false, double _timeout=5.0);
 
     /**
      * Raw command call to directly control gripper
@@ -79,12 +79,12 @@ private:
      * @param _args    parameters and their values in JSON
      */
     void command(std::string _cmd, bool _block=false,
-        double _timeout=0.0, std::string _args="");
+                double _timeout=0.0, std::string _args="");
 
     /**
      * Warns user about functions beyond the capability of a gripper type
      */
-    void capability_warning(std::string _function);
+    void capabilityWarning(std::string _function);
 
     /** Legacy code */
     /**
@@ -120,9 +120,16 @@ public:
     baxter_core_msgs::EndEffectorState getGripperState();
 
     /**
-     * sets and gets the properties of the gripper, thread-safely
+     * Sets properties to the new properties, thread-safely
+     *
+     * @param _properties the new properties
      */
     void setGripperProperties(const baxter_core_msgs::EndEffectorProperties& _properties);
+
+    /**
+     * Gets the properties of the gripper, thread-safely
+     * @return the properties of the gripper
+     */
     baxter_core_msgs::EndEffectorProperties getGripperProperties();
 
     bool gripObject();

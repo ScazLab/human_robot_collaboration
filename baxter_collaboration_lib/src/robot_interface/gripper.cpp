@@ -30,32 +30,31 @@ Gripper::Gripper(std::string _limb, bool _use_robot) :
     setGripperState(init_state);
 
     // create a subscriber to the gripper's properties
-    // since the properties are fixed ,the callback is unsubscribed immediately afterwards
     sub_prop = rnh.subscribe("/robot/end_effector/" + _limb + "_gripper/properties",
                                 SUBSCRIBER_BUFFER, &Gripper::gripperPropCb, this);
 }
 
 void Gripper::setGripperState(const baxter_core_msgs::EndEffectorState& _state)
 {
-    std::lock_guard<std::mutex> lock(state_mutex);
+    std::lock_guard<std::mutex> lock(mutex_state);
     state = _state;
 }
 
 baxter_core_msgs::EndEffectorState Gripper::getGripperState()
 {
-    std::lock_guard<std::mutex> lock(state_mutex);
+    std::lock_guard<std::mutex> lock(mutex_state);
     return state;
 }
 
 void Gripper::setGripperProperties(const baxter_core_msgs::EndEffectorProperties& _properties)
 {
-    std::lock_guard<std::mutex> lock(properties_mutex);
+    std::lock_guard<std::mutex> lock(mutex_properties);
     properties = _properties;
 }
 
 baxter_core_msgs::EndEffectorProperties Gripper::getGripperProperties()
 {
-    std::lock_guard<std::mutex> lock(properties_mutex);
+    std::lock_guard<std::mutex> lock(mutex_properties);
     return properties;
 }
 
@@ -129,6 +128,7 @@ bool Gripper::is_gripping()
 std::string Gripper::type()
 {
     int ui_code = (int) getGripperProperties().ui_type;
+
     if(ui_code == 1)
     {
         return "suction";
@@ -147,7 +147,7 @@ void Gripper::open(bool _block, double _timeout)
 {
     if(type() == "electric")
     {
-        command_position(95.0, _block, _timeout);
+        commandPosition(95.0, _block, _timeout);
     }
     else if (type() == "suction")
     {
@@ -155,7 +155,7 @@ void Gripper::open(bool _block, double _timeout)
     }
     else
     {
-        capability_warning("open");
+        capabilityWarning("open");
     }
 }
 
@@ -163,23 +163,23 @@ void Gripper::close(bool _block, double _timeout)
 {
     if(type() == "electric")
     {
-        command_position(5.0, _block, _timeout);
+        commandPosition(5.0, _block, _timeout);
     }
     else if (type() == "suction")
     {
-        command_suction(_block, _timeout);
+        commandSuction(_block, _timeout);
     }
     else
     {
-        capability_warning("close");
+        capabilityWarning("close");
     }
 }
 
-void Gripper::command_position(double _position, bool _block, double _timeout)
+void Gripper::commandPosition(double _position, bool _block, double _timeout)
 {
     if(type() != "electric")
     {
-        capability_warning("command_position");
+        capabilityWarning("commandPosition");
     }
     if(_position >= 0.0 && _position <= 100.0)
     {
@@ -194,11 +194,11 @@ void Gripper::command_position(double _position, bool _block, double _timeout)
     }
 }
 
-void Gripper::command_suction(bool _block, double _timeout)
+void Gripper::commandSuction(bool _block, double _timeout)
 {
     if(type() != "suction")
     {
-        capability_warning("command_suction");
+        capabilityWarning("commandSuction");
     }
     std::string suction_cmd = EndEffectorCommand::CMD_GO;
     std::string suction_args =
@@ -209,6 +209,7 @@ void Gripper::command_suction(bool _block, double _timeout)
 void Gripper::stop(bool _block, double _timeout)
 {
     std::string stop_cmd;
+
     if(type() == "electric")
     {
         stop_cmd = EndEffectorCommand::CMD_STOP;
@@ -219,33 +220,37 @@ void Gripper::stop(bool _block, double _timeout)
     }
     else
     {
-        capability_warning("stop");
+        capabilityWarning("stop");
     }
+
     command(stop_cmd, _block, _timeout);
 }
 
 void Gripper::command(std::string _cmd, bool _block,
-    double _timeout, std::string _args)
+                      double _timeout, std::string _args)
 {
     EndEffectorCommand ee_cmd;
     ee_cmd.id = get_id();
     ee_cmd.command = _cmd;
     ee_cmd.args = "";
+
     if(_args != "")
     {
         ee_cmd.args = _args;
     }
+
     pub.publish(ee_cmd);
+
     if(_block == true)
     {
         sleep(_timeout);
     }
 }
 
-void Gripper::capability_warning(std::string _function)
+void Gripper::capabilityWarning(std::string _function)
 {
-    std::string msg = getGripperLimb() + " gripper of type " + type() + " is not capable of " + _function;
-    ROS_WARN("%s", msg.c_str());
+    ROS_WARN("%s gripper of type %s is not capable of %s",
+              getGripperLimb().c_str(), type().c_str(), _function.c_str());
 }
 
 void Gripper::reboot()
