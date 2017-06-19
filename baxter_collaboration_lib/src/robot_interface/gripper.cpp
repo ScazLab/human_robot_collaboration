@@ -32,7 +32,7 @@ Gripper::Gripper(std::string _limb, bool _use_robot) :
     // create a subscriber to the gripper's properties
     // since the properties are fixed ,the callback is unsubscribed immediately afterwards
     sub_prop = rnh.subscribe("/robot/end_effector/" + _limb + "_gripper/properties",
-                                SUBSCRIBER_BUFFER, &Gripper::gripperCbProp, this);
+                                SUBSCRIBER_BUFFER, &Gripper::gripperPropCb, this);
 }
 
 void Gripper::setGripperState(const baxter_core_msgs::EndEffectorState& _state)
@@ -59,39 +59,6 @@ baxter_core_msgs::EndEffectorProperties Gripper::getGripperProperties()
     return properties;
 }
 
-bool Gripper::gripObject()
-{
-    suck();
-
-    // int cnt = 0;
-
-    // while (!_gripper->is_sucking())
-    // {
-    //     ROS_WARN("Requested a suck to the gripper, but the gripper is not sucking.");
-    //     ++cnt;
-
-    //     if (cnt == 10)  return false;
-
-    //     pause();
-    //     ros::spinOnce();
-    // }
-
-    return true;
-}
-
-bool Gripper::releaseObject()
-{
-    if (is_sucking())
-    {
-        blow();
-        return true;
-    }
-
-    ROS_WARN("[%s_gripper] Requested a release of the gripper, "
-             "but the gripper is not sucking.", getGripperLimb().c_str());
-    return false;
-}
-
 void Gripper::gripperCb(const EndEffectorState &msg)
 {
     setGripperState(msg);
@@ -109,7 +76,7 @@ void Gripper::gripperCb(const EndEffectorState &msg)
     }
 }
 
-void Gripper::gripperCbProp(const EndEffectorProperties &msg)
+void Gripper::gripperPropCb(const EndEffectorProperties &msg)
 {
     setGripperProperties(msg);
     if (first_run)
@@ -130,31 +97,6 @@ void Gripper::calibrate()
     cmd.id=get_id();
     cmd.command=EndEffectorCommand::CMD_CALIBRATE;
     pub.publish(cmd);
-}
-
-void Gripper::suck()
-{
-    if(type() != "suction")
-    {
-        ROS_INFO("warning: this is not a suction gripper");
-    }
-
-    EndEffectorCommand cmd;
-    cmd.id=get_id();
-    cmd.command=EndEffectorCommand::CMD_GRIP;
-    if (limb == "left")
-    {
-        cmd.args="{\"grip_attempt_seconds\": 5.0}";
-    }
-    pub.publish(cmd);
-}
-
-void Gripper::blow()
-{
-    EndEffectorCommand release_command;
-    release_command.id=get_id();
-    release_command.command=EndEffectorCommand::CMD_RELEASE;
-    pub.publish(release_command);
 }
 
 int Gripper::get_id()
@@ -194,8 +136,6 @@ bool Gripper::is_gripping()
     // return getGripperState().gripping==EndEffectorState::STATE_TRUE;
 }
 
-// sarim's edits:
-
 std::string Gripper::type()
 {
     int ui_code = (int) getGripperProperties().ui_type;
@@ -213,15 +153,6 @@ std::string Gripper::type()
     }
 }
 
-void Gripper::reboot()
-{
-    EndEffectorCommand reboot;
-    reboot.id=get_id();
-    reboot.command=EndEffectorCommand::CMD_REBOOT;
-    pub.publish(reboot);
-    sleep(1.0);
-}
-
 void Gripper::open(bool _block, double _timeout)
 {
     if(type() == "electric")
@@ -230,8 +161,7 @@ void Gripper::open(bool _block, double _timeout)
     }
     else if (type() == "suction")
     {
-        std::string release_cmd = EndEffectorCommand::CMD_RELEASE;
-        command(release_cmd);
+        stop(_block, _timeout);
     }
     else
     {
@@ -289,6 +219,24 @@ void Gripper::command_suction(bool _block, double _timeout)
     command(suction_cmd, _block, _timeout, suction_args);
 }
 
+void Gripper::stop(bool _block, double _timeout)
+{
+    std::string stop_cmd;
+    if(type() == "electric")
+    {
+        stop_cmd = EndEffectorCommand::CMD_STOP;
+    }
+    else if(type() == "suction")
+    {
+        stop_cmd = EndEffectorCommand::CMD_RELEASE;
+    }
+    else
+    {
+        ROS_WARN("Stop is not implemented for custom gripper types");
+    }
+    command(stop_cmd, _block, _timeout);
+}
+
 void Gripper::command(std::string _cmd, bool _block,
     double _timeout, std::string _args)
 {
@@ -307,9 +255,74 @@ void Gripper::command(std::string _cmd, bool _block,
     }
 }
 
+void Gripper::reboot()
+{
+    EndEffectorCommand reboot;
+    reboot.id=get_id();
+    reboot.command=EndEffectorCommand::CMD_REBOOT;
+    pub.publish(reboot);
+    sleep(1.0);
+}
 
+/** Legacy */
 
+bool Gripper::gripObject()
+{
+    suck();
 
+    // int cnt = 0;
+
+    // while (!_gripper->is_sucking())
+    // {
+    //     ROS_WARN("Requested a suck to the gripper, but the gripper is not sucking.");
+    //     ++cnt;
+
+    //     if (cnt == 10)  return false;
+
+    //     pause();
+    //     ros::spinOnce();
+    // }
+
+    return true;
+}
+
+bool Gripper::releaseObject()
+{
+    if (is_sucking())
+    {
+        blow();
+        return true;
+    }
+
+    ROS_WARN("[%s_gripper] Requested a release of the gripper, "
+             "but the gripper is not sucking.", getGripperLimb().c_str());
+    return false;
+}
+
+void Gripper::suck()
+{
+    if(type() != "suction")
+    {
+        ROS_INFO("warning: this is not a suction gripper");
+    }
+
+    EndEffectorCommand cmd;
+    cmd.id=get_id();
+    cmd.command=EndEffectorCommand::CMD_GRIP;
+    if (limb == "left")
+    {
+        cmd.args="{\"grip_attempt_seconds\": 5.0}";
+    }
+    pub.publish(cmd);
+}
+
+void Gripper::blow()
+{
+    EndEffectorCommand release_command;
+    release_command.id=get_id();
+    release_command.command=EndEffectorCommand::CMD_RELEASE;
+    pub.publish(release_command);
+}
 
 Gripper::~Gripper()
 {
