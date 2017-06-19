@@ -226,7 +226,7 @@ void Gripper::open(bool _block, double _timeout)
 {
     if(type() == "electric")
     {
-        command_position(100.0, _block, _timeout);
+        command_position(95.0, _block, _timeout);
     }
     else if (type() == "suction")
     {
@@ -243,7 +243,7 @@ void Gripper::close(bool _block, double _timeout)
 {
     if(type() == "electric")
     {
-        command_position(0.0, _block, _timeout);
+        command_position(5.0, _block, _timeout);
     }
     else if (type() == "suction")
     {
@@ -262,11 +262,11 @@ void Gripper::command_position(double _position, bool _block, double _timeout)
     {
         ROS_WARN("Gripper is not an electric type");
     }
-    if(_position > 100.0 || _position < 0.0)
+    if(_position >= 0.0 && _position <= 100.0)
     {
         std::string position_cmd = EndEffectorCommand::CMD_GO;
         std::string position_args =
-            "{\"position\": " + std::to_string(_position);
+            "{\"position\": " + std::to_string(_position) + "}";
         command(position_cmd, _block, _timeout, position_args);
     }
     else
@@ -282,8 +282,10 @@ void Gripper::command_suction(bool _block, double _timeout)
         ROS_WARN("Gripper is not a suction type");
     }
     std::string suction_cmd = EndEffectorCommand::CMD_GO;
+    cout << std::to_string(_timeout) << endl;
     std::string suction_args =
-        "{\"grip_attempt_seconds\": " + std::to_string(_timeout); // default timeout=5.0
+        "{\"grip_attempt_seconds\": " + std::to_string(_timeout) + "}";// default timeout=5.0
+    cout << suction_args << endl;
     command(suction_cmd, _block, _timeout, suction_args);
 }
 
