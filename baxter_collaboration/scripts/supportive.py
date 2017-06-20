@@ -223,32 +223,36 @@ p.r_subtask = 0.
 p.r_preference = 20.
 p.cost_hold = 3.
 p.cost_get = 20.
-pol = AsyncPOMCPPolicyRunner(p, iterations=ITERATIONS,
-                             horizon=NHTMHorizon.generator(p, n=HORIZON),
-                             exploration=EXPLORATION,
-                             relative_exploration=RELATIVE_EXPLO,
-                             belief_values=BELIEF_VALUES,
-                             belief='particle',
-                             belief_params={'n_particles': N_PARTICLES})
+try:
+    pol = AsyncPOMCPPolicyRunner(p, iterations=ITERATIONS,
+                                 horizon=NHTMHorizon.generator(p, n=HORIZON),
+                                 exploration=EXPLORATION,
+                                 relative_exploration=RELATIVE_EXPLO,
+                                 belief_values=BELIEF_VALUES,
+                                 belief='particle',
+                                 belief_params={'n_particles': N_PARTICLES})
 
-# Warm up policy
-best = None
-maxl = 0
-for i in range(N_WARMUP):
-    s = 'Exploring... [{:2.0f}%] (current best: {} [{:.1f}])'.format(
-        i * 100. / N_WARMUP, best, pol.tree.root.children[pol._last_action].value
-        if pol._last_action is not None else 0.0)
-    maxl = max(maxl, len(s))
-    print(' ' * maxl, end='\r')
-    print(s, end='\r')
-    sys.stdout.flush()
-    best = pol.get_action()  # Some exploration
-print('Exploring... [done]')
-if BELIEF_VALUES:
-    print('Found {} distinct beliefs.'.format(len(pol.tree._obs_nodes)))
+    # Warm up policy
+    best = None
+    maxl = 0
+    for i in range(N_WARMUP):
+        s = 'Exploring... [{:2.0f}%] (current best: {} [{:.1f}])'.format(
+            i * 100. / N_WARMUP, best, pol.tree.root.children[pol._last_action].value
+            if pol._last_action is not None else 0.0)
+        maxl = max(maxl, len(s))
+        print(' ' * maxl, end='\r')
+        print(s, end='\r')
+        sys.stdout.flush()
+        best = pol.get_action()  # Some exploration
+    print('Exploring... [done]')
+    if BELIEF_VALUES:
+        print('Found {} distinct beliefs.'.format(len(pol.tree._obs_nodes)))
 
-export_pomcp(pol, EXPORT_DEST, belief_as_quotient=EXPORT_BELIEF_QUOTIENT)
-print('Saved: ' + EXPORT_DEST)
+    export_pomcp(pol, EXPORT_DEST, belief_as_quotient=EXPORT_BELIEF_QUOTIENT)
+    print('Saved: ' + EXPORT_DEST)
+except KeyboardInterrupt:
+    pol.stop()
+    raise
 
 try:
     input("Press enter to start...")
