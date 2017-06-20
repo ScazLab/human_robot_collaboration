@@ -28,6 +28,8 @@ private:
     std::mutex mutex_state;                             // mutex for controlled state access
     std::mutex mutex_properties;                        // mutex for controlled properties access
 
+    std::string parameters; // parameters for the gripper
+
     int       cmd_sequence;
     std::string cmd_sender;
 
@@ -85,6 +87,18 @@ private:
     void command(std::string _cmd, bool _block=false,
                 double _timeout=0.0, std::string _args="");
 
+    /**
+     * Set the parameters that will describe the position command execution
+     * @param _parameters key-value pairs of parameters
+     * @param _defaults   to set or not set the parameters described in validParameters
+     */
+    void setParameters(std::string _parameters="", bool _defaults=true);
+
+    /**
+     * Returns dict of available gripper parameters with default parameters
+     * @return valid parameters as a string, but mimicking a Python/JSON dict
+     */
+    std::string validParameters();
 
     /**
      * Manage roll over with safe value
