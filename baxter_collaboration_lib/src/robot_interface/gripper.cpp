@@ -7,7 +7,8 @@ using namespace baxter_core_msgs;
 using namespace std;
 
 Gripper::Gripper(std::string _limb, bool _use_robot) :
-                 limb(_limb), use_robot(_use_robot), first_run(true)
+                 limb(_limb), use_robot(_use_robot), first_run(true), cmd_sequence(0),
+                 cmd_sender(ros::this_node::getName())
 {
     if (not use_robot) return;
 
@@ -181,16 +182,18 @@ void Gripper::commandPosition(double _position, bool _block, double _timeout)
     {
         capabilityWarning("commandPosition");
     }
+
     if(_position >= 0.0 && _position <= 100.0)
     {
         std::string position_cmd = EndEffectorCommand::CMD_GO;
-        std::string position_args =
-            "{\"position\": " + std::to_string(_position) + "}";
+        std::string position_args = "{\"position\": " +
+                                     std::to_string(_position) + "}";
+
         command(position_cmd, _block, _timeout, position_args);
     }
     else
     {
-        ROS_WARN("Gripper position can only be between 0.0 and 100.0");
+        ROS_WARN("Gripper position must be between 0.0 and 100.0");
     }
 }
 
@@ -200,9 +203,11 @@ void Gripper::commandSuction(bool _block, double _timeout)
     {
         capabilityWarning("commandSuction");
     }
+
     std::string suction_cmd = EndEffectorCommand::CMD_GO;
-    std::string suction_args =
-        "{\"grip_attempt_seconds\": " + std::to_string(_timeout) + "}";// default timeout=5.0
+    std::string suction_args = "{\"grip_attempt_seconds\": " +
+                                std::to_string(_timeout) + "}"; // default timeout=5.0
+
     command(suction_cmd, _block, _timeout, suction_args);
 }
 
@@ -232,8 +237,9 @@ void Gripper::command(std::string _cmd, bool _block,
     EndEffectorCommand ee_cmd;
     ee_cmd.id = get_id();
     ee_cmd.command = _cmd;
+    ee_cmd.sender = cmd_sender;
+    ee_cmd.sequence = incCmdSeq();
     ee_cmd.args = "";
-
     if(_args != "")
     {
         ee_cmd.args = _args;
@@ -241,10 +247,16 @@ void Gripper::command(std::string _cmd, bool _block,
 
     pub.publish(ee_cmd);
 
-    if(_block == true)
+    if(_block)
     {
         sleep(_timeout);
     }
+}
+
+int Gripper::incCmdSeq()
+{
+    cmd_sequence = (cmd_sequence % std::numeric_limits<int>::max()) + 1;
+    return cmd_sequence;
 }
 
 void Gripper::capabilityWarning(std::string _function)
