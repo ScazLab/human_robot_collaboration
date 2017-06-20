@@ -33,6 +33,9 @@ Gripper::Gripper(std::string _limb, bool _use_robot) :
     // create a subscriber to the gripper's properties
     sub_prop = rnh.subscribe("/robot/end_effector/" + _limb + "_gripper/properties",
                                 SUBSCRIBER_BUFFER, &Gripper::gripperPropCb, this);
+
+    // set the gripper parameters to their defaults
+    setParameters("", true);
 }
 
 void Gripper::setGripperState(const baxter_core_msgs::EndEffectorState& _state)
@@ -79,6 +82,44 @@ void Gripper::gripperCb(const EndEffectorState &msg)
 void Gripper::gripperPropCb(const EndEffectorProperties &msg)
 {
     setGripperProperties(msg);
+}
+
+void Gripper::setParameters(std::string _parameters, bool _defaults)
+{
+    if(_defaults)
+    {
+        parameters = validParameters();
+    }
+    else
+    {
+        if(_parameters != "")
+        {
+            // some error checking needed here to prevent invalid parameters being set
+            // this would involve converting between strings and dict-type objects
+            // and comparing to valid_parameters' keys
+            parameters = _parameters;
+        }
+    }
+    std::string param_cmd = EndEffectorCommand::CMD_CONFIGURE;
+    command(param_cmd, false, 0.0, parameters);
+}
+
+std::string Gripper::validParameters()
+{
+    std::string valid;
+    if(type() == "electric")
+    {
+        valid = "{\"velocity\" : 50.0, \"moving_force\" : 40.0, \"holding_force\" : 30.0, \"dead_zone\" : 5.0}";
+    }
+    else if(type() == "suction")
+    {
+        valid = "{\"vacuum_sensor_threshold\" : 18.0, \"blow_off_seconds\" : 0.4}";
+    }
+    else
+    {
+        valid = "";
+    }
+    return valid;
 }
 
 void Gripper::calibrate()
@@ -172,7 +213,8 @@ void Gripper::close(bool _block, double _timeout)
     }
     else
     {
-        capabilityWarning("close");
+        // capabilityWarning("close");
+        commandSuction(_block, _timeout);
     }
 }
 
@@ -264,6 +306,8 @@ void Gripper::capabilityWarning(std::string _function)
     ROS_WARN("%s gripper of type %s is not capable of %s",
               getGripperLimb().c_str(), type().c_str(), _function.c_str());
 }
+
+
 
 void Gripper::reboot()
 {
