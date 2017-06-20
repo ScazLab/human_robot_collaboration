@@ -2,6 +2,7 @@
 #define __GRIPPER_H__
 
 #include <mutex>
+#include <limits>
 
 #include <baxter_core_msgs/EndEffectorState.h>
 #include <baxter_core_msgs/EndEffectorCommand.h>
@@ -22,10 +23,13 @@ private:
     ros::Publisher  pub;      // Publisher for requesting actions to the gripper
     ros::Subscriber sub_prop; // Subscriber to receive the properties of the gripper
 
-    std::mutex mutex_state;                             // mutex for controlled thread access
-    baxter_core_msgs::EndEffectorState state;           // State of the gripper
-    std::mutex mutex_properties;
+    baxter_core_msgs::EndEffectorState      state;      // State of the gripper
     baxter_core_msgs::EndEffectorProperties properties; // properties of the gripper
+    std::mutex mutex_state;                             // mutex for controlled state access
+    std::mutex mutex_properties;                        // mutex for controlled properties access
+
+    int       cmd_sequence;
+    std::string cmd_sender;
 
     /**
      * Callback that handles the gripper state messages.
@@ -80,6 +84,13 @@ private:
      */
     void command(std::string _cmd, bool _block=false,
                 double _timeout=0.0, std::string _args="");
+
+
+    /**
+     * Manage roll over with safe value
+     * @return cmd_sequence counter
+     */
+    int incCmdSeq();
 
     /**
      * Warns user about functions beyond the capability of a gripper type
