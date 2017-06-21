@@ -30,8 +30,8 @@ private:
 
     std::string parameters; // parameters for the gripper
 
-    int       cmd_sequence;
-    std::string cmd_sender;
+    int       cmd_sequence; // counter that tracks the sequence of gripper commands
+    std::string cmd_sender; // retains the name of the node sending gripper commands
 
     /**
      * Callback that handles the gripper state messages.
