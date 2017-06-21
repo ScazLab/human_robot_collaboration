@@ -34,7 +34,7 @@ Gripper::Gripper(std::string _limb, bool _use_robot) :
     sub_prop = rnh.subscribe("/robot/end_effector/" + _limb + "_gripper/properties",
                                 SUBSCRIBER_BUFFER, &Gripper::gripperPropCb, this);
 
-    // 100 ms sleep to wait for the publisher to be ready
+    // sleep to wait for the publisher to be ready
     ros::Duration(0.5).sleep();
     // set the gripper parameters to their defaults
     setParameters("", true);
@@ -229,8 +229,14 @@ void Gripper::commandPosition(double _position, bool _block, double _timeout)
         capabilityWarning("commandPosition");
     }
 
-    if(not is_calibrated()) { ROS_WARN("Cannot issue commandPosition to gripper without calibration"); }
+    // ensures that the gripper is not used without calibration
+    if(not is_calibrated())
+    {
+        ROS_WARN("Cannot issue commandPosition to gripper without calibration");
+        return;
+    }
 
+    // ensures that the gripper is positioned within physical limits
     if(_position >= 0.0 && _position <= 100.0)
     {
         std::string position_cmd = EndEffectorCommand::CMD_GO;
@@ -310,6 +316,7 @@ void Gripper::capabilityWarning(std::string _function)
 
 int Gripper::incCmdSeq()
 {
+    // prevents cmd_sequence from overflowing the integer limit
     cmd_sequence = (cmd_sequence % std::numeric_limits<int>::max()) + 1;
     return cmd_sequence;
 }
@@ -334,6 +341,8 @@ std::string Gripper::type()
 
 void Gripper::wait(ros::Duration _timeout)
 {
+    // waits until the difference between the start and
+    // current time catches up to the timeout
     ros::Time start = ros::Time::now();
     while(ros::Time::now() - start < _timeout)
     {
@@ -343,6 +352,7 @@ void Gripper::wait(ros::Duration _timeout)
 
 /** Legacy */
 
+// recommended to use close() instead
 bool Gripper::gripObject()
 {
     suck();
@@ -363,6 +373,7 @@ bool Gripper::gripObject()
     return true;
 }
 
+// recommended to use open() instead
 bool Gripper::releaseObject()
 {
     if (is_sucking())
@@ -376,6 +387,7 @@ bool Gripper::releaseObject()
     return false;
 }
 
+// recommended to use commandSuction() instead
 void Gripper::suck()
 {
     if(type() != "suction")
@@ -393,6 +405,7 @@ void Gripper::suck()
     pub.publish(cmd);
 }
 
+// recommended to use stop() instead
 void Gripper::blow()
 {
     EndEffectorCommand release_command;
