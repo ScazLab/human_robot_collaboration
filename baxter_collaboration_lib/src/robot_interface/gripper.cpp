@@ -343,10 +343,12 @@ void Gripper::wait(ros::Duration _timeout)
 {
     // waits until the difference between the start and
     // current time catches up to the timeout
+    ros::Rate r(100);
     ros::Time start = ros::Time::now();
-    while(ros::Time::now() - start < _timeout)
+    while(ros::ok() && ros::Time::now() - start < _timeout)
     {
         ros::spinOnce();
+        r.sleep();
     }
 }
 
