@@ -7,9 +7,8 @@ int main(int argc, char** argv)
     spinner.start();
 
     // gripper instantiation
-    Gripper *left_gripper = NULL, *right_gripper = NULL;
-    left_gripper = new Gripper("left");
-    right_gripper = new Gripper("right");
+    Gripper left_gripper("right");
+    Gripper right_gripper("right");
 
     ROS_INFO("You are now controlling the robot grippers");
 
@@ -42,77 +41,77 @@ int main(int argc, char** argv)
             break;
         case 'q':
             ROS_INFO("Closing left gripper");
-            left_gripper->close();
+            left_gripper.close();
             break;
         case 'Q':
             ROS_INFO("Closing right gripper");
-            right_gripper->close();
+            right_gripper.close();
             break;
         case 'w':
             ROS_INFO("Opening left gripper");
-            left_gripper->open();
+            left_gripper.open();
             break;
         case 'W':
             ROS_INFO("Opening right gripper");
-            right_gripper->open();
+            right_gripper.open();
             break;
         case 'c':
             ROS_INFO("Calibrating left gripper");
-            left_gripper->calibrate();
+            left_gripper.calibrate();
             break;
         case 'C':
             ROS_INFO("Calibrating right gripper");
-            right_gripper->calibrate();
+            right_gripper.calibrate();
             break;
         case 'x':
-            ROS_INFO("Is left calibrated? %s", left_gripper->is_calibrated()? "Yes" : "No");
+            ROS_INFO("Is left calibrated? %s", left_gripper.is_calibrated()? "Yes" : "No");
             break;
         case 'X':
-            ROS_INFO("Is right calibrated? %s", right_gripper->is_calibrated()? "Yes" : "No");
+            ROS_INFO("Is right calibrated? %s", right_gripper.is_calibrated()? "Yes" : "No");
             break;
         case 'd':
             ROS_INFO("Clear left gripper calibration");
-            left_gripper->clearCalibration();
+            left_gripper.clearCalibration();
             break;
         case 'D':
             ROS_INFO("Clear right gripper calibration");
-            right_gripper->clearCalibration();
+            right_gripper.clearCalibration();
             break;
         case 't':
-            ROS_INFO("Left gripper type: %s", left_gripper->type().c_str());
+            ROS_INFO("Left gripper type: %s", left_gripper.type().c_str());
             break;
         case 'T':
-            ROS_INFO("Right gripper type: %s", right_gripper->type().c_str());
+            ROS_INFO("Right gripper type: %s", right_gripper.type().c_str());
             break;
         case 'z':
-            ROS_INFO("Is left enabled? %s", (left_gripper->is_enabled()? "Yes" : "No"));
+            ROS_INFO("Is left enabled? %s", (left_gripper.is_enabled()? "Yes" : "No"));
             break;
         case 'Z':
-            ROS_INFO("Is right enabled? %s", (right_gripper->is_enabled()? "Yes" : "No"));
+            ROS_INFO("Is right enabled? %s", (right_gripper.is_enabled()? "Yes" : "No"));
             break;
         case 'v':
-            ROS_INFO("Does left have error? %s", left_gripper->has_error()? "Yes" : "No");
+            ROS_INFO("Does left have error? %s", left_gripper.has_error()? "Yes" : "No");
             break;
         case 'V':
-            ROS_INFO("Does right have error? %s", right_gripper->has_error()? "Yes" : "No");
+            ROS_INFO("Does right have error? %s", right_gripper.has_error()? "Yes" : "No");
             break;
         case 'b':
-            ROS_INFO("Is left sucking? %s", left_gripper->is_sucking()? "Yes" : "No");
+            ROS_INFO("Is left sucking? %s", left_gripper.is_sucking()? "Yes" : "No");
             break;
         case 'B':
-            ROS_INFO("Is right sucking? %s", right_gripper->is_sucking()? "Yes" : "No");
+            ROS_INFO("Is right sucking? %s", right_gripper.is_sucking()? "Yes" : "No");
             break;
         case 'n':
-            ROS_INFO("Is left gripping? %s", left_gripper->is_gripping()? "Yes" : "No");
+            ROS_INFO("Is left gripping? %s", left_gripper.is_gripping()? "Yes" : "No");
             break;
         case 'N':
-            ROS_INFO("Is right gripping? %s", right_gripper->is_gripping()? "Yes" : "No");
+            ROS_INFO("Is right gripping? %s", right_gripper.is_gripping()? "Yes" : "No");
             break;
         case 'm':
-            ROS_INFO("Is left ready to grip? %s", left_gripper->is_ready_to_grip()? "Yes" : "No");
+            ROS_INFO("Is left ready to grip? %s", left_gripper.is_ready_to_grip()? "Yes" : "No");
             break;
         case 'M':
-            ROS_INFO("Is right ready to grip? %s", right_gripper->is_ready_to_grip()? "Yes" : "No");
+            ROS_INFO("Is right ready to grip? %s", right_gripper.is_ready_to_grip()? "Yes" : "No");
             break;
         case 'e':
             ROS_INFO("Exiting...");
@@ -123,11 +122,6 @@ int main(int argc, char** argv)
         }
         ros::spinOnce();
     }
-
-    delete left_gripper;
-    delete right_gripper;
-    left_gripper = right_gripper = 0;
-
     return 0;
 }
 
