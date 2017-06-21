@@ -34,8 +34,8 @@ Gripper::Gripper(std::string _limb, bool _use_robot) :
     sub_prop = rnh.subscribe("/robot/end_effector/" + _limb + "_gripper/properties",
                                 SUBSCRIBER_BUFFER, &Gripper::gripperPropCb, this);
 
-    // 50 ms sleep to wait for the publisher to be ready
-    ros::Duration(0.05).sleep();
+    // 100 ms sleep to wait for the publisher to be ready
+    ros::Duration(0.5).sleep();
     // set the gripper parameters to their defaults
     setParameters("", true);
 }
@@ -102,7 +102,6 @@ void Gripper::setParameters(std::string _parameters, bool _defaults)
             parameters = _parameters;
         }
     }
-
     // send the parameters to the gripper
     std::string param_cmd = EndEffectorCommand::CMD_CONFIGURE;
     command(param_cmd, false, 0.0, parameters);
@@ -130,10 +129,16 @@ std::string Gripper::validParameters()
 
 void Gripper::calibrate()
 {
-    EndEffectorCommand cmd;
-    cmd.id=get_id();
-    cmd.command=EndEffectorCommand::CMD_CALIBRATE;
-    pub.publish(cmd);
+    if(type() != "electric") { capabilityWarning("calibrate"); }
+    std::string calibrate_cmd = EndEffectorCommand::CMD_CALIBRATE;
+    command(calibrate_cmd, false, 0.0, "");
+}
+
+void Gripper::clearCalibration()
+{
+    if(type() != "electric") { capabilityWarning("clearCalibration"); }
+    std::string clear_calibrate_cmd = EndEffectorCommand::CMD_CLEAR_CALIBRATION;
+    command(clear_calibrate_cmd, false, 0.0, "");
 }
 
 int Gripper::get_id()
@@ -185,24 +190,6 @@ bool Gripper::hasPosition()
     return getGripperProperties().controls_position == true;
 }
 
-std::string Gripper::type()
-{
-    int ui_code = (int) getGripperProperties().ui_type;
-
-    if(ui_code == 1)
-    {
-        return "suction";
-    }
-    else if(ui_code == 2)
-    {
-        return "electric";
-    }
-    else
-    {
-        return "custom";
-    }
-}
-
 void Gripper::open(bool _block, double _timeout)
 {
     if(type() == "electric")
@@ -241,6 +228,8 @@ void Gripper::commandPosition(double _position, bool _block, double _timeout)
     {
         capabilityWarning("commandPosition");
     }
+
+    if(not is_calibrated()) { ROS_WARN("Cannot issue commandPosition to gripper without calibration"); }
 
     if(_position >= 0.0 && _position <= 100.0)
     {
@@ -313,16 +302,34 @@ void Gripper::command(std::string _cmd, bool _block,
     }
 }
 
+void Gripper::capabilityWarning(std::string _function)
+{
+    ROS_WARN("%s gripper of type %s is not capable of %s",
+              getGripperLimb().c_str(), type().c_str(), _function.c_str());
+}
+
 int Gripper::incCmdSeq()
 {
     cmd_sequence = (cmd_sequence % std::numeric_limits<int>::max()) + 1;
     return cmd_sequence;
 }
 
-void Gripper::capabilityWarning(std::string _function)
+std::string Gripper::type()
 {
-    ROS_WARN("%s gripper of type %s is not capable of %s",
-              getGripperLimb().c_str(), type().c_str(), _function.c_str());
+    int ui_code = (int) getGripperProperties().ui_type;
+
+    if(ui_code == 1)
+    {
+        return "suction";
+    }
+    else if(ui_code == 2)
+    {
+        return "electric";
+    }
+    else
+    {
+        return "custom";
+    }
 }
 
 void Gripper::wait(ros::Duration _timeout)
