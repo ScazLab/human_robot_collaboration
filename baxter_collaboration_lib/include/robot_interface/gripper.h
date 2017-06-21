@@ -44,12 +44,6 @@ private:
     void gripperPropCb(const baxter_core_msgs::EndEffectorProperties &msg);
 
     /**
-     * @brief Calibrates the gripper
-     * @details It calibrates the gripper on startup if not already calibrated.
-     */
-    void calibrate();
-
-    /**
      * Gets the ID of the gripper
      * @return The ID of the gripper
      */
@@ -118,6 +112,7 @@ private:
     void wait(ros::Duration _timeout);
 
     /** Legacy code */
+
     /**
      * Closes the gripper
      **/
@@ -163,16 +158,12 @@ public:
      */
     baxter_core_msgs::EndEffectorProperties getGripperProperties();
 
-    bool gripObject();
-
     /**
      * Commands minimum gripper position
      * @param _block   is the command blocking or non-blocking
      * @param _timeout timeout in seconds for open command success
      */
     void close(bool _block=false, double _timeout=5.0);
-
-    bool releaseObject();
 
     /**
      * Commands maximum gripper position
@@ -240,9 +231,27 @@ public:
     std::string type();
 
     /**
+     * @brief Calibrates the gripper
+     * @details It calibrates the gripper on startup if not already calibrated.
+     */
+    void calibrate();
+
+    /**
+     * Clear calibration information from gripper.
+     * Allows (and requires) new gripper calibration to be run.
+     */
+    void clearCalibration();
+
+    /**
      * Destructor
      */
     ~Gripper();
+
+    /** Legacy code */
+
+    bool gripObject(); // would recommend using close() instead
+
+    bool releaseObject(); // would recommend using open() instead
 };
 
 #endif // __GRIPPER_H__
