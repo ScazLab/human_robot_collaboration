@@ -85,7 +85,7 @@ private:
      * @param _args    parameters and their values in JSON
      */
     void command(std::string _cmd, bool _block=false,
-                double _timeout=0.0, std::string _args="");
+                 double _timeout=0.0, std::string _args="");
 
     /**
      * Set the parameters that will describe the position command execution
@@ -110,6 +110,12 @@ private:
      * Warns user about functions beyond the capability of a gripper type
      */
     void capabilityWarning(std::string _function);
+
+    /**
+     * Waits until the timeout is complete
+     * @param _timeout the number of seconds to wait
+     */
+    void wait(ros::Duration _timeout);
 
     /** Legacy code */
     /**
@@ -212,6 +218,16 @@ public:
     bool is_gripping();
 
     /**
+     * Returns bool describing if the gripper is capable of force control
+     */
+    bool hasForce();
+
+    /**
+     * Returns bool describing if the gripper is capable of position control
+     */
+    bool hasPosition();
+
+    /**
      * Returns the limb the gripper belongs to
      * @return the limb, either "left" or "right"
      **/
@@ -222,9 +238,6 @@ public:
      * @return the type, "electric", "suction" or "custom"
      */
     std::string type();
-
-
-    void reboot();
 
     /**
      * Destructor
