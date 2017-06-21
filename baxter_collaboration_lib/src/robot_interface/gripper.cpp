@@ -34,6 +34,8 @@ Gripper::Gripper(std::string _limb, bool _use_robot) :
     sub_prop = rnh.subscribe("/robot/end_effector/" + _limb + "_gripper/properties",
                                 SUBSCRIBER_BUFFER, &Gripper::gripperPropCb, this);
 
+    // 50 ms sleep to wait for the publisher to be ready
+    ros::Duration(0.05).sleep();
     // set the gripper parameters to their defaults
     setParameters("", true);
 }
@@ -100,6 +102,8 @@ void Gripper::setParameters(std::string _parameters, bool _defaults)
             parameters = _parameters;
         }
     }
+
+    // send the parameters to the gripper
     std::string param_cmd = EndEffectorCommand::CMD_CONFIGURE;
     command(param_cmd, false, 0.0, parameters);
 }
@@ -107,6 +111,7 @@ void Gripper::setParameters(std::string _parameters, bool _defaults)
 std::string Gripper::validParameters()
 {
     std::string valid;
+
     if(type() == "electric")
     {
         valid = "{\"velocity\" : 50.0, \"moving_force\" : 40.0, \"holding_force\" : 30.0, \"dead_zone\" : 5.0}";
@@ -119,6 +124,7 @@ std::string Gripper::validParameters()
     {
         valid = "";
     }
+
     return valid;
 }
 
@@ -157,6 +163,8 @@ bool Gripper::has_error()
 
 bool Gripper::is_sucking()
 {
+    if(type() != "suction") { capabilityWarning("is_sucking"); }
+
     // ROS_INFO("force is: %g\n",getGripperState().force);
     return getGripperState().position<80;
 }
@@ -165,6 +173,16 @@ bool Gripper::is_gripping()
 {
     return true;
     // return getGripperState().gripping==EndEffectorState::STATE_TRUE;
+}
+
+bool Gripper::hasForce()
+{
+    return getGripperProperties().controls_force == true;
+}
+
+bool Gripper::hasPosition()
+{
+    return getGripperProperties().controls_position == true;
 }
 
 std::string Gripper::type()
@@ -189,7 +207,7 @@ void Gripper::open(bool _block, double _timeout)
 {
     if(type() == "electric")
     {
-        commandPosition(95.0, _block, _timeout);
+        commandPosition(100.0, _block, _timeout);
     }
     else if (type() == "suction")
     {
@@ -213,8 +231,7 @@ void Gripper::close(bool _block, double _timeout)
     }
     else
     {
-        // capabilityWarning("close");
-        commandSuction(_block, _timeout);
+        capabilityWarning("close");
     }
 }
 
@@ -248,7 +265,7 @@ void Gripper::commandSuction(bool _block, double _timeout)
 
     std::string suction_cmd = EndEffectorCommand::CMD_GO;
     std::string suction_args = "{\"grip_attempt_seconds\": " +
-                                std::to_string(_timeout) + "}"; // default timeout=5.0
+                                std::to_string(_timeout) + "}";
 
     command(suction_cmd, _block, _timeout, suction_args);
 }
@@ -291,7 +308,8 @@ void Gripper::command(std::string _cmd, bool _block,
 
     if(_block)
     {
-        sleep(_timeout);
+        ros::Duration timeout(_timeout);
+        wait(timeout);
     }
 }
 
@@ -307,15 +325,13 @@ void Gripper::capabilityWarning(std::string _function)
               getGripperLimb().c_str(), type().c_str(), _function.c_str());
 }
 
-
-
-void Gripper::reboot()
+void Gripper::wait(ros::Duration _timeout)
 {
-    EndEffectorCommand reboot;
-    reboot.id=get_id();
-    reboot.command=EndEffectorCommand::CMD_REBOOT;
-    pub.publish(reboot);
-    sleep(1.0);
+    ros::Time start = ros::Time::now();
+    while(ros::Time::now() - start < _timeout)
+    {
+        ros::spinOnce();
+    }
 }
 
 /** Legacy */
