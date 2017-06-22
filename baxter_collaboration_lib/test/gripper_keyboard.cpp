@@ -180,10 +180,6 @@ public:
      */
     void run()
     {
-        // spinner is required for use of the Gripper object
-        ros::AsyncSpinner spinner(1);
-        spinner.start();
-
         ROS_INFO("Gripper keyboard starting...");
         ROS_INFO("You are now controlling the robot grippers");
         ROS_INFO("Enter your commands (or press ? for help)");

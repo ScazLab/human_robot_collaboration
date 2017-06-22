@@ -7,8 +7,8 @@ using namespace baxter_core_msgs;
 using namespace std;
 
 Gripper::Gripper(std::string _limb, bool _use_robot) :
-                 limb(_limb), use_robot(_use_robot), first_run(true), cmd_sequence(0),
-                 cmd_sender(ros::this_node::getName())
+                 limb(_limb), use_robot(_use_robot), first_run(true), rnh(_limb),
+                 spinner(1), cmd_sequence(0), cmd_sender(ros::this_node::getName())
 {
     if (not use_robot) return;
 
@@ -34,8 +34,11 @@ Gripper::Gripper(std::string _limb, bool _use_robot) :
     sub_prop = rnh.subscribe("/robot/end_effector/" + _limb + "_gripper/properties",
                                 SUBSCRIBER_BUFFER, &Gripper::gripperPropCb, this);
 
+    spinner.start();
+
     // sleep to wait for the publisher to be ready
     ros::Duration(0.5).sleep();
+
     // set the gripper parameters to their defaults
     setParameters("", true);
 }

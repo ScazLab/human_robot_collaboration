@@ -18,10 +18,11 @@ private:
     bool   use_robot;       // Flag to know if we're going to use the robot or not
     bool   first_run;       // Flag to calibrate the gripper at startup if needed
 
-    ros::NodeHandle rnh;      // ROS node handle
-    ros::Subscriber sub;      // Subscriber to receive the state of the gripper
-    ros::Publisher  pub;      // Publisher for requesting actions to the gripper
-    ros::Subscriber sub_prop; // Subscriber to receive the properties of the gripper
+    ros::NodeHandle rnh;       // ROS node handle
+    ros::Subscriber sub;       // Subscriber to receive the state of the gripper
+    ros::Publisher  pub;       // Publisher for requesting actions to the gripper
+    ros::Subscriber sub_prop;  // Subscriber to receive the properties of the gripper
+    ros::AsyncSpinner spinner; // AsyncSpinner to handle callbacks
 
     baxter_core_msgs::EndEffectorState      state;      // State of the gripper
     baxter_core_msgs::EndEffectorProperties properties; // properties of the gripper
