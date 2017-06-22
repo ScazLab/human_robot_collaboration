@@ -256,18 +256,23 @@ try:
 		     args=(pol, EXPORT_DEST),
                      kwargs={"belief_as_quotient": EXPORT_BELIEF_QUOTIENT})
     p_save.start()
+
+    try:
+        input("Press enter to start...")
+    except Exception:
+        pass
+
+    timer_path = os.path.join(args.path, 'timer-{}.json'.format(args.user))
+    controller = POMCPController(pol, timer_path=timer_path, recovery=True)
+
 except KeyboardInterrupt:
     pol.stop()
     raise
 
-try:
-    input("Press enter to start...")
-except Exception:
-    pass
-
-timer_path = os.path.join(args.path, 'timer-{}.json'.format(args.user))
-controller = POMCPController(pol, timer_path=timer_path, recovery=True)
 controller.run()
 pol.execute(export_pomcp, pol, EXPORT_DEST,
             belief_as_quotient=EXPORT_BELIEF_QUOTIENT)
-p_save.join()
+
+if p_save.is_alive():
+    p_save.terminate()
+p_save.join(.1)

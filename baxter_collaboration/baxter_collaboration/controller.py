@@ -124,7 +124,7 @@ class BaseController(object):
 
     def _stop(self):
         if not self.finished:
-            rospy.loginfo('Stopping policy controller')
+            rospy.loginfo('Stopping controller')
             self.timer.log('Stop')
             rospy.loginfo(str(self.timer.data))
             self.timer.save()
@@ -134,10 +134,14 @@ class BaseController(object):
         self.finished = True
         self._abort_waiting_suscribers()
         self._home()
+	rospy.signal_shutdown("controller shutdown")
 
     def _abort_waiting_suscribers(self):
         self.answer_sub.listening = False
         self.error_sub.listening = False
+        self.error_sub.listening = False
+        self.left_button_sub.listening = False
+        self.right_button_sub.listening = False
 
     def run(self):
         try:
