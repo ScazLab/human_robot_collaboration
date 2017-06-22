@@ -335,7 +335,7 @@ std::string Gripper::type()
     }
     else
     {
-        return "custom";
+        return "undefined";
     }
 }
 
