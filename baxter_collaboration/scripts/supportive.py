@@ -31,8 +31,8 @@ args = parser.parse_args(sys.argv[1:])
 
 
 # Algorithm parameters
-N_WARMUP = 20
-ITERATIONS = 800
+N_WARMUP = 100
+ITERATIONS = 20
 EXPLORATION = 50
 RELATIVE_EXPLO = False  # In this case use smaller exploration
 BELIEF_VALUES = False
