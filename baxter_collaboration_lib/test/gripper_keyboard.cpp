@@ -24,8 +24,9 @@ private:
     {
         char ch;
 
-        // continues while the ROS is running and the proceed flag is true
-        while(ros::ok() && proceed)
+        // continues while the proceed flag is true. The ros::ok() event
+        // will be catched only by the main thread.
+        while(proceed)
         {
             cin.get(ch);
             cin.ignore();

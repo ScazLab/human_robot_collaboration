@@ -148,6 +148,7 @@ if(CATKIN_ENABLE_TESTING)
                                  test/test_gripper.cpp)
   target_link_libraries(test_gripper robot_interface)
 
+  ## Gripper Keyboard tests the grippers directly on the robot
   add_executable(gripper_keyboard test/gripper_keyboard.cpp)
   target_link_libraries(gripper_keyboard ${catkin_LIBRARIES}
                                          robot_interface)
