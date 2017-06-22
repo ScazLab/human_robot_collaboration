@@ -283,7 +283,7 @@ public:
      *
      * @param _state the new state
      */
-    State(int _state = START) : state(_state) { };
+    explicit State(int _state = START) : state(_state) { };
 
     /**
      * Sets the state to a new state. Updates the time accordingly.
@@ -295,11 +295,13 @@ public:
     /**
      * Returns the state as an integer
      */
+    /* implicit */
     operator int();
 
     /**
      * Returns the state as a std::string (i.e. a text description of the state)
      */
+    /* implicit */
     operator std::string();
 };
 

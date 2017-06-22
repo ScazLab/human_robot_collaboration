@@ -1,13 +1,13 @@
 #include "tool_picker.h"
 
-using namespace std;
+using namespace              std;
 using namespace baxter_core_msgs;
 
 #define VERTICAL_ORI_R2         0.1, 1.0, 0.0, 0.0
 
-ToolPicker::ToolPicker(std::string _name, std::string _limb, bool _use_robot) :
-                       HoldCtrl(_name,_limb, _use_robot), CartesianEstimatorClient(_name, _limb),
-                       elap_time(0)
+ToolPicker::ToolPicker(string _name, string _limb, bool _use_robot) :
+                       HoldCtrl(_name,_limb, _use_robot),
+                       CartesianEstimatorClient(_name, _limb), elap_time(0)
 {
     setHomeConfiguration();
 
@@ -20,8 +20,8 @@ ToolPicker::ToolPicker(std::string _name, std::string _limb, bool _use_robot) :
 
     removeAction(ACTION_HOLD);
 
-    insertAction(std::string(ACTION_HOLD) + "_leg", static_cast<f_action>(&ToolPicker::holdObject));
-    insertAction(std::string(ACTION_HOLD) + "_top", static_cast<f_action>(&ToolPicker::holdObject));
+    insertAction(string(ACTION_HOLD) + "_leg", static_cast<f_action>(&ToolPicker::holdObject));
+    insertAction(string(ACTION_HOLD) + "_top", static_cast<f_action>(&ToolPicker::holdObject));
 
     printActionDB();
 
@@ -220,7 +220,10 @@ bool ToolPicker::pickUpObject()
 
             r.sleep();
         }
-        else    cnt_ik_fail++;
+        else
+        {
+            ++cnt_ik_fail;
+        }
 
         if (cnt_ik_fail == 10)  return false;
     }
@@ -320,7 +323,7 @@ bool ToolPicker::computeOrientation(geometry_msgs::Quaternion &_q)
     return true;
 }
 
-int ToolPicker::chooseObjectID(std::vector<int> _objs)
+int ToolPicker::chooseObjectID(vector<int> _objs)
 {
     if (getSubState() != CHECK_OBJ_IDS)
     {
@@ -342,17 +345,17 @@ int ToolPicker::chooseObjectID(std::vector<int> _objs)
         return res;
     }
 
-    std::vector<string> objs_str;
+    vector<string> objs_str;
     for (size_t i = 0; i < _objs.size(); ++i)
     {
         objs_str.push_back(getObjectNameFromDB(_objs[i]));
     }
 
-    std::vector<string> av_objects = getAvailableObjects(objs_str);
+    vector<string> av_objects = getAvailableObjects(objs_str);
 
     if (av_objects.size() == 0)     return res;
 
-    std::srand(std::time(0)); //use current time as seed
+    srand(time(0)); //use current time as seed
     string res_str = av_objects[rand() % av_objects.size()];
 
     res = getObjectIDFromDB(res_str);
@@ -393,7 +396,7 @@ void ToolPicker::reduceSquish()
 void ToolPicker::resetSquish()
 {
     XmlRpc::XmlRpcValue squish_params;
-    for (std::vector<int>::size_type i = 0; i != squish_thresholds.size(); i++)
+    for (vector<int>::size_type i = 0; i != squish_thresholds.size(); ++i)
     {
         // rewrite the squish parameters from the initial squish thresholds stored in reduceSquish()
         squish_params[i] = squish_thresholds[i];
@@ -412,7 +415,7 @@ bool ToolPicker::goHoldPose(double height)
 {
     ROS_INFO("[%s] Going to %s position..", getLimb().c_str(), getAction().c_str());
 
-    if (getAction() == std::string(ACTION_HOLD) + "_top")
+    if (getAction() == string(ACTION_HOLD) + "_top")
     {
         return goToPose(0.72, -0.31, 0.032, 0.54, 0.75, 0.29,0.22);
     }

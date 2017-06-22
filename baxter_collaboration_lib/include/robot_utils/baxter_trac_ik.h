@@ -1,3 +1,6 @@
+#ifndef __BAXTER_TRAC_IK_H__
+#define __BAXTER_TRAC_IK_H__
+
 #include <trac_ik/trac_ik.hpp>
 #include <ros/ros.h>
 #include <kdl/chainiksolverpos_nr_jl.hpp>
@@ -19,7 +22,7 @@ private:
     KDL::JntArray *_nominal;
 
 public:
-    baxterTracIK(std::string limb, bool _use_robot = true);
+    explicit baxterTracIK(std::string limb, bool _use_robot = true);
 
     ~baxterTracIK();
 
@@ -33,3 +36,4 @@ public:
     void computeFwdKin(KDL::JntArray jointpositions);
 };
 
+#endif

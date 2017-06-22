@@ -4,7 +4,8 @@ using namespace std;
 using namespace baxter_core_msgs;
 
 CubePicker::CubePicker(std::string _name, std::string _limb, bool _use_robot) :
-                       ArmCtrl(_name,_limb, _use_robot), ARucoClient(_name, _limb), elap_time(0)
+                       ArmCtrl(_name,_limb, _use_robot),
+                       ARucoClient(_name, _limb), elap_time(0)
 {
     setHomeConfiguration();
 
@@ -13,7 +14,8 @@ CubePicker::CubePicker(std::string _name, std::string _limb, bool _use_robot) :
     insertAction(ACTION_GET,       static_cast<f_action>(&CubePicker::pickObject));
     insertAction(ACTION_PASS,      static_cast<f_action>(&CubePicker::passObject));
     insertAction(ACTION_GET_PASS,  static_cast<f_action>(&CubePicker::pickPassObject));
-    insertAction("recover_"+string(ACTION_GET_PASS), static_cast<f_action>(&CubePicker::recoverPickPass));
+    insertAction("recover_"+string(ACTION_GET_PASS),
+                 static_cast<f_action>(&CubePicker::recoverPickPass));
 
     printActionDB();
 
@@ -152,7 +154,7 @@ bool CubePicker::pickARTag()
         }
         else
         {
-            cnt_ik_fail++;
+            ++cnt_ik_fail;
         }
 
         if (cnt_ik_fail == 10)

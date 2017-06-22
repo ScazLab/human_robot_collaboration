@@ -57,7 +57,7 @@ public:
      * @param      _limb either left or right
      * @param _use_robot if to use the robot or not
      **/
-    Gripper(std::string _limb, bool _use_robot = true);
+    explicit Gripper(std::string _limb, bool _use_robot = true);
 
     /**
      * Sets the state to the new state, thread-safely

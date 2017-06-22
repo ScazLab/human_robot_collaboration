@@ -21,7 +21,7 @@ struct colorRange
      *
      * @param  _cR the TypeArray read from the parameter server.
      */
-    colorRange(XmlRpc::XmlRpcValue _cR);
+    explicit colorRange(XmlRpc::XmlRpcValue _cR);
 
     /**
     * Copy Operator
@@ -62,7 +62,7 @@ struct hsvColorRange
      *
      * @param  _param the XmlRpcValue read from the parameter server.
      */
-    hsvColorRange(XmlRpc::XmlRpcValue _params);
+    explicit hsvColorRange(XmlRpc::XmlRpcValue _params);
 
     cv::Scalar get_hsv_min() { return cv::Scalar(H.min, S.min, V.min); };
     cv::Scalar get_hsv_max() { return cv::Scalar(H.max, S.max, V.max); };

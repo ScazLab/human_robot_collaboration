@@ -26,7 +26,7 @@ void SegmentedObj::init()
     Rvec.create(3,1,CV_32FC1);
     Tvec.create(3,1,CV_32FC1);
 
-    for (int i=0;i<3;i++)
+    for (int i=0; i<3; ++i)
     {
         Tvec.at<float>(i,0)=Rvec.at<float>(i,0)=-999999;
     }
@@ -51,7 +51,7 @@ bool SegmentedObj::drawBox(cv::Mat &_img)
         cv::Point2f rect_points[4];
         rect.points(rect_points);
 
-        for( int j = 0; j < 4; j++ )
+        for( int j = 0; j < 4; ++j )
         {
             cv::line   (_img, rect_points[j], rect_points[(j+1)%4], color, 2, 8 );
             // cv::putText(_img, toString(j), rect_points[j],
@@ -177,7 +177,7 @@ bool CartesianEstimator::publishObjects()
     objects_msg.objects.clear();
     objects_msg.objects.resize(getNumValidObjects());
     objects_msg.header.stamp = curr_stamp;
-    objects_msg.header.seq++;
+    ++objects_msg.header.seq;
 
     int cnt = 0;
     for(size_t i = 0; i < objs.size(); ++i)
@@ -393,7 +393,7 @@ bool CartesianEstimator::poseCameraRF(int idx)
     cv::Point2f obj_segm_pts[4];
     objs[idx]->rect.points(obj_segm_pts);
 
-    for (int j=0; j<4; j++)
+    for (int j=0; j<4; ++j)
     {
         ImgPoints.at<float>(j,0)=obj_segm_pts[j].x;
         ImgPoints.at<float>(j,1)=obj_segm_pts[j].y;
@@ -526,7 +526,7 @@ int CartesianEstimator::getNumValidObjects()
     {
         if (objs[i])
         {
-            if (objs[i]->isThere())     res++;
+            if (objs[i]->isThere()) { ++res; }
         }
     }
 

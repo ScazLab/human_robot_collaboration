@@ -43,6 +43,7 @@ public:
      * Converts the segmented object to a string.
      * @return the segmented object as a string
      */
+    /* implicit */
     operator std::string();
 };
 
@@ -98,7 +99,7 @@ protected:
 
 public:
     /* CONSTRUCTORS */
-    CartesianEstimatorHSV(std::string  _name);
+    explicit CartesianEstimatorHSV(std::string  _name);
 
     ~CartesianEstimatorHSV();
 };

@@ -48,7 +48,7 @@ public:
     geometry_msgs::Pose pose;
 
     /* CONSTRUCTOR */
-    SegmentedObj(std::vector<double> _size);
+    explicit SegmentedObj(std::vector<double> _size);
     SegmentedObj(std::string _name, std::vector<double> _size, int _area_thres);
 
     /* DESTRUCTOR */
@@ -131,6 +131,7 @@ public:
      * Converts the segmented object to a string.
      * @return the segmented object as a string
      */
+    /* implicit */
     virtual operator std::string();
 
     /* GETTERS */
@@ -338,9 +339,10 @@ protected:
 
 public:
     /* CONSTRUCTORS */
-    CartesianEstimator(std::string _name);
+    explicit CartesianEstimator(std::string _name);
     CartesianEstimator(std::string _name,
-                       std::vector<std::string> _objs_name, cv::Mat _objs_size);
+                       std::vector<std::string> _objs_name,
+                       cv::Mat _objs_size);
 
     /* DESTRUCTOR */
     ~CartesianEstimator();

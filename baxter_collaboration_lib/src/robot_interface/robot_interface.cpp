@@ -606,7 +606,7 @@ bool RobotInterface::goToJointConfNoCheck(vector<double> joint_values)
 
     setJointNames(joint_cmd);
 
-    for (size_t i = 0; i < joint_values.size(); i++)
+    for (size_t i = 0; i < joint_values.size(); ++i)
     {
         joint_cmd.command.push_back(joint_values[i]);
     }

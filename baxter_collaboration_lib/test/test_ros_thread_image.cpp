@@ -97,14 +97,14 @@ public:
 
                 // Finds the moments
                 std::vector<cv::Moments> mu(contours.size() );
-                for(size_t i = 0; i < contours.size(); i++ )
+                for(size_t i = 0; i < contours.size(); ++i)
                 {
                     mu[i] = moments(contours[i], false );
                 }
 
                 // Finds the centroid
                 std::vector<cv::Point2f> mc(contours.size());
-                for( size_t i = 0; i < contours.size(); i++ )
+                for( size_t i = 0; i < contours.size(); ++i)
                 {
                     mc[i] = cv::Point2f( mu[i].m10/mu[i].m00 , mu[i].m01/mu[i].m00 );
                     avg_coords.x = mu[i].m10/mu[i].m00;

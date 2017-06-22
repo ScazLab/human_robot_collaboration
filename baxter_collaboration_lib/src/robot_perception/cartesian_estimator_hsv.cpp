@@ -38,16 +38,16 @@ bool SegmentedObjHSV::detectObject(const cv::Mat& _in, cv::Mat& _out, cv::Mat& _
     cv::Mat img_thres = hsvThreshold(img_hsv, col);
 
     // Some morphological operations to remove noise and clean up the image
-    for (int i = 0; i < 2; ++i) erode(img_thres, img_thres, cv::Mat());
+    for (int i = 0; i < 2; ++i)  erode(img_thres, img_thres, cv::Mat());
     for (int i = 0; i < 4; ++i) dilate(img_thres, img_thres, cv::Mat());
-    for (int i = 0; i < 2; ++i) erode(img_thres, img_thres, cv::Mat());
+    for (int i = 0; i < 2; ++i)  erode(img_thres, img_thres, cv::Mat());
 
     // Find contours
     cv::findContours(img_thres, contours, hierarchy, CV_RETR_TREE,
                      CV_CHAIN_APPROX_SIMPLE, cv::Point(0, 0));
 
     // Let's filter out contours that are too small to be an object
-    for( size_t i = 0; i < contours.size(); i++ )
+    for(size_t i = 0; i < contours.size(); ++i)
     {
         // ROS_INFO("IDX %lu Col %s Contour area %g", i, col.toString().c_str(),
         //                                            contourArea(contours[i], false));
@@ -82,7 +82,7 @@ bool SegmentedObjHSV::detectObject(const cv::Mat& _in, cv::Mat& _out, cv::Mat& _
         // int largest_area=0;
         // int largest_contour_idx=-1;
 
-        // for( size_t i = 0; i< filt_contours.size(); i++ )
+        // for(size_t i = 0; i< filt_contours.size(); ++i)
         // {
         //     double a = contourArea(filt_contours[i], false);  //  Find the area of contour
 

@@ -73,7 +73,7 @@ string toString(vector<double> const& _v)
 {
 	string res = "";
 
-	for(int i = 0, size = _v.size(); i < size; i++)
+	for(int i = 0, size = _v.size(); i < size; ++i)
 	{
 		res = res + toString(_v[i]) + ", ";
 	}

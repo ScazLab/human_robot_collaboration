@@ -54,7 +54,7 @@ baxterTracIK::baxterTracIK(std::string limb, bool _use_robot) :
     // Create Nominal chain configuration midway between all joint limits
     _nominal = new KDL::JntArray(_chain.getNrOfJoints());
 
-    for (int j=0; j < _nominal->data.size(); j++)
+    for (int j=0; j < _nominal->data.size(); ++j)
     {
       _nominal->operator()(j) = (ll(j)+ul(j))/2.0;
     }

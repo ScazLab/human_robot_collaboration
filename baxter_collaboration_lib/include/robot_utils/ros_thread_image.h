@@ -56,7 +56,7 @@ public:
      * @param _name     name of the object
      * @param _encoding encoding for the image
      */
-    ROSThreadImage(std::string _name, std::string _encoding = "bgr8");
+    explicit ROSThreadImage(std::string _name, std::string _encoding = "bgr8");
 
     /**
      * Destructor
