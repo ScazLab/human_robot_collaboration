@@ -6,6 +6,7 @@ import os
 import re
 import sys
 import argparse
+from multiprocessing import Process
 
 from task_models.task import (SequentialCombination, LeafCombination)
 from task_models.supportive import (SupportivePOMDP, AssembleLeg, AssembleLegToTop,
@@ -211,6 +212,7 @@ class POMCPController(BaseController):
             return self.model.observations[self.model.O_NONE]
 
 
+
 # Problem definition
 leg_i = 'leg-{}'.format
 htm = SequentialCombination([
@@ -250,8 +252,10 @@ try:
     if BELIEF_VALUES:
         print('Found {} distinct beliefs.'.format(len(pol.tree._obs_nodes)))
 
-    export_pomcp(pol, EXPORT_DEST, belief_as_quotient=EXPORT_BELIEF_QUOTIENT)
-    print('Saved: ' + EXPORT_DEST)
+    p_save = Process(target=export_pomcp,
+		     args=(pol, EXPORT_DEST),
+                     kwargs={"belief_as_quotient": EXPORT_BELIEF_QUOTIENT})
+    p_save.start()
 except KeyboardInterrupt:
     pol.stop()
     raise
@@ -266,3 +270,4 @@ controller = POMCPController(pol, timer_path=timer_path, recovery=True)
 controller.run()
 pol.execute(export_pomcp, pol, EXPORT_DEST,
             belief_as_quotient=EXPORT_BELIEF_QUOTIENT)
+p_save.join()
