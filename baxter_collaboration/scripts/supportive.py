@@ -10,7 +10,7 @@ import argparse
 from task_models.task import (SequentialCombination, LeafCombination)
 from task_models.supportive import (SupportivePOMDP, AssembleLeg, AssembleLegToTop,
                                     NHTMHorizon)
-from task_models.lib.pomdp import AsyncPOMCPPolicyRunner, export_pomcp
+from task_models.lib.pomcp import AsyncPOMCPPolicyRunner, export_pomcp
 from task_models.lib.belief import format_belief_array
 
 import rospy
@@ -52,6 +52,8 @@ class UnexpectedActionFailure(RuntimeError):
 
 
 class POMCPController(BaseController):
+
+    NODE_NAME = "supportive_controller"
 
     OBJECTS_LEFT = "action_provider/objects_left"
     OBJECTS_RIGHT = "action_provider/objects_right"
