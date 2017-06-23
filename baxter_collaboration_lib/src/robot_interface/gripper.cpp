@@ -7,14 +7,20 @@ using namespace baxter_core_msgs;
 using namespace std;
 
 Gripper::Gripper(std::string _limb, bool _use_robot) :
-                 limb(_limb), use_robot(_use_robot), first_run(true), cmd_sequence(0),
-                 cmd_sender(ros::this_node::getName())
+                 limb(_limb), use_robot(_use_robot), first_run(true), rnh(_limb),
+                 spinner(1), cmd_sequence(0), cmd_sender(ros::this_node::getName())
 {
     if (not use_robot) return;
 
+    // create a publisher for the gripper's commands
     pub = rnh.advertise<EndEffectorCommand>(
                    "/robot/end_effector/" + _limb + "_gripper/command", 1);
 
+    // create a subscriber to the gripper's properties
+    sub_prop = rnh.subscribe("/robot/end_effector/" + _limb + "_gripper/properties",
+                                SUBSCRIBER_BUFFER, &Gripper::gripperPropCb, this);
+
+    // create a subscriber to the gripper's state
     sub = rnh.subscribe("/robot/end_effector/" + _limb + "_gripper/state",
                            SUBSCRIBER_BUFFER, &Gripper::gripperCb, this);
 
@@ -30,12 +36,11 @@ Gripper::Gripper(std::string _limb, bool _use_robot) :
 
     setGripperState(init_state);
 
-    // create a subscriber to the gripper's properties
-    sub_prop = rnh.subscribe("/robot/end_effector/" + _limb + "_gripper/properties",
-                                SUBSCRIBER_BUFFER, &Gripper::gripperPropCb, this);
+    spinner.start();
 
     // sleep to wait for the publisher to be ready
     ros::Duration(0.5).sleep();
+
     // set the gripper parameters to their defaults
     setParameters("", true);
 }
@@ -335,7 +340,11 @@ std::string Gripper::type()
     }
     else
     {
+<<<<<<< HEAD
         return "custom";
+=======
+        return "uninitialized";
+>>>>>>> b7d040fb60276c16716c4081a7e06796516c2e26
     }
 }
 

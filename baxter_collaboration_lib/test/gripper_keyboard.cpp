@@ -1,27 +1,75 @@
 #include "robot_interface/gripper.h"
+#include <thread>
 
-int main(int argc, char** argv)
+using namespace std;
+
+class GripperKeyboard
 {
-    ros::init(argc, argv, "gripper_keyboard");
-    ros::AsyncSpinner spinner(1);
-    spinner.start();
+private:
 
-    // gripper instantiation
-    Gripper left_gripper("right");
-    Gripper right_gripper("right");
+    bool           proceed; // flag to continue or exit the main and internal threads
+    char               key; // storage for the user key press
+    bool           set_key; // flag to notify the main thread that a key has been stored
 
-    ROS_INFO("You are now controlling the robot grippers");
+    Gripper   left_gripper;
+    Gripper  right_gripper;
 
-    // gripper keys
-    while(ros::ok())
+    std::mutex mtx_set_key; // mutex to protect set_key
+    std::thread key_thread; // std::thread to run the thread function
+
+    /**
+     * Prompts the user for a key press and stores it for use by the main thread
+     */
+    void keyListener()
     {
-        ROS_INFO("Enter your command (or press ? for help)...");
+        char ch;
 
-        char c = std::cin.get();
-        std::cin.ignore();
-        ROS_INFO("Key entered: %c", c);
+        // continues while the proceed flag is true. The ros::ok() event
+        // will be catched only by the main thread.
+        while(proceed)
+        {
+            cin.get(ch);
+            cin.ignore();
+            ROS_INFO("Key entered: %c", ch);
+            key = ch;
 
-        switch(c)
+            std::lock_guard<std::mutex> lck(mtx_set_key);
+
+            if(ch == 'e' || ch == 'E')
+            {
+                proceed = false;
+            }
+            else
+            {
+                set_key = true;
+            }
+        }
+        return;
+    }
+
+    /**
+     * Starts the internal thread
+     */
+    void startThread()
+    {
+        key_thread = std::thread(&GripperKeyboard::keyListener, this);
+    }
+
+    /**
+     * Joins the internal thread to the main thread
+     */
+    void joinThread()
+    {
+        if(key_thread.joinable()) { key_thread.join(); }
+    }
+
+    /**
+     * Sends appropriate command to the gripper
+     * @param _c the key pressed by the user
+     */
+    void keyBindings(char _c)
+    {
+        switch(_c)
         {
         case '?':
             ROS_INFO("Available commands: (lowercase for left gripper, uppercase for right gripper)");
@@ -37,7 +85,7 @@ int main(int argc, char** argv)
             ROS_INFO("n / N : is gripper gripping?");
             ROS_INFO("m / M : is gripper ready to grip?");
             ROS_INFO("? : help");
-            ROS_INFO("e : exit");
+            ROS_INFO("e / E : exit");
             break;
         case 'q':
             ROS_INFO("Closing left gripper");
@@ -113,15 +161,64 @@ int main(int argc, char** argv)
         case 'M':
             ROS_INFO("Is right ready to grip? %s", right_gripper.is_ready_to_grip()? "Yes" : "No");
             break;
-        case 'e':
-            ROS_INFO("Exiting...");
-            return 0;
         default:
             ROS_INFO("Not a valid command. Press ? for help, e to exit.");
             break;
         }
-        ros::spinOnce();
     }
+
+public:
+
+    /**
+     * Constructor for the class
+     */
+    GripperKeyboard() : proceed(true), key('\0'), set_key(false),
+                        left_gripper("left"), right_gripper("right") {}
+
+    /**
+     * Starts the Gripper keyboard
+     */
+    void run()
+    {
+        ROS_INFO("Gripper keyboard starting...");
+        ROS_INFO("You are now controlling the robot grippers");
+        ROS_INFO("Enter your commands (or press ? for help)");
+
+        startThread();
+
+        // listens for key presses from the internal thread
+        // continues while the ROS is running and the proceed flag is true
+        ros::Rate r(10);
+        while(ros::ok() && proceed)
+        {
+            if(set_key)
+            {
+                keyBindings(key);
+
+                std::lock_guard<std::mutex> lck(mtx_set_key);
+                set_key = false;
+            }
+            r.sleep();
+        }
+
+        ROS_INFO("Gripper keyboard closing...");
+        proceed = false;
+        joinThread();
+    }
+
+    /**
+     * Destructor for the class
+     */
+    ~GripperKeyboard() {}
+};
+
+int main(int argc, char** argv)
+{
+    ros::init(argc, argv, "gripper_keyboard");
+
+    GripperKeyboard gk;
+    gk.run();
+
     return 0;
 }
 

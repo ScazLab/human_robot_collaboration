@@ -148,8 +148,10 @@ if(CATKIN_ENABLE_TESTING)
                                  test/test_gripper.cpp)
   target_link_libraries(test_gripper robot_interface)
 
+  ## Gripper Keyboard tests the grippers directly on the robot
   add_executable(gripper_keyboard test/gripper_keyboard.cpp)
-  target_link_libraries(gripper_keyboard robot_interface)
+  target_link_libraries(gripper_keyboard ${catkin_LIBRARIES}
+                                         robot_interface)
 
   ## Robot ROS thread image test
   add_rostest_gtest(test_ros_thread_image test/test_ros_thread_image.test
