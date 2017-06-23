@@ -340,11 +340,7 @@ std::string Gripper::type()
     }
     else
     {
-<<<<<<< HEAD
-        return "custom";
-=======
         return "uninitialized";
->>>>>>> b7d040fb60276c16716c4081a7e06796516c2e26
     }
 }
 
