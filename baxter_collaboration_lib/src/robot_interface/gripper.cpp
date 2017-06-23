@@ -145,11 +145,11 @@ std::string Gripper::validParameters()
     return valid;
 }
 
-void Gripper::calibrate()
+void Gripper::calibrate(bool _block, double _timeout)
 {
     if(type() != "electric") { capabilityWarning("calibrate"); }
     std::string calibrate_cmd = EndEffectorCommand::CMD_CALIBRATE;
-    command(calibrate_cmd, false, 0.0, "");
+    command(calibrate_cmd, _block, _timeout, "");
 }
 
 void Gripper::clearCalibration()
@@ -159,11 +159,23 @@ void Gripper::clearCalibration()
     command(clear_calibrate_cmd, false, 0.0, "");
 }
 
-void Gripper::reboot()
+bool Gripper::reboot()
 {
-    if(type() != "electric") { capabilityWarning("reboot"); }
+    // give a warning if not capable and return
+    if(type() != "electric")
+    {
+        capabilityWarning("reboot");
+        return false;
+    }
+
+    ROS_INFO("Rebooting %s gripper of type %s. Please wait...",
+             getGripperLimb().c_str(), type().c_str());
+
     std::string reboot_cmd = EndEffectorCommand::CMD_REBOOT;
     command(reboot_cmd, true, 5.0, "");
+
+    ROS_INFO("Reboot complete");
+    return true;
 }
 
 int Gripper::get_id()
@@ -201,8 +213,7 @@ bool Gripper::is_sucking()
 
 bool Gripper::is_gripping()
 {
-    return true;
-    // return getGripperState().gripping==EndEffectorState::STATE_TRUE;
+    return getGripperState().gripping==EndEffectorState::STATE_TRUE;
 }
 
 bool Gripper::hasForce()
@@ -215,7 +226,7 @@ bool Gripper::hasPosition()
     return getGripperProperties().controls_position == true;
 }
 
-void Gripper::open(bool _block, double _timeout)
+bool Gripper::open(bool _block, double _timeout)
 {
     if(type() == "electric")
     {
@@ -223,42 +234,64 @@ void Gripper::open(bool _block, double _timeout)
     }
     else if (type() == "suction")
     {
+        // check if the gripper is already not sucking
+        if(not is_sucking())
+        {
+            ROS_WARN("%s gripper of type %s is already open",
+                      getGripperLimb().c_str(), type().c_str());
+
+            return false;
+        }
+
         stop(_block, _timeout);
     }
     else
     {
+        // give a warning if not capable and return
         capabilityWarning("open");
+        return false;
     }
+
+    return true;
 }
 
-void Gripper::close(bool _block, double _timeout)
+bool Gripper::close(bool _block, double _timeout)
 {
     if(type() == "electric")
     {
-        commandPosition(5.0, _block, _timeout);
+        commandPosition(0.0, _block, _timeout);
     }
     else if (type() == "suction")
     {
+        // no checks here for is_sucking() so that the suction time may be extended as necessary
         commandSuction(_block, _timeout);
     }
     else
     {
+        // give a warning if not capable and return
         capabilityWarning("close");
+        return false;
     }
+
+    return true;
 }
 
-void Gripper::commandPosition(double _position, bool _block, double _timeout)
+bool Gripper::commandPosition(double _position, bool _block, double _timeout)
 {
+    // give a warning if not capable and return
     if(type() != "electric")
     {
         capabilityWarning("commandPosition");
+        return false;
     }
 
-    // ensures that the gripper is not used without calibration
+    // calibrate the electric gripper if needed
+    // do it in a blocking manner so that the gripper does not move before calibration
     if(not is_calibrated())
     {
-        ROS_WARN("Cannot issue commandPosition to gripper without calibration");
-        return;
+        ROS_INFO("Calibrating gripper. Please wait...");
+        calibrate(true, 2.0);
+        ROS_INFO("Calibration complete");
     }
 
     // ensures that the gripper is positioned within physical limits
@@ -269,18 +302,24 @@ void Gripper::commandPosition(double _position, bool _block, double _timeout)
                                      std::to_string(_position) + "}";
 
         command(position_cmd, _block, _timeout, position_args);
+
+        return true;
     }
     else
     {
-        ROS_WARN("Gripper position must be between 0.0 and 100.0");
+        ROS_WARN("%s gripper of type %s must have position between 0.0 and 100.0",
+                  getGripperLimb().c_str(), type().c_str());
+        return false;
     }
 }
 
-void Gripper::commandSuction(bool _block, double _timeout)
+bool Gripper::commandSuction(bool _block, double _timeout)
 {
+    // give a warning if not capable and return
     if(type() != "suction")
     {
         capabilityWarning("commandSuction");
+        return false;
     }
 
     std::string suction_cmd = EndEffectorCommand::CMD_GO;
@@ -288,14 +327,25 @@ void Gripper::commandSuction(bool _block, double _timeout)
                                 std::to_string(_timeout) + "}";
 
     command(suction_cmd, _block, _timeout, suction_args);
+
+    return true;
 }
 
-void Gripper::stop(bool _block, double _timeout)
+bool Gripper::stop(bool _block, double _timeout)
 {
     std::string stop_cmd;
 
     if(type() == "electric")
     {
+        // calibrate the electric gripper if needed
+        // do it in a blocking manner so that the gripper does not move before calibration
+        if(not is_calibrated())
+        {
+            ROS_INFO("Calibrating gripper. Please wait...");
+            calibrate(true, 2.0);
+            ROS_INFO("Calibration complete");
+        }
+
         stop_cmd = EndEffectorCommand::CMD_STOP;
     }
     else if(type() == "suction")
@@ -304,13 +354,17 @@ void Gripper::stop(bool _block, double _timeout)
     }
     else
     {
+        // give a warning if not capable and return
         capabilityWarning("stop");
+        return false;
     }
 
     command(stop_cmd, _block, _timeout);
+
+    return true;
 }
 
-void Gripper::command(std::string _cmd, bool _block,
+bool Gripper::command(std::string _cmd, bool _block,
                       double _timeout, std::string _args)
 {
     EndEffectorCommand ee_cmd;
@@ -331,6 +385,8 @@ void Gripper::command(std::string _cmd, bool _block,
         ros::Duration timeout(_timeout);
         wait(timeout);
     }
+
+    return true;
 }
 
 void Gripper::capabilityWarning(std::string _function)
@@ -382,7 +438,19 @@ void Gripper::wait(ros::Duration _timeout)
 // recommended to use close() instead
 bool Gripper::gripObject()
 {
-    suck();
+    if(type() != "suction")
+    {
+        ROS_INFO("warning: this is not a suction gripper");
+    }
+
+    EndEffectorCommand cmd;
+    cmd.id=get_id();
+    cmd.command=EndEffectorCommand::CMD_GRIP;
+    if (limb == "left")
+    {
+        cmd.args="{\"grip_attempt_seconds\": 5.0}";
+    }
+    pub.publish(cmd);
 
     // int cnt = 0;
 
@@ -405,40 +473,16 @@ bool Gripper::releaseObject()
 {
     if (is_sucking())
     {
-        blow();
+        EndEffectorCommand release_command;
+        release_command.id=get_id();
+        release_command.command=EndEffectorCommand::CMD_RELEASE;
+        pub.publish(release_command);
         return true;
     }
 
     ROS_WARN("[%s_gripper] Requested a release of the gripper, "
              "but the gripper is not sucking.", getGripperLimb().c_str());
     return false;
-}
-
-// recommended to use commandSuction() instead
-void Gripper::suck()
-{
-    if(type() != "suction")
-    {
-        ROS_INFO("warning: this is not a suction gripper");
-    }
-
-    EndEffectorCommand cmd;
-    cmd.id=get_id();
-    cmd.command=EndEffectorCommand::CMD_GRIP;
-    if (limb == "left")
-    {
-        cmd.args="{\"grip_attempt_seconds\": 5.0}";
-    }
-    pub.publish(cmd);
-}
-
-// recommended to use stop() instead
-void Gripper::blow()
-{
-    EndEffectorCommand release_command;
-    release_command.id=get_id();
-    release_command.command=EndEffectorCommand::CMD_RELEASE;
-    pub.publish(release_command);
 }
 
 Gripper::~Gripper()

@@ -41,9 +41,23 @@ private:
     void gripperCb(const baxter_core_msgs::EndEffectorState &msg);
 
     /**
+     * Sets the state to the new state, thread-safely
+     *
+     * @param _state the new state
+     */
+    void setGripperState(const baxter_core_msgs::EndEffectorState& _state);
+
+    /**
      * Callback that handles the gripper properties messages
      */
     void gripperPropCb(const baxter_core_msgs::EndEffectorProperties &msg);
+
+    /**
+     * Sets properties to the new properties, thread-safely
+     *
+     * @param _properties the new properties
+     */
+    void setGripperProperties(const baxter_core_msgs::EndEffectorProperties& _properties);
 
     /**
      * Gets the ID of the gripper
@@ -55,23 +69,26 @@ private:
      * Stop the gripper at the current position and apply the holding force
      * @param _block   is the command blocking or non-blocking
      * @param _timeout timeout in seconds for command success
+     * @return true/false if success/failure
      */
-    void stop(bool _block=true, double _timeout=5.0);
+    bool stop(bool _block=true, double _timeout=5.0);
 
     /**
      * Command the gripper suction
      * @param _block   is the command blocking or non-blocking
      * @param _timeout timeout in seconds for command success
+     * @return true/false if success/failure
      */
-    void commandSuction(bool _block=false, double _timeout=5.0);
+    bool commandSuction(bool _block=false, double _timeout=5.0);
 
     /**
      * Command the gripper position movement
      * @param _position in % 0=close, 100=open
      * @param _block    is the command blocking or non-blocking
      * @param _timeout  timeout in seconds for command success
+     * @return true/false if success/failure
      */
-    void commandPosition(double _position, bool _block=false, double _timeout=5.0);
+    bool commandPosition(double _position, bool _block=false, double _timeout=5.0);
 
     /**
      * Raw command call to directly control gripper
@@ -80,7 +97,7 @@ private:
      * @param _timeout timeout in seconds for command evaluation
      * @param _args    parameters and their values in JSON
      */
-    void command(std::string _cmd, bool _block=false,
+    bool command(std::string _cmd, bool _block=false,
                  double _timeout=0.0, std::string _args="");
 
     /**
@@ -113,18 +130,6 @@ private:
      */
     void wait(ros::Duration _timeout);
 
-    /** Legacy code */
-
-    /**
-     * Closes the gripper
-     **/
-    void suck();
-
-    /**
-     * Opens the gripper
-     **/
-    void blow();
-
 public:
     /**
      * Constructor of the class
@@ -135,24 +140,10 @@ public:
     explicit Gripper(std::string _limb, bool _use_robot = true);
 
     /**
-     * Sets the state to the new state, thread-safely
-     *
-     * @param _state the new state
-     */
-    void setGripperState(const baxter_core_msgs::EndEffectorState& _state);
-
-    /**
      * Gets the state of the gripper, thread-safely.
      * @return the state of the gripper
      */
     baxter_core_msgs::EndEffectorState getGripperState();
-
-    /**
-     * Sets properties to the new properties, thread-safely
-     *
-     * @param _properties the new properties
-     */
-    void setGripperProperties(const baxter_core_msgs::EndEffectorProperties& _properties);
 
     /**
      * Gets the properties of the gripper, thread-safely
@@ -162,17 +153,21 @@ public:
 
     /**
      * Commands minimum gripper position
+     *
      * @param _block   is the command blocking or non-blocking
      * @param _timeout timeout in seconds for open command success
+     * @return true/false if success/failure
      */
-    void close(bool _block=false, double _timeout=5.0);
+    bool close(bool _block=false, double _timeout=5.0);
 
     /**
      * Commands maximum gripper position
+     *
      * @param _block   is the command blocking or non-blocking
      * @param _timeout timeout in seconds for open command success
+     * @return true/false if success/failure
      */
-    void open(bool _block=false, double _timeout=5.0);
+    bool open(bool _block=false, double _timeout=5.0);
 
     /**
      * Returns a value indicating if the vacuum gripper is enable, so it can be operated.
@@ -228,15 +223,17 @@ public:
 
     /**
      * Returns the type of the gripper
-     * @return the type, "electric", "suction" or "custom"
+     * @return the type, "electric", "suction" or "uninitialized"
      */
     std::string type();
 
     /**
      * @brief Calibrates the gripper
      * @details It calibrates the gripper on startup if not already calibrated.
+     * @param _block   is the command blocking or non-blocking
+     * @param _timeout timeout in seconds for command evaluation
      */
-    void calibrate();
+    void calibrate(bool _block=false, double _timeout=0.0);
 
     /**
      * Clear calibration information from gripper.
@@ -245,10 +242,11 @@ public:
     void clearCalibration();
 
     /**
-     * Power cycle the gripper, removing calibration information
-     * Basic call to the reboot command. Does not clear errors that could occur during boot
+     * Power cycle the gripper, removing calibration information in a blocking manner
+     * Does not clear errors that could occur during boot
+     * @return true/false if success/failure
      */
-    void reboot();
+    bool reboot();
 
     /**
      * Destructor

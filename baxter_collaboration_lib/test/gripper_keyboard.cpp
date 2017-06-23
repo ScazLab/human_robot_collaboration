@@ -163,11 +163,9 @@ private:
             ROS_INFO("Is right ready to grip? %s", right_gripper.is_ready_to_grip()? "Yes" : "No");
             break;
         case 'r':
-            ROS_INFO("Rebooting left gripper");
             left_gripper.reboot();
             break;
         case 'R':
-            ROS_INFO("Rebooting right gripper");
             right_gripper.reboot();
             break;
         default:
@@ -209,6 +207,7 @@ public:
             }
             r.sleep();
         }
+        std::lock_guard<std::mutex> lck(mtx_set_key);
         proceed = false;
     }
 
