@@ -205,6 +205,11 @@ public:
         proceed = false;
         joinThread();
     }
+
+    /**
+     * Destructor for the class
+     */
+    ~GripperKeyboard() {}
 };
 
 int main(int argc, char** argv)

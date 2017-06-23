@@ -12,9 +12,15 @@ Gripper::Gripper(std::string _limb, bool _use_robot) :
 {
     if (not use_robot) return;
 
+    // create a publisher for the gripper's commands
     pub = rnh.advertise<EndEffectorCommand>(
                    "/robot/end_effector/" + _limb + "_gripper/command", 1);
 
+    // create a subscriber to the gripper's properties
+    sub_prop = rnh.subscribe("/robot/end_effector/" + _limb + "_gripper/properties",
+                                SUBSCRIBER_BUFFER, &Gripper::gripperPropCb, this);
+
+    // create a subscriber to the gripper's state
     sub = rnh.subscribe("/robot/end_effector/" + _limb + "_gripper/state",
                            SUBSCRIBER_BUFFER, &Gripper::gripperCb, this);
 
@@ -29,10 +35,6 @@ Gripper::Gripper(std::string _limb, bool _use_robot) :
     init_state.moving     = EndEffectorState::STATE_UNKNOWN;
 
     setGripperState(init_state);
-
-    // create a subscriber to the gripper's properties
-    sub_prop = rnh.subscribe("/robot/end_effector/" + _limb + "_gripper/properties",
-                                SUBSCRIBER_BUFFER, &Gripper::gripperPropCb, this);
 
     spinner.start();
 
