@@ -38,10 +38,10 @@ public:
 
     void commandCb(const baxter_core_msgs::EndEffectorCommand &msg)
     {
-       // std::string _msg = &msg.command;
-       // std::string _cmd;
+        std::string _msg = msg.command;
+        std::string _cmd;
 
-
+        //ROS_INFO(msg);
         baxter_core_msgs::EndEffectorState state;
         
         state.calibrated = baxter_core_msgs::EndEffectorState::STATE_UNKNOWN;
@@ -53,15 +53,21 @@ public:
         state.moving     = baxter_core_msgs::EndEffectorState::STATE_UNKNOWN;
        
 
-        baxter_core_msgs::EndEffectorCommand _cmd;
-        _cmd.command = baxter_core_msgs::EndEffectorCommand::CMD_CALIBRATE;
+        //baxter_core_msgs::EndEffectorCommand _cmd;
+        _cmd = baxter_core_msgs::EndEffectorCommand::CMD_CALIBRATE;
 
-        if (msg.command == _cmd.command)
-        {
-            state.calibrated = baxter_core_msgs::EndEffectorState::STATE_TRUE;
-        } 
-
+        
+        state.calibrated = baxter_core_msgs::EndEffectorState::STATE_TRUE;
+        ROS_INFO("Command check and state sent sucessful");
+        
+        /*
+        
+        ROS_INFO("Command check and state set NOT successful");
+        
+        */
         state_pub.publish(state);
+        ROS_INFO("Callback response successful");
+
     }
 
     // Publishes properties of the suction cup gripper
@@ -183,16 +189,18 @@ TEST(GripperTest, testCalibration)
    std::string    limb = "left";
    bool       use_robot =  true;
 
-   Gripper gr(limb, use_robot);
-   gripperTester gt("gripper", "left");
 
+   gripperTester gt("gripper", "left");
    gt.sendPropertiesElectric();
+
+   Gripper gr(limb, use_robot);
 
    gr.calibrate();
 
    baxter_core_msgs::EndEffectorState _state = gr.getGripperState();
 
-  // EXPECT_TRUE(_state.calibrated == baxter_core_msgs::EndEffectorState::STATE_TRUE);
+//Uncomment EXPECT_TRUE to test the calibration 
+//   EXPECT_TRUE(_state.calibrated == baxter_core_msgs::EndEffectorState::STATE_TRUE);
 
 //   gr.clearCalibration();
 //   _state = gr.getGripperState();

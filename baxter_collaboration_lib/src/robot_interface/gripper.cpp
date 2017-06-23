@@ -96,6 +96,8 @@ void Gripper::gripperPropCb(const EndEffectorProperties &msg)
 {
     setGripperProperties(msg);
     prop_set = true;
+    ROS_INFO("Properties updated");
+    ROS_INFO("%i", properties.ui_type);
 
     // shut down the subscriber after the properties are set once
     // because these properties do not change
