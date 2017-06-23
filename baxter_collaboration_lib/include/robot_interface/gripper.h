@@ -17,6 +17,7 @@ private:
 
     bool   use_robot;       // Flag to know if we're going to use the robot or not
     bool   first_run;       // Flag to calibrate the gripper at startup if needed
+    bool    prop_set;       // Flag to know if the properties were successfully set
 
     ros::NodeHandle rnh;       // ROS node handle
     ros::Subscriber sub;       // Subscriber to receive the state of the gripper
@@ -242,6 +243,12 @@ public:
      * Allows (and requires) new gripper calibration to be run.
      */
     void clearCalibration();
+
+    /**
+     * Power cycle the gripper, removing calibration information
+     * Basic call to the reboot command. Does not clear errors that could occur during boot
+     */
+    void reboot();
 
     /**
      * Destructor

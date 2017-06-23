@@ -84,6 +84,7 @@ private:
             ROS_INFO("b / B : is gripper sucking?");
             ROS_INFO("n / N : is gripper gripping?");
             ROS_INFO("m / M : is gripper ready to grip?");
+            ROS_INFO("r / R : reboot gripper");
             ROS_INFO("? : help");
             ROS_INFO("e / E : exit");
             break;
@@ -118,11 +119,11 @@ private:
             ROS_INFO("Is right calibrated? %s", right_gripper.is_calibrated()? "Yes" : "No");
             break;
         case 'd':
-            ROS_INFO("Clear left gripper calibration");
+            ROS_INFO("Clearing left gripper calibration");
             left_gripper.clearCalibration();
             break;
         case 'D':
-            ROS_INFO("Clear right gripper calibration");
+            ROS_INFO("Clearing right gripper calibration");
             right_gripper.clearCalibration();
             break;
         case 't':
@@ -161,6 +162,14 @@ private:
         case 'M':
             ROS_INFO("Is right ready to grip? %s", right_gripper.is_ready_to_grip()? "Yes" : "No");
             break;
+        case 'r':
+            ROS_INFO("Rebooting left gripper");
+            left_gripper.reboot();
+            break;
+        case 'R':
+            ROS_INFO("Rebooting right gripper");
+            right_gripper.reboot();
+            break;
         default:
             ROS_INFO("Not a valid command. Press ? for help, e to exit.");
             break;
@@ -173,7 +182,7 @@ public:
      * Constructor for the class
      */
     GripperKeyboard() : proceed(true), key('\0'), set_key(false),
-                        left_gripper("left"), right_gripper("right") {}
+                        left_gripper("left", true), right_gripper("right", true) {}
 
     /**
      * Starts the Gripper keyboard
@@ -200,16 +209,17 @@ public:
             }
             r.sleep();
         }
-
-        ROS_INFO("Gripper keyboard closing...");
         proceed = false;
-        joinThread();
     }
 
     /**
      * Destructor for the class
      */
-    ~GripperKeyboard() {}
+    ~GripperKeyboard()
+    {
+        ROS_INFO("Gripper keyboard closing...");
+        joinThread();
+    }
 };
 
 int main(int argc, char** argv)

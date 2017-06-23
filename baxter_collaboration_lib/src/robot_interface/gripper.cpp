@@ -7,7 +7,7 @@ using namespace baxter_core_msgs;
 using namespace std;
 
 Gripper::Gripper(std::string _limb, bool _use_robot) :
-                 limb(_limb), use_robot(_use_robot), first_run(true), rnh(_limb),
+                 limb(_limb), use_robot(_use_robot), first_run(true), prop_set(false), rnh(_limb),
                  spinner(1), cmd_sequence(0), cmd_sender(ros::this_node::getName())
 {
     if (not use_robot) return;
@@ -75,6 +75,12 @@ void Gripper::gripperCb(const EndEffectorState &msg)
 
     if (first_run)
     {
+        // wait for the properties to be set before issuing calibration command
+        while(not prop_set)
+        {
+            ros::Duration(0.05).sleep();
+        }
+
         if (!is_calibrated())
         {
             ROS_INFO("[%s_gripper] Calibrating the gripper..",
@@ -89,6 +95,11 @@ void Gripper::gripperCb(const EndEffectorState &msg)
 void Gripper::gripperPropCb(const EndEffectorProperties &msg)
 {
     setGripperProperties(msg);
+    prop_set = true;
+
+    // shut down the subscriber after the properties are set once
+    // because these properties do not change
+    sub_prop.shutdown();
 }
 
 void Gripper::setParameters(std::string _parameters, bool _defaults)
@@ -144,6 +155,13 @@ void Gripper::clearCalibration()
     if(type() != "electric") { capabilityWarning("clearCalibration"); }
     std::string clear_calibrate_cmd = EndEffectorCommand::CMD_CLEAR_CALIBRATION;
     command(clear_calibrate_cmd, false, 0.0, "");
+}
+
+void Gripper::reboot()
+{
+    if(type() != "electric") { capabilityWarning("reboot"); }
+    std::string reboot_cmd = EndEffectorCommand::CMD_REBOOT;
+    command(reboot_cmd, true, 5.0, "");
 }
 
 int Gripper::get_id()
@@ -423,5 +441,5 @@ void Gripper::blow()
 
 Gripper::~Gripper()
 {
-
+    spinner.stop();
 }
