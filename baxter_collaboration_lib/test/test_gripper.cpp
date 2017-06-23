@@ -44,7 +44,7 @@ public:
 
         baxter_core_msgs::EndEffectorState state;
         
-        state.calibrated = baxter_core_msgs::EndEffectorState::STATE_TRUE;
+        state.calibrated = baxter_core_msgs::EndEffectorState::STATE_UNKNOWN;
         state.enabled    = baxter_core_msgs::EndEffectorState::STATE_UNKNOWN;
         state.error      = baxter_core_msgs::EndEffectorState::STATE_UNKNOWN;
         state.gripping   = baxter_core_msgs::EndEffectorState::STATE_UNKNOWN;
@@ -189,6 +189,7 @@ TEST(GripperTest, testCalibration)
    gt.sendPropertiesElectric();
 
    gr.calibrate();
+   
    baxter_core_msgs::EndEffectorState _state = gr.getGripperState();
 
    EXPECT_TRUE(_state.calibrated == baxter_core_msgs::EndEffectorState::STATE_TRUE);
