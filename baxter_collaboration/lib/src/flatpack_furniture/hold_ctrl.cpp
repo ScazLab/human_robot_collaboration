@@ -1,9 +1,9 @@
 #include "flatpack_furniture/hold_ctrl.h"
 
-using namespace std;
+using namespace              std;
 using namespace baxter_core_msgs;
 
-HoldCtrl::HoldCtrl(std::string _name, std::string _limb, bool _use_robot) :
+HoldCtrl::HoldCtrl(string _name, string _limb, bool _use_robot) :
                    ArmCtrl(_name,_limb, _use_robot), cuff_button_pressed(false)
 {
     setHomeConfiguration();
@@ -39,7 +39,7 @@ bool HoldCtrl::handOver()
     if (!goHoldPose(0.24))                return false;
     // ros::Duration(1.0).sleep();
     // if (!waitForForceInteraction(180.0))  return false;
-    // if (!open())                       return false;
+    // if (!open())                          return false;
     // ros::Duration(1.0).sleep();
     // if (!homePoseStrict())         return false;
     setSubState("");
