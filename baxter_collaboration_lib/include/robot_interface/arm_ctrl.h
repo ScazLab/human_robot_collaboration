@@ -74,10 +74,7 @@ private:
      * Wrapper for Gripper:open so that it can fit the action_db
      * @return true/false if success/failure
      */
-    bool openImpl()
-    {
-        return open();
-    }
+    bool openImpl() { return open(); }
 
 protected:
 
