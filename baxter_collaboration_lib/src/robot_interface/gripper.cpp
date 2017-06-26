@@ -8,7 +8,7 @@ using namespace std;
 
 Gripper::Gripper(std::string _limb, bool _use_robot) :
                  rnh(_limb), limb(_limb), use_robot(_use_robot), first_run(true), prop_set(false),
-                 spinner(1), cmd_sequence(0), cmd_sender(ros::this_node::getName())
+                 spinner(4), cmd_sequence(0), cmd_sender(ros::this_node::getName())
 {
     if (not use_robot) return;
 
@@ -71,6 +71,7 @@ baxter_core_msgs::EndEffectorProperties Gripper::getGripperProperties()
 
 void Gripper::gripperCb(const EndEffectorState &msg)
 {
+    ROS_DEBUG("[%s_gripper] Received new state", getGripperLimb().c_str());
     setGripperState(msg);
 
     if (first_run)
@@ -94,6 +95,7 @@ void Gripper::gripperCb(const EndEffectorState &msg)
 
 void Gripper::gripperPropCb(const EndEffectorProperties &msg)
 {
+    ROS_DEBUG("[%s_gripper] Received gripper properties", getGripperLimb().c_str());
     setGripperProperties(msg);
     prop_set = true;
 
@@ -360,6 +362,7 @@ bool Gripper::command(std::string _cmd, bool _block,
         ee_cmd.args = _args;
     }
 
+    ROS_DEBUG("[%s_gripper] Publishing: %s", getGripperLimb().c_str(), _cmd.c_str());
     pub_cmd.publish(ee_cmd);
 
     if(_block)
