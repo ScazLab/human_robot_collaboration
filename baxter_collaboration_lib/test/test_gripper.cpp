@@ -7,23 +7,36 @@ using namespace baxter_core_msgs;
 
 class gripperTester
 {
-    ros::NodeHandle             nh;
-    std::string               name;
-    std::string               limb;
-    ros::Publisher        prop_pub;
-    ros::Publisher       state_pub;
-    ros::Subscriber        cmd_sub;
-    std::mutex    mutex_properties;
-    ros::AsyncSpinner      spinner;
+    ros::NodeHandle       nh;
+    std::string         name;
+    std::string         limb;
+    ros::Publisher  prop_pub;
+    ros::Publisher state_pub;
+    ros::Subscriber  cmd_sub; 
+    std::mutex       mtx_cmd; 
+
+    std::string    cmd_value;
+
+    ros::AsyncSpinner spinner;
 
     void commandCb(baxter_core_msgs::EndEffectorCommand msg)
     {
-        cmd_value = msg.command;
+        setCmdValue(msg.command);
+    }
+
+    void setCmdValue(std::string _value)
+    {
+        std::lock_guard<std::mutex> lock(mtx_cmd);
+        cmd_value = _value;
+    }
+
+    std::string getCmdValue()
+    {
+        std::lock_guard<std::mutex> lock(mtx_cmd);
+        return cmd_value;
     }
 
 public:
-    std::string cmd_value;
-
     explicit gripperTester(std::string _name, std::string _limb) :
                                 name(_name), limb(_limb), spinner(4)
     {
@@ -75,19 +88,21 @@ public:
 
         state_pub.publish(state);
     }
-};
 
-// Waits for published command to be received
-void wait(std::string _expected_cmd, std::string &_cmd)
-{
-    ros::Rate r(100);
-
-    while (ros::ok())
+    // Waits for published command to be received
+    bool wait(std::string _expected_cmd)
     {
-        if (_expected_cmd == _cmd) { return; }
-        r.sleep();
+        ros::Rate r(100);
+
+        while (ros::ok())
+        {
+            if (_expected_cmd == getCmdValue()) { return true; }
+            r.sleep();
+        }
+
+        return false;
     }
-}
+};
 
 TEST(GripperTest, testPropertiesAndStateSubscriber)
 {
@@ -134,7 +149,6 @@ TEST(GripperTest, testDefaultStates)
   EXPECT_EQ(_state.missed    , EndEffectorState::STATE_UNKNOWN);
   EXPECT_EQ(_state.ready     , EndEffectorState::STATE_UNKNOWN);
   EXPECT_EQ(_state.moving    , EndEffectorState::STATE_UNKNOWN);
-
 }
 
 TEST(GripperTest, testElectricCalibration)
@@ -151,9 +165,7 @@ TEST(GripperTest, testElectricCalibration)
    std::string calibrate_cmd = EndEffectorCommand::CMD_CALIBRATE;
 
    // Wait so that the gripper has time to publish the command we want to test
-   wait(calibrate_cmd, gt.cmd_value);
-
-   EXPECT_EQ(calibrate_cmd, gt.cmd_value);
+   EXPECT_TRUE(gt.wait(calibrate_cmd));
 }
 
 TEST(GripperTest, testElectricMethods)
@@ -169,21 +181,18 @@ TEST(GripperTest, testElectricMethods)
 
    // Calling close() should first calibrate the gripper, and then grip
    gr.close();
-   EXPECT_EQ(expected_cmd, gt.cmd_value);
+   EXPECT_TRUE(gt.wait(expected_cmd));
 
    // Wait so that the gripper has time to publish the command we want to test
-   wait(expected_cmd, gt.cmd_value);
-
    expected_cmd = EndEffectorCommand::CMD_GO;
-   EXPECT_EQ(expected_cmd, gt.cmd_value);
+   EXPECT_TRUE(gt.wait(expected_cmd));
 
    // Test open() method
    expected_cmd = EndEffectorCommand::CMD_GO;
    gr.open();
 
    // Wait so that the gripper has time to publish the command we want to test
-   wait(expected_cmd, gt.cmd_value);
-   EXPECT_EQ(expected_cmd, gt.cmd_value);
+    EXPECT_TRUE(gt.wait(expected_cmd));
 }
 
 TEST(GripperTest, testSuctionMethods)
@@ -199,26 +208,20 @@ TEST(GripperTest, testSuctionMethods)
    std::string expected_cmd = EndEffectorCommand::CMD_CONFIGURE;
 
    // Wait so that the gripper has time to publish the command we want to test
-   wait(expected_cmd, gt.cmd_value);
-
-   EXPECT_EQ(expected_cmd, gt.cmd_value);
+   EXPECT_TRUE(gt.wait(expected_cmd));
 
    gr.close();
    expected_cmd = EndEffectorCommand::CMD_GO;
 
    // Wait so that the gripper has time to publish the command we want to test
-   wait(expected_cmd, gt.cmd_value);
-
-   EXPECT_EQ(expected_cmd, gt.cmd_value);
+   EXPECT_TRUE(gt.wait(expected_cmd));
 
    //Test open() method and close() method (called in open() definition)
    gr.open();
    expected_cmd = EndEffectorCommand::CMD_RELEASE;
 
    // Wait so that the gripper has time to publish the command we want to test
-   wait(expected_cmd, gt.cmd_value);
-
-   EXPECT_EQ(expected_cmd, gt.cmd_value);
+   EXPECT_TRUE(gt.wait(expected_cmd));
 }
 
 // Run all the tests that were declared with TEST()
