@@ -286,13 +286,14 @@ bool Gripper::commandPosition(double _position, bool _block, double _timeout)
     if(not is_calibrated())
     {
         ROS_INFO("Calibrating gripper. Please wait...");
-        calibrate(true, 2.0);
+        calibrate(true, 3.0);
         ROS_INFO("Calibration complete");
     }
 
     // ensures that the gripper is positioned within physical limits
     if(_position >= 0.0 && _position <= 100.0)
     {
+        ROS_DEBUG("Commanding position %g", _position);
         std::string position_cmd = EndEffectorCommand::CMD_GO;
         std::string position_args = "{\"position\": " +
                                      std::to_string(_position) + "}";
@@ -364,7 +365,7 @@ bool Gripper::command(std::string _cmd, bool _block,
     if(_block)
     {
         ros::Duration timeout(_timeout);
-        wait(timeout);
+        return wait(timeout);
     }
 
     return true;
@@ -410,6 +411,7 @@ bool Gripper::wait(ros::Duration _timeout)
 
     while(ros::ok())
     {
+        ROS_DEBUG("Waiting...");
         if (ros::Time::now() - start > _timeout) { return true; };
 
         r.sleep();
