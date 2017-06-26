@@ -71,7 +71,9 @@ private:
     void InternalThreadEntry();
 
     /**
-     * Wrapper for Gripper:open so that it can fit the action_db
+     * Wrapper for Gripper:open() so that it can fit the action_db specifications
+     * in terms of function signature.
+     *
      * @return true/false if success/failure
      */
     bool openImpl() { return open(); }

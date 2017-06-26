@@ -7,22 +7,22 @@ using namespace baxter_core_msgs;
 using namespace std;
 
 Gripper::Gripper(std::string _limb, bool _use_robot) :
-                 limb(_limb), use_robot(_use_robot), first_run(true), prop_set(false), rnh(_limb),
+                 rnh(_limb), limb(_limb), use_robot(_use_robot), first_run(true), prop_set(false),
                  spinner(1), cmd_sequence(0), cmd_sender(ros::this_node::getName())
 {
     if (not use_robot) return;
 
     // create a publisher for the gripper's commands
-    pub = rnh.advertise<EndEffectorCommand>(
-                   "/robot/end_effector/" + _limb + "_gripper/command", 1);
+    pub_cmd = rnh.advertise<EndEffectorCommand>( "/robot/end_effector/" +
+                                                _limb + "_gripper/command", 1);
 
     // create a subscriber to the gripper's properties
-    sub_prop = rnh.subscribe("/robot/end_effector/" + _limb + "_gripper/properties",
-                                SUBSCRIBER_BUFFER, &Gripper::gripperPropCb, this);
+    sub_prop  = rnh.subscribe("/robot/end_effector/" + _limb + "_gripper/properties",
+                                   SUBSCRIBER_BUFFER, &Gripper::gripperPropCb, this);
 
     // create a subscriber to the gripper's state
-    sub = rnh.subscribe("/robot/end_effector/" + _limb + "_gripper/state",
-                           SUBSCRIBER_BUFFER, &Gripper::gripperCb, this);
+    sub_state = rnh.subscribe("/robot/end_effector/" + _limb + "_gripper/state",
+                                  SUBSCRIBER_BUFFER, &Gripper::gripperCb, this);
 
     //Initially all the interesting properties of the state are unknown
     EndEffectorState init_state;
@@ -146,6 +146,7 @@ std::string Gripper::validParameters()
 void Gripper::calibrate(bool _block, double _timeout)
 {
     if(type() != "electric") { capabilityWarning("calibrate"); }
+
     std::string calibrate_cmd = EndEffectorCommand::CMD_CALIBRATE;
     command(calibrate_cmd, _block, _timeout, "");
 }
@@ -153,6 +154,7 @@ void Gripper::calibrate(bool _block, double _timeout)
 void Gripper::clearCalibration()
 {
     if(type() != "electric") { capabilityWarning("clearCalibration"); }
+
     std::string clear_calibrate_cmd = EndEffectorCommand::CMD_CLEAR_CALIBRATION;
     command(clear_calibrate_cmd, false, 0.0, "");
 }
@@ -300,7 +302,7 @@ bool Gripper::commandPosition(double _position, bool _block, double _timeout)
     else
     {
         ROS_WARN("%s gripper of type %s must have position between 0.0 and 100.0",
-                  getGripperLimb().c_str(), type().c_str());
+                                        getGripperLimb().c_str(), type().c_str());
         return false;
     }
 }
@@ -368,7 +370,7 @@ bool Gripper::command(std::string _cmd, bool _block,
         ee_cmd.args = _args;
     }
 
-    pub.publish(ee_cmd);
+    pub_cmd.publish(ee_cmd);
 
     if(_block)
     {
@@ -396,11 +398,11 @@ std::string Gripper::type()
 {
     int ui_code = (int) getGripperProperties().ui_type;
 
-    if(ui_code == 1)
+    if (ui_code == 1)
     {
         return "suction";
     }
-    else if(ui_code == 2)
+    else if (ui_code == 2)
     {
         return "electric";
     }
@@ -410,68 +412,20 @@ std::string Gripper::type()
     }
 }
 
-void Gripper::wait(ros::Duration _timeout)
+bool Gripper::wait(ros::Duration _timeout)
 {
     // waits until the difference between the start and
     // current time catches up to the timeout
     ros::Rate r(100);
     ros::Time start = ros::Time::now();
-    while(ros::ok() && ros::Time::now() - start < _timeout)
+
+    while(ros::ok())
     {
-        ros::spinOnce();
+        if (ros::Time::now() - start > _timeout) { return true; };
+
         r.sleep();
     }
-}
 
-/** Legacy */
-
-// recommended to use close() instead
-bool Gripper::gripObject()
-{
-    if(type() != "suction")
-    {
-        ROS_INFO("warning: this is not a suction gripper");
-    }
-
-    EndEffectorCommand cmd;
-    cmd.id=get_id();
-    cmd.command=EndEffectorCommand::CMD_GRIP;
-    if (limb == "left")
-    {
-        cmd.args="{\"grip_attempt_seconds\": 5.0}";
-    }
-    pub.publish(cmd);
-
-    // int cnt = 0;
-
-    // while (!_gripper->is_sucking())
-    // {
-    //     ROS_WARN("Requested a suck to the gripper, but the gripper is not sucking.");
-    //     ++cnt;
-
-    //     if (cnt == 10)  return false;
-
-    //     pause();
-    //     ros::spinOnce();
-    // }
-
-    return true;
-}
-
-// recommended to use open() instead
-bool Gripper::releaseObject()
-{
-    if (is_sucking())
-    {
-        EndEffectorCommand release_command;
-        release_command.id=get_id();
-        release_command.command=EndEffectorCommand::CMD_RELEASE;
-        pub.publish(release_command);
-        return true;
-    }
-
-    ROS_WARN("[%s_gripper] Requested a release of the gripper, "
-             "but the gripper is not sucking.", getGripperLimb().c_str());
     return false;
 }
 
