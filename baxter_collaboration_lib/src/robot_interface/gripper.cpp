@@ -329,15 +329,6 @@ bool Gripper::stop(bool _block, double _timeout)
 
     if(type() == "electric")
     {
-        // calibrate the electric gripper if needed
-        // do it in a blocking manner so that the gripper does not move before calibration
-        if(not is_calibrated())
-        {
-            ROS_INFO("Calibrating gripper. Please wait...");
-            calibrate(true, 2.0);
-            ROS_INFO("Calibration complete");
-        }
-
         stop_cmd = EndEffectorCommand::CMD_STOP;
     }
     else if(type() == "suction")
@@ -351,9 +342,7 @@ bool Gripper::stop(bool _block, double _timeout)
         return false;
     }
 
-    command(stop_cmd, _block, _timeout);
-
-    return true;
+    return command(stop_cmd, _block, _timeout);
 }
 
 bool Gripper::command(std::string _cmd, bool _block,
