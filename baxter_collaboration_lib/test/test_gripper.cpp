@@ -12,8 +12,8 @@ class gripperTester
     std::string         limb;
     ros::Publisher  prop_pub;
     ros::Publisher state_pub;
-    ros::Subscriber  cmd_sub; 
-    std::mutex       mtx_cmd; 
+    ros::Subscriber  cmd_sub;
+    std::mutex       mtx_cmd;
 
     std::string    cmd_value;
 
@@ -106,13 +106,11 @@ public:
 
 TEST(GripperTest, testPropertiesAndStateSubscriber)
 {
-    std::string    limb = "left";
-
     gripperTester gt("gripper", "left");
     gt.sendPropSuction();
     gt.sendState();
 
-    Gripper gr(limb);
+    Gripper gr("left");
 
     EXPECT_TRUE(      gr.is_enabled());
     EXPECT_TRUE(   gr.is_calibrated());
@@ -136,92 +134,72 @@ TEST(GripperTest, testPropertiesAndStateSubscriber)
 
 TEST(GripperTest, testDefaultStates)
 {
-   std::string    limb = "left";
+    Gripper gr("left");
+    EndEffectorState _state;
+    _state = gr.getGripperState();
 
-   Gripper gr(limb);
-   EndEffectorState _state;
-   _state = gr.getGripperState();
-
-  EXPECT_EQ(_state.calibrated, EndEffectorState::STATE_UNKNOWN);
-  EXPECT_EQ(_state.enabled   , EndEffectorState::STATE_UNKNOWN);
-  EXPECT_EQ(_state.error     , EndEffectorState::STATE_UNKNOWN);
-  EXPECT_EQ(_state.gripping  , EndEffectorState::STATE_UNKNOWN);
-  EXPECT_EQ(_state.missed    , EndEffectorState::STATE_UNKNOWN);
-  EXPECT_EQ(_state.ready     , EndEffectorState::STATE_UNKNOWN);
-  EXPECT_EQ(_state.moving    , EndEffectorState::STATE_UNKNOWN);
+    EXPECT_EQ(_state.calibrated, EndEffectorState::STATE_UNKNOWN);
+    EXPECT_EQ(_state.enabled   , EndEffectorState::STATE_UNKNOWN);
+    EXPECT_EQ(_state.error     , EndEffectorState::STATE_UNKNOWN);
+    EXPECT_EQ(_state.gripping  , EndEffectorState::STATE_UNKNOWN);
+    EXPECT_EQ(_state.missed    , EndEffectorState::STATE_UNKNOWN);
+    EXPECT_EQ(_state.ready     , EndEffectorState::STATE_UNKNOWN);
+    EXPECT_EQ(_state.moving    , EndEffectorState::STATE_UNKNOWN);
 }
 
 TEST(GripperTest, testElectricCalibration)
 {
-   std::string    limb = "left";
+    gripperTester gt("gripper", "left");
+    gt.sendPropElectric();
 
-   gripperTester gt("gripper", "left");
-   gt.sendPropElectric();
+    Gripper gr("left");
+    gr.calibrate();
 
-   Gripper gr(limb);
-   gr.calibrate();
-
-   // The expected command we want to receive
-   std::string calibrate_cmd = EndEffectorCommand::CMD_CALIBRATE;
-
-   // Wait so that the gripper has time to publish the command we want to test
-   EXPECT_TRUE(gt.wait(calibrate_cmd));
+    // Wait so that the gripper has time to publish the command we want to test
+    EXPECT_TRUE(gt.wait(EndEffectorCommand::CMD_CALIBRATE));
 }
 
 TEST(GripperTest, testElectricMethods)
 {
-   std::string    limb = "left";
+    gripperTester gt("gripper", "left");
+    gt.sendPropElectric();
 
-   gripperTester gt("gripper", "left");
-   gt.sendPropElectric();
+    Gripper gr("left");
+    gr.close();
 
-   Gripper gr(limb);
+    // Calling close() should first calibrate the gripper, and then grip
+    EXPECT_TRUE(gt.wait(EndEffectorCommand::CMD_CALIBRATE));
 
-   std::string expected_cmd = EndEffectorCommand::CMD_CALIBRATE;
+    // Wait so that the gripper has time to publish the command we want to test
+    EXPECT_TRUE(gt.wait(EndEffectorCommand::CMD_GO));
 
-   // Calling close() should first calibrate the gripper, and then grip
-   gr.close();
-   EXPECT_TRUE(gt.wait(expected_cmd));
+    // Test open() method
+    gr.open();
 
-   // Wait so that the gripper has time to publish the command we want to test
-   expected_cmd = EndEffectorCommand::CMD_GO;
-   EXPECT_TRUE(gt.wait(expected_cmd));
-
-   // Test open() method
-   expected_cmd = EndEffectorCommand::CMD_GO;
-   gr.open();
-
-   // Wait so that the gripper has time to publish the command we want to test
-    EXPECT_TRUE(gt.wait(expected_cmd));
+    // Wait so that the gripper has time to publish the command we want to test
+    EXPECT_TRUE(gt.wait(EndEffectorCommand::CMD_GO));
 }
 
 TEST(GripperTest, testSuctionMethods)
 {
-   std::string    limb = "left";
-
    gripperTester gt("gripper", "left");
    gt.sendPropSuction();
 
-   Gripper gr(limb);
-
-   // The expected command we want to receive
-   std::string expected_cmd = EndEffectorCommand::CMD_CONFIGURE;
+   Gripper gr("left");
 
    // Wait so that the gripper has time to publish the command we want to test
-   EXPECT_TRUE(gt.wait(expected_cmd));
+   EXPECT_TRUE(gt.wait(EndEffectorCommand::CMD_CONFIGURE));
 
    gr.close();
-   expected_cmd = EndEffectorCommand::CMD_GO;
 
    // Wait so that the gripper has time to publish the command we want to test
-   EXPECT_TRUE(gt.wait(expected_cmd));
+   EXPECT_TRUE(gt.wait(EndEffectorCommand::CMD_GO));
 
    //Test open() method and close() method (called in open() definition)
    gr.open();
-   expected_cmd = EndEffectorCommand::CMD_RELEASE;
 
    // Wait so that the gripper has time to publish the command we want to test
-   EXPECT_TRUE(gt.wait(expected_cmd));
+   EXPECT_TRUE(gt.wait(EndEffectorCommand::CMD_RELEASE));
 }
 
 // Run all the tests that were declared with TEST()
