@@ -19,7 +19,7 @@ ArmCtrl::ArmCtrl(string _name, string _limb, bool _use_robot, bool _use_forces, 
     ROS_INFO("[%s] Created service server with name  : %s", getLimb().c_str(), topic.c_str());
 
     insertAction(ACTION_HOME,    &ArmCtrl::goHome);
-    insertAction(ACTION_RELEASE, &ArmCtrl::releaseObject);
+    insertAction(ACTION_RELEASE, &ArmCtrl::openImpl);
 
     nh.param<bool>("internal_recovery",  internal_recovery, true);
     ROS_INFO("[%s] Internal_recovery flag set to %s", getLimb().c_str(),
@@ -585,7 +585,7 @@ void ArmCtrl::setHomeConfiguration(std::string _loc)
 bool ArmCtrl::goHome()
 {
     bool res = homePoseStrict();
-    releaseObject();
+    open();
     return res;
 }
 

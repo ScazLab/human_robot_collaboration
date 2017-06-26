@@ -1,9 +1,9 @@
 #include "flatpack_furniture/hold_ctrl.h"
 
-using namespace std;
+using namespace              std;
 using namespace baxter_core_msgs;
 
-HoldCtrl::HoldCtrl(std::string _name, std::string _limb, bool _use_robot) :
+HoldCtrl::HoldCtrl(string _name, string _limb, bool _use_robot) :
                    ArmCtrl(_name,_limb, _use_robot), cuff_button_pressed(false)
 {
     setHomeConfiguration();
@@ -34,12 +34,12 @@ bool HoldCtrl::handOver()
     if (!prepare4HandOver())              return false;
     setSubState(HAND_OVER_READY);
     if (!waitForOtherArm(120.0, true))    return false;
-    if (!gripObject())                    return false;
+    if (!close())                         return false;
     ros::Duration(1.2).sleep();
     if (!goHoldPose(0.24))                return false;
     // ros::Duration(1.0).sleep();
     // if (!waitForForceInteraction(180.0))  return false;
-    // if (!releaseObject())                 return false;
+    // if (!open())                          return false;
     // ros::Duration(1.0).sleep();
     // if (!homePoseStrict())         return false;
     setSubState("");
@@ -55,7 +55,7 @@ bool HoldCtrl::startHold()
     if (!goHoldPose(0.30))              return false;
     ros::Duration(1.0).sleep();
     if (!waitForUserFb(time))           return false;
-    if (!gripObject())                  return false;
+    if (!close())                       return false;
     ros::Duration(1.0).sleep();
 
     return true;
@@ -66,7 +66,7 @@ bool HoldCtrl::endHold()
     double time=getObjectIDs().size()>=2?getObjectIDs()[1]:180.0;
 
     if (!waitForUserFb(time))           return false;
-    if (!releaseObject())               return false;
+    if (!open())                        return false;
     ros::Duration(1.0).sleep();
     if (!homePoseStrict())              return false;
     return true;

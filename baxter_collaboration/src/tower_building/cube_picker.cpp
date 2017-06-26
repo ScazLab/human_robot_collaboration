@@ -41,7 +41,7 @@ bool CubePicker::pickObject()
     if (!homePoseStrict())          return false;
     ros::Duration(0.05).sleep();
     if (!pickARTag())               return false;
-    if (!gripObject())              return false;
+    if (!close())                   return false;
     if (!moveArm("up", 0.3))        return false;
     if (!hoverAboveTable(Z_LOW))    return false;
 
@@ -54,7 +54,7 @@ bool CubePicker::passObject()
     if (!moveObjectTowardHuman())       return false;
     ros::Duration(1.0).sleep();
     if (!waitForForceInteraction())     return false;
-    if (!releaseObject())               return false;
+    if (!open())                        return false;
     if (!homePoseStrict())              return false;
 
     return true;
@@ -77,7 +77,7 @@ bool CubePicker::recoverPickPass()
     {
         if (!moveArm("left", 0.1)) return false;
         if (!moveArm("down", 0.3)) return false;
-        if (!releaseObject())      return false;
+        if (!open())               return false;
         if (!homePoseStrict()) return false;
     }
     return true;

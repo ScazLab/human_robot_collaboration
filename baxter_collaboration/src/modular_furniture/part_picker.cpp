@@ -34,7 +34,7 @@ bool PartPicker::passObject()
         ros::Duration(0.25).sleep();
     }
 
-    if (!releaseObject())               return false;
+    if (!open())                        return false;
     if (!homePoseStrict())              return false;
 
     return true;

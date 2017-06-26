@@ -42,7 +42,7 @@ private:
 
     State         state;       // State of the controller
 
-    ros::AsyncSpinner spinner;  // AsyncSpinner to handle callbacks
+    ros::AsyncSpinner spinner; // AsyncSpinner to handle callbacks
 
     bool      use_robot;       // Flag to know if we're going to use the robot or not
     bool     use_forces;       // Flag to know if we're going to use the force feedback

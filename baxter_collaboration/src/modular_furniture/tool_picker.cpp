@@ -48,7 +48,7 @@ bool ToolPicker::getObject()
     }
 
     if (!pickUpObject())            return false;
-    if (!gripObject())              return false;
+    if (!close())                   return false;
     if (!moveArm("up", 0.3))        return false;
     // if (!hoverAboveTable(Z_LOW))    return false;
 
@@ -64,7 +64,7 @@ bool ToolPicker::passObject()
         if (!goToPose(0.85, -0.26, 0.27,
                       HORIZONTAL_ORI_R))    return false;
         if (!waitForUserFb())               return false;
-        if (!releaseObject())               return false;
+        if (!open())                        return false;
     }
     else if (CartesianEstimatorClient::getObjectName() == "screws_box"  ||
              CartesianEstimatorClient::getObjectName() == "brackets_box")
@@ -81,7 +81,7 @@ bool ToolPicker::passObject()
         }
 
         ros::Duration(0.25).sleep();
-        if (!releaseObject())           return false;
+        if (!open())                    return false;
         if (!hoverAboveTable(Z_LOW))    return false;
     }
 
@@ -121,7 +121,7 @@ bool ToolPicker::cleanUpObject()
     }
 
     if (!pickUpObject())            return false;
-    if (!gripObject())              return false;
+    if (!close())                   return false;
     if (!moveArm("up", 0.3))        return false;
     if (!homePoseStrict())          return false;
 
@@ -139,7 +139,7 @@ bool ToolPicker::cleanUpObject()
     }
 
     ros::Duration(0.25).sleep();
-    if (!releaseObject())           return false;
+    if (!open())                    return false;
     if (!homePoseStrict())          return false;
 
     return true;
