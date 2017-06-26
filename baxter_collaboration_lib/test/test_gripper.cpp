@@ -76,6 +76,21 @@ public:
     }
 };
 
+// Waits for published command to be received
+void waitTime(std::string _expected_cmd, std::string &_cmd)
+{
+    ros::Rate r(100);
+    int flag = 0;
+    while (flag == 0)
+    {
+        if (_expected_cmd == _cmd) 
+        { 
+            flag = 1; 
+        }
+        r.sleep();
+    }
+}
+
 TEST(GripperTest, testPropertiesAndStateSubscriber)
 {
     std::string    limb = "left";
@@ -137,11 +152,11 @@ TEST(GripperTest, testElectricCalibration)
    Gripper gr(limb, use_robot);
    gr.calibrate();
    
-   // Wait so that the gripper has time to publish the command we want to test
-   ros::Duration(1).sleep();
-
    // The expected command we want to receive
    std::string calibrate_cmd = baxter_core_msgs::EndEffectorCommand::CMD_CALIBRATE;
+
+   // Wait so that the gripper has time to publish the command we want to test
+   waitTime(calibrate_cmd, gt.cmd_value);
 
    EXPECT_EQ(calibrate_cmd, gt.cmd_value);
 }
@@ -163,7 +178,7 @@ TEST(GripperTest, testElectricMethods)
    EXPECT_EQ(expected_cmd, gt.cmd_value);
    
    // Wait so that the gripper has time to publish the command we want to test
-   ros::Duration(1).sleep();
+   waitTime(expected_cmd, gt.cmd_value);
 
    expected_cmd = baxter_core_msgs::EndEffectorCommand::CMD_GO;
    EXPECT_EQ(expected_cmd, gt.cmd_value);
@@ -173,7 +188,7 @@ TEST(GripperTest, testElectricMethods)
    gr.open();
 
    // Wait so that the gripper has time to publish the command we want to test
-   ros::Duration(1).sleep();
+   waitTime(expected_cmd, gt.cmd_value);
    EXPECT_EQ(expected_cmd, gt.cmd_value);
 }
 
@@ -187,11 +202,11 @@ TEST(GripperTest, testSuctionMethods)
 
    Gripper gr(limb, use_robot);
 
-   // Wait so that the gripper has time to publish the command we want to test
-   ros::Duration(1).sleep();
-
    // The expected command we want to receive
    std::string expected_cmd = baxter_core_msgs::EndEffectorCommand::CMD_CONFIGURE;
+
+   // Wait so that the gripper has time to publish the command we want to test
+   waitTime(expected_cmd, gt.cmd_value);
 
    EXPECT_EQ(expected_cmd, gt.cmd_value);
 
@@ -199,7 +214,7 @@ TEST(GripperTest, testSuctionMethods)
    expected_cmd = baxter_core_msgs::EndEffectorCommand::CMD_GO;
 
    // Wait so that the gripper has time to publish the command we want to test
-   ros::Duration(1).sleep();
+   waitTime(expected_cmd, gt.cmd_value);
 
    EXPECT_EQ(expected_cmd, gt.cmd_value);
 
@@ -208,7 +223,7 @@ TEST(GripperTest, testSuctionMethods)
    expected_cmd = baxter_core_msgs::EndEffectorCommand::CMD_RELEASE;
 
    // Wait so that the gripper has time to publish the command we want to test
-   ros::Duration(1).sleep();
+   waitTime(expected_cmd, gt.cmd_value);
 
    EXPECT_EQ(expected_cmd, gt.cmd_value);
 }
