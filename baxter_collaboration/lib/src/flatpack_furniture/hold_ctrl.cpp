@@ -34,12 +34,12 @@ bool HoldCtrl::handOver()
     if (!prepare4HandOver())              return false;
     setSubState(HAND_OVER_READY);
     if (!waitForOtherArm(120.0, true))    return false;
-    if (!gripObject())                    return false;
+    if (!close())                         return false;
     ros::Duration(1.2).sleep();
     if (!goHoldPose(0.24))                return false;
     // ros::Duration(1.0).sleep();
     // if (!waitForForceInteraction(180.0))  return false;
-    // if (!releaseObject())                 return false;
+    // if (!open())                       return false;
     // ros::Duration(1.0).sleep();
     // if (!homePoseStrict())         return false;
     setSubState("");
@@ -55,7 +55,7 @@ bool HoldCtrl::startHold()
     if (!goHoldPose(0.30))              return false;
     ros::Duration(1.0).sleep();
     if (!waitForUserFb(time))           return false;
-    if (!gripObject())                  return false;
+    if (!close())                       return false;
     ros::Duration(1.0).sleep();
 
     return true;
@@ -66,7 +66,7 @@ bool HoldCtrl::endHold()
     double time=getObjectIDs().size()>=2?getObjectIDs()[1]:180.0;
 
     if (!waitForUserFb(time))           return false;
-    if (!releaseObject())               return false;
+    if (!open())                        return false;
     ros::Duration(1.0).sleep();
     if (!homePoseStrict())              return false;
     return true;

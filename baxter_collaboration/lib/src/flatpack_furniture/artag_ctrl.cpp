@@ -44,7 +44,7 @@ bool ARTagCtrl::getObject()
     if (!hoverAbovePool())          return false;
     ros::Duration(0.05).sleep();
     if (!pickARTag())               return false;
-    if (!gripObject())              return false;
+    if (!close())                   return false;
     if (!moveArm("up", 0.4))        return false;
     if (!homePoseStrict())          return false;
 
@@ -57,7 +57,7 @@ bool ARTagCtrl::passObject()
     if (!moveObjectTowardHuman())       return false;
     ros::Duration(1.0).sleep();
     if (!waitForForceInteraction())     return false;
-    if (!releaseObject())               return false;
+    if (!open())                        return false;
     if (!homePoseStrict())              return false;
 
     return true;
@@ -78,7 +78,7 @@ bool ARTagCtrl::recoverRelease()
     if(!homePoseStrict())                   return false;
     ros::Duration(0.05).sleep();
     if (!pickARTag())                       return false;
-    if (!gripObject())                      return false;
+    if (!close())                           return false;
     if (!moveArm("up", 0.2))                return false;
     if (!homePoseStrict())                  return false;
 
@@ -88,7 +88,7 @@ bool ARTagCtrl::recoverRelease()
 bool ARTagCtrl::recoverGet()
 {
     if (!hoverAbovePool())          return false;
-    if (!releaseObject())           return false;
+    if (!open())                    return false;
     if (!homePoseStrict())          return false;
 
     return true;
@@ -101,7 +101,7 @@ bool ARTagCtrl::handOver()
     ros::Duration(0.2).sleep();
     if (!waitForOtherArm(30.0, true))   return false;
     ros::Duration(0.8).sleep();
-    if (!releaseObject())               return false;
+    if (!open())                        return false;
     if (!moveArm("up", 0.05))           return false;
     if (!homePoseStrict())              return false;
     setSubState("");

@@ -65,10 +65,19 @@ private:
     std::thread arm_thread; // internal thread functionality
 
     /**
-     * Provides basic functionalities for the object, such as a goHome and releaseObject.
+     * Provides basic functionalities for the object, such as a goHome and open.
      * For deeper, class-specific specialization, please modify doAction() instead.
      */
     void InternalThreadEntry();
+
+    /**
+     * Wrapper for Gripper:open so that it can fit the action_db
+     * @return true/false if success/failure
+     */
+    bool openImpl()
+    {
+        return open();
+    }
 
 protected:
 

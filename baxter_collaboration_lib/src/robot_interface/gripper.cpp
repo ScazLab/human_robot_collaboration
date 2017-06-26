@@ -96,8 +96,6 @@ void Gripper::gripperPropCb(const EndEffectorProperties &msg)
 {
     setGripperProperties(msg);
     prop_set = true;
-    ROS_INFO("Properties updated");
-    ROS_INFO("%i", properties.ui_type);
 
     // shut down the subscriber after the properties are set once
     // because these properties do not change
@@ -230,7 +228,7 @@ bool Gripper::open(bool _block, double _timeout)
 {
     if(type() == "electric")
     {
-        commandPosition(100.0, _block, _timeout);
+        return commandPosition(100.0, _block, _timeout);
     }
     else if (type() == "suction")
     {
@@ -243,7 +241,7 @@ bool Gripper::open(bool _block, double _timeout)
             return false;
         }
 
-        stop(_block, _timeout);
+        return stop(_block, _timeout);
     }
     else
     {
@@ -251,20 +249,18 @@ bool Gripper::open(bool _block, double _timeout)
         capabilityWarning("open");
         return false;
     }
-
-    return true;
 }
 
 bool Gripper::close(bool _block, double _timeout)
 {
     if(type() == "electric")
     {
-        commandPosition(0.0, _block, _timeout);
+        return commandPosition(0.0, _block, _timeout);
     }
     else if (type() == "suction")
     {
         // no checks here for is_sucking() so that the suction time may be extended as necessary
-        commandSuction(_block, _timeout);
+        return commandSuction(_block, _timeout);
     }
     else
     {
@@ -272,8 +268,6 @@ bool Gripper::close(bool _block, double _timeout)
         capabilityWarning("close");
         return false;
     }
-
-    return true;
 }
 
 bool Gripper::commandPosition(double _position, bool _block, double _timeout)
@@ -301,9 +295,7 @@ bool Gripper::commandPosition(double _position, bool _block, double _timeout)
         std::string position_args = "{\"position\": " +
                                      std::to_string(_position) + "}";
 
-        command(position_cmd, _block, _timeout, position_args);
-
-        return true;
+        return command(position_cmd, _block, _timeout, position_args);
     }
     else
     {
@@ -326,9 +318,7 @@ bool Gripper::commandSuction(bool _block, double _timeout)
     std::string suction_args = "{\"grip_attempt_seconds\": " +
                                 std::to_string(_timeout) + "}";
 
-    command(suction_cmd, _block, _timeout, suction_args);
-
-    return true;
+    return command(suction_cmd, _block, _timeout, suction_args);
 }
 
 bool Gripper::stop(bool _block, double _timeout)
