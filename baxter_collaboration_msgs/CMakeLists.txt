@@ -1,6 +1,6 @@
-# Copyright: (C) 2016 Social Robotics Lab - Yale University
+# Copyright: (C) 2017 Social Robotics Lab - Yale University
 # Author: Alessandro Roncone <alessandro.roncone@yale.edu>
-# CopyPolicy: Released under the terms of the LGPLv2.1 .
+# CopyPolicy: Released under the terms of the LGPLv2.1.
 
 cmake_minimum_required(VERSION 2.8.3)
 project(baxter_collaboration_msgs)
