@@ -125,7 +125,7 @@ void RobotInterface::ThreadEntry()
             if (!isPoseReached(p_d, o_d, ctrl_check_mode, getCtrlType()))
             {
                 // Current pose to send to the IK solver.
-                geometry_msgs::Pose pose_curr = pose_des;
+                pose_curr = pose_des;
 
                 /* POSITIONAL PART */
                 // We model the end effector as a 3D point that moves toward the
@@ -160,7 +160,7 @@ void RobotInterface::ThreadEntry()
                     pose_curr.orientation = o_c;
                 }
 
-                publishRVIZMarkers(std::vector<geometry_msgs::Pose>{pose_des, pose_curr});
+                // publishRVIZMarkers(std::vector<geometry_msgs::Pose>{pose_des, pose_curr});
 
                 // ROS_INFO("[%s] Current Pose: %s Time %g/%g", getLimb().c_str(), print(pose_curr).c_str(),
                 //                                                                    time_elap, traj_time);
@@ -373,20 +373,30 @@ void RobotInterface::publishRVIZMarkers(std::vector<geometry_msgs::Pose> _obj)
         marker.scale.z = 0.05;
         marker.color.a =  1.0;
 
-        if (i == 0)
+        if      (i == 0)
         {
-            marker.color.r =  1.0;
-            marker.color.g =  1.0;
-            marker.color.b =  0.0;
+            marker.color.r  = 1.0;
+            marker.color.g  = 1.0;
+            marker.color.b  = 0.0;
+
+            marker.lifetime = ros::Duration(20.0);
+        }
+        else if (i == 1)
+        {
+            marker.color.r  = 0.0;
+            marker.color.g  = 1.0;
+            marker.color.b  = 1.0;
+
+            marker.lifetime = ros::Duration(5.0);
         }
         else
         {
-            marker.color.r =  0.0;
-            marker.color.g =  1.0;
-            marker.color.b =  1.0;
-        }
+            marker.color.r  = 1.0;
+            marker.color.g  = 0.0;
+            marker.color.b  = 1.0;
 
-        marker.lifetime = ros::Duration(5.0);
+            marker.lifetime = ros::Duration(5.0);
+        }
 
         markers.markers.push_back(marker);
     }

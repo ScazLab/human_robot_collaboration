@@ -139,8 +139,9 @@ private:
     std::string ctrl_check_mode; // Control check mode (either "loose" or "strict")
     std::string       ctrl_type; // Control type (either "pose", "position" or "orientation")
 
-    geometry_msgs::Pose pose_des;       // Desired pose to move the arm to
     geometry_msgs::Pose pose_start;     // Starting pose
+    geometry_msgs::Pose pose_des;       // Desired pose to move the arm to
+    geometry_msgs::Pose pose_curr;      // Current pose to task the IK with
 
     ros::Time time_start;   // Time when the controller started
 
@@ -168,13 +169,6 @@ private:
      * @param msg the topic message
      */
     void ctrlMsgCb(const baxter_collaboration_msgs::GoToPose& msg);
-
-    /**
-     * Publishes a vector of markers to RVIZ for visualization
-     *
-     * @param _obj the vector of markers to publish
-     */
-    void publishRVIZMarkers(std::vector<geometry_msgs::Pose> _obj);
 
     /**
      * Internal thread entry that gets called when the thread is started.
@@ -276,6 +270,13 @@ protected:
      * @param msg the topic message
      */
     virtual void cuffUpperCb(const baxter_core_msgs::DigitalIOState& msg);
+
+    /**
+     * Publishes a vector of markers to RVIZ for visualization
+     *
+     * @param _obj the vector of markers to publish
+     */
+    void publishRVIZMarkers(std::vector<geometry_msgs::Pose> _obj);
 
     /*
      * Checks if end effector has made contact with a token by checking if
@@ -550,6 +551,29 @@ protected:
      * @return true/false if success/failure
      */
     virtual bool publishState();
+
+    /**
+     * Returns the start pose in the robot controller, i.e. the pose the robot was
+     * when it was tasked with a new desired one
+     *
+     * @return the start pose
+     */
+    geometry_msgs::Pose getStartPose()   { return pose_start; };
+
+    /**
+     * Returns the current pose in the robot controller, that is the current desired
+     * pose the inverse kinematic solver is tasked with
+     *
+     * @return the current pose
+     */
+    geometry_msgs::Pose getCurrentPose() { return pose_curr;  };
+
+    /**
+     * Returns the desired pose in the robot controller
+     *
+     * @return the desired pose
+     */
+    geometry_msgs::Pose getDesiredPose() { return pose_des;   };
 
     /**
      * Let's add a number of friend tests to test the private methods of this class (without ROS).
