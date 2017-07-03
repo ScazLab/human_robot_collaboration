@@ -274,9 +274,13 @@ protected:
     /**
      * Publishes a vector of markers to RVIZ for visualization
      *
-     * @param _obj the vector of markers to publish
+     * @param _obj      the vector of markers to publish
+     * @param _obj_size [optional] vector of sizes for the markers
+     * @param _obj_col  [optional] vector of colors for the markers
      */
-    void publishRVIZMarkers(std::vector<geometry_msgs::Pose> _obj);
+    virtual void publishRVIZMarkers(std::vector<geometry_msgs::Pose>          _obj,
+                                    std::vector<double>             _obj_size = {},
+                                    std::vector<std_msgs::ColorRGBA> _obj_col = {});
 
     /*
      * Checks if end effector has made contact with a token by checking if
