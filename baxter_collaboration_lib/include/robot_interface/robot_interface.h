@@ -14,8 +14,6 @@
 #include <baxter_core_msgs/JointCommand.h>
 #include <baxter_core_msgs/SolvePositionIK.h>
 
-#include <visualization_msgs/MarkerArray.h>
-
 #include <geometry_msgs/Point.h>
 #include <sensor_msgs/Range.h>
 #include <std_msgs/Empty.h>
@@ -274,13 +272,9 @@ protected:
     /**
      * Publishes a vector of markers to RVIZ for visualization
      *
-     * @param _obj      the vector of markers to publish
-     * @param _obj_size [optional] vector of sizes for the markers
-     * @param _obj_col  [optional] vector of colors for the markers
+     * @param _objs   the vector of markers to publish in the form of RVIZMarkers
      */
-    virtual void publishRVIZMarkers(std::vector<geometry_msgs::Pose>          _obj,
-                                    std::vector<double>             _obj_size = {},
-                                    std::vector<std_msgs::ColorRGBA> _obj_col = {});
+    virtual void publishRVIZMarkers(std::vector<RVIZMarker> _objs);
 
     /*
      * Checks if end effector has made contact with a token by checking if

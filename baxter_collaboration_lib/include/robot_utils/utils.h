@@ -11,6 +11,8 @@
 
 #include <sensor_msgs/JointState.h>
 
+#include <visualization_msgs/MarkerArray.h>
+
 #include "baxter_collaboration_msgs/DoAction.h"
 
 #define SUBSCRIBER_BUFFER 3
@@ -305,6 +307,59 @@ public:
      */
     /* implicit */
     operator std::string();
+};
+
+/**
+ * Struct that wraps an ColorRGBA object from std_msgs with a sane constructor.
+ */
+struct ColorRGBA
+{
+    std_msgs::ColorRGBA col;
+
+    /**
+     * Default constructor (alpha channel defaults to 1.0)
+     */
+    ColorRGBA(double _r = 0.5, double _g = 0.5, double _b = 0.5, double _a = 1.0);
+};
+
+/**
+ * Struct that wraps an RVIZMarker object, and stores its important members
+ * See http://docs.ros.org/api/visualization_msgs/html/msg/Marker.html for
+ * more information
+ */
+struct RVIZMarker
+{
+    geometry_msgs::Pose pose; // Pose of the object (position + orientation)
+    ColorRGBA            col; // RGBA color to visualize
+
+    double     size; // size in meters
+    int        type; // type of object, eg visualization_msgs::Marker::CUBE
+    double lifetime; // lifetime of the marker, in seconds
+
+    /**
+     * Default Constructor
+     */
+    RVIZMarker(geometry_msgs::Pose _pose = geometry_msgs::Pose(),
+               ColorRGBA _col = ColorRGBA(0.5, 0.5, 0.5, 1.0),
+               double _size = 0.05, int _type = visualization_msgs::Marker::CUBE,
+               double _lifetime = 10.0);
+
+    /**
+     * Constructor that accepts the x, y, z position coordinates of the marker
+     */
+    RVIZMarker(double _x, double _y, double _z,
+               ColorRGBA _col = ColorRGBA(0.5, 0.5, 0.5, 1.0),
+               double _size = 0.05, int _type = visualization_msgs::Marker::CUBE,
+               double _lifetime = 10.0);
+
+    /**
+     * Sets the x, y, z coordinates of the marker
+     *
+     * @param _x x coordinate
+     * @param _y y coordinate
+     * @param _z z coordinate
+     */
+    void setPosition(double _x, double _y, double _z);
 };
 
 #endif

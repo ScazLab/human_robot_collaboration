@@ -348,91 +348,39 @@ void RobotInterface::ctrlMsgCb(const baxter_collaboration_msgs::GoToPose& msg)
     return;
 }
 
-void RobotInterface::publishRVIZMarkers(std::vector<geometry_msgs::Pose>     _obj,
-                                        std::vector<double>             _obj_size,
-                                        std::vector<std_msgs::ColorRGBA> _obj_col)
+void RobotInterface::publishRVIZMarkers(std::vector<RVIZMarker> _objs)
 {
-    if (_obj_size.size() != 0 && _obj.size() != _obj_size.size())
-    {
-        ROS_ERROR("[%s] size of array of markers should match size of array of marker sizes!",
-                                                                           getLimb().c_str());
-        _obj_size.clear();
-    }
-
-    if (_obj_col.size() != 0 && _obj.size() != _obj_col.size())
-    {
-        ROS_ERROR("[%s] size of array of markers should match size of array of marker colors!",
-                                                                            getLimb().c_str());
-        _obj_col.clear();
-    }
-
     visualization_msgs::MarkerArray markers;
 
-    for (size_t i = 0; i < _obj.size(); ++i)
+    for (size_t i = 0; i < _objs.size(); ++i)
     {
         visualization_msgs::Marker marker;
+
         marker.header.frame_id =         "base";
         marker.header.stamp    =    ros::Time();
         marker.ns     = getName()+"/"+getLimb();
         marker.id     =                  int(i);
-        marker.type   = visualization_msgs::Marker::CUBE;
+        marker.type   =           _objs[i].type;
         marker.action = visualization_msgs::Marker:: ADD;
-        marker.pose.position.x    = _obj[i].position.x;
-        marker.pose.position.y    = _obj[i].position.y;
-        marker.pose.position.z    = _obj[i].position.z;
-        marker.pose.orientation.x = _obj[i].orientation.x;
-        marker.pose.orientation.y = _obj[i].orientation.y;
-        marker.pose.orientation.z = _obj[i].orientation.z;
-        marker.pose.orientation.w = _obj[i].orientation.w;
+        marker.pose.position.x    = _objs[i].pose.position.x;
+        marker.pose.position.y    = _objs[i].pose.position.y;
+        marker.pose.position.z    = _objs[i].pose.position.z;
+        marker.pose.orientation.x = _objs[i].pose.orientation.x;
+        marker.pose.orientation.y = _objs[i].pose.orientation.y;
+        marker.pose.orientation.z = _objs[i].pose.orientation.z;
+        marker.pose.orientation.w = _objs[i].pose.orientation.w;
 
         // Custom size of the object
-        double mrkr_size = 0.05;
+        marker.scale.x = _objs[i].size;
+        marker.scale.y = _objs[i].size;
+        marker.scale.z = _objs[i].size;
 
-        if (_obj_size.size() != 0) { mrkr_size = _obj_size[i]; };
-        marker.scale.x = mrkr_size;
-        marker.scale.y = mrkr_size;
-        marker.scale.z = mrkr_size;
+        marker.color.a = _objs[i].col.col.a;
+        marker.color.r = _objs[i].col.col.r;
+        marker.color.g = _objs[i].col.col.g;
+        marker.color.b = _objs[i].col.col.b;
 
-        // Custom color of the object
-
-        if (_obj_col.size() != 0)
-        {
-            marker.color.a = _obj_col[i].a;
-            marker.color.r = _obj_col[i].r;
-            marker.color.g = _obj_col[i].g;
-            marker.color.b = _obj_col[i].b;
-
-            marker.lifetime = ros::Duration(10.0);
-        }
-        else
-        {
-            marker.color.a =  1.0;
-
-            if      (i == 0)
-            {
-                marker.color.r  = 1.0;
-                marker.color.g  = 1.0;
-                marker.color.b  = 0.0;
-
-                marker.lifetime = ros::Duration(20.0);
-            }
-            else if (i == 1)
-            {
-                marker.color.r  = 0.0;
-                marker.color.g  = 1.0;
-                marker.color.b  = 1.0;
-
-                marker.lifetime = ros::Duration(5.0);
-            }
-            else
-            {
-                marker.color.r  = 1.0;
-                marker.color.g  = 0.0;
-                marker.color.b  = 1.0;
-
-                marker.lifetime = ros::Duration(5.0);
-            }
-        }
+        marker.lifetime = ros::Duration(_objs[i].lifetime);
 
         markers.markers.push_back(marker);
     }
