@@ -170,7 +170,7 @@ bool Gripper::reboot()
         return false;
     }
 
-    ROS_INFO("Rebooting %s gripper of type %s. Please wait...",
+    ROS_INFO("[%s_gripper][%s] Rebooting. Please wait...",
              getGripperLimb().c_str(), type().c_str());
 
     std::string reboot_cmd = EndEffectorCommand::CMD_REBOOT;
@@ -239,7 +239,7 @@ bool Gripper::open(bool _block, double _timeout)
         // check if the gripper is already not sucking
         if(not is_sucking())
         {
-            ROS_WARN("%s gripper of type %s is already open",
+            ROS_WARN("[%s_gripper][%s] requested open action but gripper is already open",
                       getGripperLimb().c_str(), type().c_str());
 
             return false;
@@ -304,8 +304,8 @@ bool Gripper::commandPosition(double _position, bool _block, double _timeout)
     }
     else
     {
-        ROS_WARN("%s gripper of type %s must have position between 0.0 and 100.0",
-                                        getGripperLimb().c_str(), type().c_str());
+        ROS_WARN("[%s_gripper][%s] position must be between 0.0 and 100.0",
+                                 getGripperLimb().c_str(), type().c_str());
         return false;
     }
 }
@@ -376,7 +376,7 @@ bool Gripper::command(std::string _cmd, bool _block,
 
 void Gripper::capabilityWarning(std::string _function)
 {
-    ROS_WARN("%s gripper of type %s is not capable of %s",
+    ROS_WARN("[%s_gripper][%s] not capable of %s",
               getGripperLimb().c_str(), type().c_str(), _function.c_str());
 }
 
