@@ -1,10 +1,7 @@
 #include "robot_interface/gripper.h"
 
-#include <iostream>
-#include <string>
-
+using namespace              std;
 using namespace baxter_core_msgs;
-using namespace std;
 
 Gripper::Gripper(std::string _limb, bool _use_robot) :
                  rnh(_limb), limb(_limb), use_robot(_use_robot), first_run(true), prop_set(false),
@@ -71,7 +68,7 @@ baxter_core_msgs::EndEffectorProperties Gripper::getGripperProperties()
 
 void Gripper::gripperCb(const EndEffectorState &msg)
 {
-    ROS_DEBUG("[%s_gripper] Received new state", getGripperLimb().c_str());
+    ROS_DEBUG("[%s_gripper][%s] Received new state", getGripperLimb().c_str(), type().c_str());
     setGripperState(msg);
 
     if (first_run)
@@ -84,8 +81,8 @@ void Gripper::gripperCb(const EndEffectorState &msg)
 
         if (!is_calibrated())
         {
-            ROS_INFO("[%s_gripper] Calibrating the gripper..",
-                                    getGripperLimb().c_str());
+            ROS_INFO("[%s_gripper][%s] Calibrating the gripper..",
+                        getGripperLimb().c_str(), type().c_str());
             calibrate();
         }
 
@@ -95,7 +92,8 @@ void Gripper::gripperCb(const EndEffectorState &msg)
 
 void Gripper::gripperPropCb(const EndEffectorProperties &msg)
 {
-    ROS_DEBUG("[%s_gripper] Received gripper properties", getGripperLimb().c_str());
+    ROS_DEBUG("[%s_gripper][%s] Received gripper properties",
+                   getGripperLimb().c_str(), type().c_str());
     setGripperProperties(msg);
     prop_set = true;
 
@@ -131,7 +129,8 @@ std::string Gripper::validParameters()
 
     if(type() == "electric")
     {
-        valid = "{\"velocity\" : 50.0, \"moving_force\" : 40.0, \"holding_force\" : 30.0, \"dead_zone\" : 5.0}";
+        valid = "{\"velocity\" : 50.0, \"moving_force\" : 40.0, "
+                "\"holding_force\" : 30.0, \"dead_zone\" : 5.0}";
     }
     else if(type() == "suction")
     {
@@ -171,7 +170,7 @@ bool Gripper::reboot()
     }
 
     ROS_INFO("[%s_gripper][%s] Rebooting. Please wait...",
-             getGripperLimb().c_str(), type().c_str());
+                getGripperLimb().c_str(), type().c_str());
 
     std::string reboot_cmd = EndEffectorCommand::CMD_REBOOT;
     command(reboot_cmd, true, 5.0, "");
@@ -239,8 +238,8 @@ bool Gripper::open(bool _block, double _timeout)
         // check if the gripper is already not sucking
         if(not is_sucking())
         {
-            ROS_WARN("[%s_gripper][%s] requested open action but gripper is already open",
-                      getGripperLimb().c_str(), type().c_str());
+            ROS_WARN("[%s_gripper][%s] requested open but gripper is already open",
+                                         getGripperLimb().c_str(), type().c_str());
 
             return false;
         }
@@ -263,7 +262,8 @@ bool Gripper::close(bool _block, double _timeout)
     }
     else if (type() == "suction")
     {
-        // no checks here for is_sucking() so that the suction time may be extended as necessary
+        // no checks here for is_sucking() so that
+        // the suction time may be extended as necessary
         return commandSuction(_block, _timeout);
     }
     else
@@ -362,7 +362,8 @@ bool Gripper::command(std::string _cmd, bool _block,
         ee_cmd.args = _args;
     }
 
-    ROS_DEBUG("[%s_gripper] Publishing: %s", getGripperLimb().c_str(), _cmd.c_str());
+    ROS_DEBUG("[%s_gripper][%s] Publishing: %s", getGripperLimb().c_str(),
+                                            type().c_str(), _cmd.c_str());
     pub_cmd.publish(ee_cmd);
 
     if(_block)
