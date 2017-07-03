@@ -37,6 +37,7 @@
 #define ACTION_GET          "get"
 #define ACTION_PASS         "pass"
 #define ACTION_GET_PASS     "get_pass"
+#define ACTION_CLEANUP      "cleanup"
 // Only right arm
 #define ACTION_HOLD         "hold"
 #define ACTION_START_HOLD   "start_hold"
@@ -53,6 +54,7 @@
 #define ACT_NOT_IN_DB   baxter_collaboration_msgs::DoAction::Response::ACT_NOT_IN_DB
 #define ACT_NOT_IMPL    baxter_collaboration_msgs::DoAction::Response::ACT_NOT_IMPL
 #define INV_KIN_FAILED  baxter_collaboration_msgs::DoAction::Response::INV_KIN_FAILED
+#define CHECK_OBJ_IDS   "check_obj_ids"
 
 #define Z_HIGH         0.400
 #define Z_LOW          0.200

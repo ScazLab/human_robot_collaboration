@@ -168,14 +168,18 @@ bool ToolPicker::pickUpObject()
 
     if (!computeOffsets(offs_x, offs_y))    return false;
 
+    // Let's compute a first estimation of the joint position
+    // (we reduce the z by 10 cm to start picking up from a
+    // closer position)
     double x = getObjectPos().x + offs_x;
     double y = getObjectPos().y + offs_y;
-    double z =       getPos().z;
+    double z =       getPos().z -   0.15;
 
     geometry_msgs::Quaternion q;
     if (!computeOrientation(q))             return false;
 
     ROS_INFO("Going to: %g %g %g", x, y, z);
+
     if (!goToPose(x, y, z, q.x, q.y, q.z, q.w, "loose"))
     {
         return false;

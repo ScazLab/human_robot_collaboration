@@ -496,7 +496,7 @@ bool ArmCtrl::goToPose(double px, double py, double pz,
     bool res = RobotInterface::goToPose(px, py, pz,
                                         ox, oy, oz, ow, mode, disable_coll_av);
 
-    if (res == false)
+    if (res == false && getSubState() != ACT_FAILED)
     {
         setSubState(INV_KIN_FAILED);
     }
@@ -611,7 +611,7 @@ bool ArmCtrl::setState(int _state)
     {
         setSubState(getAction());
     }
-    else if (_state == ERROR && getSubState() == "")
+    else if (_state == ERROR && (getSubState() == "" || getSubState() == CHECK_OBJ_IDS))
     {
         setSubState(ACT_FAILED);
     }
