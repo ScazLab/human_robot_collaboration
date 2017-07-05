@@ -94,9 +94,18 @@ void RVIZPublisher::publishMarkersCb(const ros::TimerEvent&)
             mrkr.pose.orientation.w = _markers[i].pose.orientation.w;
 
             // Custom size of the object
-            mrkr.scale.x = _markers[i].size;
-            mrkr.scale.y = _markers[i].size;
-            mrkr.scale.z = _markers[i].size;
+            if (mrkr.type == visualization_msgs::Marker::ARROW)
+            {
+                mrkr.scale.x = _markers[i].size;
+                mrkr.scale.y =             0.01;
+                mrkr.scale.z =             0.01;
+            }
+            else
+            {
+                mrkr.scale.x = _markers[i].size;
+                mrkr.scale.y = _markers[i].size;
+                mrkr.scale.z = _markers[i].size;
+            }
 
             mrkr.color.a = _markers[i].col.col.a;
             mrkr.color.r = _markers[i].col.col.r;
