@@ -18,7 +18,7 @@
 #include <sensor_msgs/Range.h>
 #include <std_msgs/Empty.h>
 
-#include "robot_utils/utils.h"
+#include "robot_utils/rviz_publisher.h"
 #include "robot_utils/baxter_trac_ik.h"
 
 #include <baxter_collaboration_msgs/GoToPose.h>

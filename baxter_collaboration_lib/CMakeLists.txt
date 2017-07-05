@@ -62,9 +62,11 @@ include_directories(include
 # without the need to link against the full robot_interface lib,
 # which would be an unnecessary overhead.
 add_library(robot_utils     include/robot_utils/utils.h
+                            include/robot_utils/rviz_publisher.h
                             include/robot_utils/baxter_trac_ik.h
                             include/robot_utils/ros_thread_image.h
                             src/robot_utils/utils.cpp
+                            src/robot_utils/rviz_publisher.cpp
                             src/robot_utils/baxter_trac_ik.cpp
                             src/robot_utils/ros_thread_image.cpp)
 
