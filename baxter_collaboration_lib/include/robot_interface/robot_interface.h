@@ -121,7 +121,6 @@ private:
     std::mutex mtx_is_closing;  // Mutex to protect the thread close flag
 
     ros::Subscriber ctrl_sub;   // Subscriber that receives desired poses from other nodes
-    ros::Publisher  rviz_pub;   // Published that publishes the current target on rviz
 
     bool   use_cart_ctrl;   // Flag to know if we're using the cartesian controller or not
     bool is_ctrl_running;   // Flag to know if the controller is running
@@ -238,6 +237,8 @@ private:
     bool startThread();
 
 protected:
+    // Publisher that publishes the current target on rviz
+    RVIZPublisher   rviz_pub;
 
     // Publisher to publish the high-level state of the controller
     // (to be shown in the Baxter display)
@@ -268,13 +269,6 @@ protected:
      * @param msg the topic message
      */
     virtual void cuffUpperCb(const baxter_core_msgs::DigitalIOState& msg);
-
-    /**
-     * Publishes a vector of markers to RVIZ for visualization
-     *
-     * @param _objs   the vector of markers to publish in the form of RVIZMarkers
-     */
-    virtual void publishRVIZMarkers(std::vector<RVIZMarker> _objs);
 
     /*
      * Checks if end effector has made contact with a token by checking if

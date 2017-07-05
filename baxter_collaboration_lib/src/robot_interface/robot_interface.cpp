@@ -16,7 +16,8 @@ RobotInterface::RobotInterface(string _name, string _limb, bool _use_robot, doub
                                filt_force{0.0, 0.0, 0.0}, filt_change{0.0, 0.0, 0.0}, time_filt_last_updated(ros::Time::now()),
                                is_coll_av_on(false), is_coll_det_on(false), is_closing(false), use_cart_ctrl(_use_cart_ctrl),
                                is_ctrl_running(false), is_experimental(_is_experimental),
-                               ctrl_mode(baxter_collaboration_msgs::GoToPose::POSITION_MODE), ctrl_check_mode("strict"), ctrl_type("pose")
+                               ctrl_mode(baxter_collaboration_msgs::GoToPose::POSITION_MODE), ctrl_check_mode("strict"), ctrl_type("pose"),
+                               rviz_pub(_name)
 {
     // if (not _use_robot) return;
 
@@ -72,8 +73,6 @@ RobotInterface::RobotInterface(string _name, string _limb, bool _use_robot, doub
     {
         string topic = "/" + getName() + "/" + getLimb() + "/go_to_pose";
         ctrl_sub     = nh.subscribe(topic, SUBSCRIBER_BUFFER, &RobotInterface::ctrlMsgCb, this);
-        rviz_pub     = nh.advertise<visualization_msgs::MarkerArray>("/visualization_marker_array",
-                                                                        SUBSCRIBER_BUFFER, true );
         ROS_INFO("[%s] Created cartesian controller that listens to : %s", getLimb().c_str(), topic.c_str());
     }
 
@@ -159,8 +158,6 @@ void RobotInterface::ThreadEntry()
 
                     pose_curr.orientation = o_c;
                 }
-
-                // publishRVIZMarkers(std::vector<geometry_msgs::Pose>{pose_des, pose_curr});
 
                 // ROS_INFO("[%s] Current Pose: %s Time %g/%g", getLimb().c_str(), print(pose_curr).c_str(),
                 //                                                                    time_elap, traj_time);
@@ -348,46 +345,6 @@ void RobotInterface::ctrlMsgCb(const baxter_collaboration_msgs::GoToPose& msg)
     return;
 }
 
-void RobotInterface::publishRVIZMarkers(std::vector<RVIZMarker> _objs)
-{
-    visualization_msgs::MarkerArray markers;
-
-    for (size_t i = 0; i < _objs.size(); ++i)
-    {
-        visualization_msgs::Marker marker;
-
-        marker.header.frame_id =         "base";
-        marker.header.stamp    =    ros::Time();
-        marker.ns     = getName()+"/"+getLimb();
-        marker.id     =                  int(i);
-        marker.type   =           _objs[i].type;
-        marker.action = visualization_msgs::Marker:: ADD;
-        marker.pose.position.x    = _objs[i].pose.position.x;
-        marker.pose.position.y    = _objs[i].pose.position.y;
-        marker.pose.position.z    = _objs[i].pose.position.z;
-        marker.pose.orientation.x = _objs[i].pose.orientation.x;
-        marker.pose.orientation.y = _objs[i].pose.orientation.y;
-        marker.pose.orientation.z = _objs[i].pose.orientation.z;
-        marker.pose.orientation.w = _objs[i].pose.orientation.w;
-
-        // Custom size of the object
-        marker.scale.x = _objs[i].size;
-        marker.scale.y = _objs[i].size;
-        marker.scale.z = _objs[i].size;
-
-        marker.color.a = _objs[i].col.col.a;
-        marker.color.r = _objs[i].col.col.r;
-        marker.color.g = _objs[i].col.col.g;
-        marker.color.b = _objs[i].col.col.b;
-
-        marker.lifetime = ros::Duration(_objs[i].lifetime);
-
-        markers.markers.push_back(marker);
-    }
-
-    rviz_pub.publish(markers);
-}
-
 void RobotInterface::setCtrlRunning(bool _flag)
 {
     // ROS_INFO("[%s] Setting is_ctrl_running to: %i", getLimb().c_str(), _flag);
@@ -395,8 +352,16 @@ void RobotInterface::setCtrlRunning(bool _flag)
     std::lock_guard<std::mutex> lck(mtx_ctrl);
     is_ctrl_running = _flag;
 
-    if (_flag == true)    { setState(CTRL_RUNNING); }
-    // else                  { setState(   CTRL_DONE); }
+    if (_flag == true)
+    {
+        rviz_pub.start();
+        setState(CTRL_RUNNING);
+    }
+    else
+    {
+        rviz_pub.stop();
+        // setState(   CTRL_DONE);
+    }
 
     return;
 }
