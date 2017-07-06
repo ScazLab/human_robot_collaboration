@@ -52,9 +52,9 @@ ADD_DEFINITIONS ( -Wall -Wextra -Wno-unused-parameter -Werror)
 
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
-include_directories(include
-                    ${OpenCV_INCLUDE_DIRS}
-                    ${catkin_INCLUDE_DIRS})
+include_directories(include)
+include_directories(SYSTEM ${OpenCV_INCLUDE_DIRS}
+                           ${catkin_INCLUDE_DIRS})
 
 ## Declare a C++ library
 # For the record, robot_utils is decoupled from robot_interface

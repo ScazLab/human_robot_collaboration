@@ -179,6 +179,6 @@ void baxterTracIK::computeFwdKin(KDL::JntArray jointpositions)
     }
     else
     {
-        printf("%s \n","Error: could not calculate forward kinematics.");
+        printf("Error: could not calculate forward kinematics.\n");
     }
 }
