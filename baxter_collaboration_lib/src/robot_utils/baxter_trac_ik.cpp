@@ -168,11 +168,11 @@ void baxterTracIK::computeFwdKin(KDL::JntArray jointpositions)
     KDL::ChainFkSolverPos_recursive fksolver = KDL::ChainFkSolverPos_recursive(_chain);
 
     // Create the frame that will contain the results
-    KDL::Frame cartpos;
+    KDL::Frame cartpos(KDL::Frame::Identity());
 
     // Calculate forward position kinematics
-    bool kinematics_status;
-    kinematics_status = fksolver.JntToCart(jointpositions,cartpos);
+    int kinematics_status = fksolver.JntToCart(jointpositions,cartpos);
+
     if(kinematics_status>=0)
     {
         std::cout << cartpos <<std::endl;
