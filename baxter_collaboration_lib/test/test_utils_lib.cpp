@@ -63,7 +63,7 @@ TEST(UtilsLib, State)
     s_int.push_back(CTRL_FAIL);
     s_int.push_back(1e4);
     s_int.push_back(-1e3);
-    s_int.push_back(-1e-3);
+    s_int.push_back(int(-1e-3));
 
     s_str.push_back("WORKING");
     s_str.push_back("ERROR");
