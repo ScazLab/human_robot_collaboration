@@ -4,7 +4,7 @@
  * email:  alessandro.roncone@yale.edu
  * website: www.scazlab.yale.edu
  * Permission is granted to copy, distribute, and/or modify this program
- * under the terms of the GNU General Public License, version 3 or any
+ * under the terms of the GNU Lesser General Public License, version 2.1 or any
  * later version published by the Free Software Foundation.
  *
  * This program is distributed in the hope that it will be useful, but
