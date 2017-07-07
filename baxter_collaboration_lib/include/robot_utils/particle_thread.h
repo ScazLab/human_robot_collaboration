@@ -41,15 +41,9 @@ private:
     std::mutex mtx_is_closing;  // Mutex to protect the thread close flag
 
     Eigen::VectorXd curr_pt; // Current position (or orientation) of the particle
-    std::mutex  mtx_curr_pt; // Mutex to protect access to the marker array
+    std::mutex  mtx_curr_pt; // Mutex to protect access to the current point
 
-    RVIZPublisher  rviz_pub; // Publisher to publish the point to rviz
     bool rviz_visualization; // Flag to know if to publish to rviz or not
-
-    /**
-     * Sets the current point as a marker for the RVIZPublisher to publish
-     */
-    void setMarker();
 
 protected:
     ros::Time start_time; // When the thread started
@@ -57,6 +51,8 @@ protected:
     bool is_particle_set; // If the particle has been setup. Defaults to false, to be
                           // specialized in derived classes with proper function that set it to true
                           // (otherwise the thread will not start)
+
+    RVIZPublisher  rviz_pub; // Publisher to publish the point to rviz
 
     /*
      * Function that will be spun out as a thread
@@ -70,6 +66,11 @@ protected:
      * @return         true/false if success/failure
      */
     virtual bool updateParticle(Eigen::VectorXd& _new_pt) = 0;
+
+    /**
+     * Sets the current point as a marker for the RVIZPublisher to publish
+     */
+    virtual void setMarker();
 
 public:
     /**
@@ -201,8 +202,11 @@ class LinearPointParticle : public ParticleThread
 private:
     double speed;
 
-    Eigen::Vector3d start_pt;
-    Eigen::Vector3d   des_pt;
+    Eigen::Vector3d start_pt; // Start point of the trajectory
+    std::mutex  mtx_start_pt; // Mutex to protect access to the start point
+
+    Eigen::Vector3d   des_pt; // Desired point of the trajectory
+    std::mutex    mtx_des_pt; // Mutex to protect access to the desired point
 
 protected:
     /**
@@ -212,6 +216,41 @@ protected:
      * @return         true/false if success/failure
      */
     bool updateParticle(Eigen::VectorXd& _new_pt);
+
+    /**
+     * Sets the current point and the desired target as markers for the RVIZPublisher to publish
+     */
+    void setMarker();
+
+    /**
+     * Gets the start position of the particle
+     *
+     * @return the start position of the particle
+     */
+    Eigen::VectorXd getStartPoint();
+
+    /**
+     * Sets the start position of the particle to a new one
+     *
+     * @param  _start_pt the new start position of the particle
+     * @return           true/false if success/failure
+     */
+    bool setStartPoint(const Eigen::VectorXd& _start_pt);
+
+    /**
+     * Gets the desired final position of the particle
+     *
+     * @return the desired final position of the particle
+     */
+    Eigen::VectorXd getDesPoint();
+
+    /**
+     * Sets the desired final position of the particle to a new one
+     *
+     * @param  _des_pt the new desired position of the particle
+     * @return         true/false if success/failure
+     */
+    bool setDesPoint(const Eigen::VectorXd& _des_pt);
 
 public:
     /**

@@ -21,9 +21,9 @@
 
 ParticleThread::ParticleThread(std::string _name, double _thread_rate,
                                bool _rviz_visualization) : name(_name), r(_thread_rate),
-                               is_running(false), is_closing(false), rviz_pub(_name),
+                               is_running(false), is_closing(false),
                                rviz_visualization(_rviz_visualization),
-                               start_time(ros::Time::now()), is_particle_set(false)
+                               start_time(ros::Time::now()), is_particle_set(false), rviz_pub(_name)
 {
 
 }
@@ -117,11 +117,6 @@ bool ParticleThread::isRunning()
     return is_running;
 }
 
-Eigen::VectorXd ParticleThread::getCurrPoint()
-{
-    std::lock_guard<std::mutex> lg(mtx_curr_pt);
-    return curr_pt;
-}
 
 void ParticleThread::setMarker()
 {
@@ -132,9 +127,15 @@ void ParticleThread::setMarker()
     mrk_pos.position.y = _curr_pt[1];
     mrk_pos.position.z = _curr_pt[2];
 
-    RVIZMarker curr_mrk(mrk_pos, ColorRGBA(1.0, 1.0, 0.0));
+    RVIZMarker curr_mrk(mrk_pos, ColorRGBA(0.0, 1.0, 1.0), 0.03);
 
     rviz_pub.setMarkers(std::vector<RVIZMarker>{curr_mrk});
+}
+
+Eigen::VectorXd ParticleThread::getCurrPoint()
+{
+    std::lock_guard<std::mutex> lg(mtx_curr_pt);
+    return curr_pt;
 }
 
 bool ParticleThread::setCurrPoint(const Eigen::VectorXd& _curr_pt)
@@ -186,13 +187,13 @@ bool LinearPointParticle::updateParticle(Eigen::VectorXd& _new_pt)
 {
     double elap_time = (ros::Time::now() - start_time).toSec();
 
-    Eigen::Vector3d p_sd = des_pt - start_pt;
+    Eigen::Vector3d p_sd = getDesPoint() - getStartPoint();
 
     // We model the particle as a 3D point that moves toward the
     // target with a straight trajectory and constant speed.
-    _new_pt = start_pt + p_sd / p_sd.norm() * speed * elap_time;
+    _new_pt = getStartPoint() + p_sd / p_sd.norm() * speed * elap_time;
 
-    Eigen::Vector3d p_cd = des_pt - _new_pt;
+    Eigen::Vector3d p_cd = getDesPoint() - _new_pt;
 
     // Check if the current position is overshooting the desired position
     // By checking the sign of the cosine of the angle between p_sd and p_cd
@@ -203,8 +204,52 @@ bool LinearPointParticle::updateParticle(Eigen::VectorXd& _new_pt)
         return true;
     }
 
-    _new_pt = des_pt;
+    _new_pt = getDesPoint();
     return false;
+}
+
+void LinearPointParticle::setMarker()
+{
+    ParticleThread::setMarker();
+
+    Eigen::Vector3d _des_pt = getDesPoint();
+
+    geometry_msgs::Pose mrk_pos;
+    mrk_pos.position.x = _des_pt[0];
+    mrk_pos.position.y = _des_pt[1];
+    mrk_pos.position.z = _des_pt[2];
+
+    RVIZMarker des_mrk(mrk_pos, ColorRGBA(1.0, 1.0, 0.0));
+
+    rviz_pub.push_back(des_mrk);
+}
+
+Eigen::VectorXd LinearPointParticle::getStartPoint()
+{
+    std::lock_guard<std::mutex> lg(mtx_start_pt);
+    return start_pt;
+}
+
+bool LinearPointParticle::setStartPoint(const Eigen::VectorXd& _start_pt)
+{
+    std::lock_guard<std::mutex> lg(mtx_start_pt);
+    start_pt = _start_pt;
+
+    return true;
+}
+
+Eigen::VectorXd LinearPointParticle::getDesPoint()
+{
+    std::lock_guard<std::mutex> lg(mtx_des_pt);
+    return des_pt;
+}
+
+bool LinearPointParticle::setDesPoint(const Eigen::VectorXd& _des_pt)
+{
+    std::lock_guard<std::mutex> lg(mtx_des_pt);
+    des_pt = _des_pt;
+
+    return true;
 }
 
 bool LinearPointParticle::setupParticle(const Eigen::Vector3d& _start_pt,
