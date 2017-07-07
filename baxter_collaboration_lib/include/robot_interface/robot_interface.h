@@ -33,7 +33,7 @@
 #include <sensor_msgs/Range.h>
 #include <std_msgs/Empty.h>
 
-#include "robot_utils/rviz_publisher.h"
+#include "robot_utils/particle_thread.h"
 #include "robot_utils/baxter_trac_ik.h"
 
 #include <baxter_collaboration_msgs/GoToPose.h>
@@ -254,6 +254,9 @@ private:
 protected:
     // Publisher that publishes the current target on rviz
     RVIZPublisher   rviz_pub;
+
+    // Particle thread to control the end effector over time
+    std::unique_ptr<ParticleThread> particle;
 
     // Publisher to publish the high-level state of the controller
     // (to be shown in the Baxter display)

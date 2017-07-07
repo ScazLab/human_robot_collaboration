@@ -114,7 +114,7 @@ void RobotInterface::ThreadEntry()
             double time_elap = (ros::Time::now() - time_start).toSec();
 
             // Starting pose in terms of position and orientation
-            geometry_msgs::Point      p_s =    pose_start.position;
+            // geometry_msgs::Point      p_s =    pose_start.position;
             geometry_msgs::Quaternion o_s = pose_start.orientation;
 
             // Desired  pose in terms of position and orientation
@@ -127,18 +127,14 @@ void RobotInterface::ThreadEntry()
                 pose_curr = pose_des;
 
                 /* POSITIONAL PART */
-                // We model the end effector as a 3D point that moves toward the
-                // target with a straight trajectory and constant speed.
-                geometry_msgs::Point p_c = p_s + (p_d - p_s) / norm(p_d - p_s) * ARM_SPEED * time_elap;
+                Eigen::Vector3d pos_curr = particle->getCurrPoint();
 
-                // Check if the current position is overshooting the desired position
-                // By checking the sign of the cosine of the angle between p_d-p_s and p_d-p_c
-                // This would mean equal to 1 within some small epsilon (1e-8)
-                if (dot(p_d-p_s, p_d-p_c)/(norm(p_d-p_s)*norm(p_d-p_c)) - 1 <  EPSILON &&
-                    dot(p_d-p_s, p_d-p_c)/(norm(p_d-p_s)*norm(p_d-p_c)) - 1 > -EPSILON)
-                {
-                    pose_curr.position    = p_c;
-                }
+                geometry_msgs::Point p_c;
+                p_c.x = pos_curr[0];
+                p_c.y = pos_curr[1];
+                p_c.z = pos_curr[2];
+
+                pose_curr.position = p_c;
 
                 /* ORIENTATIONAL PART */
                 // We use a spherical linear interpolation between o_s and o_d. The speed of the interpolation
@@ -174,6 +170,7 @@ void RobotInterface::ThreadEntry()
             else
             {
                 ROS_INFO("[%s] Pose reached!\n", getLimb().c_str());
+                particle -> stop();
 
                 if (ctrl_mode == baxter_collaboration_msgs::GoToPose::VELOCITY_MODE)
                 {
@@ -228,6 +225,16 @@ bool RobotInterface::initCtrlParams()
 {
     time_start = ros::Time::now();
     pose_start = getPose();
+
+    particle = std::make_unique<LinearPointParticle>(getName()+"/"+getLimb(), THREAD_FREQ, true);
+
+    Eigen::Vector3d ps(pose_start.position.x, pose_start.position.y, pose_start.position.z);
+    Eigen::Vector3d pd(  pose_des.position.x,   pose_des.position.y,   pose_des.position.z);
+
+    LinearPointParticle *derived = dynamic_cast<LinearPointParticle*>(particle.get());
+    derived->setupParticle(ps, pd, ARM_SPEED);
+    particle->start();
+
     return true;
 }
 

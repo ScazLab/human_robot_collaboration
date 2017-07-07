@@ -40,7 +40,7 @@ void ParticleThread::internalThread()
         updateParticle(new_pt);
         setCurrPoint(new_pt);
 
-        ROS_INFO_STREAM("New particle position: " << getCurrPoint().transpose());
+        // ROS_INFO_STREAM("New particle position: " << getCurrPoint().transpose());
 
         r.sleep();
     }
