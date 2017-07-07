@@ -6,10 +6,12 @@ using namespace std;
 
 TEST(ParticleThreadTest, testConstructor)
 {
+    ros::Time::init();
+
     ParticleThreadImpl pt("pt", 50);
 
-    EXPECT_EQ   (pt.getName(), "pt");
-    EXPECT_EQ   (pt.getRate(),   50);
+    EXPECT_EQ   (pt.getName(),"pt");
+    EXPECT_EQ   (pt.getRate(),  50);
 
     EXPECT_FALSE(pt.isRunning());
     EXPECT_FALSE(pt.isClosing());
@@ -28,6 +30,8 @@ TEST(ParticleThreadTest, testConstructor)
 
 TEST(ParticleThreadTest, testLinearPoint)
 {
+    ros::Time::init();
+
     LinearPointParticle lpp;
 
     EXPECT_FALSE(lpp.start());

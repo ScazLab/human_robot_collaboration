@@ -21,7 +21,7 @@
 
 #include <Eigen/Dense>
 
-#include "robot_utils/utils.h"
+#include "robot_utils/rviz_publisher.h"
 
 /**
  * Particle Thread object. Abstract class that implements the thread function and
@@ -30,13 +30,9 @@
 class ParticleThread
 {
 private:
-    ros::NodeHandle        nh;
-    ros::AsyncSpinner spinner; // AsyncSpinner to handle callbacks
-
-    std::string name; // Name of the object
-
-    std::thread   thread; // Thread to update the particle
-    ros::Rate          r; // Rate of the thread (in Hz)
+    std::string   name; // Name of the object
+    std::thread thread; // Thread to update the particle
+    ros::Rate        r; // Rate of the thread (in Hz)
 
     bool           is_running; // Flag to know if the thread has been started
     std::mutex mtx_is_running; // Mutex to protect the thread running flag
@@ -46,6 +42,14 @@ private:
 
     Eigen::VectorXd curr_pt; // Current position (or orientation) of the particle
     std::mutex  mtx_curr_pt; // Mutex to protect access to the marker array
+
+    RVIZPublisher  rviz_pub; // Publisher to publish the point to rviz
+    bool rviz_visualization; // Flag to know if to publish to rviz or not
+
+    /**
+     * Sets the current point as a marker for the RVIZPublisher to publish
+     */
+    void setMarker();
 
 protected:
     ros::Time start_time; // When the thread started
@@ -71,11 +75,13 @@ public:
     /**
      * Constructor
      *
-     * @param  _name        name of the object
-     * @param  _thread_rate period of the timer
+     * @param  _name               name of the object
+     * @param  _thread_rate        period of the timer
+     * @param  _rviz_visualization if to publish the current point to rviz as a marker
      */
     explicit ParticleThread(std::string _name = "particle_thread",
-                            double _thread_rate = THREAD_FREQ);
+                            double _thread_rate = THREAD_FREQ,
+                            bool _rviz_visualization = false);
 
     /**
      * Starts the particle thread
@@ -173,11 +179,13 @@ public:
     /**
      * Constructor
      *
-     * @param  _name        name of the object
-     * @param  _thread_rate period of the timer
+     * @param  _name               name of the object
+     * @param  _thread_rate        period of the timer
+     * @param  _rviz_visualization if to publish the current point to rviz as a marker
      */
     explicit ParticleThreadImpl(std::string _name = "particle_thread_impl",
-                                double _thread_rate = THREAD_FREQ);
+                                double _thread_rate = THREAD_FREQ,
+                                bool _rviz_visualization = false);
 
     /**
      * Destructor
@@ -209,11 +217,13 @@ public:
     /**
      * Constructor
      *
-     * @param  _name        name of the object
-     * @param  _thread_rate period of the timer
+     * @param  _name               name of the object
+     * @param  _thread_rate        period of the timer
+     * @param  _rviz_visualization if to publish the current point to rviz as a marker
      */
     explicit LinearPointParticle(std::string _name = "particle_thread_impl",
-                                 double _thread_rate = THREAD_FREQ);
+                                 double _thread_rate = THREAD_FREQ,
+                                 bool _rviz_visualization = false);
 
     /**
      * Sets the parameters of the particle
