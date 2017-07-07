@@ -19,29 +19,27 @@
 /*                             ParticleThread                                */
 /*****************************************************************************/
 
-ParticleThread::ParticleThread(std::string _name, double _thread_rate, bool _autostart) :
+ParticleThread::ParticleThread(std::string _name, double _thread_rate) :
                                nh(_name), spinner(4), name(_name), r(_thread_rate),
-                               is_running(false), is_closing(false)
+                               is_running(false), is_closing(false),
+                               start_time(ros::Time::now()), is_particle_set(false)
 {
     spinner.start();
-
-    if (_autostart == true)
-    {
-        start();
-    }
 }
 
 void ParticleThread::internalThread()
 {
-    // Initial sleep to allow for the constructor
-    // of the derived class to finish constructing the object.
-    ros::Duration(0.001).sleep();
+    start_time = ros::Time::now();
 
     while(ros::ok() && not isClosing())
     {
         // ROS_INFO("Running..");
+        Eigen::VectorXd new_pt;
 
-        setCurrPoint(updateParticle());
+        updateParticle(new_pt);
+        setCurrPoint(new_pt);
+
+        ROS_INFO_STREAM("New particle position: " << getCurrPoint().transpose());
 
         r.sleep();
     }
@@ -49,10 +47,10 @@ void ParticleThread::internalThread()
 
 bool ParticleThread::start()
 {
-    if (not isRunning())
+    if (is_particle_set && not isRunning())
     {
         setIsClosing(false);
-        thread = std::thread(&ParticleThread::internalThread, this);
+        thread     = std::thread(&ParticleThread::internalThread, this);
         setIsRunning(true);
 
         return true;
@@ -67,6 +65,7 @@ bool ParticleThread::stop()
 {
     setIsClosing(true);
     setIsRunning(false);
+    is_particle_set = false;
 
     if (thread.joinable())
     {
@@ -113,13 +112,13 @@ bool ParticleThread::isRunning()
     return is_running;
 }
 
-Eigen::Vector3d ParticleThread::getCurrPoint()
+Eigen::VectorXd ParticleThread::getCurrPoint()
 {
     std::lock_guard<std::mutex> lg(mtx_curr_pt);
     return curr_pt;
 }
 
-bool ParticleThread::setCurrPoint(const Eigen::Vector3d& _curr_pt)
+bool ParticleThread::setCurrPoint(const Eigen::VectorXd& _curr_pt)
 {
     std::lock_guard<std::mutex> lg(mtx_curr_pt);
     curr_pt = _curr_pt;
@@ -130,3 +129,75 @@ ParticleThread::~ParticleThread()
 {
     stop();
 }
+
+/*****************************************************************************/
+/*                           ParticleThreadImpl                              */
+/*****************************************************************************/
+ParticleThreadImpl::ParticleThreadImpl(std::string _name, double _thread_rate) :
+                                           ParticleThread(_name, _thread_rate)
+{
+    is_particle_set = true;
+}
+
+bool ParticleThreadImpl::updateParticle(Eigen::VectorXd& _new_pt)
+{
+    _new_pt = Eigen::Vector3d(1.0, 1.0, 1.0);
+
+    return true;
+}
+
+/*****************************************************************************/
+/*                          LinearPointParticle                              */
+/*****************************************************************************/
+
+LinearPointParticle::LinearPointParticle(std::string _name, double _thread_rate) :
+                                         ParticleThread(_name, _thread_rate),
+                                         speed(0.0), start_pt(0.0, 0.0, 0.0),
+                                         des_pt(0.0, 0.0, 0.0)
+{
+
+}
+
+bool LinearPointParticle::updateParticle(Eigen::VectorXd& _new_pt)
+{
+    double elap_time = (ros::Time::now() - start_time).toSec();
+
+    Eigen::Vector3d p_sd = des_pt - start_pt;
+
+    // We model the particle as a 3D point that moves toward the
+    // target with a straight trajectory and constant speed.
+    _new_pt = start_pt + p_sd / p_sd.norm() * speed * elap_time;
+
+    Eigen::Vector3d p_cd = des_pt - _new_pt;
+
+    // Check if the current position is overshooting the desired position
+    // By checking the sign of the cosine of the angle between p_sd and p_cd
+    // This would mean equal to 1 within some small epsilon (1e-8)
+    if ((p_sd.dot(p_cd))/(p_sd.norm()*p_cd.norm()) - 1 <  EPSILON &&
+        (p_sd.dot(p_cd))/(p_sd.norm()*p_cd.norm()) - 1 > -EPSILON)
+    {
+        return true;
+    }
+
+    _new_pt = des_pt;
+    return false;
+}
+
+bool LinearPointParticle::setupParticle(const Eigen::Vector3d& _start_pt,
+                                        const Eigen::Vector3d&   _des_pt,
+                                        double _speed)
+{
+    start_pt = _start_pt;
+      des_pt =   _des_pt;
+       speed =    _speed;
+
+    is_particle_set = true;
+
+    return true;
+}
+
+LinearPointParticle::~LinearPointParticle()
+{
+
+}
+
