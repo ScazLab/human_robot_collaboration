@@ -18,9 +18,9 @@
 
 #include <mutex>
 
-#include "robot_utils/utils.h"
-
 #include <visualization_msgs/MarkerArray.h>
+
+#include "robot_utils/utils.h"
 
 /**
  * Struct that wraps an ColorRGBA object from std_msgs with a sane constructor.

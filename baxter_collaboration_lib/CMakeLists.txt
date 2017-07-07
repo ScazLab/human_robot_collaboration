@@ -13,6 +13,7 @@ endif()
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
+             cmake_modules
              aruco
              aruco_ros
              baxter_collaboration_msgs
@@ -28,6 +29,7 @@ find_package(catkin REQUIRED COMPONENTS
              )
 
 find_package(OpenCV 2.4 REQUIRED)
+find_package(Eigen      REQUIRED)
 
 ###################################
 ## catkin specific configuration ##
@@ -41,7 +43,7 @@ find_package(OpenCV 2.4 REQUIRED)
 catkin_package(
   INCLUDE_DIRS include
   LIBRARIES robot_utils robot_interface robot_perception
-  DEPENDS trac_ik_lib aruco_ros aruco
+  DEPENDS Eigen trac_ik_lib aruco_ros aruco
 )
 
 ###########
@@ -53,7 +55,8 @@ ADD_DEFINITIONS ( -Wall -Wextra -Wno-unused-parameter -Werror)
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
 include_directories(include)
-include_directories(SYSTEM ${OpenCV_INCLUDE_DIRS}
+include_directories(SYSTEM ${Eigen_INCLUDE_DIRS}
+                           ${OpenCV_INCLUDE_DIRS}
                            ${catkin_INCLUDE_DIRS})
 
 ## Declare a C++ library
@@ -63,10 +66,12 @@ include_directories(SYSTEM ${OpenCV_INCLUDE_DIRS}
 # which would be an unnecessary overhead.
 add_library(robot_utils     include/robot_utils/utils.h
                             include/robot_utils/rviz_publisher.h
+                            include/robot_utils/particle_thread.h
                             include/robot_utils/baxter_trac_ik.h
                             include/robot_utils/ros_thread_image.h
                             src/robot_utils/utils.cpp
                             src/robot_utils/rviz_publisher.cpp
+                            src/robot_utils/particle_thread.cpp
                             src/robot_utils/baxter_trac_ik.cpp
                             src/robot_utils/ros_thread_image.cpp)
 

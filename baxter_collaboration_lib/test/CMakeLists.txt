@@ -9,6 +9,11 @@ find_package(baxter_description REQUIRED)
 catkin_add_gtest(test_utils_lib test_utils_lib.cpp)
 target_link_libraries(test_utils_lib robot_utils)
 
+## Particle Thread tests
+add_rostest_gtest(test_particle_thread test_particle_thread.test
+                                       test_particle_thread.cpp)
+target_link_libraries(test_particle_thread robot_utils)
+
 ## Robot interface tests
 add_rostest_gtest(test_robot_interface test_robot_interface.test
                                        test_robot_interface.cpp)
