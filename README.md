@@ -29,11 +29,12 @@ We use the new Catkin Command Line Tools `catkin_tools`, a Python package that p
 | ROS distro | Ubuntu Distro | Compiler    | Status   |
 | ---------- | ------------- | ----------- | -------- |
 | `indigo`   | 14.04 Trusty  | `gcc-4.9`   |  working |
-| `indigo`   | 14.04 Trusty  | `clang-3.6` |  working |
+| `indigo`   | 14.04 Trusty  | `clang-3.6` |  wontfix |
 | `kinetic`  | 16.04 Xenial  | `gcc`       | disabled |
 | `kinetic`  | 16.04 Xenial  | `clang`     | disabled |
 
-**NOTE:** As of today (June 7th 2017), `kinetic` builds are disabled, since [travis](travis-ci.org) does not support Ubuntu 16.04 Xenial Xerus yet. 16.04 support should come on Q2 2017.
+**NOTE1:** Apparently, it is very difficult to make clang work with Ubuntu 14.04 Trusty, C++14 enabled, and all of the old ROS libraries (`indigo`, `OpenCV2.4`, etc). I disabled compilation because I would rather prefer using the latest C++14 features.
+**NOTE2:** As of today (June 7th 2017), `kinetic` builds are disabled, since [travis](travis-ci.org) does not support Ubuntu 16.04 Xenial Xerus yet. 16.04 support should come on Q2 2017.
 
 ## Execution
 
