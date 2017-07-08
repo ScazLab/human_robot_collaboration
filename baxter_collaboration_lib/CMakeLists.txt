@@ -6,9 +6,13 @@ cmake_minimum_required(VERSION 2.8.3)
 project(baxter_collaboration_lib)
 
 ## Add C++14 support
-if(CMAKE_COMPILER_IS_GNUCXX OR ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang"))
+if(CMAKE_COMPILER_IS_GNUCXX)
     # message("Setting C++14 and C++11 support..")
     set(CMAKE_CXX_FLAGS "-std=c++14")
+    # message(${CMAKE_CXX_FLAGS})
+elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
+    # message("Setting C++14 and C++11 support..")
+    set(CMAKE_CXX_FLAGS "-std=c++14 -stdlib=libc++")
     # message(${CMAKE_CXX_FLAGS})
 endif()
 
