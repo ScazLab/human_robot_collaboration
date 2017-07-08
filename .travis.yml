@@ -86,6 +86,7 @@ matrix:
       apt:
         packages:
         - clang-3.6
+        - libc++-dev
         sources: *1
     # kinetic/xenial builds are not enabled as of now since travis does not support xenial 16.04
     # - os: linux
