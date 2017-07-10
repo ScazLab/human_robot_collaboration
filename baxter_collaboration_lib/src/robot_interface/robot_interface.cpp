@@ -2,7 +2,7 @@
 
 #include <tf/transform_datatypes.h>
 
-using namespace std;
+using namespace              std;
 using namespace baxter_core_msgs;
 
 /**************************************************************************/
@@ -15,7 +15,7 @@ RobotInterface::RobotInterface(string _name, string _limb, bool _use_robot, doub
                                ik_solver(_limb, _use_robot), use_trac_ik(_use_trac_ik), ctrl_freq(_ctrl_freq),
                                filt_force{0.0, 0.0, 0.0}, filt_change{0.0, 0.0, 0.0}, time_filt_last_updated(ros::Time::now()),
                                is_coll_av_on(false), is_coll_det_on(false), is_closing(false), use_cart_ctrl(_use_cart_ctrl),
-                               is_ctrl_running(false), is_experimental(_is_experimental),
+                               is_ctrl_running(false), is_experimental(_is_experimental), tracking_mode(false),
                                ctrl_mode(baxter_collaboration_msgs::GoToPose::POSITION_MODE), ctrl_check_mode("strict"), ctrl_type("pose"),
                                rviz_pub(_name)
 {
@@ -167,7 +167,7 @@ void RobotInterface::ThreadEntry()
 
                 if (hasCollidedIR("strict")) ROS_INFO_THROTTLE(2, "[%s] is colliding!", getLimb().c_str());
             }
-            else
+            else if (not tracking_mode)
             {
                 ROS_INFO("[%s] Pose reached!\n", getLimb().c_str());
                 particle -> stop();
@@ -337,6 +337,8 @@ void RobotInterface::ctrlMsgCb(const baxter_collaboration_msgs::GoToPose& msg)
         {
             ctrl_check_mode = msg.check_mode;
         }
+
+        tracking_mode = msg.tracking_mode=="on"?true:false;
 
         setCtrlRunning(true);
         initCtrlParams();

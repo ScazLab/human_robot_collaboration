@@ -105,9 +105,7 @@ private:
      */
     ros::Subscriber         jntstate_sub;
     sensor_msgs::JointState    curr_jnts;
-
-    // Mutex to protect joint state variable
-    std::mutex mtx_jnts;
+    std::mutex                  mtx_jnts;   // Mutex to protect joint state variable
 
     /**
      * Collision avoidance State
@@ -139,7 +137,9 @@ private:
 
     bool   use_cart_ctrl;   // Flag to know if we're using the cartesian controller or not
     bool is_ctrl_running;   // Flag to know if the controller is running
+    std::mutex  mtx_ctrl;   // Mutex to protect the is_ctrl_running flag
     bool is_experimental;   // Flag to know if the robot is running in experimental mode
+    bool   tracking_mode;   // Flag to know the tracking mode of the control loop
 
     // Control mode for the controller server. It can be either
     // baxter_collaboration_msgs::GoToPose::POSITION_MODE,
@@ -156,9 +156,6 @@ private:
     geometry_msgs::Pose pose_curr;      // Current pose to task the IK with
 
     ros::Time time_start;   // Time when the controller started
-
-    // Mutex to protect the control flag
-    std::mutex mtx_ctrl;
 
     /**
      * Initializes some control parameters when the controller starts.

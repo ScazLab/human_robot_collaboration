@@ -34,3 +34,15 @@ string STRICT_CHECK = strict
 string  LOOSE_CHECK = loose
 
 string check_mode
+
+# Mode to check if to enable the tracking mode or not.
+# If tracking mode is set to on, when the controller reaches the target it keeps
+# on running in order to maintain the limb at the desired pose even in the presence
+# of external disturbances/obstacle. In non-tracking mode, the controller releases
+# the limb as soon as the desired pose is reached.
+# This variable is set to a string so that we can have a default empty string,
+# which defaults to "OFF"
+string TRACKING_MODE_ON  = on
+string TRACKING_MODE_OFF = off
+
+string tracking_mode
