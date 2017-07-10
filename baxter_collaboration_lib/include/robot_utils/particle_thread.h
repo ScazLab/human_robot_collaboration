@@ -41,7 +41,7 @@ private:
     // Current position (or orientation) of the particle (with thread-safe read and write)
     ThreadSafe<Eigen::VectorXd> curr_pt;
 
-    bool rviz_visualization; // Flag to know if to publish to rviz or not
+    bool rviz_visual; // Flag to know if to publish to rviz or not
 
 protected:
     ros::Time start_time; // When the thread started
@@ -83,13 +83,13 @@ public:
     /**
      * Constructor
      *
-     * @param  _name               name of the object
-     * @param  _thread_rate        period of the timer
-     * @param  _rviz_visualization if to publish the current point to rviz as a marker
+     * @param  _name        name of the object
+     * @param  _thread_rate period of the timer
+     * @param  _rviz_visual if to publish the current point to rviz as a marker
      */
     explicit ParticleThread(std::string _name = "particle_thread",
                             double _thread_rate = THREAD_FREQ,
-                            bool _rviz_visualization = false);
+                            bool _rviz_visual = false);
 
     /**
      * Starts the particle thread
@@ -159,13 +159,13 @@ public:
     /**
      * Constructor
      *
-     * @param  _name               name of the object
-     * @param  _thread_rate        period of the timer
-     * @param  _rviz_visualization if to publish the current point to rviz as a marker
+     * @param  _name        name of the object
+     * @param  _thread_rate period of the timer
+     * @param  _rviz_visual if to publish the current point to rviz as a marker
      */
     explicit ParticleThreadImpl(std::string _name = "particle_thread_impl",
                                 double _thread_rate = THREAD_FREQ,
-                                bool _rviz_visualization = false);
+                                bool _rviz_visual = false);
 
     /**
      * Destructor
@@ -206,13 +206,13 @@ public:
     /**
      * Constructor
      *
-     * @param  _name               name of the object
-     * @param  _thread_rate        period of the timer
-     * @param  _rviz_visualization if to publish the current point to rviz as a marker
+     * @param  _name        name of the object
+     * @param  _thread_rate period of the timer
+     * @param  _rviz_visual if to publish the current point to rviz as a marker
      */
     explicit LinearPointParticle(std::string _name = "particle_thread_impl",
                                  double _thread_rate = THREAD_FREQ,
-                                 bool _rviz_visualization = false);
+                                 bool _rviz_visual = false);
 
     /**
      * Sets the parameters of the particle

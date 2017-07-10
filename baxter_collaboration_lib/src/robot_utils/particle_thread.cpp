@@ -20,11 +20,10 @@
 /*****************************************************************************/
 
 ParticleThread::ParticleThread(std::string _name, double _thread_rate,
-                               bool _rviz_visualization) : name(_name), r(_thread_rate),
+                               bool _rviz_visual) : name(_name), r(_thread_rate),
                                is_running(false), is_closing(false),
-                               rviz_visualization(_rviz_visualization),
-                               start_time(ros::Time::now()), is_particle_set(false),
-                               rviz_pub(_name)
+                               rviz_visual(_rviz_visual), start_time(ros::Time::now()),
+                               is_particle_set(false), rviz_pub(_name)
 {
 
 }
@@ -55,7 +54,7 @@ bool ParticleThread::start()
         thread     = std::thread(&ParticleThread::internalThread, this);
         is_running.set(true);
 
-        if (rviz_visualization) { rviz_pub.start(); };
+        if (rviz_visual) { rviz_pub.start(); };
 
         return true;
     }
@@ -71,7 +70,7 @@ bool ParticleThread::stop()
     is_running.set(false);
     is_particle_set.set(false);
 
-    if (rviz_visualization) { rviz_pub.stop(); };
+    if (rviz_visual) { rviz_pub.stop(); };
 
     if (thread.joinable())
     {
@@ -109,7 +108,7 @@ Eigen::VectorXd ParticleThread::getCurrPoint()
 
 bool ParticleThread::setCurrPoint(const Eigen::VectorXd& _curr_pt)
 {
-    if (rviz_visualization) { setMarker(); };
+    if (rviz_visual) { setMarker(); };
 
     return curr_pt.set(_curr_pt);
 }
@@ -123,8 +122,8 @@ ParticleThread::~ParticleThread()
 /*                           ParticleThreadImpl                              */
 /*****************************************************************************/
 ParticleThreadImpl::ParticleThreadImpl(std::string _name, double _thread_rate,
-                                       bool _rviz_visualization) :
-                                       ParticleThread(_name, _thread_rate, _rviz_visualization)
+                                       bool _rviz_visual) :
+                                       ParticleThread(_name, _thread_rate, _rviz_visual)
 {
     is_particle_set.set(true);
 }
@@ -141,8 +140,8 @@ bool ParticleThreadImpl::updateParticle(Eigen::VectorXd& _new_pt)
 /*****************************************************************************/
 
 LinearPointParticle::LinearPointParticle(std::string _name, double _thread_rate,
-                                         bool _rviz_visualization) :
-                                         ParticleThread(_name, _thread_rate, _rviz_visualization),
+                                         bool _rviz_visual) :
+                                         ParticleThread(_name, _thread_rate, _rviz_visual),
                                          speed(double(0.0)), start_pt(Eigen::Vector3d(0.0, 0.0, 0.0)),
                                          des_pt(Eigen::Vector3d(0.0, 0.0, 0.0))
 {
