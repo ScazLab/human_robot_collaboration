@@ -65,12 +65,16 @@ RVIZPublisher::RVIZPublisher(std::string _name, double _timer_period) :
 {
     rviz_pub = nh.advertise<visualization_msgs::MarkerArray>("/visualization_marker_array",
                                                                  SUBSCRIBER_BUFFER, true );
+
+    // ROS_INFO("[%s] RVIZPublisher created. Timer period: %g", getName().c_str(), timer_period);
+    spinner.start();
 }
 
 void RVIZPublisher::publishMarkersCb(const ros::TimerEvent&)
 {
     std::vector<RVIZMarker> _markers = getMarkers();
 
+    // ROS_INFO("[%s] Markers size: %lu", getName().c_str(), markers.size());
     if (_markers.size() > 0)
     {
         visualization_msgs::MarkerArray mrkrs;
@@ -117,6 +121,7 @@ void RVIZPublisher::publishMarkersCb(const ros::TimerEvent&)
             mrkrs.markers.push_back(mrkr);
         }
 
+        // ROS_INFO("[%s] Publishing", getName().c_str());
         rviz_pub.publish(mrkrs);
     }
 }
@@ -156,6 +161,9 @@ void RVIZPublisher::push_back(RVIZMarker _mrkr)
 {
     std::lock_guard<std::mutex> lg(markers_mutex);
     markers.push_back(_mrkr);
+
+    // ROS_INFO("[%s] Pushing back. Markers size: %lu",
+    //              getName().c_str(), markers.size());
 }
 
 void RVIZPublisher::setMarkers(std::vector<RVIZMarker> _mrkrs)
