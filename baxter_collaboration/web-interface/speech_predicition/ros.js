@@ -33,7 +33,7 @@ ros.on('close', function() {
 // Guess connection of the rosbridge websocket
 function getRosBridgeHost() {
   if (window.location.protocol == 'file:') {
-    return 'localhost';
+    return '192.168.1.3';
   } else {
     return window.location.hostname;
   }
@@ -89,6 +89,23 @@ var rightArmService = new ROSLIB.Service({
 function callback(e) {
     var e = window.e || e;
 
+    // Access the parameter server to get IDs of objs
+    // corresponding to buttons presses
+
+    //These are defines in speech_prediction.launch
+    var left_param_path = 'action_provider/objects_left/';
+    var right_param_path = 'action_provider/objects_right/';
+
+    var left_params = new ROSLIB.Param({
+        ros: ros,
+        name: left_param_path
+    });
+
+    var right_params = new ROSLIB.Param({
+        ros: ros,
+        name: left_param_path
+
+    });
     // console.log(e.target.tagName);
     if (e.target.tagName == 'BUTTON')
     {
@@ -121,6 +138,27 @@ function callback(e) {
           {
               console.log('Got Response: ' + res.success);
           });
+        }
+        else if(obj.includes("get_")){
+            var req = new ROSLIB.ServiceRequest();
+            var o = obj.replace("get_",'');
+            var id;
+
+            right_params.name = right_param_path + o;
+            left_params.name = left_param_path + o;
+
+            right_params.get(function(val){
+                id = val;
+                console.log("id " + id);
+            });
+
+            if (id == 'null'){
+                console.log("Got null, trying again");
+                left_params.get(function(val){
+                    id = val;
+                });
+            }
+            console.log("final id " + id);
         }
         else if (obj == 'get CF' || obj == 'get LL'  ||
                  obj == 'get RL' || obj == 'get TOP' ||
@@ -192,3 +230,4 @@ if (document.addEventListener)
     document.addEventListener('click', callback, false);
 else
     document.attachEvent('onclick', callback);
+

@@ -33,7 +33,7 @@ ros.on('close', function() {
 // Guess connection of the rosbridge websocket
 function getRosBridgeHost() {
   if (window.location.protocol == 'file:') {
-    return 'localhost';
+    return '192.168.1.3';
   } else {
     return window.location.hostname;
   }
