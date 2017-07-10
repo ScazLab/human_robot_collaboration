@@ -87,9 +87,9 @@ public:
      * @param  _thread_rate period of the timer
      * @param  _rviz_visual if to publish the current point to rviz as a marker
      */
-    explicit ParticleThread(std::string _name = "particle_thread",
+    explicit ParticleThread(std::string _name   = "particle_thread",
                             double _thread_rate = THREAD_FREQ,
-                            bool _rviz_visual = false);
+                            bool _rviz_visual   = false);
 
     /**
      * Starts the particle thread
@@ -169,9 +169,9 @@ public:
      * @param  _thread_rate period of the timer
      * @param  _rviz_visual if to publish the current point to rviz as a marker
      */
-    explicit ParticleThreadImpl(std::string _name = "particle_thread_impl",
+    explicit ParticleThreadImpl(std::string _name   = "particle_thread_impl",
                                 double _thread_rate = THREAD_FREQ,
-                                bool _rviz_visual = false);
+                                bool _rviz_visual   = false);
 
     /**
      * Destructor
@@ -185,14 +185,14 @@ public:
 class LinearPointParticle : public ParticleThread
 {
 private:
-    // Speed of the trajectory (with thread-safe read and write)
-    ThreadSafe<double> speed;
-
     // Start point of the trajectory (with thread-safe read and write)
     ThreadSafe<Eigen::Vector3d> start_pt;
 
     // Desired point of the trajectory (with thread-safe read and write)
     ThreadSafe<Eigen::Vector3d>   des_pt;
+
+    // Speed of the trajectory in [m/s] (with thread-safe read and write)
+    ThreadSafe<double> speed;
 
 protected:
     /**
@@ -216,9 +216,9 @@ public:
      * @param  _thread_rate period of the timer
      * @param  _rviz_visual if to publish the current point to rviz as a marker
      */
-    explicit LinearPointParticle(std::string _name = "particle_thread_impl",
+    explicit LinearPointParticle(std::string _name   = "linear_particle",
                                  double _thread_rate = THREAD_FREQ,
-                                 bool _rviz_visual = false);
+                                 bool _rviz_visual   = false);
 
     /**
      * Sets the parameters of the particle
@@ -236,6 +236,70 @@ public:
      * Destructor
      */
     ~LinearPointParticle();
+};
+
+/**
+ * ParticleThread for a 3D Point following a circular trajectory in 3D space.
+ * Please be aware that the circular point particle will never stop moving.
+ */
+class CircularPointParticle : public ParticleThread
+{
+private:
+    // Center of the circumference (with thread-safe read and write)
+    ThreadSafe<Eigen::Vector3d> center;
+
+    // Azimuth [-pi; pi] and zenith [0; pi] angles (with thread-safe read and write)
+    ThreadSafe<Eigen::Vector2d> angles;
+
+    // Radius of the circumference in meters (with thread-safe read and write)
+    ThreadSafe<double> radius;
+
+    // Speed of the trajectory, in [rad/s] (with thread-safe read and write)
+    ThreadSafe<double> speed;
+
+protected:
+    /**
+     * Updates the particle.
+     *
+     * @param  _new_pt updated point
+     * @return         true/false if success/failure
+     */
+    bool updateParticle(Eigen::VectorXd& _new_pt);
+
+    /**
+     * Sets the current point and the desired target as markers for the RVIZPublisher to publish
+     */
+    void setMarker();
+
+public:
+    /**
+     * Constructor
+     *
+     * @param  _name        name of the object
+     * @param  _thread_rate period of the timer
+     * @param  _rviz_visual if to publish the current point to rviz as a marker
+     */
+    explicit CircularPointParticle(std::string _name   = "circular_particle",
+                                   double _thread_rate = THREAD_FREQ,
+                                   bool _rviz_visual   = false);
+
+    /**
+     * Sets the parameters of the particle
+     *
+     * @param  _center The starting point of the particle
+     * @param  _angles The azimuth [-pi; pi] and zenith [0; pi] angles
+     * @param  _radius The radius of the circumference
+     * @param  _speed  The particle speed
+     * @return         true/false if success/failure
+     */
+    bool setupParticle(const Eigen::Vector3d& _center,
+                       const Eigen::Vector2d& _angles,
+                       double _radius, double _speed);
+
+    /**
+     * Destructor
+     */
+    ~CircularPointParticle();
 };
 
 #endif

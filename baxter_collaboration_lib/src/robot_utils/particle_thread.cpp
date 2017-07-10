@@ -49,7 +49,7 @@ bool ParticleThread::start()
     if (is_set.get() && not is_running.get())
     {
         is_closing.set(false);
-        thread     = std::thread(&ParticleThread::internalThread, this);
+        thread = std::thread(&ParticleThread::internalThread, this);
         is_running.set(true);
 
         if (rviz_visual) { rviz_pub.start(); };
@@ -139,8 +139,8 @@ bool ParticleThreadImpl::updateParticle(Eigen::VectorXd& _new_pt)
 /*****************************************************************************/
 LinearPointParticle::LinearPointParticle(std::string _name, double _thread_rate, bool _rviz_visual) :
                                          ParticleThread(_name, _thread_rate, _rviz_visual),
-                                         speed(double(0.0)), start_pt(Eigen::Vector3d(0.0, 0.0, 0.0)),
-                                         des_pt(Eigen::Vector3d(0.0, 0.0, 0.0))
+                                         start_pt(Eigen::Vector3d(0.0, 0.0, 0.0)),
+                                         des_pt(Eigen::Vector3d(0.0, 0.0, 0.0)), speed(0.0)
 {
 
 }
@@ -204,3 +204,68 @@ LinearPointParticle::~LinearPointParticle()
 
 }
 
+/*****************************************************************************/
+/*                          CircularPointParticle                              */
+/*****************************************************************************/
+CircularPointParticle::CircularPointParticle(std::string _name, double _thread_rate, bool _rviz_visual) :
+                                         ParticleThread(_name, _thread_rate, _rviz_visual),
+                                         center(Eigen::Vector3d(0.0, 0.0, 0.0)),
+                                         angles(Eigen::Vector2d(0.0, 0.0)), radius(0.0), speed(0.0)
+{
+
+}
+
+bool CircularPointParticle::updateParticle(Eigen::VectorXd& _new_pt)
+{
+    double et = (ros::Time::now() - start_time).toSec(); // Elapsed time
+
+    double p = angles.get()[0]; // Azimuth phi
+    double t = angles.get()[1]; // Zenith theta
+    double r = radius.get();    // Radius
+    double s =  speed.get();    // Speed [rad/s]
+
+    Eigen::Vector3d c(center.get()); // Center of circumference
+
+    // From http://demonstrations.wolfram.com/ParametricEquationOfACircleIn3D/
+    Eigen::Vector3d u(-sin(p)       ,        cos(p),      0);
+    Eigen::Vector3d n( cos(p)*sin(t), sin(t)*sin(p), cos(t));
+
+    _new_pt = r * cos(s*et) * u + r * sin(s*et) * n.cross(u) + c;
+
+    return true;
+}
+
+void CircularPointParticle::setMarker()
+{
+    ParticleThread::setMarker();
+
+    Eigen::Vector3d _center = center.get();
+
+    geometry_msgs::Pose mrk_pos;
+    mrk_pos.position.x = _center[0];
+    mrk_pos.position.y = _center[1];
+    mrk_pos.position.z = _center[2];
+
+    RVIZMarker des_mrk(mrk_pos, ColorRGBA(1.0, 1.0, 0.0), 0.01);
+
+    rviz_pub.push_back(des_mrk);
+}
+
+bool CircularPointParticle::setupParticle(const Eigen::Vector3d& _center,
+                                          const Eigen::Vector2d& _angles,
+                                          double _radius, double _speed)
+{
+    center.set(_center);
+    angles.set(_angles);
+    radius.set(_radius);
+     speed.set( _speed);
+
+    is_set.set(true);
+
+    return true;
+}
+
+CircularPointParticle::~CircularPointParticle()
+{
+
+}
