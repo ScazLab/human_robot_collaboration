@@ -133,15 +133,16 @@ bool ArmCtrl::serviceCb(baxter_collaboration_msgs::DoAction::Request  &req,
     setAction(action);
 
     if (action != ACTION_HOME && action != ACTION_RELEASE && action != ACTION_HOLD &&
-        action != std::string(ACTION_HOLD) + "_leg" && action != std::string(ACTION_HOLD) + "_top")
+        action != std::string(ACTION_HOLD) +   "_leg" && action != std::string(ACTION_HOLD) + "_top" &&
+        action != "start_" + std::string(ACTION_HOLD) && action != "end_" + std::string(ACTION_HOLD))
     {
         setObjectIDs(areObjectsInDB(object_ids));
 
         if      (object_ids.size() == 0)
         {
             res.response = OBJ_NOT_IN_DB;
-            ROS_ERROR("[%s] Requested object(s) are not in the database!",
-                                                       getLimb().c_str());
+            ROS_ERROR("[%s] Requested object(s) are not in the database! Action %s",
+                                                 getLimb().c_str(), action.c_str());
             return true;
         }
         else if (object_ids.size() == 1)
