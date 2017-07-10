@@ -72,6 +72,7 @@ include_directories(SYSTEM ${Eigen_INCLUDE_DIRS}
 # without the need to link against the full robot_interface lib,
 # which would be an unnecessary overhead.
 add_library(robot_utils     include/robot_utils/utils.h
+                            include/robot_utils/thread_safe.h
                             include/robot_utils/rviz_publisher.h
                             include/robot_utils/particle_thread.h
                             include/robot_utils/baxter_trac_ik.h

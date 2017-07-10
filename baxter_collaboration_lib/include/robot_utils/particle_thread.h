@@ -21,6 +21,7 @@
 
 #include <Eigen/Dense>
 
+#include "robot_utils/thread_safe.h"
 #include "robot_utils/rviz_publisher.h"
 
 /**
@@ -34,23 +35,21 @@ private:
     std::thread thread; // Thread to update the particle
     ros::Rate        r; // Rate of the thread (in Hz)
 
-    bool           is_running; // Flag to know if the thread has been started
-    std::mutex mtx_is_running; // Mutex to protect the thread running flag
+    ThreadSafe<bool> is_running; // Thread-safe flag to know if the thread has been started
+    ThreadSafe<bool> is_closing; // Thread-safe flag to close the thread entry function
 
-    bool           is_closing;  // Flag to close the thread entry function
-    std::mutex mtx_is_closing;  // Mutex to protect the thread close flag
-
-    Eigen::VectorXd curr_pt; // Current position (or orientation) of the particle
-    std::mutex  mtx_curr_pt; // Mutex to protect access to the current point
+    // Current position (or orientation) of the particle (with thread-safe read and write)
+    ThreadSafe<Eigen::VectorXd> curr_pt;
 
     bool rviz_visualization; // Flag to know if to publish to rviz or not
 
 protected:
     ros::Time start_time; // When the thread started
 
-    bool is_particle_set; // If the particle has been setup. Defaults to false, to be
-                          // specialized in derived classes with proper function that set it to true
-                          // (otherwise the thread will not start)
+    // Thread-safe flag that says if the particle has been already setup.
+    // Defaults to false; needs to be specialized in derived classes with proper
+    // function that sets it to true (otherwise the thread will not start)
+    ThreadSafe<bool> is_particle_set;
 
     RVIZPublisher  rviz_pub; // Publisher to publish the point to rviz
 
@@ -71,6 +70,14 @@ protected:
      * Sets the current point as a marker for the RVIZPublisher to publish
      */
     virtual void setMarker();
+
+    /**
+     * Sets the current position (or orientation) of the particle to a new one
+     *
+     * @param  _curr_pt the new position (or orientation) of the particle
+     * @return          true/false if success/failure
+     */
+    bool setCurrPoint(const Eigen::VectorXd& _curr_pt);
 
 public:
     /**
@@ -99,62 +106,34 @@ public:
     bool stop();
 
     /**
-     * Gets if the thread needs to be closed or not
-     *
-     * @return if the thread needs to be closed or not
-     */
-    bool isClosing();
-
-    /**
-     * Sets if the thread needs to be closed or not
-     *
-     * @param _is_closing if the thread needs to be closed or not
-     * @return            true/false if success/failure
-     */
-    bool setIsClosing(bool _is_closing);
-
-    /**
-     * Gets if the thread is running
-     *
-     * @return if the thread is running or not
-     */
-    bool isRunning();
-
-    /**
-     * Sets if the thread is running or not
-     *
-     * @param _is_running if the thread is running or not
-     * @return            true/false if success/failure
-     */
-    bool setIsRunning(bool _is_running);
-
-    /**
      * Gets the rate of the thread
-     *
      * @return the rate of the thread
      */
     double getRate();
 
     /**
      * Gets the current position (or orientation) of the particle
-     *
      * @return the current position (or orientation) of the particle
      */
     Eigen::VectorXd getCurrPoint();
 
     /**
-     * Sets the current position (or orientation) of the particle to a new one
-     *
-     * @param  _curr_pt the new position (or orientation) of the particle
-     * @return          true/false if success/failure
-     */
-    bool setCurrPoint(const Eigen::VectorXd& _curr_pt);
-
-    /**
      * Gets the name of the object
      * @return the name of the object
      */
-    std::string     getName() { return      name; };
+    std::string getName() { return        name; };
+
+    /**
+     * Gets if the thread needs to be closed or not
+     * @return if the thread needs to be closed or not
+     */
+    bool isClosing() { return is_closing.get(); };
+
+    /**
+     * Gets if the thread is running
+     * @return if the thread is running or not
+     */
+    bool isRunning() { return is_running.get(); };
 
     /**
      * Destructor
@@ -200,13 +179,14 @@ public:
 class LinearPointParticle : public ParticleThread
 {
 private:
-    double speed;
+    // Speed of the trajectory (with thread-safe read and write)
+    ThreadSafe<double> speed;
 
-    Eigen::Vector3d start_pt; // Start point of the trajectory
-    std::mutex  mtx_start_pt; // Mutex to protect access to the start point
+    // Start point of the trajectory (with thread-safe read and write)
+    ThreadSafe<Eigen::Vector3d> start_pt;
 
-    Eigen::Vector3d   des_pt; // Desired point of the trajectory
-    std::mutex    mtx_des_pt; // Mutex to protect access to the desired point
+    // Desired point of the trajectory (with thread-safe read and write)
+    ThreadSafe<Eigen::Vector3d>   des_pt;
 
 protected:
     /**
@@ -221,36 +201,6 @@ protected:
      * Sets the current point and the desired target as markers for the RVIZPublisher to publish
      */
     void setMarker();
-
-    /**
-     * Gets the start position of the particle
-     *
-     * @return the start position of the particle
-     */
-    Eigen::VectorXd getStartPoint();
-
-    /**
-     * Sets the start position of the particle to a new one
-     *
-     * @param  _start_pt the new start position of the particle
-     * @return           true/false if success/failure
-     */
-    bool setStartPoint(const Eigen::VectorXd& _start_pt);
-
-    /**
-     * Gets the desired final position of the particle
-     *
-     * @return the desired final position of the particle
-     */
-    Eigen::VectorXd getDesPoint();
-
-    /**
-     * Sets the desired final position of the particle to a new one
-     *
-     * @param  _des_pt the new desired position of the particle
-     * @return         true/false if success/failure
-     */
-    bool setDesPoint(const Eigen::VectorXd& _des_pt);
 
 public:
     /**
