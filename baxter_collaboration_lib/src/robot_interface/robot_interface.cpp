@@ -15,7 +15,7 @@ RobotInterface::RobotInterface(string _name, string _limb, bool _use_robot, doub
                                ik_solver(_limb, _use_robot), use_trac_ik(_use_trac_ik), ctrl_freq(_ctrl_freq),
                                filt_force{0.0, 0.0, 0.0}, filt_change{0.0, 0.0, 0.0}, time_filt_last_updated(ros::Time::now()),
                                is_coll_av_on(false), is_coll_det_on(false), is_closing(false), use_cart_ctrl(_use_cart_ctrl),
-                               is_ctrl_running(false), is_experimental(_is_experimental), tracking_mode(false),
+                               is_ctrl_running(false), is_experimental(_is_experimental), ctrl_track_mode(false),
                                ctrl_mode(baxter_collaboration_msgs::GoToPose::POSITION_MODE), ctrl_check_mode("strict"), ctrl_type("pose"),
                                rviz_pub(_name)
 {
@@ -167,7 +167,7 @@ void RobotInterface::ThreadEntry()
 
                 if (hasCollidedIR("strict")) ROS_INFO_THROTTLE(2, "[%s] is colliding!", getLimb().c_str());
             }
-            else if (not tracking_mode)
+            else if (not ctrl_track_mode)
             {
                 ROS_INFO("[%s] Pose reached!\n", getLimb().c_str());
                 particle -> stop();
@@ -226,6 +226,7 @@ bool RobotInterface::initCtrlParams()
     time_start = ros::Time::now();
     pose_start = getPose();
 
+    particle.reset();
     particle = std::make_unique<LinearPointParticle>(getName()+"/"+getLimb(), THREAD_FREQ, true);
 
     Eigen::Vector3d ps(pose_start.position.x, pose_start.position.y, pose_start.position.z);
@@ -233,15 +234,17 @@ bool RobotInterface::initCtrlParams()
 
     LinearPointParticle *derived = dynamic_cast<LinearPointParticle*>(particle.get());
     derived->setupParticle(ps, pd, ARM_SPEED);
-    particle->start();
 
-    return true;
+    return particle->isSet() && particle->start();
 }
 
 void RobotInterface::ctrlMsgCb(const baxter_collaboration_msgs::GoToPose& msg)
 {
     if (int(getState()) != WORKING)
     {
+        // Disabling the controller to prevent race conditions in creating new particle objects
+        setCtrlRunning(false);
+
         // First, let's check if the type of the control command is allowed
         if (msg.type == "stop")
         {
@@ -338,12 +341,23 @@ void RobotInterface::ctrlMsgCb(const baxter_collaboration_msgs::GoToPose& msg)
             ctrl_check_mode = msg.check_mode;
         }
 
-        tracking_mode = msg.tracking_mode=="on"?true:false;
+        ctrl_track_mode = msg.tracking_mode=="on"?true:false;
 
-        setCtrlRunning(true);
-        initCtrlParams();
+        if (initCtrlParams())
+        {
+            setCtrlRunning(true);
+        }
+        else
+        {
+            ROS_ERROR("[%s] Initialization of control parameters has failed!", getLimb().c_str());
+            return;
+        }
 
-        ROS_INFO("[%s] Received new target pose: %s mode: %i", getLimb().c_str(), print(pose_des).c_str(), ctrl_mode);
+        ROS_INFO("[%s] Received new target pose: %s control mode: %i",
+                 getLimb().c_str(), print(pose_des).c_str(), ctrl_mode);
+
+        ROS_INFO("[%s] Check mode: %s Tracking_mode: %s",
+                 getLimb().c_str(), ctrl_check_mode.c_str(), ctrl_track_mode==true?"ON":"OFF");
     }
     else
     {

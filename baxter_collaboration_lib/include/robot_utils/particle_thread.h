@@ -49,7 +49,7 @@ protected:
     // Thread-safe flag that says if the particle has been already setup.
     // Defaults to false; needs to be specialized in derived classes with proper
     // function that sets it to true (otherwise the thread will not start)
-    ThreadSafe<bool> is_particle_set;
+    ThreadSafe<bool> is_set;
 
     RVIZPublisher  rviz_pub; // Publisher to publish the point to rviz
 
@@ -134,6 +134,12 @@ public:
      * @return if the thread is running or not
      */
     bool isRunning() { return is_running.get(); };
+
+    /**
+     * Returns if the particle is set or not
+     * @return if the particle is set or not
+     */
+    bool isSet() { return is_set.get(); };
 
     /**
      * Destructor

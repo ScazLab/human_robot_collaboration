@@ -21,7 +21,7 @@
 ParticleThread::ParticleThread(std::string _name, double _thread_rate, bool _rviz_visual) :
                                name(_name), r(_thread_rate), is_running(false), is_closing(false),
                                rviz_visual(_rviz_visual), start_time(ros::Time::now()),
-                               is_particle_set(false), rviz_pub(_name)
+                               is_set(false), rviz_pub(_name)
 {
 
 }
@@ -46,7 +46,7 @@ void ParticleThread::internalThread()
 
 bool ParticleThread::start()
 {
-    if (is_particle_set.get() && not is_running.get())
+    if (is_set.get() && not is_running.get())
     {
         is_closing.set(false);
         thread     = std::thread(&ParticleThread::internalThread, this);
@@ -66,7 +66,7 @@ bool ParticleThread::stop()
 {
     is_closing.set(true);
     is_running.set(false);
-    is_particle_set.set(false);
+    is_set.set(false);
 
     if (rviz_visual) { rviz_pub.stop(); };
 
@@ -87,7 +87,7 @@ double ParticleThread::getRate()
 
 void ParticleThread::setMarker()
 {
-    Eigen::Vector3d _curr_pt = getCurrPoint();
+    Eigen::VectorXd _curr_pt = getCurrPoint();
 
     geometry_msgs::Pose mrk_pos;
     mrk_pos.position.x = _curr_pt[0];
@@ -106,9 +106,11 @@ Eigen::VectorXd ParticleThread::getCurrPoint()
 
 bool ParticleThread::setCurrPoint(const Eigen::VectorXd& _curr_pt)
 {
+    bool res = curr_pt.set(_curr_pt);
+
     if (rviz_visual) { setMarker(); };
 
-    return curr_pt.set(_curr_pt);
+    return res;
 }
 
 ParticleThread::~ParticleThread()
@@ -122,7 +124,7 @@ ParticleThread::~ParticleThread()
 ParticleThreadImpl::ParticleThreadImpl(std::string _name, double _thread_rate, bool _rviz_visual) :
                                        ParticleThread(_name, _thread_rate, _rviz_visual)
 {
-    is_particle_set.set(true);
+    is_set.set(true);
 }
 
 bool ParticleThreadImpl::updateParticle(Eigen::VectorXd& _new_pt)
@@ -192,7 +194,7 @@ bool LinearPointParticle::setupParticle(const Eigen::Vector3d& _start_pt,
       des_pt.set(  _des_pt);
        speed.set(   _speed);
 
-    is_particle_set.set(true);
+    is_set.set(true);
 
     return true;
 }

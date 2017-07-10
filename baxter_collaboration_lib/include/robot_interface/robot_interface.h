@@ -139,7 +139,7 @@ private:
     bool is_ctrl_running;   // Flag to know if the controller is running
     std::mutex  mtx_ctrl;   // Mutex to protect the is_ctrl_running flag
     bool is_experimental;   // Flag to know if the robot is running in experimental mode
-    bool   tracking_mode;   // Flag to know the tracking mode of the control loop
+    bool ctrl_track_mode;   // Flag to know the tracking mode of the control loop
 
     // Control mode for the controller server. It can be either
     // baxter_collaboration_msgs::GoToPose::POSITION_MODE,

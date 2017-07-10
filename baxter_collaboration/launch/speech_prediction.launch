@@ -14,7 +14,7 @@
     <!-- If the robot will recover from an error or will wait the external planner's decisions -->
     <arg name="internalRecovery"    default="false"/>
     <!-- If the system should use the robot or not (useful for debugging) -->
-    <arg name="useRobot"            default="true"/>
+    <arg name="useRobot"            default="false"/>
 
     <param name="action_provider/force_threshold_left"  value="$(arg forceThresholdL)"/>
     <param name="action_provider/force_threshold_right" value="$(arg forceThresholdR)"/>
