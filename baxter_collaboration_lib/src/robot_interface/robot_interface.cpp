@@ -383,6 +383,7 @@ void RobotInterface::setCtrlRunning(bool _flag)
     else
     {
         rviz_pub.stop();
+        particle.reset();
         // setState(   CTRL_DONE);
     }
 
