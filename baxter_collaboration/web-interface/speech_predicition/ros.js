@@ -93,19 +93,19 @@ function callback(e) {
     // corresponding to buttons presses
 
     //These are defines in speech_prediction.launch
-    var left_param_path = 'action_provider/objects_left/';
-    var right_param_path = 'action_provider/objects_right/';
+    var left_param_path = '/action_provider/objects_left/';
+    var right_param_path = '/action_provider/objects_right/';
 
-    var left_params = new ROSLIB.Param({
-        ros: ros,
-        name: left_param_path
-    });
+    // var left_params = new ROSLIB.Param({
+    //     ros: ros,
+    //     name: left_param_path
+    // });
 
-    var right_params = new ROSLIB.Param({
-        ros: ros,
-        name: left_param_path
+    // var right_params = new ROSLIB.Param({
+    //     ros: ros,
+    //     name: left_param_path
 
-    });
+    // });
     // console.log(e.target.tagName);
     if (e.target.tagName == 'BUTTON')
     {
@@ -139,27 +139,48 @@ function callback(e) {
               console.log('Got Response: ' + res.success);
           });
         }
-        else if(obj.includes("get_")){
+
+        else if(obj.includes("get_") || obj.includes("c_")){
+
             var req = new ROSLIB.ServiceRequest();
-            var o = obj.replace("get_",'');
-            var id;
+            var res = new ROSLIB.ServiceResponse();
 
-            right_params.name = right_param_path + o;
-            left_params.name = left_param_path + o;
+            // remove prefix, so that we can use the name for other things
+            var o = obj.replace(/(get|c)_/g,'');
+            console.log("o: "+ o);
+            //o = obj.replace("c_",'');
 
-            right_params.get(function(val){
-                id = val;
-                console.log("id " + id);
+            var params = new ROSLIB.Param({
+                ros: ros,
+                name: ""
             });
 
-            if (id == 'null'){
-                console.log("Got null, trying again");
-                left_params.get(function(val){
-                    id = val;
-                });
+            // Figure out param name based on the name of buttons
+            if(obj.includes("table") || obj.includes("leg")){
+                params.name = left_param_path + o;
             }
-            console.log("final id " + id);
+            else{
+                params.name = right_param_path + o;
+            }
+
+
+            req.action = obj.includes("get_")? "get_pass":"cleanup";
+
+
+            console.log("PARAM: " + params.name);
+
+            params.get(function(val){
+                req.object = [Number(val)];
+                console.log("service: " + params.name + " val: " + val);
+
+                console.log('Requested: ', req.action, req.object);
+                leftArmService.callService(req,function(res) {
+                    console.log('Got Response: ' + res.success);
+                });
+            });
+
         }
+
         else if (obj == 'get CF' || obj == 'get LL'  ||
                  obj == 'get RL' || obj == 'get TOP' ||
                  obj == 'pass' )
