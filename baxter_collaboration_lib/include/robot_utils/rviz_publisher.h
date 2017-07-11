@@ -42,9 +42,13 @@ struct ColorRGBA
  */
 struct RVIZMarker
 {
-    geometry_msgs::Pose pose; // Pose of the object (position + orientation)
-    ColorRGBA            col; // RGBA color to visualize
+    // Pose of the object (position + orientation) in case of a single marker, e.g. CUBE
+    geometry_msgs::Pose    pose;
 
+    // Points of the objects in case of an array of markers, e.g. a SPHERE_LIST
+    std::vector<geometry_msgs::Point> points;
+
+    ColorRGBA   col; // RGBA color to visualize
     double     size; // size in meters
     int        type; // type of object, eg visualization_msgs::Marker::CUBE
     double lifetime; // lifetime of the marker, in seconds
@@ -63,6 +67,14 @@ struct RVIZMarker
     RVIZMarker(double _x, double _y, double _z,
                ColorRGBA _col = ColorRGBA(0.5, 0.5, 0.5, 1.0),
                double _size = 0.05, int _type = visualization_msgs::Marker::CUBE,
+               double _lifetime = 10.0);
+
+    /**
+     * Constructor that accepts an array of points for complex markers, e.g. SPHERE_LIST
+     */
+    RVIZMarker(std::vector<geometry_msgs::Point> _points,
+               ColorRGBA _col = ColorRGBA(0.5, 0.5, 0.5, 1.0),
+               double _size = 0.05, int _type = visualization_msgs::Marker::SPHERE_LIST,
                double _lifetime = 10.0);
 
     /**

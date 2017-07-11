@@ -48,6 +48,13 @@ RVIZMarker::RVIZMarker(double _x, double _y, double _z, ColorRGBA _col,
     setPosition(_x, _y, _z);
 }
 
+RVIZMarker::RVIZMarker(std::vector<geometry_msgs::Point> _points, ColorRGBA _col,
+                       double _size, int _type, double _lifetime) :
+                       RVIZMarker(geometry_msgs::Pose(), _col, _size, _type, _lifetime)
+{
+    points = _points;
+}
+
 void RVIZMarker::setPosition(double _x, double _y, double _z)
 {
     pose.position.x = _x;
@@ -87,15 +94,30 @@ void RVIZPublisher::publishMarkersCb(const ros::TimerEvent&)
             mrkr.header.stamp    = ros::Time();
             mrkr.ns     =            getName();
             mrkr.id     =               int(i);
-            mrkr.type   =      _markers[i].type;
+            mrkr.type   =     _markers[i].type;
             mrkr.action = visualization_msgs::Marker::ADD;
-            mrkr.pose.position.x    = _markers[i].pose.position.x;
-            mrkr.pose.position.y    = _markers[i].pose.position.y;
-            mrkr.pose.position.z    = _markers[i].pose.position.z;
-            mrkr.pose.orientation.x = _markers[i].pose.orientation.x;
-            mrkr.pose.orientation.y = _markers[i].pose.orientation.y;
-            mrkr.pose.orientation.z = _markers[i].pose.orientation.z;
-            mrkr.pose.orientation.w = _markers[i].pose.orientation.w;
+
+            if (mrkr.type == visualization_msgs::Marker::LINE_STRIP  ||
+                mrkr.type == visualization_msgs::Marker::LINE_LIST   ||
+                mrkr.type == visualization_msgs::Marker::CUBE_LIST   ||
+                mrkr.type == visualization_msgs::Marker::SPHERE_LIST ||
+                mrkr.type == visualization_msgs::Marker::POINTS        )
+            {
+                for (size_t j = 0; j < _markers[i].points.size(); ++j)
+                {
+                    mrkr.points.push_back(_markers[i].points[j]);
+                }
+            }
+            else
+            {
+                mrkr.pose.position.x    = _markers[i].pose.position.x;
+                mrkr.pose.position.y    = _markers[i].pose.position.y;
+                mrkr.pose.position.z    = _markers[i].pose.position.z;
+                mrkr.pose.orientation.x = _markers[i].pose.orientation.x;
+                mrkr.pose.orientation.y = _markers[i].pose.orientation.y;
+                mrkr.pose.orientation.z = _markers[i].pose.orientation.z;
+                mrkr.pose.orientation.w = _markers[i].pose.orientation.w;
+            }
 
             // Custom size of the object
             if (mrkr.type == visualization_msgs::Marker::ARROW)
