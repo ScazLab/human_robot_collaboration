@@ -18,6 +18,8 @@
 
 #include <mutex>
 
+#include <Eigen/Dense>
+
 #include <visualization_msgs/MarkerArray.h>
 
 #include "robot_utils/utils.h"
@@ -64,7 +66,7 @@ struct RVIZMarker
     /**
      * Constructor that accepts the x, y, z position coordinates of the marker
      */
-    RVIZMarker(double _x, double _y, double _z,
+    RVIZMarker(Eigen::Vector3d _position,
                ColorRGBA _col = ColorRGBA(0.5, 0.5, 0.5, 1.0),
                double _size = 0.05, int _type = visualization_msgs::Marker::CUBE,
                double _lifetime = 10.0);

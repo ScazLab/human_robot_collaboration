@@ -87,16 +87,17 @@ double ParticleThread::getRate()
 
 void ParticleThread::setMarker()
 {
-    Eigen::VectorXd _curr_pt = getCurrPoint();
-
-    geometry_msgs::Pose mrk_pos;
-    mrk_pos.position.x = _curr_pt[0];
-    mrk_pos.position.y = _curr_pt[1];
-    mrk_pos.position.z = _curr_pt[2];
-
-    RVIZMarker curr_mrk(mrk_pos, ColorRGBA(0.0, 1.0, 1.0), 0.03);
-
-    rviz_pub.setMarkers(std::vector<RVIZMarker>{curr_mrk});
+    if (getCurrPoint().size() == 3)
+    {
+        rviz_pub.setMarkers(std::vector<RVIZMarker>{RVIZMarker(getCurrPoint(),
+                                                               ColorRGBA(0.0, 1.0, 1.0),
+                                                               0.015)});
+    }
+    else
+    {
+        ROS_WARN_THROTTLE(1, "[%s] It is only possible to visualize a Vector3d points",
+                                                                    getName().c_str());
+    }
 }
 
 Eigen::VectorXd ParticleThread::getCurrPoint()
@@ -174,16 +175,7 @@ void LinearPointParticle::setMarker()
 {
     ParticleThread::setMarker();
 
-    Eigen::Vector3d _des_pt = des_pt.get();
-
-    geometry_msgs::Pose mrk_pos;
-    mrk_pos.position.x = _des_pt[0];
-    mrk_pos.position.y = _des_pt[1];
-    mrk_pos.position.z = _des_pt[2];
-
-    RVIZMarker des_mrk(mrk_pos, ColorRGBA(1.0, 1.0, 0.0));
-
-    rviz_pub.push_back(des_mrk);
+    rviz_pub.push_back(RVIZMarker(des_pt.get(), ColorRGBA(1.0, 1.0, 0.0), 0.02));
 }
 
 bool LinearPointParticle::setupParticle(const Eigen::Vector3d& _start_pt,
@@ -239,16 +231,7 @@ void CircularPointParticle::setMarker()
 {
     ParticleThread::setMarker();
 
-    Eigen::Vector3d _center = center.get();
-
-    geometry_msgs::Pose mrk_pos;
-    mrk_pos.position.x = _center[0];
-    mrk_pos.position.y = _center[1];
-    mrk_pos.position.z = _center[2];
-
-    RVIZMarker des_mrk(mrk_pos, ColorRGBA(1.0, 1.0, 0.0), 0.01);
-
-    rviz_pub.push_back(des_mrk);
+    rviz_pub.push_back(RVIZMarker(center.get(), ColorRGBA(1.0, 1.0, 0.0), 0.02));
 }
 
 bool CircularPointParticle::setupParticle(const Eigen::Vector3d& _center,

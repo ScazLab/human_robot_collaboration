@@ -41,11 +41,11 @@ RVIZMarker::RVIZMarker(geometry_msgs::Pose _pose, ColorRGBA _col,
 
 };
 
-RVIZMarker::RVIZMarker(double _x, double _y, double _z, ColorRGBA _col,
+RVIZMarker::RVIZMarker(Eigen::Vector3d _position, ColorRGBA _col,
                        double _size, int _type, double _lifetime) :
                        RVIZMarker(geometry_msgs::Pose(), _col, _size, _type, _lifetime)
 {
-    setPosition(_x, _y, _z);
+    setPosition(_position[0], _position[1], _position[2]);
 }
 
 RVIZMarker::RVIZMarker(std::vector<geometry_msgs::Point> _points, ColorRGBA _col,
