@@ -31,8 +31,13 @@
     </div>
     <div class="container">
         <div class="row">
-            <div class="col-xl-10 text-center">
-                <div id="svg-container" class="svg-container">
+            <div class="col-xl-4 text-center" id="left_table_div">
+                <div id="left-svg-container" class="svg-container">
+                    <svg></svg>
+                </div>
+            </div>
+            <div class="col-xl-4 col-xl-offset-1 text-center" id="right_table_div">
+                <div id="right-svg-container" class="svg-container">
                     <svg></svg>
                 </div>
             </div>
@@ -124,7 +129,7 @@
 <script src="https://cdn.rawgit.com/twbs/bootstrap/v4.0.0-alpha.2/dist/js/bootstrap.min.js"></script>
 
 <script src="ros.js"></script>
-<script src="baxter_collaboration.js"></script>
+<script src="tables.js"></script>
 
 <script type="text/javascript">
   $('#d_get_pass').on("click",function(){
