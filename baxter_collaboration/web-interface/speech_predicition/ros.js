@@ -112,13 +112,12 @@ function callback(e) {
           errorPressedL.publish(message);
           errorPressedR.publish(message);
         }
-
-        else if(obj.includes("get_") || obj.includes("c_")){
-
+        else if(obj.includes("get_") || obj.includes("c_"))
+        {
             var req = new ROSLIB.ServiceRequest();
             var res = new ROSLIB.ServiceResponse();
 
-            req.objects = new Array();
+            req.objects = [];
 
             // remove prefix, so that we can use the name for other things
             var o = obj.replace(/(get|c)_/g,'');
@@ -162,12 +161,12 @@ function callback(e) {
             });
 
         }
-
-        else if (obj.includes("hold")){
+        else if (obj.includes("hold"))
+        {
             var req = new ROSLIB.ServiceRequest();
             var res = new ROSLIB.ServiceResponse();
 
-            req.objects = new Array();
+            req.objects = [];
 
             req.action = obj.includes("top") ? "hold_top": "hold_leg";
 
@@ -176,7 +175,6 @@ function callback(e) {
                 console.log('[right] Got Response: ' + res.success + ' ' + res.response);
             });
         }
-
         else if (obj == 'home')
         {
           var req = new ROSLIB.ServiceRequest();
