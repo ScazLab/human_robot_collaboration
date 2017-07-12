@@ -5,9 +5,7 @@ var tbl_w = width / 4;
 var tbl_left_x = 20.;
 var tbl_right_x = 3 * width / 4;
 
-var svg = d3.select("body").append("svg")
-    .attr("width", width)
-    .attr("height", height);
+var svg = d3.select("svg");
 
 var data = [{label: "Click me 1", x: width / 4, y: height / 4 },
             {label: "Click me 2", x: width / 2, y: height / 2 },

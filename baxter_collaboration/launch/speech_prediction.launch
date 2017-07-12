@@ -14,7 +14,7 @@
     <!-- If the robot will recover from an error or will wait the external planner's decisions -->
     <arg name="internalRecovery"    default="false"/>
     <!-- If the system should use the robot or not (useful for debugging) -->
-    <arg name="useRobot"            default="false"/>
+    <arg name="useRobot"            default="true"/>
 
     <param name="action_provider/force_threshold_left"  value="$(arg forceThresholdL)"/>
     <param name="action_provider/force_threshold_right" value="$(arg forceThresholdR)"/>
@@ -44,7 +44,7 @@
     </rosparam>
 
     <node pkg="baxter_collaboration" type="baxter_display"  name="baxter_display"  output="screen"/>
-    <node pkg="baxter_collaboration" type="flatpack_action_provider" name="flatpack_action_provider" output="screen"/>
+    <node pkg="baxter_collaboration" type="modular_action_provider" name="modular_action_provider" output="screen"/>
 
     <!-- <node name="image_baxter_display" pkg="image_view" type="image_view" respawn="false" output="log">
         <remap from="image" to="/robot/xdisplay"/>

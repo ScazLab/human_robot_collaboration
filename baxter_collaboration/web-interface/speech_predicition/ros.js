@@ -33,7 +33,7 @@ ros.on('close', function() {
 // Guess connection of the rosbridge websocket
 function getRosBridgeHost() {
   if (window.location.protocol == 'file:') {
-    return 'localhost';
+    return '192.168.1.3';
   } else {
     return window.location.hostname;
   }
@@ -75,21 +75,27 @@ var errorPressedR = new ROSLIB.Topic({
 var leftArmService  = new ROSLIB.Service({
   ros : ros,
   name: '/action_provider/service_left',
-  messageType : 'baxter_collaboration/DoAction'
+  messageType : 'baxter_collaboration_msgs/DoAction'
 });
 
 // Service Client to interface with the right arm
 var rightArmService = new ROSLIB.Service({
   ros : ros,
   name: '/action_provider/service_right',
-  messageType : 'baxter_collaboration/DoAction'
+  messageType : 'baxter_collaboration_msgs/DoAction'
 });
 
 // Add a callback for any element on the page
 function callback(e) {
     var e = window.e || e;
 
-    // console.log(e.target.tagName);
+    // Access the parameter server to get IDs of objs
+    // corresponding to buttons presses
+
+    //These are defines in speech_prediction.launch
+    var left_param_path = '/action_provider/objects_left/';
+    var right_param_path = '/action_provider/objects_right/';
+
     if (e.target.tagName == 'BUTTON')
     {
         var obj = e.target.firstChild.nodeValue;
@@ -106,60 +112,83 @@ function callback(e) {
           errorPressedL.publish(message);
           errorPressedR.publish(message);
         }
-        else if (obj == 'hold' || obj == 'release')
+        else if(obj.includes("get_") || obj.includes("c_"))
         {
-          var req = new ROSLIB.ServiceRequest();
-          req.object = -1;
+            var req = new ROSLIB.ServiceRequest();
+            var res = new ROSLIB.ServiceResponse();
 
-          if      (obj == 'hold')    { req.action = 'start_hold'; }
-          else if (obj == 'release') { req.action =   'end_hold'; }
+            req.objects = [];
 
-          var res = new ROSLIB.ServiceResponse();
+            // remove prefix, so that we can use the name for other things
+            var o = obj.replace(/(get|c)_/g,'');
 
-          console.log('Requested: ', req.action, req.object);
-          rightArmService.callService(req,function(res)
-          {
-              console.log('Got Response: ' + res.success);
-          });
+            var params = new ROSLIB.Param({
+                ros: ros,
+                name: ""
+            });
+
+            // Figure out param name based on the name of buttons
+            if(obj.includes("table") || obj.includes("leg")){
+                params.name = left_param_path + o;
+            }
+            else{
+                params.name = right_param_path + o;
+            }
+
+
+            req.action = obj.includes("get_")? "get_pass":"cleanup";
+
+            console.log("PARAM: " + params.name);
+
+            // get id associated with each obj and then pick it up
+            params.get(function(val){
+
+                req.objects[0] = Number(val);
+                console.log("service: " + params.name + " val: " + val);
+
+                console.log('Requested: ', req.action, req.objects);
+                // ids < 100 usually are handled by right arm
+                if(Number(val) < 100){
+                    rightArmService.callService(req,function(res) {
+                        console.log('Got Response: ' + res.success);
+                    });
+                }
+                else{
+                    leftArmService.callService(req,function(res) {
+                        console.log('Got Response: ' + res.success);
+                    });
+                }
+            });
+
         }
-        else if (obj == 'get CF' || obj == 'get LL'  ||
-                 obj == 'get RL' || obj == 'get TOP' ||
-                 obj == 'pass' )
+        else if (obj.includes("hold"))
         {
-          var req = new ROSLIB.ServiceRequest();
+            var req = new ROSLIB.ServiceRequest();
+            var res = new ROSLIB.ServiceResponse();
 
-          if (obj == 'pass') { req.action = 'pass'; }
-          else               { req.action = 'get';  }
+            req.objects = [];
 
-          if      (obj.replace('get ','') == 'CF')  { req.object = 24; }
-          else if (obj.replace('get ','') == 'LL')  { req.object = 17; }
-          else if (obj.replace('get ','') == 'RL')  { req.object = 26; }
-          else if (obj.replace('get ','') == 'TOP') { req.object = 21; }
-          else { console.error('Requested an object that was not allowed!'); };
+            req.action = obj.includes("top") ? "hold_top": "hold_leg";
 
-          var res = new ROSLIB.ServiceResponse();
-
-          console.log('Requested: ', req.action, req.object);
-          leftArmService.callService(req,function(res)
-          {
-            console.log('Got Response: ' + res.success);
-          });
+            console.log('Requested: ', req.action, req.objects);
+            rightArmService.callService(req,function(res) {
+                console.log('[right] Got Response: ' + res.success + ' ' + res.response);
+            });
         }
         else if (obj == 'home')
         {
           var req = new ROSLIB.ServiceRequest();
           var res = new ROSLIB.ServiceResponse();
           req.action = obj;
-          req.object =  -1;
 
-          console.log('Requested: ', req.action, req.object);
+          console.log('Requested: ', req.action, req.objects);
           rightArmService.callService(req,function(res)
           {
-              console.log('[right] Got Response: ' + res.success);
+              console.log('[right] Got Response: ' + res.success + ' ' + res.response);
           });
           leftArmService.callService(req,function(res)
           {
-              console.log('[left] Got Response: ' + res.success);
+              console.log('[left] Got Response: ' + res.success + ' ' + res.response);
           });
         }
         else
@@ -192,3 +221,4 @@ if (document.addEventListener)
     document.addEventListener('click', callback, false);
 else
     document.attachEvent('onclick', callback);
+
