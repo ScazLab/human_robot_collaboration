@@ -27,4 +27,25 @@ var rightAruco  = new ROSLIB.Service({
     messageType : 'baxter_collaboration_msgs/DoAction'
 });
 
-var svg = d3.select("svg");
+var width  = 640,
+    height = 480;
+
+var left_svg = d3.select("#left-svg-container").select("svg")
+                  //responsive SVG needs these 2 attributes and no width and height attr
+                  .attr('preserveAspectRatio', 'xMinYMin meet')
+                  .attr('viewBox', '0 0 ' + width + ' ' + height)
+                  //class to make it responsive
+                  .classed('svg-content-responsive', true);
+
+var right_svg = d3.select("#right-svg-container").select("svg")
+                  //responsive SVG needs these 2 attributes and no width and height attr
+                  .attr('preserveAspectRatio', 'xMinYMin meet')
+                  .attr('viewBox', '0 0 ' + width + ' ' + height)
+                  //class to make it responsive
+                  .classed('svg-content-responsive', true);
+
+//Draw the Circle
+var circle = left_svg.append("circle")
+                         .attr("cx", 30)
+                         .attr("cy", 30)
+                         .attr("r", 20);
