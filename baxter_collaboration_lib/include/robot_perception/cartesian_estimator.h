@@ -29,7 +29,7 @@
 
 #include "robot_utils/ros_thread_image.h"
 
-#include "baxter_collaboration_msgs/ObjectsArray.h"
+#include "human_robot_collaboration_msgs/ObjectsArray.h"
 
 #define AREA_THRES  50      // px
 
@@ -176,7 +176,7 @@ private:
     ros::Publisher objs_pub;
 
     // Message to send through objs_pub
-    baxter_collaboration_msgs::ObjectsArray objects_msg;
+    human_robot_collaboration_msgs::ObjectsArray objects_msg;
 
     // Camera parameters
     aruco::CameraParameters cam_param;

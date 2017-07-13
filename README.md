@@ -1,4 +1,4 @@
-# Baxter Collaboration [![Build Status](https://travis-ci.org/ScazLab/baxter_collaboration.svg?branch=master)](https://travis-ci.org/ScazLab/baxter_collaboration) [![Issues](https://img.shields.io/github/issues/ScazLab/baxter_collaboration.svg?label=Issues)](https://github.com/ScazLab/baxter_collaboration/issues) [![Codacy Badge](https://api.codacy.com/project/badge/Grade/89218b1bb7b84e6e821d689fbd5129a8)](https://www.codacy.com/app/Baxter-collaboration/baxter_collaboration?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=ScazLab/baxter_collaboration&amp;utm_campaign=Badge_Grade)
+# Baxter Collaboration [![Build Status](https://travis-ci.org/ScazLab/human_robot_collaboration.svg?branch=master)](https://travis-ci.org/ScazLab/human_robot_collaboration) [![Issues](https://img.shields.io/github/issues/ScazLab/human_robot_collaboration.svg?label=Issues)](https://github.com/ScazLab/human_robot_collaboration/issues) [![Codacy Badge](https://api.codacy.com/project/badge/Grade/89218b1bb7b84e6e821d689fbd5129a8)](https://www.codacy.com/app/Baxter-collaboration/human_robot_collaboration?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=ScazLab/human_robot_collaboration&amp;utm_campaign=Badge_Grade)
 
 Yet another repository for the Baxter collaboration task.
 
@@ -20,9 +20,9 @@ If you are using this software and or one of its components, we warmly recommend
 
 We use the new Catkin Command Line Tools `catkin_tools`, a Python package that provides command line tools for working with the catkin meta-buildsystem and catkin workspaces. This package was announced in March 2015 and is still in beta, but we didn't experience any problem with it. The following instructions apply to this new package, even though the repository can be used and compile with the old `catkin_make` without issues.
 
- 1. Compile the repo: `catkin build baxter_collaboration`
- 2. Compile tests and run them (to be done after compiling the repo with command #1): `catkin build baxter_collaboration --catkin-make-args run_tests`
- 3. Check the results of step #2: `catkin build baxter_collaboration_lib --catkin-make-args run_tests && catkin_test_results build/baxter_collaboration_lib`
+ 1. Compile the repo: `catkin build human_robot_collaboration`
+ 2. Compile tests and run them (to be done after compiling the repo with command #1): `catkin build human_robot_collaboration --catkin-make-args run_tests`
+ 3. Check the results of step #2: `catkin build human_robot_collaboration_lib --catkin-make-args run_tests && catkin_test_results build/human_robot_collaboration_lib`
 
 ### Tested environments
 
@@ -53,20 +53,20 @@ These two modes can be enabled concurrently, but this feature is disabled by def
 
 ### Mode A. Cartesian Controller Server
 
-In this mode, the user can ask the robot to go to a specific _3D Position_ or _6D Pose_ (position + orientation), and the robot will simply go there (if physically possible). To guarantee safety, the robot _still_ has the standard safety systems enabled by default. More advanced uses are allowed, but not exposed to the user: if you want to tinker with advanced features, we recommend to specialize the [`RobotInterface` class](https://github.com/ScazLab/baxter_collaboration/blob/master/baxter_collaboration_lib/include/robot_interface/robot_interface.h).
+In this mode, the user can ask the robot to go to a specific _3D Position_ or _6D Pose_ (position + orientation), and the robot will simply go there (if physically possible). To guarantee safety, the robot _still_ has the standard safety systems enabled by default. More advanced uses are allowed, but not exposed to the user: if you want to tinker with advanced features, we recommend to specialize the [`RobotInterface` class](https://github.com/ScazLab/human_robot_collaboration/blob/master/human_robot_collaboration_lib/include/robot_interface/robot_interface.h).
 
 In order to use the Cartesian Controller Server, you have to launch it with:
 
 ```
-roslaunch baxter_collaboration baxter_controller.launch
+roslaunch human_robot_collaboration baxter_controller.launch
 ```
 
 This should create two topics the user can request operational space configurations to. They are `/baxter_controller/left/go_to_pose` for left arm, and `/baxter_controller/left/go_to_pose` for right arm. In the following, there are some examples on how to require them from terminal (e.g. for the left arm):
 
- * _[6D Pose]_ : `rostopic pub /baxter_controller/left/go_to_pose baxter_collaboration_msgs/GoToPose "{pose_stamp: {pose:{position:{ x: 0.55, y: 0.55, z: 0.2}, orientation:{ x: 0, y: 1, z: 0, w: 0}}}, ctrl_mode: 0}" --once`
- * _[3D Position]_ : `rostopic pub /baxter_controller/left/go_to_pose baxter_collaboration_msgs/GoToPose "{pose_stamp: {pose:{position:{ x: 0.55, y: 0.55, z: 0.2}, orientation:{ x: -100, y: -100, z: -100, w: -100}}}, ctrl_mode: 0}" --once`. This differs from the previous case since now every value of the orientation quaternion is set to -100. This is to communicate the Cartesian Controller to reach the desired position _while maintaining the current orientation_.
+ * _[6D Pose]_ : `rostopic pub /baxter_controller/left/go_to_pose human_robot_collaboration_msgs/GoToPose "{pose_stamp: {pose:{position:{ x: 0.55, y: 0.55, z: 0.2}, orientation:{ x: 0, y: 1, z: 0, w: 0}}}, ctrl_mode: 0}" --once`
+ * _[3D Position]_ : `rostopic pub /baxter_controller/left/go_to_pose human_robot_collaboration_msgs/GoToPose "{pose_stamp: {pose:{position:{ x: 0.55, y: 0.55, z: 0.2}, orientation:{ x: -100, y: -100, z: -100, w: -100}}}, ctrl_mode: 0}" --once`. This differs from the previous case since now every value of the orientation quaternion is set to -100. This is to communicate the Cartesian Controller to reach the desired position _while maintaining the current orientation_.
 
-Obviously, these same messages can be sent directly _within_ your code. Please take a look at the [`GoToPose.msg` file](https://github.com/ScazLab/baxter_collaboration/blob/master/baxter_collaboration_msgs/msg/GoToPose.msg) for further info.
+Obviously, these same messages can be sent directly _within_ your code. Please take a look at the [`GoToPose.msg` file](https://github.com/ScazLab/human_robot_collaboration/blob/master/human_robot_collaboration_msgs/msg/GoToPose.msg) for further info.
 
 ### Mode B. High-Level Actions
 
@@ -74,14 +74,14 @@ We implemented a low-level, state-less controller able to operate each of the ar
 
 To enable this mode, run this in two separate terminals:
 
- 1. `roslaunch baxter_collaboration baxter_marker_publisher.launch`
- 2. `roslaunch baxter_collaboration flatpack_furniture.launch` or `roslaunch baxter_collaboration tower_building.launch`. These are two predefined launch files that we use for two different experiments we ran in the lab. If you would like to create and use your own high-level actions, we suggest you to specialize the [`ArmCtrl` class](https://github.com/ScazLab/baxter_collaboration/blob/master/baxter_collaboration_lib/include/robot_interface/arm_ctrl.h). See the [`flatpack_furniture library`](https://github.com/ScazLab/baxter_collaboration/tree/master/baxter_collaboration/lib/include/flatpack_furniture) for inspiration on how to do it.
+ 1. `roslaunch human_robot_collaboration baxter_marker_publisher.launch`
+ 2. `roslaunch human_robot_collaboration flatpack_furniture.launch` or `roslaunch human_robot_collaboration tower_building.launch`. These are two predefined launch files that we use for two different experiments we ran in the lab. If you would like to create and use your own high-level actions, we suggest you to specialize the [`ArmCtrl` class](https://github.com/ScazLab/human_robot_collaboration/blob/master/human_robot_collaboration_lib/include/robot_interface/arm_ctrl.h). See the [`flatpack_furniture library`](https://github.com/ScazLab/human_robot_collaboration/tree/master/human_robot_collaboration/lib/include/flatpack_furniture) for inspiration on how to do it.
 
 Now, the user should be able to request actions to either one of the two arms by using the proper service (`/action_provider/service_left` for left arm, `/action_provider/service_right` for right arm). Here are some examples to make the demo work from terminal:
   * `rosservice call /action_provider/service_right "{action: 'hold'}"`
   * `rosservice call /action_provider/service_left "{action: 'get', objects: [17]}"`
 
-Similarly to Mode A, these same services can be requested directly _within_ your code. Please take a look at the [`DoAction.srv` file](https://github.com/ScazLab/baxter_collaboration/blob/master/baxter_collaboration_msgs/srv/DoAction.srv) for further info.
+Similarly to Mode A, these same services can be requested directly _within_ your code. Please take a look at the [`DoAction.srv` file](https://github.com/ScazLab/human_robot_collaboration/blob/master/human_robot_collaboration_msgs/srv/DoAction.srv) for further info.
 
 #### Non-exhaustive list of supported actions
 
@@ -98,16 +98,16 @@ Similarly to Mode A, these same services can be requested directly _within_ your
  * To kill an action from the terminal, you can simulate a button press on the arm's cuff: `rostopic pub --once /robot/digital_io/left_lower_button/state baxter_core_msgs/DigitalIOState "{state: 1, isInputOnly: true}"`.
  * You can also kill an action from the web interface, by pressing the ERROR button. It writes to the same topic and achieves the same behavior.
  * To go **robot-less** (that is try to execute the software without the robot, for testing purposes), you can choose one of the following options:
-  * Call the `action_provider` with the argument `--no_robot`, e.g. `rosrun baxter_collaboration baxter_controller --no_robot`. In this mode, only the service to request actions is enabled. It will always return with a 2s delay and it will always succeed.
+  * Call the `action_provider` with the argument `--no_robot`, e.g. `rosrun human_robot_collaboration baxter_controller --no_robot`. In this mode, only the service to request actions is enabled. It will always return with a 2s delay and it will always succeed.
   * Change the `useRobot` flag to `false` in the `launch` file.
-  * Launch the `launch` file with the argument `useRobot:=false`, e.g. `roslaunch baxter_collaboration baxter_controller.launch useRobot:=false`
+  * Launch the `launch` file with the argument `useRobot:=false`, e.g. `roslaunch human_robot_collaboration baxter_controller.launch useRobot:=false`
 
 
 # Experiments
 
 ## ICRA 2017
 
-To reproduce the experiment from the following paper on the Baxter research robot, we provide the script `baxter_collaboration/scripts/icra_experiment`.
+To reproduce the experiment from the following paper on the Baxter research robot, we provide the script `human_robot_collaboration/scripts/icra_experiment`.
 
     [Roncone2017] Roncone Alessandro, Mangin Olivier, Scassellati Brian **Transparent Role Assignment and Task Allocation in Human Robot Collaboration** *IEEE International Conference on Robotics and Automation (ICRA 2017)*, Singapore.
 

@@ -16,8 +16,8 @@ import argparse
 from task_models.lib.pomdp import POMDP, GraphPolicy, GraphPolicyRunner
 
 import rospy
-from baxter_collaboration.graph_policy_controller import BaseGPController
-from baxter_collaboration.service_request import ServiceRequest
+from human_robot_collaboration.graph_policy_controller import BaseGPController
+from human_robot_collaboration.service_request import ServiceRequest
 
 
 parser = argparse.ArgumentParser(

@@ -13,8 +13,8 @@ from task_models.tower_problem import TowerProblem
 
 import rospy
 from std_msgs.msg import String
-from baxter_collaboration.graph_policy_controller import BaseGPController
-from baxter_collaboration.service_request import ServiceRequest
+from human_robot_collaboration.graph_policy_controller import BaseGPController
+from human_robot_collaboration.service_request import ServiceRequest
 
 
 parser = argparse.ArgumentParser(
@@ -106,7 +106,7 @@ def send_tower_order(order):
                     ]
                 } for i in range(len(TOWERS))]
         }
-    web_pub.publish(json.dumps(tower_display))      
+    web_pub.publish(json.dumps(tower_display))
     web_pub.publish('start')
     woz_pub.publish('start')
 

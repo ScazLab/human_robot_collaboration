@@ -104,8 +104,8 @@ public:
      * @param  res the action response (res.success either true or false)
      * @return     true always :)
      */
-    bool serviceOtherLimbCb(baxter_collaboration_msgs::AskFeedback::Request  &req,
-                            baxter_collaboration_msgs::AskFeedback::Response &res);
+    bool serviceOtherLimbCb(human_robot_collaboration_msgs::AskFeedback::Request  &req,
+                            human_robot_collaboration_msgs::AskFeedback::Response &res);
 
     /**
      * Destructor

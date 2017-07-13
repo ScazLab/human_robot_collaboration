@@ -3,7 +3,7 @@ import rospy
 from .timer import Timer
 from .service_request import ServiceRequest, finished_request
 from .suscribers import CommunicationSuscriber, ButtonSuscriber, ListenSuscriber
-from baxter_collaboration_msgs.srv import DoAction, DoActionRequest
+from human_robot_collaboration_msgs.srv import DoAction, DoActionRequest
 from svox_tts.srv import Speech, SpeechRequest
 
 

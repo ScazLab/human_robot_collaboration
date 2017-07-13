@@ -1,7 +1,7 @@
 <package format="2">
-  <name>baxter_collaboration</name>
+  <name>human_robot_collaboration</name>
   <version>1.0.0</version>
-  <description>The baxter_collaboration package</description>
+  <description>The human_robot_collaboration package</description>
 
   <!-- One maintainer tag required, multiple allowed, one person per tag -->
   <maintainer email="alessandro.roncone@yale.edu">Alessandro Roncone</maintainer>
@@ -12,7 +12,7 @@
   <!-- Url tags are optional, but multiple are allowed, one per tag -->
   <!-- Optional attribute type can be: website, bugtracker, or repository -->
   <!-- Example: -->
-  <url type="website">https://github.com/scazlab/baxter_collaboration</url>
+  <url type="website">https://github.com/scazlab/human_robot_collaboration</url>
 
   <!-- Author tags are optional, multiple are allowed, one per tag -->
   <!-- Authors do not have to be maintainers, but could be -->
@@ -32,7 +32,7 @@
   <build_depend>roscpp</build_depend>
 
   <depend>aruco</depend>
-  <depend>baxter_collaboration_lib</depend>
+  <depend>human_robot_collaboration_lib</depend>
   <depend>cv_bridge</depend>
   <depend>image_transport</depend>
   <depend>rosconsole</depend>

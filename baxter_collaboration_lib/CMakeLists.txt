@@ -3,7 +3,7 @@
 # CopyPolicy: Released under the terms of the LGPLv2.1.
 
 cmake_minimum_required(VERSION 2.8.3)
-project(baxter_collaboration_lib)
+project(human_robot_collaboration_lib)
 
 ## Add C++14 support
 if(CMAKE_COMPILER_IS_GNUCXX)
@@ -23,7 +23,7 @@ find_package(catkin REQUIRED COMPONENTS
              cmake_modules
              aruco
              aruco_ros
-             baxter_collaboration_msgs
+             human_robot_collaboration_msgs
              baxter_core_msgs
              cv_bridge
              image_transport

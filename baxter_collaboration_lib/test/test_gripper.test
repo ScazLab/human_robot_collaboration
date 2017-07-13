@@ -1,6 +1,6 @@
 <launch>
     <!-- Let's load the baxter URDF from the parameter server -->
-    <include file="$(find baxter_collaboration_lib)/launch/baxter_urdf.launch" />
+    <include file="$(find human_robot_collaboration_lib)/launch/baxter_urdf.launch" />
 
-    <test test-name="test_gripper" pkg="baxter_collaboration_lib" type="test_gripper" />
+    <test test-name="test_gripper" pkg="human_robot_collaboration_lib" type="test_gripper" />
 </launch>

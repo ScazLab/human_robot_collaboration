@@ -1,6 +1,6 @@
 <launch>
-    <env name="ROSCONSOLE_CONFIG_FILE" value="$(find baxter_collaboration)/rosconsole.conf"/>
-    <!-- <include file="$(find baxter_collaboration)/launch/baxter_marker_publisher.launch" /> -->
+    <env name="ROSCONSOLE_CONFIG_FILE" value="$(find human_robot_collaboration)/rosconsole.conf"/>
+    <!-- <include file="$(find human_robot_collaboration)/launch/baxter_marker_publisher.launch" /> -->
     <include file="$(find svox_tts)/launch/svox_tts.launch" />
 
     <arg name="forceThresholdL"      default="2.0"/>    <!-- [N] -->
@@ -35,16 +35,16 @@
         "right_leg":     26
     </rosparam>
 
-    <node pkg="baxter_collaboration" type="baxter_display"  name="baxter_display"  output="screen"/>
-    <node pkg="baxter_collaboration" type="flatpack_action_provider" name="flatpack_action_provider" output="screen"/>
+    <node pkg="human_robot_collaboration" type="baxter_display"  name="baxter_display"  output="screen"/>
+    <node pkg="human_robot_collaboration" type="flatpack_action_provider" name="flatpack_action_provider" output="screen"/>
 
     <!-- <node name="image_baxter_display" pkg="image_view" type="image_view" respawn="false" output="log">
         <remap from="image" to="/robot/xdisplay"/>
         <param name="autosize" value="true" />
     </node> -->
 
-    <!-- <node pkg="baxter_collaboration" type="remote_control_node" name="l_srv" output="screen" args="left" />
-    <node pkg="baxter_collaboration" type="remote_control_node" name="r_srv" output="screen" args="right" /> -->
+    <!-- <node pkg="human_robot_collaboration" type="remote_control_node" name="l_srv" output="screen" args="left" />
+    <node pkg="human_robot_collaboration" type="remote_control_node" name="r_srv" output="screen" args="right" /> -->
 
     <!-- <node name="image_saver" pkg="image_view" type="image_saver" respawn="false" output="log">
         <remap from="image" to="/robot/xdisplay"/>

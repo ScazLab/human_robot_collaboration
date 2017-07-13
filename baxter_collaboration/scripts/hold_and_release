@@ -6,7 +6,7 @@ from task_models.lib.pomdp import GraphPolicyRunner
 import rospy
 from std_msgs.msg import String
 from baxter_core_msgs.msg import DigitalIOState
-from baxter_collaboration.srv import DoAction
+from human_robot_collaboration_msgs.srv import DoAction
 
 
 C_WAIT = 1.

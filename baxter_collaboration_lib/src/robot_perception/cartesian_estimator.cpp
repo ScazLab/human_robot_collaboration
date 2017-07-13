@@ -135,7 +135,7 @@ CartesianEstimator::CartesianEstimator(string _name) : ROSThreadImage(_name)
 {
     img_pub        = img_trp.advertise(      "/"+getName()+"/image_result", SUBSCRIBER_BUFFER);
     img_pub_thres  = img_trp.advertise("/"+getName()+"/image_result_thres", SUBSCRIBER_BUFFER);
-    objs_pub       = nh.advertise<baxter_collaboration_msgs::ObjectsArray>("/"+getName()+"/objects", 1);
+    objs_pub       = nh.advertise<human_robot_collaboration_msgs::ObjectsArray>("/"+getName()+"/objects", 1);
 
     nh.param<string>("/"+getName()+"/reference_frame", reference_frame,         "");
     nh.param<string>("/"+getName()+   "/camera_frame",    camera_frame,         "");
@@ -184,7 +184,7 @@ bool CartesianEstimator::publishObjects()
     {
         if (objs[i]->isThere())
         {
-            baxter_collaboration_msgs::Object &object_cnt = objects_msg.objects.at(cnt);
+            human_robot_collaboration_msgs::Object &object_cnt = objects_msg.objects.at(cnt);
             object_cnt.pose = objs[i]->pose;
             object_cnt.id   = i;
             object_cnt.name = objs[i]->getName();

@@ -21,7 +21,7 @@
 
 #include <flatpack_furniture/hold_ctrl.h>
 #include <robot_perception/cartesian_estimator_client.h>
-#include <baxter_collaboration_msgs/ObjectsArray.h>
+#include <human_robot_collaboration_msgs/ObjectsArray.h>
 
 class ToolPicker : public HoldCtrl, public CartesianEstimatorClient
 {

@@ -4,7 +4,7 @@ from remote_control import Server
 
 import sys
 import rospy
-from baxter_collaboration.srv import DoAction
+from human_robot_collaboration_msgs.srv import DoAction
 
 limb = 'left'
 
@@ -65,4 +65,4 @@ if __name__ == "__main__":
         node = RemoteControlNode()
         node.run()
     finally:
-        rospy.signal_shutdown('') 
+        rospy.signal_shutdown('')

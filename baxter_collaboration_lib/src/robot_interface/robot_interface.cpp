@@ -16,8 +16,8 @@ RobotInterface::RobotInterface(string _name, string _limb, bool _use_robot, doub
                                filt_force{0.0, 0.0, 0.0}, filt_change{0.0, 0.0, 0.0}, time_filt_last_updated(ros::Time::now()),
                                is_coll_av_on(false), is_coll_det_on(false), is_closing(false), use_cart_ctrl(_use_cart_ctrl),
                                is_ctrl_running(false), is_experimental(_is_experimental), ctrl_track_mode(false),
-                               ctrl_mode(baxter_collaboration_msgs::GoToPose::POSITION_MODE), ctrl_check_mode("strict"), ctrl_type("pose"),
-                               rviz_pub(_name)
+                               ctrl_mode(human_robot_collaboration_msgs::GoToPose::POSITION_MODE),
+                               ctrl_check_mode("strict"), ctrl_type("pose"), rviz_pub(_name)
 {
     // if (not _use_robot) return;
 
@@ -66,7 +66,7 @@ RobotInterface::RobotInterface(string _name, string _limb, bool _use_robot, doub
                                    SUBSCRIBER_BUFFER, &RobotInterface::collDetCb, this);
 
     std::string topic = "/"+getName()+"/"+getLimb()+"/state";
-    state_pub = nh.advertise<baxter_collaboration_msgs::ArmState>(topic, SUBSCRIBER_BUFFER, true);
+    state_pub = nh.advertise<human_robot_collaboration_msgs::ArmState>(topic, SUBSCRIBER_BUFFER, true);
     ROS_INFO("[%s] Created state publisher with name : %s", getLimb().c_str(), topic.c_str());
 
     if (use_cart_ctrl)
@@ -172,7 +172,7 @@ void RobotInterface::ThreadEntry()
                 ROS_INFO("[%s] Pose reached!\n", getLimb().c_str());
                 particle -> stop();
 
-                if (ctrl_mode == baxter_collaboration_msgs::GoToPose::VELOCITY_MODE)
+                if (ctrl_mode == human_robot_collaboration_msgs::GoToPose::VELOCITY_MODE)
                 {
                     vector<double> joint_values;
                     for (int i = 0; i < 7; ++i)
@@ -238,7 +238,7 @@ bool RobotInterface::initCtrlParams()
     return particle->isSet() && particle->start();
 }
 
-void RobotInterface::ctrlMsgCb(const baxter_collaboration_msgs::GoToPose& msg)
+void RobotInterface::ctrlMsgCb(const human_robot_collaboration_msgs::GoToPose& msg)
 {
     if (int(getState()) != WORKING)
     {
@@ -297,7 +297,7 @@ void RobotInterface::ctrlMsgCb(const baxter_collaboration_msgs::GoToPose& msg)
         }
 
         // Then, let's check if control mode is among the allowed options
-        if (msg.ctrl_mode != baxter_collaboration_msgs::GoToPose::POSITION_MODE)
+        if (msg.ctrl_mode != human_robot_collaboration_msgs::GoToPose::POSITION_MODE)
         {
             if (not is_experimental)
             {
@@ -308,15 +308,15 @@ void RobotInterface::ctrlMsgCb(const baxter_collaboration_msgs::GoToPose& msg)
             }
             else
             {
-                if (msg.ctrl_mode == baxter_collaboration_msgs::GoToPose::VELOCITY_MODE)
+                if (msg.ctrl_mode == human_robot_collaboration_msgs::GoToPose::VELOCITY_MODE)
                 {
                     ROS_WARN("[%s] Experimental VELOCITY_MODE enabled", getLimb().c_str());
-                    ctrl_mode = baxter_collaboration_msgs::GoToPose::VELOCITY_MODE;
+                    ctrl_mode = human_robot_collaboration_msgs::GoToPose::VELOCITY_MODE;
                 }
-                else if (msg.ctrl_mode == baxter_collaboration_msgs::GoToPose::RAW_POSITION_MODE)
+                else if (msg.ctrl_mode == human_robot_collaboration_msgs::GoToPose::RAW_POSITION_MODE)
                 {
                     ROS_WARN("[%s] Experimental RAW_POSITION_MODE enabled", getLimb().c_str());
-                    ctrl_mode = baxter_collaboration_msgs::GoToPose::RAW_POSITION_MODE;
+                    ctrl_mode = human_robot_collaboration_msgs::GoToPose::RAW_POSITION_MODE;
                 }
                 else
                 {
@@ -1053,7 +1053,7 @@ bool RobotInterface::setState(int _state)
 
 bool RobotInterface::publishState()
 {
-    baxter_collaboration_msgs::ArmState msg;
+    human_robot_collaboration_msgs::ArmState msg;
 
     msg.state  = string(getState());
 

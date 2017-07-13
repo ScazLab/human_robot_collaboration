@@ -7,10 +7,10 @@
 #include <cv_bridge/cv_bridge.h>
 #include <sensor_msgs/image_encodings.h>
 
-#include "baxter_collaboration_msgs/ArmState.h"
+#include "human_robot_collaboration_msgs/ArmState.h"
 
 using namespace std;
-using namespace baxter_collaboration_msgs;
+using namespace human_robot_collaboration_msgs;
 
 #define DEFAULT_DURATION 10.0  // [s]
 

@@ -23,7 +23,7 @@
 #include "robot_interface/robot_interface.h"
 #include "robot_interface/gripper.h"
 
-#include "baxter_collaboration_msgs/AskFeedback.h"
+#include "human_robot_collaboration_msgs/AskFeedback.h"
 
 #define HAND_OVER_START  "handover_start"
 #define HAND_OVER_READY  "handover_ready"
@@ -402,8 +402,8 @@ public:
      * @param  res the action response (res.success either true or false)
      * @return     true always :)
      */
-    bool serviceCb(baxter_collaboration_msgs::DoAction::Request  &req,
-                   baxter_collaboration_msgs::DoAction::Response &res);
+    bool serviceCb(human_robot_collaboration_msgs::DoAction::Request  &req,
+                   human_robot_collaboration_msgs::DoAction::Response &res);
 
     /**
      * Callback for the service that lets the two limbs interact
@@ -411,8 +411,8 @@ public:
      * @param  res the action response (res.success either true or false)
      * @return     true always :)
      */
-    virtual bool serviceOtherLimbCb(baxter_collaboration_msgs::AskFeedback::Request  &req,
-                                    baxter_collaboration_msgs::AskFeedback::Response &res);
+    virtual bool serviceOtherLimbCb(human_robot_collaboration_msgs::AskFeedback::Request  &req,
+                                    human_robot_collaboration_msgs::AskFeedback::Response &res);
 
     /* Self-explaining "setters" */
     virtual void setObjectID(int _obj)                { sel_object_id =  _obj; };

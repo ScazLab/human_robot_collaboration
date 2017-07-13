@@ -19,7 +19,7 @@
 #include <ros/ros.h>
 #include <ros/console.h>
 
-#include <baxter_collaboration_msgs/ObjectsArray.h>
+#include <human_robot_collaboration_msgs/ObjectsArray.h>
 
 #include "robot_utils/utils.h"
 
@@ -76,7 +76,7 @@ protected:
      * Callback function for the CartesianEstimator topic
      * @param msg the topic message
      */
-    void ObjectCb(const baxter_collaboration_msgs::ObjectsArray& _msg);
+    void ObjectCb(const human_robot_collaboration_msgs::ObjectsArray& _msg);
 
     /**
      * Waits to get feedback from CartesianEstimator

@@ -15,8 +15,8 @@ from task_models.lib.pomcp import AsyncPOMCPPolicyRunner, export_pomcp
 from task_models.lib.belief import format_belief_array
 
 import rospy
-from baxter_collaboration_msgs.srv import DoActionResponse
-from baxter_collaboration.controller import BaseController
+from human_robot_collaboration_msgs.srv import DoActionResponse
+from human_robot_collaboration.controller import BaseController
 
 
 # Arguments

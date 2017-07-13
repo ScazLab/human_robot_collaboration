@@ -29,7 +29,7 @@ void CartesianEstimatorClient::clearObjsFound()
     available_objects.clear();
 }
 
-void CartesianEstimatorClient::ObjectCb(const baxter_collaboration_msgs::ObjectsArray& _msg)
+void CartesianEstimatorClient::ObjectCb(const human_robot_collaboration_msgs::ObjectsArray& _msg)
 {
     // ROS_INFO("ObjectCb");
     if (_msg.objects.size() > 0)

@@ -12,8 +12,8 @@ from task_models.task_to_pomdp import CollaborativeAction, HTMToPOMDP
 from task_models.stool_scenarios import (stool_task_sequential, T_WAIT, T_ASK, T_TELL,
                                          C_INTR, C_ERR, INF)
 
-from baxter_collaboration.graph_policy_controller import BaseGPController
-from baxter_collaboration.service_request import ServiceRequest
+from human_robot_collaboration.graph_policy_controller import BaseGPController
+from human_robot_collaboration.service_request import ServiceRequest
 
 parser = argparse.ArgumentParser(
     description="Script to generate, solve, and store POMDP and policy.")

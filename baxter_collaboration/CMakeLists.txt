@@ -3,7 +3,7 @@
 # CopyPolicy: Released under the terms of the LGPLv2.1.
 
 cmake_minimum_required(VERSION 2.8.3)
-project(baxter_collaboration)
+project(human_robot_collaboration)
 
 if(CMAKE_COMPILER_IS_GNUCXX OR ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang"))
     set(CMAKE_CXX_FLAGS "-std=c++11 ${CMAKE_CXX_FLAGS}")
@@ -14,7 +14,7 @@ endif()
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
              aruco
-             baxter_collaboration_lib
+             human_robot_collaboration_lib
              baxter_core_msgs
              cv_bridge
              image_transport
@@ -45,7 +45,7 @@ catkin_python_setup()
 catkin_package(
     INCLUDE_DIRS lib/include
     LIBRARIES flatpack_furniture
-    CATKIN_DEPENDS baxter_collaboration_lib
+    CATKIN_DEPENDS human_robot_collaboration_lib
 )
 
 ###########

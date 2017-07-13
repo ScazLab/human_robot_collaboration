@@ -36,8 +36,8 @@
 #include "robot_utils/particle_thread.h"
 #include "robot_utils/baxter_trac_ik.h"
 
-#include <baxter_collaboration_msgs/GoToPose.h>
-#include <baxter_collaboration_msgs/ArmState.h>
+#include <human_robot_collaboration_msgs/GoToPose.h>
+#include <human_robot_collaboration_msgs/ArmState.h>
 
 /**
  * @brief A ROS Thread class
@@ -142,9 +142,9 @@ private:
     bool ctrl_track_mode;   // Flag to know the tracking mode of the control loop
 
     // Control mode for the controller server. It can be either
-    // baxter_collaboration_msgs::GoToPose::POSITION_MODE,
-    // baxter_collaboration_msgs::GoToPose::VELOCITY_MODE, or
-    // baxter_collaboration_msgs::GoToPose::RAW_POSITION_MODE,
+    // human_robot_collaboration_msgs::GoToPose::POSITION_MODE,
+    // human_robot_collaboration_msgs::GoToPose::VELOCITY_MODE, or
+    // human_robot_collaboration_msgs::GoToPose::RAW_POSITION_MODE,
     // but for now only POSITION_MODE is not experimental
     int ctrl_mode;
 
@@ -177,7 +177,7 @@ private:
      *
      * @param msg the topic message
      */
-    void ctrlMsgCb(const baxter_collaboration_msgs::GoToPose& msg);
+    void ctrlMsgCb(const human_robot_collaboration_msgs::GoToPose& msg);
 
     /**
      * Internal thread entry that gets called when the thread is started.

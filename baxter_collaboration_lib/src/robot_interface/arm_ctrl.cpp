@@ -82,16 +82,16 @@ void ArmCtrl::InternalThreadEntry()
     return;
 }
 
-bool ArmCtrl::serviceOtherLimbCb(baxter_collaboration_msgs::AskFeedback::Request  &req,
-                                 baxter_collaboration_msgs::AskFeedback::Response &res)
+bool ArmCtrl::serviceOtherLimbCb(human_robot_collaboration_msgs::AskFeedback::Request  &req,
+                                 human_robot_collaboration_msgs::AskFeedback::Response &res)
 {
     res.success = false;
     res.reply   = "not implemented";
     return true;
 }
 
-bool ArmCtrl::serviceCb(baxter_collaboration_msgs::DoAction::Request  &req,
-                        baxter_collaboration_msgs::DoAction::Response &res)
+bool ArmCtrl::serviceCb(human_robot_collaboration_msgs::DoAction::Request  &req,
+                        human_robot_collaboration_msgs::DoAction::Response &res)
 {
     // Let's read the requested action and object to act upon
     setSubState("");
@@ -644,7 +644,7 @@ bool ArmCtrl::setPrevAction(const string& _prev_action)
 
 bool ArmCtrl::publishState()
 {
-    baxter_collaboration_msgs::ArmState msg;
+    human_robot_collaboration_msgs::ArmState msg;
 
     msg.state  = string(getState());
     msg.action = getAction();

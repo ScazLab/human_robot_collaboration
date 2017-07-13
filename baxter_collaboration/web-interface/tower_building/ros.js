@@ -81,14 +81,14 @@ var errorPressedR = new ROSLIB.Topic({
 var leftArmService  = new ROSLIB.Service({
   ros : ros,
   name: '/action_provider/service_left',
-  messageType : 'baxter_collaboration/DoAction'
+  messageType : 'human_robot_collaboration_msgs/DoAction'
 });
 
 // Service Client to interface with the right arm
 var rightArmService = new ROSLIB.Service({
   ros : ros,
   name: '/action_provider/service_right',
-  messageType : 'baxter_collaboration/DoAction'
+  messageType : 'human_robot_collaboration_msgs/DoAction'
 });
 
 var webInterfaceSub = new ROSLIB.Topic({

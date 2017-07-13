@@ -69,7 +69,7 @@ var webInterfacePub = new ROSLIB.Topic({
 var leftArmService  = new ROSLIB.Service({
   ros : ros,
   name: '/action_provider/service_left',
-  messageType : 'baxter_collaboration/DoAction'
+  messageType : 'human_robot_collaboration_msgs/DoAction'
 });
 
 // Service Client to interface with the right arm
@@ -104,7 +104,7 @@ webInterfaceSub.subscribe(function(msg) {
 var robotStateSub = new ROSLIB.Topic({
   ros : ros,
   name: '/action_provider/state_left',
-  messageType: 'baxter_collaboration/ArmState'
+  messageType: 'human_robot_collaboration_msgs/ArmState'
 })
 
 robotStateSub.subscribe(function(msg) {

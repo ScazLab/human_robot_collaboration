@@ -3,7 +3,7 @@
 ## Using [Catkin Tools](https://catkin-tools.readthedocs.io/en/latest/)
 
 1. Navigate to your workspace: `cd ros_ws`
-2. `REPO_NAME=baxter_collaboration`
+2. `REPO_NAME=human_robot_collaboration`
 3. Compile and test: `catkin build "$REPO_NAME"_lib && catkin build "$REPO_NAME"_lib --catkin-make-args run_tests`
 4. Check the results of above: `catkin_test_results build/"$REPO_NAME"_lib || (cat build/"$REPO_NAME"_lib/test_results/"$REPO_NAME"_lib/*.xml ; false)`
 
@@ -17,8 +17,8 @@ Troubleshooting:
 	cd ros_ws
 	roscore
 	```
-2. Open a second terminal (T2) and run: `roslaunch baxter_collaboration_lib baxter_urdf.launch`
-3. On T2, run the test, for example: `./devel/lib/baxter_collaboration_lib/test_robot_interface`
+2. Open a second terminal (T2) and run: `roslaunch human_robot_collaboration_lib baxter_urdf.launch`
+3. On T2, run the test, for example: `./devel/lib/human_robot_collaboration_lib/test_robot_interface`
 
 Troubleshooting:
 * If presented with a `roslaunch` error, navigate to `~/.bashrc` and make sure the following is appended to the file:
@@ -35,4 +35,4 @@ Troubleshooting:
     cd ros_ws
     roscore
     ```
-2. Open a second terminal (T2) and run: `rostest --text baxter_collaboration_lib test_arm_ctrl.test`
+2. Open a second terminal (T2) and run: `rostest --text human_robot_collaboration_lib test_arm_ctrl.test`

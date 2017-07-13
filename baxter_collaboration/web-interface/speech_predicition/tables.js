@@ -18,13 +18,13 @@ ros.connect('ws://' + getRosBridgeHost() + ':' + rosBridgePort);
 var leftAruco  = new ROSLIB.Service({
     ros : ros,
     name: '/aruco_marker/service_left',
-    messageType : 'baxter_collaboration_msgs/DoAction'
+    messageType : 'human_robot_collaboration_msgs/DoAction'
 });
 
 var rightAruco  = new ROSLIB.Service({
     ros : ros,
     name: '/action_provider/service_left',
-    messageType : 'baxter_collaboration_msgs/DoAction'
+    messageType : 'human_robot_collaboration_msgs/DoAction'
 });
 
 var width  = 640,

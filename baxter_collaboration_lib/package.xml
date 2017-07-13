@@ -1,7 +1,7 @@
 <package format="2">
-  <name>baxter_collaboration_lib</name>
+  <name>human_robot_collaboration_lib</name>
   <version>1.0.0</version>
-  <description>Libraries for the baxter_collaboration project</description>
+  <description>Libraries for the human_robot_collaboration project</description>
 
   <!-- One maintainer tag required, multiple allowed, one person per tag -->
   <maintainer email="alessandro.roncone@yale.edu">Alessandro Roncone</maintainer>
@@ -12,7 +12,7 @@
 
 
   <!-- Url tags are optional, but mutiple are allowed, one per tag -->
-  <url type="website">https://github.com/scazlab/baxter_collaboration</url>
+  <url type="website">https://github.com/scazlab/human_robot_collaboration</url>
 
 
   <!-- Author tags are optional, mutiple are allowed, one per tag -->
@@ -36,7 +36,7 @@
 
   <depend>aruco</depend>
   <depend>aruco_ros</depend>
-  <depend>baxter_collaboration_msgs</depend>
+  <depend>human_robot_collaboration_msgs</depend>
   <depend>baxter_core_msgs</depend>
   <depend>cv_bridge</depend>
   <depend>image_transport</depend>
