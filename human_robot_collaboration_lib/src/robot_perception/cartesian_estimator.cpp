@@ -195,9 +195,9 @@ bool CartesianEstimator::publishObjects()
 
             for(size_t j = 0; j < 4; j++)
             {
-                geometry_msgs::point pixel;
-                pixel.x = objs[i]->rect.Points[j].x;
-                pixel.y = objs[i]->rect.Points[j].y;
+                geometry_msgs::Point pixel;
+                pixel.x = objs[i]->rect.points[j].x;
+                pixel.y = objs[i]->rect.points[j].y;
 
                 object_cnt.corners.push_back(pixel);
             }
