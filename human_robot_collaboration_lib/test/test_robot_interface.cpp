@@ -94,6 +94,48 @@ TEST(RobotInterfaceTest, testPrivateMethods)
     EXPECT_EQ(ri.getCtrlType(), type);
 }
 
+
+TEST(RobotInterfaceTest, testCallbacks)
+{
+    ros::NodeHandle       nh;
+    RobotInterface ri("robot", "left");
+
+    EXPECT_EQ(ri.getCurrRange(), 0.0);
+    EXPECT_EQ(ri.getCurrMinRange(), 0.0);
+    EXPECT_EQ(ri.getCurrMaxRange(), 0.0);
+
+   
+    // Create publisher
+    ros::Publisher ir_pub = 
+        nh.advertise<sensor_msgs::Range>("/robot/range/" + ri.getLimb() + "_hand_range/state", SUBSCRIBER_BUFFER);
+   
+    // Publish stuff
+    sensor_msgs::Range msg;
+
+    msg.range = 1.0;
+    msg.min_range = 2.0;
+    msg.max_range = 3.0;
+
+    ros::Rate loop_rate(10);
+
+    while(ros::ok() && (ri.getCurrRange() == 0.0))
+    {
+        ir_pub.publish(msg);
+        //ROS_INFO("%s", msg.range);
+
+        ros::spinOnce();
+
+        loop_rate.sleep();
+    
+    }
+
+    // Check that the stuff has beeen correctly parsed by a robot interface object
+    EXPECT_EQ(ri.getCurrRange(), 1.0);
+    EXPECT_EQ(ri.getCurrMinRange(), 2.0);
+    EXPECT_EQ(ri.getCurrMaxRange(), 3.0);
+
+}
+
 // Run all the tests that were declared with TEST()
 int main(int argc, char **argv)
 {
@@ -101,3 +143,5 @@ int main(int argc, char **argv)
     testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();
 }
+
+

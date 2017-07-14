@@ -68,9 +68,9 @@ private:
      */
     ros::Subscriber ir_sub;
     bool             ir_ok;
-    float       curr_range;
-    float   curr_min_range;
-    float   curr_max_range;
+    double      curr_range;
+    double  curr_min_range;
+    double  curr_max_range;
 
     /**
      * Inverse Kinematics
@@ -637,11 +637,15 @@ public:
     bool    useCartCtrl() { return   use_cart_ctrl; };
     bool isExperimental() { return is_experimental; };
 
-    std::string     getName() { return      name; };
-    std::string     getLimb() { return      limb; };
-    State          getState() { return     state; };
-    double      getCtrlFreq() { return ctrl_freq; };
-    std::string getCtrlType() { return ctrl_type; };
+    std::string     getName() { return           name; };
+    std::string     getLimb() { return           limb; };
+    State          getState() { return          state; };
+    double      getCtrlFreq() { return      ctrl_freq; };
+    std::string getCtrlType() { return      ctrl_type; };
+    double      getCurrRange() { return     curr_range; };
+    double   getCurrMinRange() { return curr_min_range; };
+    double   getCurrMaxRange() { return curr_max_range; };
+
 
     geometry_msgs::Point        getPos()         { return    curr_pos; };
     geometry_msgs::Quaternion   getOri()         { return    curr_ori; };
