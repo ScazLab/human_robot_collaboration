@@ -71,18 +71,30 @@ var errorPressedR = new ROSLIB.Topic({
   messageType : 'baxter_core_msgs/DigitalIOState'
 });
 
+var leftAruco  = new ROSLIB.Topic({
+    ros : ros,
+    name: '/aruco_marker_publisher/markers',
+    messageType : 'aruco_msgs/MarkerArray'
+});
+
+var rightAruco  = new ROSLIB.Topic({
+    ros : ros,
+    name: '/action_provider/service_left',
+    messageType : 'baxter_collaboration_msgs/DoAction'
+});
+
 // Service Client to interface with the left arm
 var leftArmService  = new ROSLIB.Service({
   ros : ros,
   name: '/action_provider/service_left',
-  messageType : 'human_robot_collaboration_msgs/DoAction'
+  messageType : 'baxter_collaboration_msgs/DoAction'
 });
 
 // Service Client to interface with the right arm
 var rightArmService = new ROSLIB.Service({
   ros : ros,
   name: '/action_provider/service_right',
-  messageType : 'human_robot_collaboration_msgs/DoAction'
+  messageType : 'baxter_collaboration_msgs/DoAction'
 });
 
 // Add a callback for any element on the page
