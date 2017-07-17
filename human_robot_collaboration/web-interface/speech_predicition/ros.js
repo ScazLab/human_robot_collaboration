@@ -79,8 +79,8 @@ var leftAruco  = new ROSLIB.Topic({
 
 var rightAruco  = new ROSLIB.Topic({
     ros : ros,
-    name: '/action_provider/service_left',
-    messageType : 'baxter_collaboration_msgs/DoAction'
+    name: '/hsv_detector/objects',
+    messageType : 'human_robot_collaboration_msgs/ObjectsArray'
 });
 
 // Service Client to interface with the left arm
