@@ -1,5 +1,4 @@
 #include <gtest/gtest.h>
-#include <tf/transform_datatypes.h>
 
 #include "robot_interface/robot_interface.h"
 
@@ -95,9 +94,10 @@ TEST(RobotInterfaceTest, testPrivateMethods)
     EXPECT_EQ(ri.getCtrlType(), type);
 }
 
-
+// Unit test for JoinStatesCb
 TEST(RobotInterfaceTest, testJointStatesCallback)
 {
+
     ros::NodeHandle       nh;
     RobotInterface ri("robot", "left");
 
@@ -105,7 +105,10 @@ TEST(RobotInterfaceTest, testJointStatesCallback)
         nh.advertise<sensor_msgs::JointState>
         ("/robot/joint_states", SUBSCRIBER_BUFFER);
 
+    // Create message to publish to robot interface
     sensor_msgs::JointState msg;
+
+    // Set random values for JointState name, position, and velocity fields
     msg.name = {"_s0", "_s1", "_e0", "_e1", "_w0", "_w1", "_w2"};
     for(size_t i = 0; i < msg.name.size(); ++i)
     {
@@ -115,6 +118,8 @@ TEST(RobotInterfaceTest, testJointStatesCallback)
     msg.position = {0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7};
     msg.velocity = {1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7};
 
+
+    // Publish and ensure the Subscriber has received the message
     ros::Rate loop_rate(10);
 
     while(ros::ok() && (ri.getJointStates().name.size() == 0))
@@ -124,9 +129,11 @@ TEST(RobotInterfaceTest, testJointStatesCallback)
         ros::spinOnce();
 
         loop_rate.sleep();
-
     }
 
+
+    // Check that the JointState message has been correctly parsed
+    // by the robot interface
     EXPECT_EQ(ri.getJointStates().name[0], ri.getLimb() + "_s0");
     EXPECT_EQ(ri.getJointStates().name[1], ri.getLimb() + "_s1");
     EXPECT_EQ(ri.getJointStates().name[2], ri.getLimb() + "_e0");
@@ -135,18 +142,11 @@ TEST(RobotInterfaceTest, testJointStatesCallback)
     EXPECT_EQ(ri.getJointStates().name[5], ri.getLimb() + "_w1");
     EXPECT_EQ(ri.getJointStates().name[6], ri.getLimb() + "_w2");
 
-    // EXPECT_EQ(ri.getJointStates().position[0], 0.1);
-    // EXPECT_EQ(ri.getJointStates().position[1], 0.2);
-    // EXPECT_EQ(ri.getJointStates().position[2], 0.3);
-    // EXPECT_EQ(ri.getJointStates().position[3], 0.4);
-    // EXPECT_EQ(ri.getJointStates().position[4], 0.5);
-    // EXPECT_EQ(ri.getJointStates().position[5], 0.6);
-    // EXPECT_EQ(ri.getJointStates().position[6], 0.7);
     EXPECT_EQ(ri.getJointStates().position, msg.position);
-
     EXPECT_EQ(ri.getJointStates().velocity, msg.velocity);
 }
 
+// Unit test for cuffLowerCb
 TEST(RobotInterfaceTest, testCuffLowerCallback)
 {
     ros::NodeHandle       nh;
@@ -156,9 +156,11 @@ TEST(RobotInterfaceTest, testCuffLowerCallback)
         nh.advertise<baxter_core_msgs::DigitalIOState>
         ("/robot/digital_io/" + ri.getLimb() + "_lower_button/state", SUBSCRIBER_BUFFER);
 
+    // Create message to publish to robot interface
     baxter_core_msgs::DigitalIOState msg;
     msg.state = baxter_core_msgs::DigitalIOState::PRESSED;
 
+    // Publish and ensure the Subscriber has received the message
     ros::Rate loop_rate(10);
 
     while(ros::ok() && ri.getState() == START)
@@ -168,13 +170,17 @@ TEST(RobotInterfaceTest, testCuffLowerCallback)
         ros::spinOnce();
 
         loop_rate.sleep();
-
     }
 
+
+    // Check that the DigitalIOState message has been correctly parsed
+    // by the robot interface and that the robot interface state has been
+    // changed accordingly
     EXPECT_EQ(int(ri.getState()), KILLED);
 
 }
 
+// Unit test for cuffUpperCb
 TEST(RobotInterfaceTest, testCuffUpperCallback)
 {
     ros::NodeHandle       nh;
@@ -184,11 +190,13 @@ TEST(RobotInterfaceTest, testCuffUpperCallback)
         nh.advertise<baxter_core_msgs::DigitalIOState>
         ("/robot/digital_io/" + ri.getLimb() + "_upper_button/state", SUBSCRIBER_BUFFER);
 
+    // Create message to publish to robot interface
     baxter_core_msgs::DigitalIOState msg;
     msg.state = baxter_core_msgs::DigitalIOState::PRESSED;
 
     ros::Rate loop_rate(10);
 
+    // Publish and ensure the Subscriber has received the message
     while(ros::ok() && ri.getState() == START)
     {
         cuffUpper_pub.publish(msg);
@@ -199,12 +207,14 @@ TEST(RobotInterfaceTest, testCuffUpperCallback)
 
     }
 
+    // Check that the DigitalIOState message has been correctly parsed
+    // by the robot interface and that the robot interface state has been
+    // changed accordingly
     EXPECT_EQ(int(ri.getState()), KILLED);
 
 }
 
-
-
+// Unit test for endpointCb
 TEST(RobotInterfaceTest, testEndpointCallback)
 {
     ros::NodeHandle       nh;
@@ -214,6 +224,7 @@ TEST(RobotInterfaceTest, testEndpointCallback)
         nh.advertise<baxter_core_msgs::EndpointState>
         ("/robot/limb/" + ri.getLimb() + "/endpoint_state", SUBSCRIBER_BUFFER);
 
+    // Set random values for position (Point) and orientation (Quaternion)
     geometry_msgs::Point point;
     point.x = 0.1;
     point.y = 0.2;
@@ -225,10 +236,7 @@ TEST(RobotInterfaceTest, testEndpointCallback)
     ori.z = 0.6;
     ori.w = 0.7;
 
-    baxter_core_msgs::EndpointState msg;
-    msg.pose.position = point;
-    msg.pose.orientation = ori;
-
+    // Set random values for force and torque fields of wrench
     geometry_msgs::Wrench wrench;
     geometry_msgs::Vector3 force;
     geometry_msgs::Vector3 torque;
@@ -243,9 +251,13 @@ TEST(RobotInterfaceTest, testEndpointCallback)
     torque.z = 0.3;
     wrench.torque = torque;
 
+    // Create message to publish to robot interface
+    baxter_core_msgs::EndpointState msg;
+    msg.pose.position = point;
+    msg.pose.orientation = ori;
     msg.wrench = wrench;
 
-
+    // Publish and ensure the Subscriber has received the message
     ros::Rate loop_rate(10);
 
     while(ros::ok() && ri.getWrench().torque.z == 0.0)
@@ -255,9 +267,10 @@ TEST(RobotInterfaceTest, testEndpointCallback)
         ros::spinOnce();
 
         loop_rate.sleep();
-
     }
 
+    // Check that position, orientation, and wrench fields have been
+    // correctly parsed by the robot interface
     EXPECT_EQ(ri.getPos().x, 0.1);
     EXPECT_EQ(ri.getPos().y, 0.2);
     EXPECT_EQ(ri.getPos().z, 0.3);
@@ -274,8 +287,6 @@ TEST(RobotInterfaceTest, testEndpointCallback)
     EXPECT_EQ(ri.getWrench().torque.y, 0.2);
     EXPECT_EQ(ri.getWrench().torque.z, 0.3);
 
-    //filterForces() ************************************
-
 }
 
 TEST(RobotInterfaceTest, testIRCallback)
@@ -283,22 +294,23 @@ TEST(RobotInterfaceTest, testIRCallback)
     ros::NodeHandle       nh;
     RobotInterface ri("robot", "left");
 
+    // Check default valuesof robot interface
     EXPECT_EQ(ri.getCurrRange(), 0.0);
     EXPECT_EQ(ri.getCurrMinRange(), 0.0);
     EXPECT_EQ(ri.getCurrMaxRange(), 0.0);
 
-
-    // Create publisher
     ros::Publisher ir_pub =
         nh.advertise<sensor_msgs::Range>("/robot/range/" + ri.getLimb() + "_hand_range/state", SUBSCRIBER_BUFFER);
 
-    // Publish stuff
+    // Create message to publish to robot interface
     sensor_msgs::Range msg;
 
+    // Set random values for the Range message
     msg.range = 1.0;
     msg.min_range = 2.0;
     msg.max_range = 3.0;
 
+    // Publish and ensure the Subscriber has received the message
     ros::Rate loop_rate(10);
 
     while(ros::ok() && (ri.getCurrRange() == 0.0))
@@ -311,7 +323,7 @@ TEST(RobotInterfaceTest, testIRCallback)
 
     }
 
-    // Check that the stuff has beeen correctly parsed by a robot interface object
+    // Check that the Range message has been correctly parsed by the robot interface
     EXPECT_EQ(ri.getCurrRange(), 1.0);
     EXPECT_EQ(ri.getCurrMinRange(), 2.0);
     EXPECT_EQ(ri.getCurrMaxRange(), 3.0);

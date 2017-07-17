@@ -637,11 +637,11 @@ public:
     bool    useCartCtrl() { return   use_cart_ctrl; };
     bool isExperimental() { return is_experimental; };
 
-    std::string     getName() { return           name; };
-    std::string     getLimb() { return           limb; };
-    State          getState() { return          state; };
-    double      getCtrlFreq() { return      ctrl_freq; };
-    std::string getCtrlType() { return      ctrl_type; };
+    std::string      getName() { return           name; };
+    std::string      getLimb() { return           limb; };
+    State           getState() { return          state; };
+    double       getCtrlFreq() { return      ctrl_freq; };
+    std::string  getCtrlType() { return      ctrl_type; };
     double      getCurrRange() { return     curr_range; };
     double   getCurrMinRange() { return curr_min_range; };
     double   getCurrMaxRange() { return curr_max_range; };
