@@ -188,7 +188,13 @@ bool CartesianEstimator::publishObjects()
             object_cnt.pose = objs[i]->pose;
             object_cnt.id   = i;
             object_cnt.name = objs[i]->getName();
-            ++cnt;
+
+
+            geometry_msgs::Point cent;
+	    cent.x = objs[i]->rect.center.x;
+	    cent.y = objs[i]->rect.center.y;
+
+	    object_cnt.center = cent;
 
 	    cv::Point2f rect_points[4];
 	    objs[i]->rect.points(rect_points);
@@ -201,6 +207,8 @@ bool CartesianEstimator::publishObjects()
 
                 object_cnt.corners.push_back(pixel);
             }
+
+            ++cnt;
         }
     }
 
