@@ -23,3 +23,7 @@
 - git:
     local-name: rosbridge_server
     uri: https://github.com/RobotWebTools/rosbridge_suite.git
+
+- git:
+    local-name: ros_speech2text
+    uri: https://github.com/scazlab/ros_speech2text.git
