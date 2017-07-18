@@ -19,3 +19,7 @@
 - git:
     local-name: trac_ik
     uri: https://bitbucket.org/alecive/trac_ik
+
+- git:
+    local-name: rosbridge_server
+    uri: https://github.com/RobotWebTools/rosbridge_suite.git
