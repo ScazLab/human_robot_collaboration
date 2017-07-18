@@ -83,6 +83,18 @@ var rightAruco  = new ROSLIB.Topic({
     messageType : 'human_robot_collaboration_msgs/ObjectsArray'
 });
 
+var rightArmInfo = new ROSLIB.Topic({
+    ros : ros,
+    name: '/action_provider/right/state',
+    messageType : 'human_robot_collaboration_msgs/ArmState'
+});
+
+var leftArmInfo = new ROSLIB.Topic({
+    ros : ros,
+    name: '/action_provider/left/state',
+    messageType : 'human_robot_collaboration_msgs/ArmState'
+});
+
 // Service Client to interface with the left arm
 var leftArmService  = new ROSLIB.Service({
   ros : ros,
@@ -96,6 +108,7 @@ var rightArmService = new ROSLIB.Service({
   name: '/action_provider/service_right',
   messageType : 'baxter_collaboration_msgs/DoAction'
 });
+
 
 // Add a callback for any element on the page
 function callback(e) {

@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+ <!DOCTYPE html>
 <html>
 <head>
     <meta charset="utf-8">
@@ -31,14 +31,34 @@
     </div>
     <div class="container">
         <div class="row">
+            <div class="col-xl-2 text-center alert alert-info" id="left_baxter_state">
+                <text></text>
+            </div>
+            <div class="col-xl-2 text-center alert alert-warning" id="left_baxter_action">
+                <text></text>
+            </div>
+            <div class="col-xl-2 text-center alert alert-success" id="left_baxter_object">
+                <text></text>
+            </div>
+            <div class="col-xl-2 text-center alert alert-info" id="right_baxter_state">
+                <text></text>
+            </div>
+            <div class="col-xl-2 text-center alert alert-warning" id="right_baxter_action">
+                <text></text>
+            </div>
+            <div class="col-xl-2 text-center alert alert-success" id="right_baxter_object">
+                <text></text>
+            </div>
+        </div>
+        <div class="row">
             <div class="col-xl-6 text-center" id="left_table_div">
-                    <h5>Left Table</h5>
+                    <h5 align="center">Left Table</h5>
                 <div id="left-svg-container" class="svg-container">
-                    <svg></svg>
+                    <svg> </svg>
                 </div>
             </div>
             <div class="col-xl-6 text-center" id="right_table_div">
-                    <h5>Right Table</h5>
+                    <h5 align="center">Right Table</h5>
                 <div id="right-svg-container" class="svg-container">
                     <svg></svg>
                 </div>
@@ -57,7 +77,6 @@
                 <div id="container-default">
                     <button type="button" class="btn btn-info btn-lg">hold top</button>
                     <button type="button" class="btn btn-info btn-lg">hold leg</button>
-                    <button type="button" class="btn btn-danger btn-lg">release</button>
                     <button type="button" class="btn btn-success btn-lg">home</button>
                 </div>
                 <div id="container-cleanup" style="display: none;">
@@ -69,6 +88,7 @@
                   <button type="button" class="btn btn-info btn-lg">c_screwdriver</button>
                   <button type="button" class="btn btn-info btn-lg">c_screws_box</button>
                   <button type="button" class="btn btn-info btn-lg">c_brackets_box</button>
+                  <button type="button" class="btn btn-danger btn-lg">BACK</button>
                 </div>
                 <div id="container-get_pass" style="display: none;">
                   <button type="button" class="btn btn-info btn-lg">get_table_top</button>
@@ -79,6 +99,7 @@
                   <button type="button" class="btn btn-info btn-lg">get_screwdriver</button>
                   <button type="button" class="btn btn-info btn-lg">get_screws_box</button>
                   <button type="button" class="btn btn-info btn-lg">get_brackets_box</button>
+                  <button type="button" class="btn btn-danger btn-lg">BACK</button>
                 </div>
             </div>
 
@@ -150,6 +171,7 @@
        document.getElementById('container-default').style.display = 'block';
        document.getElementById('container-get_pass').style.display = 'none';
        document.getElementById('container-cleanup').style.display = 'none';
+        aC
  });
 
  d3.select("#container-cleanup").selectAll("button").on("click",function(){

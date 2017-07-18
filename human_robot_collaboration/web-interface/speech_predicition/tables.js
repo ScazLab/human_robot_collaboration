@@ -28,95 +28,95 @@ var right_svg = d3.select("#right-svg-container").select("svg")
     .classed('svg-content-responsive', true);
 
 
+// Function for drawing polygon from corner coordinates
+var lineFunction = d3.svg.line()
+    .x(function(d) {
+        return d.x; })
+    .y(function(d) { return d.y; })
+    .interpolate("linear");
 
-
+// Visualizes aruco data from left arm
 leftAruco.subscribe(function(msg){
 
     var left_markers = msg.markers;
     console.log('Received msg on ' + leftAruco.name + ': ' + msg.markers);
 
-    left_svg.selectAll("*").remove();
-
-    var left_objs = left_svg.selectAll("g")
-        .data(left_markers).enter().append("g");
-    
-    var lineFunction = d3.svg.line()
-        .x(function(d) {
-            return d.x; })
-        .y(function(d) { return d.y; })
-        .interpolate("linear");
-
-    // UPDATES existing objects-------------------
-    left_objs
-        .append("text")
-        .text(function(d){
-            return obj_dict[d.id] == undefined? "Unknown " +d.id : obj_dict[d.id];
-        })
-        .attr("x", function(d){
-            //console.log("X cord of item is :" + d.center.x);
-            return d.center.x;})
-        .attr("y", function(d){
-            //console.log("y cord of item is :" + d.center.y);
-            return d.center.y;});
-
-
-    for(var d in left_markers){
-        left_objs.append("path")
-            .attr("d", lineFunction(left_markers[d].corners) + " z")
-            .attr("stroke", "blue")
-            .attr("stroke-width", 2)
-            .attr("fill", "none");
-    }
+    arucoCallback(left_markers,left_svg,"left");
 });
 
 
 rightAruco.subscribe(function(msg){
 
-    var right_markers = msg.objects;
+    var  right_markers = msg.objects;
     console.log('Received msg on ' + rightAruco.name + ': ' + msg);
 
-    right_svg.selectAll("*").remove();
+    arucoCallback(right_markers,right_svg, "right");
+});
 
-    var right_objs = right_svg.selectAll("g")
-        .data(right_markers).enter().append("g");
-    
-    var lineFunction = d3.svg.line()
-        .x(function(d) {
-            return d.x; })
-        .y(function(d) { return d.y; })
-        .interpolate("linear");
+
+leftArmInfo.subscribe(function(msg){
+    armInfoCallback(msg, "left");
+});
+
+rightArmInfo.subscribe(function(msg){
+    armInfoCallback(msg, "right");
+});
+
+function armInfoCallback(msg,arm){
+
+    console.log("Receiving arm info!: " + msg.state);
+    var s = d3.select("#" + arm + "_baxter_state");
+    var a = d3.select("#" + arm + "_baxter_action");
+    var o = d3.select("#" + arm + "_baxter_object");
+
+    s.select("text")
+        .text("STATE: " + msg.state);
+
+    a.select("text")
+        .text("ACTION: " + msg.action);
+
+    o.select("text")
+        .text("OBJECT: " + msg.object);
+}
+
+
+function arucoCallback(markers,s, camera){
+
+    s.selectAll("*").remove();
+
+    var right_objs = s.selectAll("g")
+        .data(markers).enter().append("g");
 
     // UPDATES existing objects-------------------
     right_objs
         .append("text")
         .text(function(d){
-            return d.name;
+            if(camera == "left"){
+                return obj_dict[d.id] == undefined? "Unknown " +d.id : obj_dict[d.id];
+            }
+            else{
+                return d.name;
+            }
         })
         .attr("x", function(d){
             console.log("X cord of item is :" + d.center.x);
             return d.center.x;})
         .attr("y", function(d){
             console.log("y cord of item is :" + d.center.y);
-            return d.center.y;});
+            return d.center.y;})
+        .attr("text-anchor", "middle");
 
 
-    for(var d in right_markers){
+    for(var d in markers){
         right_objs.append("path")
-            .attr("d", lineFunction(right_markers[d].corners) + " z")
+            .attr("d", lineFunction( markers[d].corners) + " z")
             .attr("stroke", "blue")
             .attr("stroke-width", 2)
             .attr("fill", "none");
     }
+    return;
+}
 
 
 
-});
-
-
-
-// Draw the Circle
-// var circle = left_svg.append("circle")
-//                          .attr("cx", 30)
-//                          .attr("cy", 30)
-//                          .attr("r", 20);
 
