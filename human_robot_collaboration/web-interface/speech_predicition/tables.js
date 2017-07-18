@@ -92,7 +92,7 @@ function arucoCallback(markers,s, camera){
         .append("text")
         .text(function(d){
             if(camera == "left"){
-                return obj_dict[d.id] == undefined? "Unknown " +d.id : obj_dict[d.id];
+                return obj_dict[d.id] === undefined? "Unknown " +d.id : obj_dict[d.id];
             }
             else{
                 return d.name;
