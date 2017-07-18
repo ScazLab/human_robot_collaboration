@@ -78,5 +78,31 @@
     <include file="$(find svox_tts)/launch/svox_tts.launch" />
 
     <include file="$(find ros_speech2text)/launch/ros_speech2text.launch"/>
+
+    <!--ROSBAG -->
+  <arg name="record" default="true"/>
+  <!--  pass this as a commandline arg to launch file e.g
+       roslaunch human_robot_collaboration speech_predicition.launch participantID=42069-->
+  <arg name="participantID">
+	<arg name="bag_path" default="/home/$(env USER)/Desktop/speech_prediction_bags/$(arg participantID)/" />
+
+  <arg name="bag_topics"
+       value= "/ros_speech2text/user_output
+               /action_provider/left/state
+               /action_provider/right/state
+               /hsv_detector/objects
+               /aruco_marker_publisher/markers
+               /web_interface/log" />
+
+  <node pkg="data_logger" name="rosbag" type="data_logger" if="$(arg record)">
+    <param name="rosbag_record_args"
+           value="
+			            --output-prefix=$(arg participantID)_freeplayAnnex 
+                  $(arg bag_topics)"/>
+    <param name="bag_path" value="$(arg bag_path)"
+           />
+  </node>
+
+
 </launch>
 
