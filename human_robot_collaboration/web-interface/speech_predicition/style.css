@@ -24,7 +24,7 @@ Class prefix        .col-xs-        .col-sm-    .col-md-    .col-lg-    .col-xl-
 html {
   font-size: 18px;
 }
-
+t
 body {
   font-size: 16px;
   background-color: #edeeef;
@@ -96,14 +96,9 @@ section h2 {
   margin-bottom: 10px;
 }
 
-#container-cleanup {
+#container-cleanup,
+#container-get_pass {
   margin-top: 20px;
-}
-
-#container-get_pass .btn {
-  min-width: 70%;
-  min-height: 60px;
-  margin-bottom: 20px;
 }
 
 .mouse-down {
