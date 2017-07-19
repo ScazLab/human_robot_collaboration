@@ -10,7 +10,7 @@ using namespace baxter_core_msgs;
 /**************************************************************************/
 RobotInterface::RobotInterface(string _name, string _limb, bool _use_robot, double _ctrl_freq, bool _use_forces,
                                bool _use_trac_ik, bool _use_cart_ctrl, bool _is_experimental) : nh(_name), name(_name),
-                               limb(_limb), state(START), spinner(4), use_robot(_use_robot), use_forces(_use_forces),
+                               limb(_limb), state(START), spinner(8), use_robot(_use_robot), use_forces(_use_forces),
                                ir_ok(false), curr_range(0.0), curr_min_range(0.0), curr_max_range(0.0),
                                ik_solver(_limb, _use_robot), use_trac_ik(_use_trac_ik), ctrl_freq(_ctrl_freq),
                                filt_force{0.0, 0.0, 0.0}, filt_change{0.0, 0.0, 0.0}, time_filt_last_updated(ros::Time::now()),
@@ -185,6 +185,7 @@ void RobotInterface::ThreadEntry()
                 setState(CTRL_DONE);
             }
         }
+
         r.sleep();
     }
     return;
@@ -395,7 +396,7 @@ bool RobotInterface::isCtrlRunning()
     std::lock_guard<std::mutex> lck(mtx_ctrl);
     bool res = is_ctrl_running;
 
-    // ROS_INFO("[%s] is_ctrl_running equal to: %i", "left", res);
+    // ROS_INFO("[%s] is_ctrl_running equal to: %s", getLimb().c_str(), res==true?"TRUE":"FALSE");
 
     return res;
 }
@@ -441,6 +442,7 @@ void RobotInterface::jointStatesCb(const sensor_msgs::JointState& msg)
 
     if (msg.name.size() >= joint_cmd.names.size())
     {
+        // ROS_INFO("[%s] jointStatesCb", getLimb().c_str());
         std::lock_guard<std::mutex> lck(mtx_jnts);
 
         // cout << "Joint state ";
