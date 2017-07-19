@@ -31,12 +31,38 @@
     </div>
     <div class="container">
         <div class="row">
+            <div class="col-xl-6 text-center">
+                <div class="col-xl-4 text-center alert alert-info" id="left_baxter_state">
+                    <text></text>
+                </div>
+                <div class="col-xl-4 text-center alert alert-danger" id="left_baxter_action">
+                    <text></text>
+                </div>
+                <div class="col-xl-4 text-center alert alert-success" id="left_baxter_object">
+                    <text></text>
+                </div>
+            </div>
+            <div class="col-xl-6 text-center">
+                <div class="col-xl-4 text-center alert alert-info" id="right_baxter_state">
+                    <text></text>
+                </div>
+                <div class="col-xl-4 text-center alert alert-danger" id="right_baxter_action">
+                    <text></text>
+                </div>
+                <div class="col-xl-4 text-center alert alert-success" id="right_baxter_object">
+                    <text></text>
+            </div>
+        </div>
+    </div>
+        <div class="row">
             <div class="col-xl-6 text-center" id="left_table_div">
+                    <h5 align="center">Left Table</h5>
                 <div id="left-svg-container" class="svg-container">
                     <svg></svg>
                 </div>
             </div>
             <div class="col-xl-6 text-center" id="right_table_div">
+                    <h5 align="center">Right Table</h5>
                 <div id="right-svg-container" class="svg-container">
                     <svg></svg>
                 </div>
@@ -44,19 +70,25 @@
             <div class="interface col-xl-12 text-xs-center">
                 <div class="container-toggles btn-group" data-toggle="buttons">
                 </div>
+                <div class="interface text-xs-center" id="experiment-toggle">
+                    <button type="button" class="btn btn-success btn-lg" style="display:inline-block" id="start">START experiment</button>
+                    <button type="button" class="btn btn-danger btn-lg" style="display: none" id="stop">STOP experiment</button>
+                </div>
+                <div class="container-toggles btn-group" data-toggle="buttons">
+                </div>
                 <div class="parent" data-toggle="buttons">
-                <label class="btn btn-primary btn-lg" id="d_get_pass">
-                  <input type="radio" name="options" id="q_get_pass" autocomplete="off" checked>get pass
-                </label>
-                <label class="btn btn-primary btn-lg " id="d_cleanup">
-                  <input type="radio" name="options" id="q_cleanup" autocomplete="off" checked>cleanup
-                </label>
+                    <button type="button" class="btn btn-danger btn-lg">error</button>
+                    <button type="button" class="btn btn-success btn-lg">home</button>
+                    <label class="btn btn-primary btn-lg" id="d_get_pass">
+                        <input type="radio" name="options" id="q_get_pass" autocomplete="off" checked>get pass
+                    </label>
+                    <label class="btn btn-primary btn-lg " id="d_cleanup">
+                        <input type="radio" name="options" id="q_cleanup" autocomplete="off" checked>cleanup
+                    </label>
                 </div>
                 <div id="container-default">
                     <button type="button" class="btn btn-info btn-lg">hold top</button>
                     <button type="button" class="btn btn-info btn-lg">hold leg</button>
-                    <button type="button" class="btn btn-danger btn-lg">release</button>
-                    <button type="button" class="btn btn-success btn-lg">home</button>
                 </div>
                 <div id="container-cleanup" style="display: none;">
                   <button type="button" class="btn btn-info btn-lg">c_table_top</button>
@@ -67,6 +99,7 @@
                   <button type="button" class="btn btn-info btn-lg">c_screwdriver</button>
                   <button type="button" class="btn btn-info btn-lg">c_screws_box</button>
                   <button type="button" class="btn btn-info btn-lg">c_brackets_box</button>
+                  <button type="button" class="btn btn-danger btn-lg">BACK</button>
                 </div>
                 <div id="container-get_pass" style="display: none;">
                   <button type="button" class="btn btn-info btn-lg">get_table_top</button>
@@ -77,6 +110,7 @@
                   <button type="button" class="btn btn-info btn-lg">get_screwdriver</button>
                   <button type="button" class="btn btn-info btn-lg">get_screws_box</button>
                   <button type="button" class="btn btn-info btn-lg">get_brackets_box</button>
+                  <button type="button" class="btn btn-danger btn-lg">BACK</button>
                 </div>
             </div>
 
@@ -131,7 +165,7 @@
 <script src="https://cdn.rawgit.com/twbs/bootstrap/v4.0.0-alpha.2/dist/js/bootstrap.min.js"></script>
 
 <script src="ros.js"></script>
-<script src="tables.js"></script>
+<script src="speech_prediction.js"></script>
 
 <script type="text/javascript">
   $('#d_get_pass').on("click",function(){
@@ -154,6 +188,17 @@
        document.getElementById('container-default').style.display = 'block';
        document.getElementById('container-get_pass').style.display = 'none';
        document.getElementById('container-cleanup').style.display = 'none';
+ });
+ d3.select("#experiment-toggle").selectAll("button").on("click",function(){
+    if(document.getElementById('start').style.display == 'inline-block')
+    {
+         document.getElementById('start').style.display = 'none';
+         document.getElementById('stop').style.display = 'inline-block';
+    }
+    else {
+         document.getElementById('stop').style.display = 'none';
+         document.getElementById('start').style.display = 'inline-block';
+    }
  });
     $("#svg-container").on("mousedown", function (e)
                         {
