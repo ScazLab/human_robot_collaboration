@@ -36,6 +36,7 @@
     </rosparam>
 
     <node pkg="human_robot_collaboration" type="baxter_display"  name="baxter_display"  output="screen"/>
+    <node pkg="human_robot_collaboration" type="flatpack_action_provider" name="flatpack_action_provider" output="screen"/>
 
     <!-- <node name="image_baxter_display" pkg="image_view" type="image_view" respawn="false" output="log">
         <remap from="image" to="/robot/xdisplay"/>

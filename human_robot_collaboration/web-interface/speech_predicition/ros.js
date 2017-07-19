@@ -125,6 +125,8 @@ var stopExperiment = new ROSLIB.Service({
 function callback(e) {
     var e = window.e || e;
 
+    var req = new ROSLIB.ServiceRequest();
+    var res = new ROSLIB.ServiceResponse();
     // Access the parameter server to get IDs of objs
     // corresponding to buttons presses
 
@@ -150,8 +152,8 @@ function callback(e) {
         }
         else if(obj.includes("get_") || obj.includes("c_"))
         {
-            var req = new ROSLIB.ServiceRequest();
-            var res = new ROSLIB.ServiceResponse();
+            req = new ROSLIB.ServiceRequest();
+            res = new ROSLIB.ServiceResponse();
 
             req.objects = [];
 
@@ -199,8 +201,8 @@ function callback(e) {
         }
         else if (obj.includes("hold"))
         {
-            var req = new ROSLIB.ServiceRequest();
-            var res = new ROSLIB.ServiceResponse();
+            req = new ROSLIB.ServiceRequest();
+            res = new ROSLIB.ServiceResponse();
 
             req.objects = [];
 
@@ -213,8 +215,8 @@ function callback(e) {
         }
         else if (obj == 'home')
         {
-          var req = new ROSLIB.ServiceRequest();
-          var res = new ROSLIB.ServiceResponse();
+          req = new ROSLIB.ServiceRequest();
+          res = new ROSLIB.ServiceResponse();
           req.action = obj;
 
           console.log('Requested: ', req.action, req.objects);
@@ -231,8 +233,8 @@ function callback(e) {
         // Begins rosbagging baxter data
         else if (obj.includes("START"))
         {
-            var req = new ROSLIB.ServiceRequest();
-            var res = new ROSLIB.ServiceResponse();
+            req = new ROSLIB.ServiceRequest();
+            res = new ROSLIB.ServiceResponse();
 
             console.log("Requested rosbag recording start!");
             startExperiment.callService(req,function(res){
@@ -242,8 +244,8 @@ function callback(e) {
 
         else if (obj.includes("STOP"))
         {
-            var req = new ROSLIB.ServiceRequest();
-            var res = new ROSLIB.ServiceResponse();
+            req = new ROSLIB.ServiceRequest();
+            res = new ROSLIB.ServiceResponse();
 
             console.log("Requested rosbag recording stop!");
             stopExperiment.callService(req,function(res){
