@@ -1,16 +1,16 @@
 var width  = 640,
     height = 480;
 
-var obj_dict = [{
-    "200": "table top",
-    "150": "leg 1",
-    "151": "leg 2",
-    "152": "leg 3",
-    "153": "leg 4",
-    "1": "screwdriver",
-    "2": "screws box",
-    "3": "brackets box"
-}];
+var obj_dict = {
+    200: "table top",
+    150: "leg 1",
+    151: "leg 2",
+    152: "leg 3",
+    153: "leg 4",
+    1: "screwdriver",
+    2: "screws box",
+    3: "brackets box"
+};
 // Create a left and right SVG, corresponding to the left and right tables
 // that baxter picks items up from
 var left_svg = d3.select("#left-svg-container").select("svg")
@@ -39,8 +39,6 @@ var lineFunction = d3.svg.line()
 leftAruco.subscribe(function(msg){
 
     var left_markers = msg.markers;
-    console.log('Received msg on ' + leftAruco.name + ': ' + msg.markers);
-
     arucoCallback(left_markers,left_svg,"left");
 });
 
@@ -48,8 +46,6 @@ leftAruco.subscribe(function(msg){
 rightAruco.subscribe(function(msg){
 
     var  right_markers = msg.objects;
-    //console.log('Received msg on ' + rightAruco.name + ': ' + msg);
-
     arucoCallback(right_markers,right_svg, "right");
 });
 
@@ -62,8 +58,8 @@ rightArmInfo.subscribe(function(msg){
     armInfoCallback(msg, "right");
 });
 
-text2Speech.subscribe(function(msg){
-    text2SpeechCallback(msg);
+speech2Text.subscribe(function(msg){
+    speech2TextCallback(msg);
 });
 
 function armInfoCallback(msg,arm){
@@ -83,8 +79,7 @@ function armInfoCallback(msg,arm){
         .text("OBJECT: " + msg.object);
 }
 
-function text2SpeechCallback(msg){
-    console.log("Receiving speech transcript: " + msg.transcript);
+function speech2TextCallback(msg){
 
     var s = d3.select("#speech2Text");
 
@@ -128,7 +123,3 @@ function arucoCallback(markers,s, camera){
     }
     return;
 }
-
-
-
-
