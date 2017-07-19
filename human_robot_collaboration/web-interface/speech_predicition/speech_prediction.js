@@ -2,14 +2,14 @@ var width  = 640,
     height = 480;
 
 var obj_dict = [{
-    200: "table top",
-    150: "leg 1",
-    151: "leg 2",
-    152: "leg 3",
-    153: "leg 4",
-    1: "screwdriver",
-    2: "screws box",
-    3: "brackets box"
+    "200": "table top",
+    "150": "leg 1",
+    "151": "leg 2",
+    "152": "leg 3",
+    "153": "leg 4",
+    "1": "screwdriver",
+    "2": "screws box",
+    "3": "brackets box"
 }];
 // Create a left and right SVG, corresponding to the left and right tables
 // that baxter picks items up from
@@ -62,6 +62,10 @@ rightArmInfo.subscribe(function(msg){
     armInfoCallback(msg, "right");
 });
 
+text2Speech.subscribe(function(msg){
+    text2SpeechCallback(msg);
+});
+
 function armInfoCallback(msg,arm){
 
     console.log("Receiving arm info!: " + msg.state);
@@ -79,6 +83,14 @@ function armInfoCallback(msg,arm){
         .text("OBJECT: " + msg.object);
 }
 
+function text2SpeechCallback(msg){
+    console.log("Receiving speech transcript: " + msg.transcript);
+
+    var s = d3.select("#speech2Text");
+
+    s.select("text")
+        .text("" + msg.transcript);
+}
 
 function arucoCallback(markers,s, camera){
 

@@ -95,6 +95,12 @@ var leftArmInfo = new ROSLIB.Topic({
     messageType : 'human_robot_collaboration_msgs/ArmState'
 });
 
+var speech2Text = new ROSLIB.Topic({
+    ros : ros,
+    name: '/ros_speech2text/user_output',
+    messageType : 'ros_speech2text/transcript'
+});
+
 // Service Client to interface with the left arm
 var leftArmService  = new ROSLIB.Service({
   ros : ros,
