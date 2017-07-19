@@ -48,7 +48,7 @@ leftAruco.subscribe(function(msg){
 rightAruco.subscribe(function(msg){
 
     var  right_markers = msg.objects;
-    console.log('Received msg on ' + rightAruco.name + ': ' + msg);
+    //console.log('Received msg on ' + rightAruco.name + ': ' + msg);
 
     arucoCallback(right_markers,right_svg, "right");
 });
@@ -99,10 +99,10 @@ function arucoCallback(markers,s, camera){
             }
         })
         .attr("x", function(d){
-            console.log("X cord of item is :" + d.center.x);
+            //console.log("X cord of item is :" + d.center.x);
             return d.center.x;})
         .attr("y", function(d){
-            console.log("y cord of item is :" + d.center.y);
+            //console.log("y cord of item is :" + d.center.y);
             return d.center.y;})
         .attr("text-anchor", "middle");
 

@@ -189,15 +189,14 @@ bool CartesianEstimator::publishObjects()
             object_cnt.id   = i;
             object_cnt.name = objs[i]->getName();
 
-
             geometry_msgs::Point cent;
-	    cent.x = objs[i]->rect.center.x;
-	    cent.y = objs[i]->rect.center.y;
+            cent.x = objs[i]->rect.center.x;
+            cent.y = objs[i]->rect.center.y;
 
-	    object_cnt.center = cent;
+            object_cnt.center = cent;
 
-	    cv::Point2f rect_points[4];
-	    objs[i]->rect.points(rect_points);
+            cv::Point2f rect_points[4];
+            objs[i]->rect.points(rect_points);
 
             for(size_t j = 0; j < 4; j++)
             {

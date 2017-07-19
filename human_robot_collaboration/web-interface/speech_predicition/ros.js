@@ -99,16 +99,27 @@ var leftArmInfo = new ROSLIB.Topic({
 var leftArmService  = new ROSLIB.Service({
   ros : ros,
   name: '/action_provider/service_left',
-  messageType : 'baxter_collaboration_msgs/DoAction'
+  messageType : 'human_robot_collaboration_msgs/DoAction'
 });
 
 // Service Client to interface with the right arm
 var rightArmService = new ROSLIB.Service({
   ros : ros,
   name: '/action_provider/service_right',
-  messageType : 'baxter_collaboration_msgs/DoAction'
+  messageType : 'human_robot_collaboration_msgs/DoAction'
 });
 
+var startExperiment = new ROSLIB.Service({
+    ros : ros,
+    name: '/rosbag/start',
+    messageType :'std_srvs/Empty'
+});
+
+var stopExperiment = new ROSLIB.Service({
+    ros : ros,
+    name: '/rosbag/stop',
+    messageType :'std_srvs/Empty'
+});
 
 // Add a callback for any element on the page
 function callback(e) {
@@ -216,8 +227,32 @@ function callback(e) {
               console.log('[left] Got Response: ' + res.success + ' ' + res.response);
           });
         }
-        else
+
+        // Begins rosbagging baxter data
+        else if (obj.includes("START"))
         {
+            var req = new ROSLIB.ServiceRequest();
+            var res = new ROSLIB.ServiceResponse();
+
+            console.log("Requested rosbag recording start!");
+            startExperiment.callService(req,function(res){
+                console.log("Got response!");
+            });
+        }
+
+        else if (obj.includes("STOP"))
+        {
+            var req = new ROSLIB.ServiceRequest();
+            var res = new ROSLIB.ServiceResponse();
+
+            console.log("Requested rosbag recording stop!");
+            stopExperiment.callService(req,function(res){
+                console.log("Got response!");
+            });
+        }
+
+        else
+           {
           if (obj == 'finish') obj = 'stop'; // To comply with the py code
 
           var message = new ROSLIB.Message({

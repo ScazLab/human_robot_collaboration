@@ -1,4 +1,7 @@
 <launch>
+
+
+
     <!-- PERCEPTION -->
     <node name="image_view_hsv" pkg="image_view" type="image_view" respawn="false" output="log">
         <remap from="image" to="/hsv_detector/image_result"/>
@@ -95,7 +98,7 @@
                  /web_interface/log" />
 
     <node pkg="data_logger" name="rosbag" type="data_logger" if="$(arg record)">
-        <param name="rosbag_record_args" value="--output-prefix=$(arg participantID)_freeplayAnnex $(arg bag_topics)"/>
+        <param name="rosbag_record_args" value="--output-prefix=$(arg participantID) $(arg bag_topics)"/>
         <param name="bag_path" value="$(arg bag_path)"/>
     </node>
 </launch>

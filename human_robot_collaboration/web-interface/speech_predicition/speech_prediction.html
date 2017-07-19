@@ -1,4 +1,4 @@
- <!DOCTYPE html>
+<!DOCTYPE html>
 <html>
 <head>
     <meta charset="utf-8">
@@ -58,7 +58,7 @@
             <div class="col-xl-6 text-center" id="left_table_div">
                     <h5 align="center">Left Table</h5>
                 <div id="left-svg-container" class="svg-container">
-                    <svg> </svg>
+                    <svg></svg>
                 </div>
             </div>
             <div class="col-xl-6 text-center" id="right_table_div">
@@ -70,18 +70,25 @@
             <div class="interface col-xl-12 text-xs-center">
                 <div class="container-toggles btn-group" data-toggle="buttons">
                 </div>
+                <div class="interface text-xs-center" id="experiment-toggle">
+                    <button type="button" class="btn btn-success btn-lg" style="display:inline-block" id="start">START experiment</button>
+                    <button type="button" class="btn btn-danger btn-lg" style="display: none" id="stop">STOP experiment</button>
+                </div>
+                <div class="container-toggles btn-group" data-toggle="buttons">
+                </div>
                 <div class="parent" data-toggle="buttons">
-                <label class="btn btn-primary btn-lg" id="d_get_pass">
-                  <input type="radio" name="options" id="q_get_pass" autocomplete="off" checked>get pass
-                </label>
-                <label class="btn btn-primary btn-lg " id="d_cleanup">
-                  <input type="radio" name="options" id="q_cleanup" autocomplete="off" checked>cleanup
-                </label>
+                    <button type="button" class="btn btn-danger btn-lg">error</button>
+                    <button type="button" class="btn btn-success btn-lg">home</button>
+                    <label class="btn btn-primary btn-lg" id="d_get_pass">
+                        <input type="radio" name="options" id="q_get_pass" autocomplete="off" checked>get pass
+                    </label>
+                    <label class="btn btn-primary btn-lg " id="d_cleanup">
+                        <input type="radio" name="options" id="q_cleanup" autocomplete="off" checked>cleanup
+                    </label>
                 </div>
                 <div id="container-default">
                     <button type="button" class="btn btn-info btn-lg">hold top</button>
                     <button type="button" class="btn btn-info btn-lg">hold leg</button>
-                    <button type="button" class="btn btn-success btn-lg">home</button>
                 </div>
                 <div id="container-cleanup" style="display: none;">
                   <button type="button" class="btn btn-info btn-lg">c_table_top</button>
@@ -175,13 +182,23 @@
        document.getElementById('container-default').style.display = 'block';
        document.getElementById('container-get_pass').style.display = 'none';
        document.getElementById('container-cleanup').style.display = 'none';
-        aC
  });
 
  d3.select("#container-cleanup").selectAll("button").on("click",function(){
        document.getElementById('container-default').style.display = 'block';
        document.getElementById('container-get_pass').style.display = 'none';
        document.getElementById('container-cleanup').style.display = 'none';
+ });
+ d3.select("#experiment-toggle").selectAll("button").on("click",function(){
+    if(document.getElementById('start').style.display == 'inline-block')
+    {
+         document.getElementById('start').style.display = 'none';
+         document.getElementById('stop').style.display = 'inline-block';
+    }
+    else {
+         document.getElementById('stop').style.display = 'none';
+         document.getElementById('start').style.display = 'inline-block';
+    }
  });
     $("#svg-container").on("mousedown", function (e)
                         {
