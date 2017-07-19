@@ -642,6 +642,7 @@ public:
     State           getState() { return          state; };
     double       getCtrlFreq() { return      ctrl_freq; };
     std::string  getCtrlType() { return      ctrl_type; };
+    int          getCtrlMode() { return      ctrl_mode; };
     double      getCurrRange() { return     curr_range; };
     double   getCurrMinRange() { return curr_min_range; };
     double   getCurrMaxRange() { return curr_max_range; };
