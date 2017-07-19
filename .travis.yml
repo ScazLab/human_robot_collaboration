@@ -166,7 +166,6 @@ script:
 
 after_success:
   # Run build on Docker Hub
-  - '[ "$TRAVIS_EVENT_TYPE" = "cron" ]    &&
-     [ "$TRAVIS_PULL_REQUEST" = "false" ] &&
+  - '[ "$TRAVIS_PULL_REQUEST" = "false" ] &&
      [ "$TRAVIS_BRANCH" = "master" ]      &&
      curl --data build=true -X POST $DOCKER_PUSH_URL'
