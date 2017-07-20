@@ -149,8 +149,8 @@ before_script:
 # fails. Running `catkin_test_results` aggregates all the results and returns
 # non-zero when a test fails (which notifies Travis the build failed).
 script:
-  - source /opt/ros/$ROS_DISTRO/setup.bash
-  - cd ~/catkin_ws
+  - 'source /opt/ros/$ROS_DISTRO/setup.bash'
+  - "cd ~/catkin_ws"
   # To remove this -> libdc1394 error: Failed to initialize libdc1394
   - sudo ln /dev/null /dev/raw1394
   # Build the repo
@@ -162,4 +162,4 @@ script:
 
 after_success:
   # Run build on Docker Hub
-  - 'curl -H 'Content-Type\: application/json' --data '{"source_type"\: "Branch", "source_name": "'$TRAVIS_BRANCH'"}' -X POST $DOCKER_PUSH_URL'
+  - curl -H "Content-Type\: application/json" --data "{"source_type"\: "Branch", "source_name": "'$TRAVIS_BRANCH'"}" -X POST $DOCKER_PUSH_URL
