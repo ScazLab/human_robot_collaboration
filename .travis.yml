@@ -162,4 +162,4 @@ script:
 
 after_success:
   # Run build on Docker Hub
-  - "curl -H 'Content-Type\: application/json' --data '{\"source_type\"\: \"Branch\", \"source_name\"\: \"'$TRAVIS_BRANCH'\"}' -X POST $DOCKER_PUSH_URL"
+  - "curl -H 'Content-Type\: application/json' --data '{"source_type"\: "Branch", "source_name"\: "'$TRAVIS_BRANCH'"}' -X POST $DOCKER_PUSH_URL"
