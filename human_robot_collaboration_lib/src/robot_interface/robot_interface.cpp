@@ -223,8 +223,7 @@ bool RobotInterface::initCtrlParams()
     time_start = ros::Time::now();
     pose_start = getPose();
 
-    particle.reset();
-    particle = std::make_unique<LinearPointParticle>(getName()+"/"+getLimb(), THREAD_FREQ, true);
+    particle.reset(new LinearPointParticle(getName()+"/"+getLimb(), THREAD_FREQ, true));
 
     Eigen::Vector3d ps(pose_start.position.x, pose_start.position.y, pose_start.position.z);
     Eigen::Vector3d pd(  pose_des.position.x,   pose_des.position.y,   pose_des.position.z);
