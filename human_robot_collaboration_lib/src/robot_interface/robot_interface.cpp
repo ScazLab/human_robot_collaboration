@@ -18,7 +18,7 @@ RobotInterface::RobotInterface(string _name, string _limb, bool _use_robot, doub
                                is_coll_av_on(false), is_coll_det_on(false), is_closing(false), use_cart_ctrl(_use_cart_ctrl),
                                is_ctrl_running(false), is_experimental(_is_experimental), ctrl_track_mode(false),
                                ctrl_mode(human_robot_collaboration_msgs::GoToPose::POSITION_MODE),
-                               ctrl_check_mode("strict"), ctrl_type("pose"), rviz_pub(_name)
+                               ctrl_check_mode("strict"), ctrl_type("pose"), print_level(0), rviz_pub(_name)
 {
     // if (not _use_robot) return;
 
@@ -234,7 +234,7 @@ bool RobotInterface::initCtrlParams()
     return particle->isSet() && particle->start();
 }
 
-void RobotInterface::ctrlMsgCb(const human_robot_collaboration_msgs::GoToPose& msg)
+void RobotInterface::ctrlMsgCb(const human_robot_collaboration_msgs::GoToPose& _msg)
 {
     if (int(getState()) != WORKING)
     {
@@ -242,7 +242,7 @@ void RobotInterface::ctrlMsgCb(const human_robot_collaboration_msgs::GoToPose& m
         setCtrlRunning(false);
 
         // First, let's check if the type of the control command is allowed
-        if (msg.type == "stop")
+        if (_msg.type == "stop")
         {
             ROS_INFO("[%s] Stopping cartesian controller server.", getLimb().c_str());
             setCtrlRunning(false);
@@ -250,19 +250,19 @@ void RobotInterface::ctrlMsgCb(const human_robot_collaboration_msgs::GoToPose& m
             return;
         }
 
-        if  (msg.type ==   "position" || msg.type ==       "pose" ||
-             msg.type == "relative_x" || msg.type == "relative_y" || msg.type == "relative_z")
+        if  (_msg.type ==   "position" || _msg.type ==       "pose" ||
+             _msg.type == "relative_x" || _msg.type == "relative_y" || _msg.type == "relative_z")
         {
-            if (msg.type == "pose")
+            if (_msg.type == "pose")
             {
-                pose_des.position    = msg.position;
-                pose_des.orientation = msg.orientation;
+                pose_des.position    = _msg.position;
+                pose_des.orientation = _msg.orientation;
             }
             else
             {
-                if (msg.type == "position")
+                if (_msg.type == "position")
                 {
-                    pose_des.position = msg.position;
+                    pose_des.position = _msg.position;
                 }
                 else
                 {
@@ -272,28 +272,28 @@ void RobotInterface::ctrlMsgCb(const human_robot_collaboration_msgs::GoToPose& m
                 pose_des.orientation = getOri();
             }
 
-            if (msg.type == "relative_x")
+            if (_msg.type == "relative_x")
             {
-                pose_des.position.x += msg.increment;
+                pose_des.position.x += _msg.increment;
             }
-            if (msg.type == "relative_y")
+            if (_msg.type == "relative_y")
             {
-                pose_des.position.y += msg.increment;
+                pose_des.position.y += _msg.increment;
             }
-            if (msg.type == "relative_z")
+            if (_msg.type == "relative_z")
             {
-                pose_des.position.z += msg.increment;
+                pose_des.position.z += _msg.increment;
             }
         }
         else
         {
             ROS_ERROR("[%s] Requested command type %s not allowed!",
-                                  getLimb().c_str(), msg.type.c_str());
+                                  getLimb().c_str(), _msg.type.c_str());
             return;
         }
 
         // Then, let's check if control mode is among the allowed options
-        if (msg.ctrl_mode != human_robot_collaboration_msgs::GoToPose::POSITION_MODE)
+        if (_msg.ctrl_mode != human_robot_collaboration_msgs::GoToPose::POSITION_MODE)
         {
             if (not is_experimental)
             {
@@ -304,12 +304,12 @@ void RobotInterface::ctrlMsgCb(const human_robot_collaboration_msgs::GoToPose& m
             }
             else
             {
-                if (msg.ctrl_mode == human_robot_collaboration_msgs::GoToPose::VELOCITY_MODE)
+                if (_msg.ctrl_mode == human_robot_collaboration_msgs::GoToPose::VELOCITY_MODE)
                 {
                     ROS_WARN("[%s] Experimental VELOCITY_MODE enabled", getLimb().c_str());
                     ctrl_mode = human_robot_collaboration_msgs::GoToPose::VELOCITY_MODE;
                 }
-                else if (msg.ctrl_mode == human_robot_collaboration_msgs::GoToPose::RAW_POSITION_MODE)
+                else if (_msg.ctrl_mode == human_robot_collaboration_msgs::GoToPose::RAW_POSITION_MODE)
                 {
                     ROS_WARN("[%s] Experimental RAW_POSITION_MODE enabled", getLimb().c_str());
                     ctrl_mode = human_robot_collaboration_msgs::GoToPose::RAW_POSITION_MODE;
@@ -317,27 +317,27 @@ void RobotInterface::ctrlMsgCb(const human_robot_collaboration_msgs::GoToPose& m
                 else
                 {
                     ROS_ERROR("[%s] Requested control mode %i not allowed!",
-                                          getLimb().c_str(), msg.ctrl_mode);
+                                          getLimb().c_str(), _msg.ctrl_mode);
                     return;
                 }
             }
         }
 
-        ctrl_mode = msg.ctrl_mode;
+        ctrl_mode = _msg.ctrl_mode;
 
         // Finally, let's check if check mode is among the allowed options
-        if (msg.check_mode != "strict" && msg.check_mode != "loose")
+        if (_msg.check_mode != "strict" && _msg.check_mode != "loose")
         {
             ctrl_check_mode = "strict";
             ROS_WARN("[%s] Requested check mode %s not allowed! Using strict by default",
-                                              getLimb().c_str(), msg.check_mode.c_str());
+                                              getLimb().c_str(), _msg.check_mode.c_str());
         }
         else
         {
-            ctrl_check_mode = msg.check_mode;
+            ctrl_check_mode = _msg.check_mode;
         }
 
-        ctrl_track_mode = msg.tracking_mode=="on"?true:false;
+        ctrl_track_mode = _msg.tracking_mode=="on"?true:false;
 
         if (initCtrlParams())
         {
@@ -396,18 +396,18 @@ bool RobotInterface::isCtrlRunning()
     return res;
 }
 
-void RobotInterface::collAvCb(const baxter_core_msgs::CollisionAvoidanceState& msg)
+void RobotInterface::collAvCb(const baxter_core_msgs::CollisionAvoidanceState& _msg)
 {
-    if (msg.collision_object.size()!=0)
+    if (_msg.collision_object.size()!=0)
     {
         is_coll_av_on =  true;
 
         string objects = "";
-        for (size_t i = 0; i < msg.collision_object.size(); ++i)
+        for (size_t i = 0; i < _msg.collision_object.size(); ++i)
         {
             // Let's remove the first part of the collision object name for visualization
             // purposes, i.e. the part that says "collision_"
-            objects = objects + " " + string(msg.collision_object[i]).erase(0,10);
+            objects = objects + " " + string(_msg.collision_object[i]).erase(0,10);
         }
         ROS_WARN_THROTTLE(1, "[%s] Collision avoidance with: %s",
                              getLimb().c_str(), objects.c_str());
@@ -417,9 +417,9 @@ void RobotInterface::collAvCb(const baxter_core_msgs::CollisionAvoidanceState& m
     return;
 }
 
-void RobotInterface::collDetCb(const baxter_core_msgs::CollisionDetectionState& msg)
+void RobotInterface::collDetCb(const baxter_core_msgs::CollisionDetectionState& _msg)
 {
-    if (msg.collision_state==true)
+    if (_msg.collision_state==true)
     {
         is_coll_det_on = true;
 
@@ -430,12 +430,12 @@ void RobotInterface::collDetCb(const baxter_core_msgs::CollisionDetectionState& 
     return;
 }
 
-void RobotInterface::jointStatesCb(const sensor_msgs::JointState& msg)
+void RobotInterface::jointStatesCb(const sensor_msgs::JointState& _msg)
 {
     JointCommand joint_cmd;
     setJointNames(joint_cmd);
 
-    if (msg.name.size() >= joint_cmd.names.size())
+    if (_msg.name.size() >= joint_cmd.names.size())
     {
         // ROS_INFO("[%s] jointStatesCb", getLimb().c_str());
         std::lock_guard<std::mutex> lck(mtx_jnts);
@@ -443,7 +443,7 @@ void RobotInterface::jointStatesCb(const sensor_msgs::JointState& msg)
         // cout << "Joint state ";
         // for (size_t i = 9; i < 16; ++i)
         // {
-        //     cout << "[" << i << "] " << msg.name[i] << " " << msg.position[i] << "\t";
+        //     cout << "[" << i << "] " << _msg.name[i] << " " << _msg.position[i] << "\t";
         // }
         // cout << endl;
         curr_jnts.name.clear();
@@ -452,13 +452,13 @@ void RobotInterface::jointStatesCb(const sensor_msgs::JointState& msg)
 
         for (size_t i = 0; i < joint_cmd.names.size(); ++i)
         {
-            for (size_t j = 0; j < msg.name.size(); ++j)
+            for (size_t j = 0; j < _msg.name.size(); ++j)
             {
-                if (joint_cmd.names[i] == msg.name[j])
+                if (joint_cmd.names[i] == _msg.name[j])
                 {
-                    curr_jnts.name.push_back(msg.name[j]);
-                    curr_jnts.position.push_back(msg.position[j]);
-                    curr_jnts.velocity.push_back(msg.velocity[j]);
+                    curr_jnts.name.push_back(_msg.name[j]);
+                    curr_jnts.position.push_back(_msg.position[j]);
+                    curr_jnts.velocity.push_back(_msg.velocity[j]);
                 }
             }
         }
@@ -467,9 +467,9 @@ void RobotInterface::jointStatesCb(const sensor_msgs::JointState& msg)
     return;
 }
 
-void RobotInterface::cuffLowerCb(const baxter_core_msgs::DigitalIOState& msg)
+void RobotInterface::cuffLowerCb(const baxter_core_msgs::DigitalIOState& _msg)
 {
-    if (msg.state == baxter_core_msgs::DigitalIOState::PRESSED)
+    if (_msg.state == baxter_core_msgs::DigitalIOState::PRESSED)
     {
         setState(KILLED);
     }
@@ -477,9 +477,9 @@ void RobotInterface::cuffLowerCb(const baxter_core_msgs::DigitalIOState& msg)
     return;
 }
 
-void RobotInterface::cuffUpperCb(const baxter_core_msgs::DigitalIOState& msg)
+void RobotInterface::cuffUpperCb(const baxter_core_msgs::DigitalIOState& _msg)
 {
-    if (msg.state == baxter_core_msgs::DigitalIOState::PRESSED)
+    if (_msg.state == baxter_core_msgs::DigitalIOState::PRESSED)
     {
         setState(KILLED);
     }
@@ -487,27 +487,27 @@ void RobotInterface::cuffUpperCb(const baxter_core_msgs::DigitalIOState& msg)
     return;
 }
 
-void RobotInterface::endpointCb(const baxter_core_msgs::EndpointState& msg)
+void RobotInterface::endpointCb(const baxter_core_msgs::EndpointState& _msg)
 {
-    // ROS_DEBUG("endpointCb");
-    curr_pos = msg.pose.position;
-    curr_ori = msg.pose.orientation;
+    ROS_INFO_COND(print_level>=4, "endpointCb");
+    curr_pos = _msg.pose.position;
+    curr_ori = _msg.pose.orientation;
 
     if (use_forces == true)
     {
-        curr_wrench = msg.wrench;
+        curr_wrench = _msg.wrench;
         filterForces();
     }
 
     return;
 }
 
-void RobotInterface::IRCb(const sensor_msgs::Range& msg)
+void RobotInterface::IRCb(const sensor_msgs::Range& _msg)
 {
-    // ROS_DEBUG("IRCb");
-    curr_range     = msg.range;
-    curr_max_range = msg.max_range;
-    curr_min_range = msg.min_range;
+    ROS_INFO_COND(print_level>=4, "IRCb");
+    curr_range     = _msg.range;
+    curr_max_range = _msg.max_range;
+    curr_min_range = _msg.min_range;
 
     if (!ir_ok)
     {
@@ -690,7 +690,7 @@ bool RobotInterface::computeIK(double px, double py, double pz,
 
             if (ik_srv.response.isValid[0])
             {
-                ROS_DEBUG("Got solution!");
+                ROS_INFO_COND(print_level>=4, "Got solution!");
 
                 j.resize(ik_srv.response.joints[0].position.size());
 
@@ -704,10 +704,11 @@ bool RobotInterface::computeIK(double px, double py, double pz,
             {
                 // if position cannot be reached, try a position with the same x-y coordinates
                 // but higher z (useful when placing tokens)
-                ROS_DEBUG("[%s] IK solution not valid: %g %g %g", getLimb().c_str(),
-                                                         pose_stamp.pose.position.x,
-                                                         pose_stamp.pose.position.y,
-                                                         pose_stamp.pose.position.z);
+                ROS_INFO_COND(print_level>=2, "[%s] IK solution not valid: %g %g %g",
+                                                                   getLimb().c_str(),
+                                                          pose_stamp.pose.position.x,
+                                                          pose_stamp.pose.position.y,
+                                                          pose_stamp.pose.position.z);
                 pose_stamp.pose.position.z += 0.001;
             }
         }
@@ -861,51 +862,48 @@ bool RobotInterface::isOrientationReached(double ox, double oy, double oz, doubl
     return true;
 }
 
-bool RobotInterface::isConfigurationReached(VectorXd des_jnts, string mode)
+bool RobotInterface::isConfigurationReached(VectorXd _dj, string _mode)
 {
-    if (curr_jnts.position.size() < 7 || des_jnts.size() < 7)
-    {
-        return false;
-    }
+    if (_dj.size() < 7) { return false; }
 
-    baxter_core_msgs::JointCommand dj;
-    setJointNames(dj);
-    setJointCommands(des_jnts[0], des_jnts[1], des_jnts[2],
-                     des_jnts[3], des_jnts[4], des_jnts[5], des_jnts[6], dj);
+    baxter_core_msgs::JointCommand des_jnts;
+    setJointNames(des_jnts);
+    setJointCommands(_dj[0], _dj[1], _dj[2],
+                     _dj[3], _dj[4], _dj[5], _dj[6], des_jnts);
 
-    return isConfigurationReached(dj, mode);
+    return isConfigurationReached(des_jnts, _mode);
 }
 
-bool RobotInterface::isConfigurationReached(baxter_core_msgs::JointCommand des_jnts, string mode)
+bool RobotInterface::isConfigurationReached(baxter_core_msgs::JointCommand _dj, string _mode)
 {
-    if (curr_jnts.position.size() < 7)
-    {
-        return false;
-    }
+    sensor_msgs::JointState cj = getJointStates();
 
-    ROS_DEBUG("[%s] Checking configuration: Current %g %g %g %g %g %g %g\tDesired %g %g %g %g %g %g %g",
-                                                                                      getLimb().c_str(),
-             curr_jnts.position[0], curr_jnts.position[1], curr_jnts.position[2], curr_jnts.position[3],
-                                    curr_jnts.position[4], curr_jnts.position[5], curr_jnts.position[6],
-               des_jnts.command[0],   des_jnts.command[1],   des_jnts.command[2],   des_jnts.command[3],
-                                      des_jnts.command[4],   des_jnts.command[5],   des_jnts.command[6]);
+    if (cj.position.size() < 7)    { return false; }
 
-    for (size_t i = 0; i < des_jnts.names.size(); ++i)
+    ROS_INFO_COND(print_level>=2, "[%s] Checking configuration: Current %g %g %g %g %g %g %g"
+                                                             "\tDesired %g %g %g %g %g %g %g",
+                                                                            getLimb().c_str(),
+                               cj.position[0], cj.position[1], cj.position[2], cj.position[3],
+                                               cj.position[4], cj.position[5], cj.position[6],
+                               _dj.command[0], _dj.command[1], _dj.command[2], _dj.command[3],
+                                               _dj.command[4], _dj.command[5], _dj.command[6]);
+
+    for (size_t i = 0; i < _dj.names.size(); ++i)
     {
         bool res = false;
-        for (size_t j = 0; j < curr_jnts.name.size(); ++j)
+        for (size_t j = 0; j < cj.name.size(); ++j)
         {
-            if (des_jnts.names[i] == curr_jnts.name[j])
+            if (_dj.names[i] == cj.name[j])
             {
-                if (mode == "strict")
+                if (_mode == "strict")
                 {
                     // It's approximatively half a degree
-                    if (abs(des_jnts.command[i]-curr_jnts.position[j]) > 0.010) return false;
+                    if (abs(_dj.command[i]-cj.position[j]) > 0.010) return false;
                 }
-                else if (mode == "loose")
+                else if (_mode == "loose")
                 {
                     // It's approximatively a degree
-                    if (abs(des_jnts.command[i]-curr_jnts.position[j]) > 0.020) return false;
+                    if (abs(_dj.command[i]-cj.position[j]) > 0.020) return false;
                 }
                 res = true;
             }
@@ -927,7 +925,7 @@ bool RobotInterface::setCtrlType(const std::string &_ctrl_type)
     }
 
     ctrl_type = _ctrl_type;
-    ROS_DEBUG("[%s] Control type set to %s", getLimb().c_str(), ctrl_type.c_str());
+    ROS_INFO_COND(print_level>=2, "[%s] Control type set to %s", getLimb().c_str(), ctrl_type.c_str());
 
     return true;
 }
