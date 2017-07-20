@@ -3,6 +3,7 @@
 #include <tf/transform_datatypes.h>
 
 using namespace              std;
+using namespace            Eigen;
 using namespace baxter_core_msgs;
 
 /**************************************************************************/
@@ -13,7 +14,7 @@ RobotInterface::RobotInterface(string _name, string _limb, bool _use_robot, doub
                                limb(_limb), state(START), spinner(8), use_robot(_use_robot), use_forces(_use_forces),
                                ir_ok(false), curr_range(0.0), curr_min_range(0.0), curr_max_range(0.0),
                                ik_solver(_limb, _use_robot), use_trac_ik(_use_trac_ik), ctrl_freq(_ctrl_freq),
-                               filt_force{0.0, 0.0, 0.0}, filt_change{0.0, 0.0, 0.0}, time_filt_last_updated(ros::Time::now()),
+                               filt_force(0.0, 0.0, 0.0), filt_change(0.0, 0.0, 0.0), time_filt_last_updated(ros::Time::now()),
                                is_coll_av_on(false), is_coll_det_on(false), is_closing(false), use_cart_ctrl(_use_cart_ctrl),
                                is_ctrl_running(false), is_experimental(_is_experimental), ctrl_track_mode(false),
                                ctrl_mode(human_robot_collaboration_msgs::GoToPose::POSITION_MODE),
@@ -174,12 +175,7 @@ void RobotInterface::ThreadEntry()
 
                 if (ctrl_mode == human_robot_collaboration_msgs::GoToPose::VELOCITY_MODE)
                 {
-                    vector<double> joint_values;
-                    for (int i = 0; i < 7; ++i)
-                    {
-                        joint_values.push_back(0.0);
-                    }
-                    goToJointConfNoCheck(joint_values);
+                    goToJointConfNoCheck(Eigen::VectorXd::Constant(7, 0.0));
                 }
                 setCtrlRunning(false);
                 setState(CTRL_DONE);
@@ -526,35 +522,41 @@ void RobotInterface::filterForces()
 {
     double time_elap = ros::Time::now().toSec() - time_filt_last_updated.toSec();
 
-    vector<double> new_filt;
-    vector<double> predicted_filt;
+    Vector3d  new_filt;
+    Vector3d pred_filt;
 
-    // initial attempt to update filter using a running average of the forces on the arm (exponential moving average)
-    new_filt.push_back((1 - FORCE_ALPHA) * filt_force[0] + FORCE_ALPHA * curr_wrench.force.x);
-    new_filt.push_back((1 - FORCE_ALPHA) * filt_force[1] + FORCE_ALPHA * curr_wrench.force.y);
-    new_filt.push_back((1 - FORCE_ALPHA) * filt_force[2] + FORCE_ALPHA * curr_wrench.force.z);
+    // initial attempt to update filter using a running average of
+    // the forces on the arm (exponential moving average)
+    new_filt[0] = (1 - FORCE_ALPHA) * filt_force[0] + FORCE_ALPHA * curr_wrench.force.x;
+    new_filt[1] = (1 - FORCE_ALPHA) * filt_force[1] + FORCE_ALPHA * curr_wrench.force.y;
+    new_filt[2] = (1 - FORCE_ALPHA) * filt_force[2] + FORCE_ALPHA * curr_wrench.force.z;
 
     for (int i = 0; i < 3; ++i)
     {
-        // extrapolate a predicted new filter value using the previous rate of change of the filter value:
+        // extrapolate a predicted new filter value using the
+        // previous rate of change of the filter value:
         // new value = old value + rate of change * elapsed time
-        predicted_filt.push_back(filt_force[i] + (filt_change[i] * time_elap));
+        pred_filt[i] = filt_force[i] + (filt_change[i] * time_elap);
 
         // update the rate of change of the filter using the new value from the initial attempt above
         filt_change[i] = (new_filt[i] - filt_force[i])/time_elap;
 
-        // if the predicted filter value is very small or 0, this is most likely the first time the filter is updated
-        // (the filter values and rate of change start at 0), so set the filter to the new value from the initial attempt above
-        if (predicted_filt[i] < FILTER_EPSILON)
+        // if the predicted filter value is very small or 0,
+        // this is most likely the first time the filter is updated
+        // (the filter values and rate of change start at 0),
+        // so set the filter to the new value from the initial attempt above
+        if (pred_filt[i] < FILTER_EPSILON)
         {
             filt_force[i] = new_filt[i];
         }
         else
         {
             // compare the initial attempt to the predicted filter value
-            // if the relative difference is within a threshold defined in utils.h, update the filter to the new value from the initial attempt
-            // otherwise, the filter is not changed; this keeps the filter from changing wildly while maintaining trends in the data
-            if (abs((new_filt[i] - predicted_filt[i])/predicted_filt[i]) < filt_variance)
+            // if the relative difference is within a threshold defined in utils.h,
+            // update the filter to the new value from the initial attempt
+            // otherwise, the filter is not changed; this keeps the filter from changing
+            // wildly while maintaining trends in the data
+            if (abs((new_filt[i] - pred_filt[i])/pred_filt[i]) < filt_variance)
             {
                 filt_force[i] = new_filt[i];
             }
@@ -578,20 +580,20 @@ bool RobotInterface::goToPoseNoCheck(geometry_msgs::Point p, geometry_msgs::Quat
 bool RobotInterface::goToPoseNoCheck(double px, double py, double pz,
                                      double ox, double oy, double oz, double ow)
 {
-    vector<double> joint_angles;
+    VectorXd joint_angles;
     if (!computeIK(px, py, pz, ox, oy, oz, ow, joint_angles)) return false;
 
     return goToJointConfNoCheck(joint_angles);
 }
 
-bool RobotInterface::goToJointConfNoCheck(vector<double> joint_values)
+bool RobotInterface::goToJointConfNoCheck(VectorXd joint_values)
 {
     JointCommand     joint_cmd;
     joint_cmd.mode = ctrl_mode;
 
     setJointNames(joint_cmd);
 
-    for (size_t i = 0; i < joint_values.size(); ++i)
+    for (int i = 0; i < joint_values.size(); ++i)
     {
         joint_cmd.command.push_back(joint_values[i]);
     }
@@ -605,7 +607,7 @@ bool RobotInterface::goToPose(double px, double py, double pz,
                               double ox, double oy, double oz, double ow,
                               string mode, bool disable_coll_av)
 {
-    vector<double> joint_angles;
+    VectorXd joint_angles;
     if (!computeIK(px, py, pz, ox, oy, oz, ow, joint_angles)) return false;
 
     ros::Rate r(100);
@@ -637,20 +639,20 @@ bool RobotInterface::goToPose(double px, double py, double pz,
     return false;
 }
 
-bool RobotInterface::computeIK(geometry_msgs::Pose p, vector<double>& j)
+bool RobotInterface::computeIK(geometry_msgs::Pose p, VectorXd& j)
 {
     return computeIK(p.position, p.orientation, j);
 }
 
 bool RobotInterface::computeIK(geometry_msgs::Point p, geometry_msgs::Quaternion o,
-                               vector<double>& j)
+                               VectorXd& j)
 {
     return computeIK(p.x, p.y, p.z, o.x, o.y, o.z, o.w, j);
 }
 
 bool RobotInterface::computeIK(double px, double py, double pz,
                                double ox, double oy, double oz, double ow,
-                               vector<double>& j)
+                               VectorXd& j)
 {
     geometry_msgs::PoseStamped pose_stamp;
     pose_stamp.header.frame_id = "base";
@@ -659,7 +661,7 @@ bool RobotInterface::computeIK(double px, double py, double pz,
     setPosition(   pose_stamp.pose, px, py, pz);
     setOrientation(pose_stamp.pose, ox, oy, oz, ow);
 
-    j.clear();
+    j.resize(0);
     ros::Time start = ros::Time::now();
     float thresh_z = pose_stamp.pose.position.z + 0.01;
 
@@ -690,7 +692,13 @@ bool RobotInterface::computeIK(double px, double py, double pz,
             if (ik_srv.response.isValid[0])
             {
                 ROS_DEBUG("Got solution!");
-                j = ik_srv.response.joints[0].position;
+
+                j.resize(ik_srv.response.joints[0].position.size());
+
+                for (size_t i = 0; i < ik_srv.response.joints[0].position.size(); ++i)
+                {
+                    j[i] = ik_srv.response.joints[0].position[i];
+                }
                 return true;
             }
             else
@@ -854,7 +862,7 @@ bool RobotInterface::isOrientationReached(double ox, double oy, double oz, doubl
     return true;
 }
 
-bool RobotInterface::isConfigurationReached(vector<double> des_jnts, string mode)
+bool RobotInterface::isConfigurationReached(VectorXd des_jnts, string mode)
 {
     if (curr_jnts.position.size() < 7 || des_jnts.size() < 7)
     {
