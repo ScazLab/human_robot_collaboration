@@ -89,9 +89,9 @@ private:
      * End-effector state
      */
     ros::Subscriber            endpt_sub;
-    std::vector<double>       filt_force;
+    Eigen::Vector3d           filt_force;
     double                   force_thres;
-    std::vector<double>      filt_change; // rate of change of filter
+    Eigen::Vector3d          filt_change; // rate of change of filter
     ros::Time     time_filt_last_updated; // time of last update to filter
     double               rel_force_thres; // relative threshold for force interaction
     double                 filt_variance; // variance threshold for force filter
@@ -394,7 +394,7 @@ protected:
      * @param  mode         (strict/loose) the desired level of precision
      * @return              true/false if success/failure
      */
-    bool isConfigurationReached(std::vector<double> des_jnts, std::string mode = "loose");
+    bool isConfigurationReached(Eigen::VectorXd des_jnts, std::string mode = "loose");
 
     /*
      * Checks if the arm has reached its intended joint configuration by comparing
@@ -413,7 +413,7 @@ protected:
      * @param    j array of joint angles solution
      * @return     true/false if success/failure
      */
-    bool computeIK(geometry_msgs::Pose p, std::vector<double>& j);
+    bool computeIK(geometry_msgs::Pose p, Eigen::VectorXd& j);
 
     /*
      * Uses IK solver to find joint angles solution for desired pose
@@ -423,7 +423,7 @@ protected:
      * @param    j array of joint angles solution
      * @return     true/false if success/failure
      */
-    bool computeIK(geometry_msgs::Point p, geometry_msgs::Quaternion o, std::vector<double>& j);
+    bool computeIK(geometry_msgs::Point p, geometry_msgs::Quaternion o, Eigen::VectorXd& j);
 
     /*
      * Uses IK solver to find joint angles solution for desired pose
@@ -435,7 +435,7 @@ protected:
      */
     bool computeIK(double px, double py, double pz,
                    double ox, double oy, double oz, double ow,
-                   std::vector<double>& j);
+                   Eigen::VectorXd& j);
 
     /*
      * Uses IK solver to find joint angles solution for desired pose
@@ -483,7 +483,7 @@ protected:
      * @param  joint_values requested joint configuration
      * @return              true/false if success/failure
      */
-    bool goToJointConfNoCheck(std::vector<double> joint_values);
+    bool goToJointConfNoCheck(Eigen::VectorXd joint_values);
 
     /*
      * Sets the joint names of a JointCommand
