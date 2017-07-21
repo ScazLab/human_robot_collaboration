@@ -489,7 +489,7 @@ void RobotInterface::cuffUpperCb(const baxter_core_msgs::DigitalIOState& _msg)
 
 void RobotInterface::endpointCb(const baxter_core_msgs::EndpointState& _msg)
 {
-    ROS_INFO_COND(print_level>=4, "endpointCb");
+    ROS_INFO_COND(print_level>=6, "endpointCb");
     curr_pos = _msg.pose.position;
     curr_ori = _msg.pose.orientation;
 
@@ -504,7 +504,7 @@ void RobotInterface::endpointCb(const baxter_core_msgs::EndpointState& _msg)
 
 void RobotInterface::IRCb(const sensor_msgs::Range& _msg)
 {
-    ROS_INFO_COND(print_level>=4, "IRCb");
+    ROS_INFO_COND(print_level>=6, "IRCb");
     curr_range     = _msg.range;
     curr_max_range = _msg.max_range;
     curr_min_range = _msg.min_range;
@@ -690,7 +690,7 @@ bool RobotInterface::computeIK(double px, double py, double pz,
 
             if (ik_srv.response.isValid[0])
             {
-                ROS_INFO_COND(print_level>=4, "Got solution!");
+                ROS_INFO_COND(print_level>=6, "Got solution!");
 
                 j.resize(ik_srv.response.joints[0].position.size());
 
@@ -704,7 +704,7 @@ bool RobotInterface::computeIK(double px, double py, double pz,
             {
                 // if position cannot be reached, try a position with the same x-y coordinates
                 // but higher z (useful when placing tokens)
-                ROS_INFO_COND(print_level>=2, "[%s] IK solution not valid: %g %g %g",
+                ROS_INFO_COND(print_level>=4, "[%s] IK solution not valid: %g %g %g",
                                                                    getLimb().c_str(),
                                                           pose_stamp.pose.position.x,
                                                           pose_stamp.pose.position.y,
@@ -880,7 +880,7 @@ bool RobotInterface::isConfigurationReached(baxter_core_msgs::JointCommand _dj, 
 
     if (cj.position.size() < 7)    { return false; }
 
-    ROS_INFO_COND(print_level>=2, "[%s] Checking configuration: Current %g %g %g %g %g %g %g"
+    ROS_INFO_COND(print_level>=4, "[%s] Checking configuration: Current %g %g %g %g %g %g %g"
                                                              "\tDesired %g %g %g %g %g %g %g",
                                                                             getLimb().c_str(),
                                cj.position[0], cj.position[1], cj.position[2], cj.position[3],
@@ -925,7 +925,7 @@ bool RobotInterface::setCtrlType(const std::string &_ctrl_type)
     }
 
     ctrl_type = _ctrl_type;
-    ROS_INFO_COND(print_level>=2, "[%s] Control type set to %s", getLimb().c_str(), ctrl_type.c_str());
+    ROS_INFO_COND(print_level>=4, "[%s] Control type set to %s", getLimb().c_str(), ctrl_type.c_str());
 
     return true;
 }
