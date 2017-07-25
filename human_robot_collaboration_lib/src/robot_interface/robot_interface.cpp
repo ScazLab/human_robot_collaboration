@@ -35,12 +35,14 @@ RobotInterface::RobotInterface(string _name, string _limb, bool _use_robot, doub
         nh.param<double>("relative_force_threshold_right", rel_force_thres, REL_FORCE_THRES_R);
     }
 
-    ROS_INFO("[%s] ctrlFreq set to %g [Hz]", getLimb().c_str(), getCtrlFreq());
-    ROS_INFO("[%s] Force Threshold : %g", getLimb().c_str(), force_thres);
-    ROS_INFO("[%s] Force Filter Variance: %g", getLimb().c_str(), filt_variance);
-    ROS_INFO("[%s] Relative Force Threshold: %g", getLimb().c_str(), rel_force_thres);
+    nh.param<int> ("print_level", print_level, 0);
 
-    ROS_INFO("[%s] Cartesian Controller %s enabled", getLimb().c_str(), use_cart_ctrl?"is":"is NOT");
+    ROS_INFO_COND(print_level>=1, "[%s] ctrlFreq set to %g [Hz]", getLimb().c_str(), getCtrlFreq());
+    ROS_INFO_COND(print_level>=1, "[%s] Force Threshold : %g", getLimb().c_str(), force_thres);
+    ROS_INFO_COND(print_level>=1, "[%s] Force Filter Variance: %g", getLimb().c_str(), filt_variance);
+    ROS_INFO_COND(print_level>=1, "[%s] Relative Force Threshold: %g", getLimb().c_str(), rel_force_thres);
+
+    ROS_INFO_COND(print_level>=1, "[%s] Cartesian Controller %s enabled", getLimb().c_str(), use_cart_ctrl?"is":"is NOT");
 
     joint_cmd_pub  = nh.advertise<JointCommand>("/robot/limb/" + getLimb() + "/joint_command", 1);
     coll_av_pub    = nh.advertise<std_msgs::Empty>("/robot/limb/" + getLimb() + "/suppress_collision_avoidance", 1);
@@ -68,13 +70,13 @@ RobotInterface::RobotInterface(string _name, string _limb, bool _use_robot, doub
 
     std::string topic = "/"+getName()+"/"+getLimb()+"/state";
     state_pub = nh.advertise<human_robot_collaboration_msgs::ArmState>(topic, SUBSCRIBER_BUFFER, true);
-    ROS_INFO("[%s] Created state publisher with name : %s", getLimb().c_str(), topic.c_str());
+    ROS_INFO_COND(print_level>=1, "[%s] Created state publisher with name : %s", getLimb().c_str(), topic.c_str());
 
     if (use_cart_ctrl)
     {
         string topic = "/" + getName() + "/" + getLimb() + "/go_to_pose";
         ctrl_sub     = nh.subscribe(topic, SUBSCRIBER_BUFFER, &RobotInterface::ctrlMsgCb, this);
-        ROS_INFO("[%s] Created cartesian controller that listens to : %s", getLimb().c_str(), topic.c_str());
+        ROS_INFO_COND(print_level>=1, "[%s] Created cartesian controller that listens to : %s", getLimb().c_str(), topic.c_str());
     }
 
     if (not use_trac_ik)
@@ -913,6 +915,11 @@ bool RobotInterface::isConfigurationReached(baxter_core_msgs::JointCommand _dj, 
 
     return true;
 }
+
+void RobotInterface::setTracIK(bool _use_trac_ik)
+{
+    use_trac_ik = _use_trac_ik;
+};
 
 bool RobotInterface::setCtrlType(const std::string &_ctrl_type)
 {

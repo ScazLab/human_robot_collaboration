@@ -610,7 +610,7 @@ public:
      *
      * @param  use_trac_ik if to use track ik or not
      */
-    void setTracIK(bool _use_trac_ik) { use_trac_ik = _use_trac_ik; };
+    void setTracIK(bool _use_trac_ik);
 
     /**
      * Set the type of the cartesian controller server.
