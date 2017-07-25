@@ -110,8 +110,8 @@ bool ArmCtrl::serviceCb(human_robot_collaboration_msgs::DoAction::Request  &req,
     }
     objs_str = objs_str.substr(0, objs_str.size()-2); // Remove the last ", "
 
-    ROS_INFO("[%s] Service request received. Action: %s Objects: %s", getLimb().c_str(),
-                                                      action.c_str(), objs_str.c_str());
+    ROS_INFO_COND(print_level>=1, "[%s] Service request received. Action: %s Objects: %s",
+                                     getLimb().c_str(), action.c_str(), objs_str.c_str());
 
     // Print the action or object DB if requested by the user
     if      (action == LIST_ACTIONS)
@@ -200,8 +200,8 @@ bool ArmCtrl::serviceCb(human_robot_collaboration_msgs::DoAction::Request  &req,
         res.response = getSubState();
     }
 
-    ROS_INFO("[%s] Service reply with success: %s\n", getLimb().c_str(),
-                                            res.success?"true":"false");
+    ROS_INFO_COND(print_level>=1, "[%s] Service reply with success: %s\n",
+                           getLimb().c_str(), res.success?"true":"false");
     return true;
 }
 
