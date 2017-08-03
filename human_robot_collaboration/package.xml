@@ -31,11 +31,22 @@
   <buildtool_depend>catkin</buildtool_depend>
   <build_depend>roscpp</build_depend>
 
+  <depend>ropsy</depend>
+  <depend>rosbag</depend>
+  <depend>numpy</depend>
+  <depend>sklearn</depend>
+  <depend>os</depend>
+  <depend>logging</depend>
+  <depend>sys</depend>
+  <depend>collections</depend>
+
   <depend>aruco</depend>
   <depend>human_robot_collaboration_lib</depend>
   <depend>cv_bridge</depend>
   <depend>image_transport</depend>
   <depend>rosconsole</depend>
+  <depend>human_robot_collaboration_msgs</depend>
+  <depend>ros_speech2text</depend>
   <depend>svox_tts</depend>
 
   <test_depend>baxter_description</test_depend>
