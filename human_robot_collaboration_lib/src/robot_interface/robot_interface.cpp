@@ -491,7 +491,7 @@ void RobotInterface::cuffUpperCb(const baxter_core_msgs::DigitalIOState& _msg)
 
 void RobotInterface::endpointCb(const baxter_core_msgs::EndpointState& _msg)
 {
-    ROS_INFO_COND(print_level>=6, "endpointCb");
+    ROS_INFO_COND(print_level>=12, "endpointCb");
     curr_pos = _msg.pose.position;
     curr_ori = _msg.pose.orientation;
 
@@ -506,7 +506,7 @@ void RobotInterface::endpointCb(const baxter_core_msgs::EndpointState& _msg)
 
 void RobotInterface::IRCb(const sensor_msgs::Range& _msg)
 {
-    ROS_INFO_COND(print_level>=6, "IRCb");
+    ROS_INFO_COND(print_level>=12, "IRCb");
     curr_range     = _msg.range;
     curr_max_range = _msg.max_range;
     curr_min_range = _msg.min_range;

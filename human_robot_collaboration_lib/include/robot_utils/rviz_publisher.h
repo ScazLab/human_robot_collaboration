@@ -61,7 +61,7 @@ struct RVIZMarker
     RVIZMarker(geometry_msgs::Pose _pose = geometry_msgs::Pose(),
                ColorRGBA _col = ColorRGBA(0.5, 0.5, 0.5, 1.0),
                double _size = 0.05, int _type = visualization_msgs::Marker::CUBE,
-               double _lifetime = 10.0);
+               double _lifetime = 20.0);
 
     /**
      * Constructor that accepts the x, y, z position coordinates of the marker
@@ -69,7 +69,7 @@ struct RVIZMarker
     RVIZMarker(Eigen::Vector3d _position,
                ColorRGBA _col = ColorRGBA(0.5, 0.5, 0.5, 1.0),
                double _size = 0.05, int _type = visualization_msgs::Marker::CUBE,
-               double _lifetime = 10.0);
+               double _lifetime = 20.0);
 
     /**
      * Constructor that accepts an array of points for complex markers, e.g. SPHERE_LIST
@@ -77,7 +77,7 @@ struct RVIZMarker
     RVIZMarker(std::vector<geometry_msgs::Point> _points,
                ColorRGBA _col = ColorRGBA(0.5, 0.5, 0.5, 1.0),
                double _size = 0.05, int _type = visualization_msgs::Marker::SPHERE_LIST,
-               double _lifetime = 10.0);
+               double _lifetime = 20.0);
 
     /**
      * Sets the x, y, z coordinates of the marker
