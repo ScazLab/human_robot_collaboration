@@ -7,9 +7,9 @@ var obj_dict = {
     151: "leg 2",
     152: "leg 3",
     153: "leg 4",
+    0: "brackets box",
     1: "screwdriver",
-    2: "screws box",
-    3: "brackets box"
+    2: "screws box"
 };
 // Create a left and right SVG, corresponding to the left and right tables
 // that baxter picks items up from

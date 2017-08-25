@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 import logging
 import rospy
 import rosbag
@@ -8,7 +9,9 @@ import numpy as np
 import threading
 from sklearn.naive_bayes import GaussianNB
 from human_robot_collaboration_msgs.msg import *
+from human_robot_collaboration_msgs.srv import *
 from ros_speech2text.msg import *
+from aruco_msgs.msg import *
 
 logging.basicConfig(
     level=logging.DEBUG,
@@ -25,14 +28,25 @@ right_state_topic = '/action_provider/right/state'
 speech_topic = '/ros_speech2text/user_output'
 web_topic = '/web_interface/log'
 
-right_obj_dict = c.OrderedDict({1: 0, 2: 0, 3: 0})
+right_obj_dict = c.OrderedDict([(1, 0), (2, 0), (3,0)])
 
-left_obj_dict = c.OrderedDict({150: 0, 151: 0, 152: 0, 153: 0, 200: 0})
+left_obj_dict = c.OrderedDict([(150, 0), (151, 0), (152, 0), (153, 0), (200, 0)])
+
+id_dict = {"table_top"     : 200,
+           "leg_1"         : 150,
+           "leg_2"         : 151,
+           "leg_3"         : 152,
+           "leg_4"         : 153,
+           "brackets_box"  : 0,
+           "screwdriver"   : 1,
+           "screws_box"    : 2
+}
 
 
 def get_time_btw_state(arm_topic, bag_path):
     """returns list of approximate timeframes of when robots arms
-    are in the home position (between state changes)"""
+    are in the home position (between state changes) and
+    the action that triggered the state change """
     bag = rosbag.Bag(bag_path)
     states = []
     avg_diff_list = []
@@ -217,7 +231,10 @@ def create_vocab(bag_dir_path):
         for topic, msg, t in bag.read_messages(topics=[speech_topic]):
             sent = msg.transcript.split(" ")
             for w in sent:
-                vocab[w.lower()] = 0
+                try:
+                    vocab[w.lower()] = 0
+                except KeyError:
+                    pass
 
         bag.close()
     return vocab
@@ -270,58 +287,67 @@ def evaluate_model(model, vocab, bag_dir_path):
         elif prediction == actual:
             counter += 1
         else:
+            print 
             print "Pred.: ", prediction
             print "Actual: ", actual
+            print 
 
-    print "{}% of labels correctly predicited!"
-    .format(counter / float(size) * 100)
-
-
-def cameraCB(msg, left_state, right_state, state_vec):
-    if left_state and right_state:
-        counter = 0.
-        left_dict = left_obj_dict.copy()
-        right_dict = right_obj_dict.copy()
-        vec = []
-        while counter < 10:
-            aruco_msg = rospy.wait_for_message(aruco_topic, MarkerArray)
-            hsv_msg = rospy.wait_for_message(hsv_topic, ObjectsArray)
-            for o in aruco_msg:
-                left_dict[o.id] += 1
-            for o in hsv_msg:
-                right_dict[o.id] += 1
-            counter += 1
-
-        for k in right_dict.keys():
-            obj_state = round(right_dict[k] / counter)
-            vec.append(int(obj_state))
-        for k in left_dict.keys():
-            obj_state = round(left_dict[k] / counter)
-            vec.append(int(obj_state))
-
-        state_vec = vec
+    print "{}% of labels correctly predicited!".format(counter / float(size) * 100) 
 
 
+def createStateandSpeechVec():
+    """Creates vec of world state and speech online"""
+    counter = 0.
+    left_dict = left_obj_dict.copy()
+    right_dict = right_obj_dict.copy()
+    vec = []
+    # Take 10 readings ma
+    while counter < 10:
+        aruco_msg = rospy.wait_for_message(aruco_topic, MarkerArray).markers
+        hsv_msg = rospy.wait_for_message(hsv_topic, ObjectsArray).objects
+        for o in aruco_msg:
+            left_dict[o.id] += 1
+        for o in hsv_msg:
+            right_dict[o.id] += 1
+        counter += 1
 
-def armCB(msg, arm_state):
+    for k in right_dict.keys():
+        obj_state = round(right_dict[k] / counter)
+        vec.append(int(obj_state))
+    for k in left_dict.keys():
+        obj_state = round(left_dict[k] / counter)
+        vec.append(int(obj_state))
+
+    return vec
+
+
+def leftArmCB(msg):
     if msg.state == "DONE" or msg.state == "START":
-        arm_state = True
+        left_home = True
     elif msg.state == "WORKING":
-        arm_state = False
+        left_home = False
+    print "left state:", left_home
+
+def rightArmCB(msg):
+    if msg.state == "DONE" or msg.state == "START":
+        right_home = True
+    elif msg.state == "WORKING":
+        right_home = False
+    print "right state:", right_home
 
 
-def speechCB(msg, vocab, speech_vec):
+def speechCB(msg, vocab):
+    print "Received speech"
     v = vocab.copy()
     sent = msg.transcript.split()
     for w in sent:
-        v[w.lower] += 1
+        v[w.lower()] += 1
 
-    speech_vec = v.values()
+    for i in v.values():
+        speech_vec.append(i)
 
 if __name__ == '__main__':
     rospy.init_node("predictor", anonymous=True)
-    left_home = False
-    right_home = False
     state_vec = []
     speech_vec = []
 
@@ -329,26 +355,47 @@ if __name__ == '__main__':
     X,Y = create_data_set(bag_dir_path, v)
 
     model = GaussianNB()
-    model.fit(X,Y)
 
-    left_state_sub = rospy.subscriber(left_state_topic, ArmState,
-                                      lambda msg: armCB(msg, left_home))
-    right_state_sub = rospy.subscriber(right_state_topic, ArmState,
-                                       lambda msg: armCB(msg, right_home))
-    aruco_sub = rospy.subscriber(aruco_topic,
-                                 ObjectsArray,
-                                 lambda msg: generate_predictions(msg,
-                                                                  left_home,
-                                                                  right_home,
-                                                                  state_vec))
-    speech_sub = rospy.subscriber(speech_topic,
+    service_left = rospy.ServiceProxy(
+    "/action_provider/service_left", DoAction)
+    service_right = rospy.ServiceProxy(
+    "/action_provider/service_right", DoAction)
+    speech_sub = rospy.Subscriber(speech_topic,
                                   transcript,
-                                  lambda msg: speechCB(msg, v, speech_vec))
-    if state_vec and speech_vec:
-        x_input = np.asarray(state_vec + speech_vec)
-        print(model.predict(complete_vec))
-        state_vec = []
-        speech_vec = []
+                                  lambda msg: speechCB(msg, v))
+    # Predicts next action based on state of world + speech
+    while  not rospy.is_shutdown():
+        # gets arm states
+        left_home = False
+        right_home = False
+
+        left_state = rospy.wait_for_message(left_state_topic, ArmState).state
+        right_state = rospy.wait_for_message(right_state_topic, ArmState).state
+
+        if left_state == "START" or left_state == "DONE": left_home == True
+        if right_state == "START" or right_state == "DONE": right_home == True
+
+        # if both arms are in the home position
+        if left_home and right_home:
+            # Get state vec
+            state_vec = createStateandSpeechVec()
+            # Speech vec is constantly being update
+            print(state_vec)
+            print(speech_vec)
+            if state_vec and speech_vec:
+                x_input = np.asarray(state_vec + speech_vec).reshape(1, -1)
+                predicted_label= model.predict(x_input)[0].split(":")
+                predicted_action = predicted_label[0]
+                print(predicted_label)
+                if len(predicted_label) > 1:
+                    predicted_obj = [id_dict[predicted_label[1]]]
+                else:
+                    predicted_obj = []
+                service_left(predicted_action, predicted_obj )
+                service_right(predicted_action, predicted_obj )
+
+                state_vec = []
+                speech_vec = []
 
     rospy.spin()
 
