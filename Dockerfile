@@ -1,8 +1,10 @@
-FROM scazlab/hrc:baxter
+FROM scazlab/hrc-docker:baxter
 
 RUN cd ~/ros_ws/src \
-    && git clone https://github.com/scazlab/human_robot_collaboration.git \
-    && wstool merge -y  human_robot_collaboration/dependencies.rosinstall \
+    && git clone https://github.com/scazlab/human_robot_collaboration.git
+RUN cd ~/ros_ws/src \
+    && wstool merge -y human_robot_collaboration/dependencies.rosinstall
+RUN cd ~/ros_ws/src \
     && wstool up
 
 USER root

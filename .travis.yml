@@ -24,10 +24,6 @@
 #   - ROSINSTALL_FILE (default is dependencies.rosinstall inside the repo
 #     root). This should list all necessary repositories in wstool format (see
 #     the ros wiki). If the file does not exists then nothing happens.
-#
-# See the README.md for more information.
-#
-# Author: Felix Duvallet <felixd@gmail.com>
 
 # NOTE: The build lifecycle on Travis.ci is something like this:
 #    before_install
@@ -166,6 +162,5 @@ script:
 
 after_success:
   # Run build on Docker Hub
-  - '[ "$TRAVIS_PULL_REQUEST" = "false" ] &&
-     [ "$TRAVIS_BRANCH" = "master" ]      &&
-     curl --data build=true -X POST $DOCKER_PUSH_URL'
+  - |-
+    curl -H "Content-Type: application/json" --data '{"source_type": "Branch", "source_name": "'$TRAVIS_BRANCH'"}' -X POST $DOCKER_PUSH_URL

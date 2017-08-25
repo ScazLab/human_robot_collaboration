@@ -6,7 +6,8 @@ using namespace baxter_core_msgs;
 
 ArmCtrl::ArmCtrl(string _name, string _limb, bool _use_robot, bool _use_forces, bool _use_trac_ik, bool _use_cart_ctrl) :
                  RobotInterface(_name,_limb, _use_robot, THREAD_FREQ, _use_forces, _use_trac_ik, _use_cart_ctrl),
-                 Gripper(_limb, _use_robot), sub_state(""), action(""), prev_action(""), sel_object_id(-1)
+                 Gripper(_limb, _use_robot), sub_state(""), action(""), prev_action(""), sel_object_id(-1),
+                 home_conf(7)
 {
     std::string other_limb = getLimb() == "right" ? "left" : "right";
 
@@ -109,8 +110,8 @@ bool ArmCtrl::serviceCb(human_robot_collaboration_msgs::DoAction::Request  &req,
     }
     objs_str = objs_str.substr(0, objs_str.size()-2); // Remove the last ", "
 
-    ROS_INFO("[%s] Service request received. Action: %s Objects: %s", getLimb().c_str(),
-                                                      action.c_str(), objs_str.c_str());
+    ROS_INFO_COND(print_level>=1, "[%s] Service request received. Action: %s Objects: %s",
+                                     getLimb().c_str(), action.c_str(), objs_str.c_str());
 
     // Print the action or object DB if requested by the user
     if      (action == LIST_ACTIONS)
@@ -199,8 +200,8 @@ bool ArmCtrl::serviceCb(human_robot_collaboration_msgs::DoAction::Request  &req,
         res.response = getSubState();
     }
 
-    ROS_INFO("[%s] Service reply with success: %s\n", getLimb().c_str(),
-                                            res.success?"true":"false");
+    ROS_INFO_COND(print_level>=1, "[%s] Service reply with success: %s\n",
+                           getLimb().c_str(), res.success?"true":"false");
     return true;
 }
 
@@ -537,17 +538,10 @@ bool ArmCtrl::homePoseStrict(bool disable_coll_av)
     return true;
 }
 
-void ArmCtrl::setHomeConf(double s0, double s1, double e0, double e1,
-                                     double w0, double w1, double w2)
+void ArmCtrl::setHomeConf(double _s0, double _s1, double _e0, double _e1,
+                                      double _w0, double _w1, double _w2)
 {
-    home_conf.clear();
-    home_conf.push_back(s0);
-    home_conf.push_back(s1);
-    home_conf.push_back(e0);
-    home_conf.push_back(e1);
-    home_conf.push_back(w0);
-    home_conf.push_back(w1);
-    home_conf.push_back(w2);
+    home_conf << _s0, _s1, _e0, _e1, _w0, _w1, _w2;
 
     return;
 }

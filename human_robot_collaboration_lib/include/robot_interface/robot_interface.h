@@ -89,9 +89,9 @@ private:
      * End-effector state
      */
     ros::Subscriber            endpt_sub;
-    std::vector<double>       filt_force;
+    Eigen::Vector3d           filt_force;
     double                   force_thres;
-    std::vector<double>      filt_change; // rate of change of filter
+    Eigen::Vector3d          filt_change; // rate of change of filter
     ros::Time     time_filt_last_updated; // time of last update to filter
     double               rel_force_thres; // relative threshold for force interaction
     double                 filt_variance; // variance threshold for force filter
@@ -175,9 +175,9 @@ private:
      * Callback for the controller server. It receives new poses
      * to move the arm to.
      *
-     * @param msg the topic message
+     * @param _msg the topic message
      */
-    void ctrlMsgCb(const human_robot_collaboration_msgs::GoToPose& msg);
+    void ctrlMsgCb(const human_robot_collaboration_msgs::GoToPose& _msg);
 
     /**
      * Internal thread entry that gets called when the thread is started.
@@ -198,17 +198,17 @@ private:
      * Callback function that sets the current pose to the pose received from
      * the endpoint state topic
      *
-     * @param msg the topic message
+     * @param _msg the topic message
      */
-    void endpointCb(const baxter_core_msgs::EndpointState& msg);
+    void endpointCb(const baxter_core_msgs::EndpointState& _msg);
 
     /**
      * Callback for the joint states. Used to seed the
      * inverse kinematics solver
      *
-     * @param msg the topic message
+     * @param _msg the topic message
      */
-    void jointStatesCb(const sensor_msgs::JointState& msg);
+    void jointStatesCb(const sensor_msgs::JointState& _msg);
 
     /**
      * Callback for the collision avoidance state. Used to detect
@@ -216,9 +216,9 @@ private:
      * software which is embedded into the Baxter robot and we don't have
      * access to.
      *
-     * @param msg the topic message
+     * @param _msg the topic message
      */
-    void collAvCb(const baxter_core_msgs::CollisionAvoidanceState& msg);
+    void collAvCb(const baxter_core_msgs::CollisionAvoidanceState& _msg);
 
     /**
      * Callback for the collision detection state. Used to detect
@@ -226,18 +226,17 @@ private:
      * software which is embedded into the Baxter robot and we don't have
      * access to.
      *
-     * @param msg the topic message
+     * @param _msg the topic message
      */
-    void collDetCb(const baxter_core_msgs::CollisionDetectionState& msg);
+    void collDetCb(const baxter_core_msgs::CollisionDetectionState& _msg);
 
     /*
      * Infrared sensor callback function that sets the current range to the range received
      * from the left hand range state topic
      *
-     * @param      The message
-     * @return     N/A
+     * @param _msg the topic message
      */
-    void IRCb(const sensor_msgs::Range& msg);
+    void IRCb(const sensor_msgs::Range& _msg);
 
     /*
      * Starts thread that executes the control server. For now it is
@@ -249,6 +248,9 @@ private:
     bool startThread();
 
 protected:
+    // Print level to be used throughout the code
+    int print_level;
+
     // Publisher that publishes the current target on rviz
     RVIZPublisher   rviz_pub;
 
@@ -272,18 +274,18 @@ protected:
      * By default, it sets the state of the controller to ERROR if the button
      * is pressed, but it can be specialized in any derived class.
      *
-     * @param msg the topic message
+     * @param _msg the topic message
      */
-    virtual void cuffLowerCb(const baxter_core_msgs::DigitalIOState& msg);
+    virtual void cuffLowerCb(const baxter_core_msgs::DigitalIOState& _msg);
 
     /*
      * Callback function for the upper (oval) CUFF OK button.
      * By default, it sets the state of the controller to ERROR if the button
      * is pressed, but it can be specialized in any derived class.
      *
-     * @param msg the topic message
+     * @param _msg the topic message
      */
-    virtual void cuffUpperCb(const baxter_core_msgs::DigitalIOState& msg);
+    virtual void cuffUpperCb(const baxter_core_msgs::DigitalIOState& _msg);
 
     /*
      * Checks if end effector has made contact with a token by checking if
@@ -388,23 +390,23 @@ protected:
      * Checks if the arm has reached its intended joint configuration by comparing
      * the requested and the current joint configurations
      *
-     * @param  des_jnts     requested joint configuration as a set of doubles. It is
-     *                      assumed to be populated as in the setJointCommands method, i.e.
-     *                      in the order s0, s1, e0, e1, w0, w1, w2.
-     * @param  mode         (strict/loose) the desired level of precision
-     * @return              true/false if success/failure
+     * @param  _dj     requested joint configuration as a set of doubles. It is
+     *                 assumed to be populated as in the setJointCommands method, i.e.
+     *                 in the order s0, s1, e0, e1, w0, w1, w2.
+     * @param  _mode   (strict/loose) the desired level of precision
+     * @return         true/false if success/failure
      */
-    bool isConfigurationReached(std::vector<double> des_jnts, std::string mode = "loose");
+    bool isConfigurationReached(Eigen::VectorXd _dj, std::string _mode = "loose");
 
     /*
      * Checks if the arm has reached its intended joint configuration by comparing
      * the requested and the current joint configurations
      *
-     * @param  des_jnts     requested joint configuration
-     * @param  mode         (strict/loose) the desired level of precision
-     * @return              true/false if success/failure
+     * @param  _dj     requested joint configuration
+     * @param  _mode   (strict/loose) the desired level of precision
+     * @return         true/false if success/failure
      */
-    bool isConfigurationReached(baxter_core_msgs::JointCommand des_jnts, std::string mode = "loose");
+    bool isConfigurationReached(baxter_core_msgs::JointCommand _dj, std::string _mode = "loose");
 
     /*
      * Uses IK solver to find joint angles solution for desired pose
@@ -413,7 +415,7 @@ protected:
      * @param    j array of joint angles solution
      * @return     true/false if success/failure
      */
-    bool computeIK(geometry_msgs::Pose p, std::vector<double>& j);
+    bool computeIK(geometry_msgs::Pose p, Eigen::VectorXd& j);
 
     /*
      * Uses IK solver to find joint angles solution for desired pose
@@ -423,7 +425,7 @@ protected:
      * @param    j array of joint angles solution
      * @return     true/false if success/failure
      */
-    bool computeIK(geometry_msgs::Point p, geometry_msgs::Quaternion o, std::vector<double>& j);
+    bool computeIK(geometry_msgs::Point p, geometry_msgs::Quaternion o, Eigen::VectorXd& j);
 
     /*
      * Uses IK solver to find joint angles solution for desired pose
@@ -435,7 +437,7 @@ protected:
      */
     bool computeIK(double px, double py, double pz,
                    double ox, double oy, double oz, double ow,
-                   std::vector<double>& j);
+                   Eigen::VectorXd& j);
 
     /*
      * Uses IK solver to find joint angles solution for desired pose
@@ -483,7 +485,7 @@ protected:
      * @param  joint_values requested joint configuration
      * @return              true/false if success/failure
      */
-    bool goToJointConfNoCheck(std::vector<double> joint_values);
+    bool goToJointConfNoCheck(Eigen::VectorXd joint_values);
 
     /*
      * Sets the joint names of a JointCommand
@@ -608,7 +610,7 @@ public:
      *
      * @param  use_trac_ik if to use track ik or not
      */
-    void setTracIK(bool _use_trac_ik) { use_trac_ik = _use_trac_ik; };
+    void setTracIK(bool _use_trac_ik);
 
     /**
      * Set the type of the cartesian controller server.

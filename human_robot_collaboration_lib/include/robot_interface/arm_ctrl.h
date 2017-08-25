@@ -68,7 +68,7 @@ private:
     // Home configuration. Setting it in any of the children
     // of this class is mandatory (through the virtual method
     // called setHomeConfiguration() )
-    std::vector<double> home_conf;
+    Eigen::VectorXd home_conf;
 
     /**
      * Object database, which pairs an integer key, corresponding to the marker ID
@@ -152,8 +152,8 @@ protected:
      * @param w1 Second wrist    joint
      * @param w2 Third  wrist    joint
      */
-    void setHomeConf(double s0, double s1, double e0, double e1,
-                                double w0, double w1, double w2);
+    void setHomeConf(double _s0, double _s1, double _e0, double _e1,
+                                 double _w0, double _w1, double _w2);
 
     /**
      * Sets the joint-level configuration for the home position
