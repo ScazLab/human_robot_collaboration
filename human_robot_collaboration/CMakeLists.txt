@@ -18,6 +18,7 @@ find_package(catkin REQUIRED COMPONENTS
              baxter_core_msgs
              cv_bridge
              image_transport
+             human_robot_collaboration_msgs
              rosconsole
              roscpp
              rospy
