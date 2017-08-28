@@ -6,6 +6,7 @@ import sys
 import os
 import collections as c
 import numpy as np
+from sklearn.externals import joblib
 from sklearn.naive_bayes import GaussianNB
 
 logging.basicConfig(
@@ -15,6 +16,9 @@ logging.debug('This is a log message.')
 
 bag_dir_path = sys.argv[1]
 
+model_path = "../models/speech_model.pkl"
+vocab_path = "../models/vocab.pkl"
+
 # Ros topics we have recorded
 aruco_topic = '/aruco_marker_publisher/markers'
 hsv_topic = '/hsv_detector/objects'
@@ -23,7 +27,7 @@ right_state_topic = '/action_provider/right/state'
 speech_topic = '/ros_speech2text/user_output'
 web_topic = '/web_interface/log'
 
-right_obj_dict = c.OrderedDict([(1, 0), (2, 0), (3,0)])
+right_obj_dict = c.OrderedDict([(0,0), (1, 0), (2, 0)])
 
 left_obj_dict = c.OrderedDict([(150, 0), (151, 0), (152, 0), (153, 0), (200, 0)])
 
@@ -56,7 +60,7 @@ def get_time_btw_state(arm_topic, bag_path):
             s = True
         elif s and msg.state == 'WORKING':
             t_frame += (t, )
-            states.append((t_frame, msg.action + '_' + msg.object))
+            states.append((t_frame, msg.action + ':' + msg.object))
             avg_diff_list.append(t_frame[1] - t_frame[0])
 
             s = False
@@ -71,7 +75,7 @@ def get_time_btw_state(arm_topic, bag_path):
     avg_diff = sum([i.to_sec() for i in avg_diff_list]) / len(avg_diff_list)
     avg_diff = rospy.Duration.from_sec(avg_diff)
     states.append((last_t + (avg_diff + last_t[0], ),
-                   msg.action + '_' + msg.object))
+                   msg.action + ':' + msg.object))
     bag.close()
     return states
 
@@ -248,7 +252,7 @@ def create_data_set(bag_dir_path, vocab):
 
     for filename in os.listdir(bag_dir_path):
         path = os.path.join(bag_dir_path, filename)
-        X, Y = match_speech_with_state_vec(path, v)
+        X, Y = match_speech_with_state_vec(path, vocab)
 
         Xs += X
         Ys += Y
@@ -291,3 +295,15 @@ def evaluate_model(model, vocab, bag_dir_path):
 
 
 if __name__ == '__main__':
+    v = create_vocab(bag_dir_path)
+    X,Y = create_data_set(bag_dir_path, v)
+
+
+    model = GaussianNB()
+    model.fit(X,Y)
+
+    with open(model_path,"wb") as m:
+        joblib.dump(model,m, compress=9)
+
+    with open(vocab_path,"wb") as m:
+        joblib.dump(v,m, compress=9)
