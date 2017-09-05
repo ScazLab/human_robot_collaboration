@@ -7,7 +7,7 @@ using namespace baxter_core_msgs;
 ArmCtrl::ArmCtrl(string _name, string _limb, bool _use_robot, bool _use_forces, bool _use_trac_ik, bool _use_cart_ctrl) :
                  RobotInterface(_name,_limb, _use_robot, THREAD_FREQ, _use_forces, _use_trac_ik, _use_cart_ctrl),
                  Gripper(_limb, _use_robot), sub_state(""), action(""), prev_action(""), sel_object_id(-1),
-                 home_conf(7)
+                 home_conf(7), cuff_button_pressed(false)
 {
     std::string other_limb = getLimb() == "right" ? "left" : "right";
 
@@ -403,6 +403,40 @@ string ArmCtrl::actionDBToString()
     }
     res = res.substr(0, res.size()-2); // Remove the last ", "
     return res;
+}
+
+void ArmCtrl::cuffUpperCb(const baxter_core_msgs::DigitalIOState& _msg)
+{
+    if (_msg.state == baxter_core_msgs::DigitalIOState::PRESSED)
+    {
+        cuff_button_pressed = true;
+    }
+
+    return;
+}
+
+bool ArmCtrl::waitForUserCuffUpperFb(double _wait_time)
+{
+    ROS_INFO_COND(print_level>=2, "[%s] Waiting user feedback for %g [s]",
+                                           getLimb().c_str(), _wait_time);
+
+    cuff_button_pressed = false;
+
+    ros::Time _init = ros::Time::now();
+
+    ros::Rate(THREAD_FREQ);
+    while(RobotInterface::ok() && not isClosing())
+    {
+        if (cuff_button_pressed == true)        return true;
+
+        if ((ros::Time::now()-_init).toSec() > _wait_time)
+        {
+            ROS_ERROR("No user feedback has been detected in %g [s]!",_wait_time);
+            return false;
+        }
+    }
+
+    return false;
 }
 
 bool ArmCtrl::moveArm(string dir, double dist, string mode, bool disable_coll_av)

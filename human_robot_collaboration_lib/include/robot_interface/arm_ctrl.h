@@ -77,7 +77,11 @@ private:
      */
     std::map<int, std::string> object_db;
 
-    std::thread arm_thread; // internal thread functionality
+    // internal thread functionality
+    std::thread arm_thread;
+
+    // Flag to know if the cuff button has been pressed
+    bool cuff_button_pressed;
 
     /**
      * Provides basic functionalities for the object, such as a goHome and open.
@@ -94,6 +98,22 @@ private:
     bool openImpl() { return open(); }
 
 protected:
+    /*
+     * Callback function for the upper (oval) CUFF OK button.
+     * Specialized from RobotInterface::cuffUpperCb. Here it is used to receive
+     * feedback from the user about the internal states of the hold action
+     *
+     * @param msg the topic message
+     */
+    virtual void cuffUpperCb(const baxter_core_msgs::DigitalIOState& msg);
+
+    /**
+     * Waits for the user to press the cuff button. Used in the hold action.
+     *
+     * @param _wait_time Time duration (in s) after which the method will return false
+     * @return           true/false if button has been pressed.
+     */
+    bool waitForUserCuffUpperFb(double _wait_time = 60.0);
 
     /**
      * Pointer to the action prototype function, which does not take any
