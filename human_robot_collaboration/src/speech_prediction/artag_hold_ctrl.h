@@ -21,6 +21,10 @@
 
 #include "flatpack_furniture/artag_ctrl.h"
 
+/**
+ * This class performs hold actions plus aruco recognition and pick up.
+ * It is not directly inheriting from HoldCtrl to avoid diamond inheritance w.r.t. ArmCtrl.
+ */
 class ARTagHoldCtrl : public ARTagCtrl
 {
 private:
@@ -45,7 +49,7 @@ private:
     bool getPassObject();
 
     /**
-     * Picks up the selected object by using the cartesian estimator's info
+     * Picks up the selected object by using aruco's info
      * @return true/false if success/failure
      */
     bool pickUpObject();

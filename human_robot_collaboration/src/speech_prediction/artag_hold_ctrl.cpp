@@ -6,7 +6,7 @@ using namespace baxter_core_msgs;
 #define VERTICAL_ORI_R2         0.1, 1.0, 0.0, 0.0
 
 ARTagHoldCtrl::ARTagHoldCtrl(string _name, string _limb, bool _use_robot) :
-                             ARTagCtrl(_name, _limb, _use_robot)
+                             ARTagCtrl(_name, _limb, _use_robot), elap_time(0)
 {
     setHomeConfiguration();
 
@@ -223,7 +223,7 @@ bool ARTagHoldCtrl::determineContactCondition()
 
 bool ARTagHoldCtrl::computeOffsets(double &_x_offs, double &_y_offs)
 {
-    if      (getAction() == ACTION_GET || getAction() == ACTION_GET_PASS)
+    if (getAction() == ACTION_GET || getAction() == ACTION_GET_PASS)
     {
 
     }
