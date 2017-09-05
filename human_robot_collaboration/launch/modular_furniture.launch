@@ -11,6 +11,7 @@
     </node> -->
 
     <include file="$(find human_robot_collaboration)/launch/baxter_aruco.launch" />
+    <include file="$(find rosbridge_server)/launch/rosbridge_websocket.launch"/>
 
     <param name="hsv_detector/reference_frame" value="/base"/>
     <param name="hsv_detector/camera_frame"    value="/right_hand_camera"/>
