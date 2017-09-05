@@ -10,7 +10,7 @@
         <param name="autosize" value="true" />
     </node> -->
 
-    <include file="$(find human_robot_collaboration)/launch/baxter_marker_publisher.launch" />
+    <include file="$(find human_robot_collaboration)/launch/baxter_aruco.launch" />
 
     <param name="hsv_detector/reference_frame" value="/base"/>
     <param name="hsv_detector/camera_frame"    value="/right_hand_camera"/>

@@ -1,6 +1,6 @@
 <launch>
     <env name="ROSCONSOLE_CONFIG_FILE" value="$(find human_robot_collaboration)/rosconsole.conf"/>
-    <!-- <include file="$(find human_robot_collaboration)/launch/baxter_marker_publisher.launch" /> -->
+    <!-- <include file="$(find human_robot_collaboration)/launch/baxter_aruco.launch" /> -->
 
     <arg name="forceThresholdL"      default="2.0"/>    <!-- [N] -->
     <arg name="forceThresholdR"      default="2.0"/>    <!-- [N] -->
