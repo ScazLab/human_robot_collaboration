@@ -19,7 +19,7 @@ ARTagCtrlImpl::ARTagCtrlImpl(std::string _name, std::string _limb, bool _use_rob
 
     printActionDB();
 
-    if (_use_robot) return;
+    if (not _use_robot) return;
 
     if (!callAction(ACTION_HOME)) setState(ERROR);
 
