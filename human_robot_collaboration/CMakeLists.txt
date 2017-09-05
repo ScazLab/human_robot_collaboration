@@ -79,6 +79,11 @@ add_executable(modular_action_provider  src/modular_furniture/tool_picker.h
                                         src/modular_furniture/part_picker.h
                                         src/modular_furniture/part_picker.cpp
                                         src/modular_furniture/action_provider.cpp)
+add_executable(sp_pred_action_provider  src/speech_prediction/artag_hold_ctrl.h
+                                        src/speech_prediction/artag_hold_ctrl.cpp
+                                        src/modular_furniture/part_picker.h
+                                        src/modular_furniture/part_picker.cpp
+                                        src/speech_prediction/action_provider.cpp)
 add_executable(baxter_display           src/baxter_display.cpp)
 
 ## Add cmake target dependencies of the executable
@@ -93,6 +98,8 @@ add_dependencies(hsv_detector             ${${PROJECT_NAME}_EXPORTED_TARGETS}
                                           ${catkin_EXPORTED_TARGETS})
 add_dependencies(modular_action_provider  ${${PROJECT_NAME}_EXPORTED_TARGETS}
                                           ${catkin_EXPORTED_TARGETS})
+add_dependencies(sp_pred_action_provider  ${${PROJECT_NAME}_EXPORTED_TARGETS}
+                                          ${catkin_EXPORTED_TARGETS})
 add_dependencies(baxter_display           ${${PROJECT_NAME}_EXPORTED_TARGETS}
                                           ${catkin_EXPORTED_TARGETS})
 
@@ -102,6 +109,7 @@ target_link_libraries(flatpack_action_provider  flatpack_furniture ${catkin_LIBR
 target_link_libraries(tower_action_provider                        ${catkin_LIBRARIES} )
 target_link_libraries(hsv_detector                                 ${catkin_LIBRARIES} )
 target_link_libraries(modular_action_provider   flatpack_furniture ${catkin_LIBRARIES} )
+target_link_libraries(sp_pred_action_provider   flatpack_furniture ${catkin_LIBRARIES} )
 target_link_libraries(baxter_display            ${OpenCV_LIBS}     ${catkin_LIBRARIES} )
 
 #############
