@@ -310,8 +310,7 @@ geometry_msgs::Quaternion ARTagCtrl::computeHOorientation()
 
 void ARTagCtrl::setHomeConfiguration()
 {
-    setHomeConf(0.1967, -0.8702, -1.0531,  1.5578,
-                         0.6516,  1.2464, -0.1787);
+    ArmCtrl::setHomeConfiguration("pool");
 }
 
 bool ARTagCtrl::hoverAbovePool()
