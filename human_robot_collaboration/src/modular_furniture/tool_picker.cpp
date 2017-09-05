@@ -63,7 +63,7 @@ bool ToolPicker::passObject()
     {
         if (!goToPose(0.85, -0.26, 0.27,
                       HORIZONTAL_ORI_R))    return false;
-        if (!waitForUserFb())               return false;
+        if (!waitForUserCuffUpperFb())      return false;
         if (!open())                        return false;
     }
     else if (CartesianEstimatorClient::getObjectName() == "screws_box"  ||

@@ -162,6 +162,7 @@ bool ARTagCtrl::pickARTag()
     if (!isIRok())
     {
         ROS_ERROR("No callback from the IR sensor! Stopping.");
+        setSubState(NO_IR_SENSOR);
         return false;
     }
 

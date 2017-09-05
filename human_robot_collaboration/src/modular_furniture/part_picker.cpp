@@ -26,7 +26,7 @@ bool PartPicker::passObject()
 {
     if (getPrevAction() != ACTION_GET)  return false;
     if (!moveObjectTowardHuman())       return false;
-    if (!waitForUserFb())               return false;
+    if (!waitForUserCuffUpperFb())      return false;
 
     if (getObjectID() != 200)
     {
@@ -38,40 +38,6 @@ bool PartPicker::passObject()
     if (!homePoseStrict())              return false;
 
     return true;
-}
-
-bool PartPicker::waitForUserFb(double _wait_time)
-{
-    ROS_INFO("[%s] Waiting user feedback for %g [s]",
-                      getLimb().c_str(), _wait_time);
-
-    cuff_button_pressed = false;
-
-    ros::Time _init = ros::Time::now();
-
-    ros::Rate(THREAD_FREQ);
-    while(RobotInterface::ok())
-    {
-        if (cuff_button_pressed == true)        return true;
-
-        if ((ros::Time::now()-_init).toSec() > _wait_time)
-        {
-            ROS_ERROR("No user feedback has been detected in %g [s]!",_wait_time);
-            return false;
-        }
-    }
-
-    return false;
-}
-
-void PartPicker::cuffUpperCb(const baxter_core_msgs::DigitalIOState& msg)
-{
-    if (msg.state == baxter_core_msgs::DigitalIOState::PRESSED)
-    {
-        cuff_button_pressed = true;
-    }
-
-    return;
 }
 
 PartPicker::~PartPicker()

@@ -4,7 +4,7 @@ using namespace              std;
 using namespace baxter_core_msgs;
 
 HoldCtrl::HoldCtrl(string _name, string _limb, bool _use_robot) :
-                   ArmCtrl(_name,_limb, _use_robot), cuff_button_pressed(false)
+                   ArmCtrl(_name,_limb, _use_robot)
 {
     setHomeConfiguration();
     setState(START);
@@ -54,7 +54,7 @@ bool HoldCtrl::startHold()
 
     if (!goHoldPose(0.30))              return false;
     ros::Duration(1.0).sleep();
-    if (!waitForUserFb(time))           return false;
+    if (!waitForUserCuffUpperFb(time))  return false;
     if (!close())                       return false;
     ros::Duration(1.0).sleep();
 
@@ -65,45 +65,11 @@ bool HoldCtrl::endHold()
 {
     double time=getObjectIDs().size()>=2?getObjectIDs()[1]:180.0;
 
-    if (!waitForUserFb(time))           return false;
+    if (!waitForUserCuffUpperFb(time))  return false;
     if (!open())                        return false;
     ros::Duration(1.0).sleep();
     if (!homePoseStrict())              return false;
     return true;
-}
-
-bool HoldCtrl::waitForUserFb(double _wait_time)
-{
-    ROS_INFO("[%s] Waiting user feedback for %g [s]",
-                      getLimb().c_str(), _wait_time);
-
-    cuff_button_pressed = false;
-
-    ros::Time _init = ros::Time::now();
-
-    ros::Rate(THREAD_FREQ);
-    while(RobotInterface::ok() && not isClosing())
-    {
-        if (cuff_button_pressed == true)        return true;
-
-        if ((ros::Time::now()-_init).toSec() > _wait_time)
-        {
-            ROS_ERROR("No user feedback has been detected in %g [s]!",_wait_time);
-            return false;
-        }
-    }
-
-    return false;
-}
-
-void HoldCtrl::cuffUpperCb(const baxter_core_msgs::DigitalIOState& msg)
-{
-    if (msg.state == baxter_core_msgs::DigitalIOState::PRESSED)
-    {
-        cuff_button_pressed = true;
-    }
-
-    return;
 }
 
 bool HoldCtrl::holdObject()
