@@ -12,12 +12,6 @@ ARTagHoldCtrl::ARTagHoldCtrl(string _name, string _limb, bool _use_robot) :
 
     setState(START);
 
-    insertAction(ACTION_GET,       static_cast<f_action>(&ARTagHoldCtrl::getObject));
-    insertAction(ACTION_PASS,      static_cast<f_action>(&ARTagHoldCtrl::passObject));
-    insertAction(ACTION_GET_PASS,  static_cast<f_action>(&ARTagHoldCtrl::getPassObject));
-
-    removeAction(ACTION_HOLD);
-
     insertAction(string(ACTION_HOLD) + "_leg", static_cast<f_action>(&ARTagHoldCtrl::holdObject));
     insertAction(string(ACTION_HOLD) + "_top", static_cast<f_action>(&ARTagHoldCtrl::holdObject));
 
@@ -28,52 +22,7 @@ ARTagHoldCtrl::ARTagHoldCtrl(string _name, string _limb, bool _use_robot) :
     if (!callAction(ACTION_HOME)) setState(ERROR);
 }
 
-bool ARTagHoldCtrl::getObject()
-{
-    if (!homePoseStrict())          return false;
-    ros::Duration(0.05).sleep();
-
-    if (getObjectIDs().size() >  1)
-    {
-        setSubState(CHECK_OBJ_IDS);
-        int id = chooseObjectID(getObjectIDs());
-        if (id == -1)       return false;
-        setObjectID(id);
-        ROS_INFO("[%s] Chosen object with ID %i", getLimb().c_str(),
-                                                     getObjectID());
-    }
-
-    if (!pickUpObject())            return false;
-    if (!close())                   return false;
-    if (!moveArm("up", 0.3))        return false;
-    // if (!hoverAboveTable(Z_LOW))    return false;
-
-    return true;
-}
-
-bool ARTagHoldCtrl::passObject()
-{
-    if (getPrevAction() != ACTION_GET)  return false;
-
-    if (!goToPose(0.85, -0.26, 0.27,
-                  HORIZONTAL_ORI_R))    return false;
-    if (!waitForUserCuffUpperFb())      return false;
-    if (!open())                        return false;
-    if (!homePoseStrict())              return false;
-
-    return true;
-}
-
-bool ARTagHoldCtrl::getPassObject()
-{
-    if (!getObject())      return false;
-    setPrevAction(ACTION_GET);
-    if (!passObject())     return false;
-
-    return true;
-}
-
-bool ARTagHoldCtrl::pickUpObject()
+bool ARTagHoldCtrl::pickARTag()
 {
     ROS_INFO("[%s] Start Picking up tag..", getLimb().c_str());
 
@@ -225,7 +174,14 @@ bool ARTagHoldCtrl::computeOffsets(double &_x_offs, double &_y_offs)
 {
     if (getAction() == ACTION_GET || getAction() == ACTION_GET_PASS)
     {
+        if      (getObjectNameFromDB(getObjectID()) ==          "foot")
+        {
 
+        }
+        else if (getObjectNameFromDB(getObjectID()) == "bracket_front")
+        {
+
+        }
     }
     else
     {
@@ -251,39 +207,7 @@ bool ARTagHoldCtrl::computeOrientation(geometry_msgs::Quaternion &_q)
     return true;
 }
 
-int ARTagHoldCtrl::chooseObjectID(vector<int> _objs)
-{
-    if (getSubState() != CHECK_OBJ_IDS)
-    {
-        return ArmCtrl::chooseObjectID(_objs);
-    }
-
-    ROS_DEBUG("[%s] Choosing object IDs", getLimb().c_str());
-    int res = -1;
-
-    if (!waitForARucoOK())
-    {
-        setSubState(NO_OBJ);
-        return res;
-    }
-
-    if (!waitForARucoMarkersFound())
-    {
-        setSubState(NO_OBJ);
-        return res;
-    }
-
-    std::vector<int> av_markers = getAvailableMarkers(_objs);
-
-    if (av_markers.size() == 0)     return res;
-
-    srand(time(0)); //use current time as seed
-    res = av_markers[rand() % av_markers.size()];
-
-    return res;
-}
-
-bool ARTagHoldCtrl::goHoldPose(double height)
+bool ARTagHoldCtrl::goHoldPose(double _height)
 {
     ROS_INFO("[%s] Going to %s position..", getLimb().c_str(), getAction().c_str());
 
@@ -292,7 +216,7 @@ bool ARTagHoldCtrl::goHoldPose(double height)
         return goToPose(0.72, -0.31, 0.032, 0.54, 0.75, 0.29,0.22);
     }
 
-    return goToPose(0.80, -0.4, height, HORIZONTAL_ORI_R);
+    return goToPose(0.80, -0.4, _height, HORIZONTAL_ORI_R);
 }
 
 ARTagHoldCtrl::~ARTagHoldCtrl()

@@ -143,11 +143,24 @@ protected:
 
     /**
      * Hovers above table at a specific x-y position.
-     * @param  height the z-axis value of the end-effector position
-     * @return        true/false if success/failure
+     *
+     * @param  _height          the z-axis value of the end-effector position
+     * @param  _mode            (loose/strict) it checks for the final desired position
+     * @param  _disable_coll_av if to disable collision avoidance or not
+     * @return                 true/false if success/failure
      */
-    bool hoverAboveTable(double height, std::string mode="loose",
-                                    bool disable_coll_av = false);
+    bool hoverAboveTable(double _height, std::string _mode = "loose",
+                                     bool _disable_coll_av =  false);
+
+    /**
+     * Hovers above the pool of objects that is located at a specific x-y-z position.
+     *
+     * @param  _mode            (loose/strict) it checks for the final desired position
+     * @param  _disable_coll_av if to disable collision avoidance or not
+     * @return                 true/false if success/failure
+     */
+    bool hoverAbovePool(std::string     _mode = "loose",
+                        bool _disable_coll_av =  false);
 
     /**
      * Home position with a specific joint configuration. This has

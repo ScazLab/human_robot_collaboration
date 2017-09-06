@@ -540,19 +540,44 @@ bool ArmCtrl::goToPose(double px, double py, double pz,
     return res;
 }
 
-bool ArmCtrl::hoverAboveTable(double height, string mode, bool disable_coll_av)
+bool ArmCtrl::hoverAboveTable(double _height, string _mode, bool _disable_coll_av)
 {
+    ROS_INFO_COND(print_level>=2, "[%s] Hovering above table..", getLimb().c_str());
+
     if (getLimb() == "right")
     {
-        return goToPose(HOME_POS_R, height, VERTICAL_ORI_R,
-                                    mode, disable_coll_av);
+        return goToPose(HOME_POS_R, _height, VERTICAL_ORI_R,
+                                   _mode, _disable_coll_av);
     }
     else if (getLimb() == "left")
     {
-        return goToPose(HOME_POS_L, height, VERTICAL_ORI_L,
-                                    mode, disable_coll_av);
+        return goToPose(HOME_POS_L, _height, VERTICAL_ORI_L,
+                                   _mode, _disable_coll_av);
     }
-    else return false;
+    else
+    {
+        return false;
+    }
+}
+
+bool ArmCtrl::hoverAbovePool(string _mode, bool _disable_coll_av)
+{
+    ROS_INFO_COND(print_level>=2, "[%s] Hovering above pool..", getLimb().c_str());
+
+    if (getLimb() == "right")
+    {
+        return goToPose( POOL_POS_R, POOL_ORI_R,
+                        _mode, _disable_coll_av);
+    }
+    else if (getLimb() == "left")
+    {
+        return goToPose( POOL_POS_L, POOL_ORI_L,
+                        _mode, _disable_coll_av);
+    }
+    else
+    {
+        return false;
+    }
 }
 
 bool ArmCtrl::homePoseStrict(bool disable_coll_av)

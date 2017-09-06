@@ -31,28 +31,11 @@ private:
     double elap_time;
 
     /**
-     * [getObject description]
+     * Picks up the selected object by using ARuco's info on the tag
+     *
      * @return true/false if success/failure
      */
-    bool getObject();
-
-    /**
-     * [passObject description]
-     * @return true/false if success/failure
-     */
-    bool passObject();
-
-    /**
-     * [getPassObject description]
-     * @return true/false if success/failure
-     */
-    bool getPassObject();
-
-    /**
-     * Picks up the selected object by using aruco's info
-     * @return true/false if success/failure
-     */
-    bool pickUpObject();
+    bool pickARTag();
 
     /**
      * [startHold description]
@@ -80,12 +63,12 @@ private:
      * to grip the object not in the center of its coordinate system but where
      * it is most convenient for the gripper
      *
-     * @param x_offs The x offset
-     * @param y_offs The y offset
+     * @param _x_offs The x offset
+     * @param _y_offs The y offset
      *
      * @return true/false if success/failure
      */
-    bool computeOffsets(double &x_offs, double &y_offs);
+    bool computeOffsets(double &_x_offs, double &_y_offs);
 
     /**
      * Computes action-specific orientation in order for the robot to be able to
@@ -99,27 +82,16 @@ private:
 protected:
     /**
      * [goHoldPose description]
-     * @param  height [description]
+     * @param  _height [description]
      * @return        true/false if success/failure
      */
-    bool goHoldPose(double height);
+    bool goHoldPose(double _height);
 
     /**
      * [holdObject description]
      * @return true/false if success/failure
      */
     bool holdObject();
-
-    /**
-     * Chooses the object to act upon according to some rule. This method
-     * needs to be specialized in any derived class because it is dependent
-     * on the type of action and the type of sensory capabilities available.
-     *
-     * @param _objs The list of IDs of objects to choose from
-     * @return      the ID of the chosen object (by default the ID of the
-     *              first object will be chosen)
-     */
-    int chooseObjectID(std::vector<int> _objs);
 
 public:
     /**

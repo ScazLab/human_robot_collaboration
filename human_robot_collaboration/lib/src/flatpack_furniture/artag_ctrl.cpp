@@ -43,10 +43,20 @@ bool ARTagCtrl::getObject()
 {
     if (!hoverAbovePool())          return false;
     ros::Duration(0.05).sleep();
+
+    if (getObjectIDs().size() >  1)
+    {
+        setSubState(CHECK_OBJ_IDS);
+        int id = chooseObjectID(getObjectIDs());
+        if (id == -1)       return false;
+        setObjectID(id);
+        ROS_INFO_COND(print_level>=1, "[%s] Chosen object with ID %i",
+                                    getLimb().c_str(), getObjectID());
+    }
+
     if (!pickARTag())               return false;
     if (!close())                   return false;
     if (!moveArm("up", 0.4))        return false;
-    if (!homePoseStrict())          return false;
 
     return true;
 }
@@ -56,7 +66,7 @@ bool ARTagCtrl::passObject()
     if (getPrevAction() != ACTION_GET)  return false;
     if (!moveObjectTowardHuman())       return false;
     ros::Duration(1.0).sleep();
-    if (!waitForForceInteraction())     return false;
+    if (!waitForUserCuffUpperFb())      return false;
     if (!open())                        return false;
     if (!homePoseStrict())              return false;
 
@@ -249,21 +259,38 @@ bool ARTagCtrl::pickARTag()
     return false;
 }
 
-int ARTagCtrl::chooseObjectID(std::vector<int> _objs)
+int ARTagCtrl::chooseObjectID(vector<int> _objs)
 {
-    int res = -1;
+    if (getSubState() != CHECK_OBJ_IDS)
+    {
+        return ArmCtrl::chooseObjectID(_objs);
+    }
 
-    if (!hoverAbovePool())      return res;
-    if (!waitForARucoOK())      return res;
+    ROS_INFO_COND(print_level>=2, "[%s] Choosing object IDs", getLimb().c_str());
+
+    if (!waitForARucoOK())
+    {
+        setSubState(NO_OBJ);
+        return -1;
+    }
+
+    if (!waitForARucoMarkersFound())
+    {
+        setSubState(NO_OBJ);
+        return -1;
+    }
 
     std::vector<int> av_markers = getAvailableMarkers(_objs);
 
-    if (av_markers.size() == 0) return res;
+    if (av_markers.size() == 0)
+    {
+        setSubState(NO_OBJ);
+        return -1;
+    }
 
-    std::srand(std::time(0)); //use current time as seed
-    res = av_markers[rand() % av_markers.size()];
+    srand(time(0)); //use current time as seed
 
-    return res;
+    return av_markers[rand() % av_markers.size()];
 }
 
 geometry_msgs::Quaternion ARTagCtrl::computeHOorientation()
@@ -314,16 +341,22 @@ void ARTagCtrl::setHomeConfiguration()
     ArmCtrl::setHomeConfiguration("pool");
 }
 
-bool ARTagCtrl::hoverAbovePool()
-{
-    ROS_INFO("[%s] Hovering above pool..", getLimb().c_str());
-    return goToPose(POOL_POS_L, POOL_ORI_L);
-}
-
 bool ARTagCtrl::moveObjectTowardHuman()
 {
     ROS_INFO("[%s] Moving object toward human..", getLimb().c_str());
-    return goToPose(0.80, 0.26, 0.32, HORIZONTAL_ORI_L);
+
+    if      (getLimb() == "left")
+    {
+        return goToPose(0.80,  0.26, 0.32, HORIZONTAL_ORI_L);
+    }
+    else if (getLimb() == "right")
+    {
+        return goToPose(0.85, -0.26, 0.27, HORIZONTAL_ORI_R);
+    }
+    else
+    {
+        return false;
+    }
 }
 
 void ARTagCtrl::setObjectID(int _obj)

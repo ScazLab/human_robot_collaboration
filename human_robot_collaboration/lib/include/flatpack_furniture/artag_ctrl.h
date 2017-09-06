@@ -31,16 +31,11 @@ private:
     double elap_time;
 
     /**
-     * [hoverAbovePool description]
+     * Picks up the selected object by using ARuco's info on the tag
+     *
      * @return true/false if success/failure
      */
-    bool hoverAbovePool();
-
-    /**
-     * [pickARTag description]
-     * @return true/false if success/failure
-     */
-    bool pickARTag();
+    virtual bool pickARTag();
 
     /**
      * [prepare4HandOver description]
