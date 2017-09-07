@@ -33,7 +33,7 @@ bool ARTagHoldCtrl::pickARTag()
         return false;
     }
 
-    if (!waitForARucoData())
+    if (!waitForData())
     {
         setSubState(NO_OBJ);
         return false;
@@ -47,8 +47,8 @@ bool ARTagHoldCtrl::pickARTag()
     // Let's compute a first estimation of the joint position
     // (we reduce the z by 10 cm to start picking up from a
     // closer position)
-    double x = getMarkerPos().x + offs_x;
-    double y = getMarkerPos().y + offs_y;
+    double x = getObjectPos().x + offs_x;
+    double y = getObjectPos().y + offs_y;
     double z =       getPos().z -   0.15;
 
     geometry_msgs::Quaternion q;
@@ -61,7 +61,7 @@ bool ARTagHoldCtrl::pickARTag()
         return false;
     }
 
-    if (!waitForARucoData())
+    if (!waitForData())
     {
         setSubState(NO_OBJ);
         return false;
@@ -77,8 +77,8 @@ bool ARTagHoldCtrl::pickARTag()
     {
         double new_elap_time = (ros::Time::now() - start_time).toSec();
 
-        x = getMarkerPos().x + offs_x;
-        y = getMarkerPos().y + offs_y;
+        x = getObjectPos().x + offs_x;
+        y = getObjectPos().y + offs_y;
         z = z_start - ARM_SPEED * new_elap_time / 1.3;
 
         ROS_DEBUG("Time %g Going to: %g %g %g Position: %g %g %g", new_elap_time, x, y, z,
@@ -174,11 +174,11 @@ bool ARTagHoldCtrl::computeOffsets(double &_x_offs, double &_y_offs)
 {
     if (getAction() == ACTION_GET || getAction() == ACTION_GET_PASS)
     {
-        if      (getObjectNameFromDB(getObjectID()) ==          "foot")
+        if      (getObjectNameFromDB(ClientTemplate<int>::getObjectID()) ==          "foot")
         {
 
         }
-        else if (getObjectNameFromDB(getObjectID()) == "bracket_front")
+        else if (getObjectNameFromDB(ClientTemplate<int>::getObjectID()) == "bracket_front")
         {
 
         }

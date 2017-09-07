@@ -43,8 +43,8 @@ bool ToolPicker::getObject()
         int id = chooseObjectID(getObjectIDs());
         if (id == -1)       return false;
         setObjectID(id);
-        ROS_INFO("[%s] Chosen object with ID %i", getLimb().c_str(),
-                                                     getObjectID());
+        ROS_INFO("[%s] Chosen object with name %s", getLimb().c_str(),
+                       ClientTemplate<string>::getObjectID().c_str());
     }
 
     if (!pickUpObject())            return false;
@@ -59,19 +59,19 @@ bool ToolPicker::passObject()
 {
     if (getPrevAction() != ACTION_GET)  return false;
 
-    if (CartesianEstimatorClient::getObjectName() == "screwdriver")
+    if (ClientTemplate<string>::getObjectID() == "screwdriver")
     {
         if (!goToPose(0.85, -0.26, 0.27,
                       HORIZONTAL_ORI_R))    return false;
         if (!waitForUserCuffUpperFb())      return false;
         if (!open())                        return false;
     }
-    else if (CartesianEstimatorClient::getObjectName() == "screws_box"  ||
-             CartesianEstimatorClient::getObjectName() == "brackets_box")
+    else if (ClientTemplate<string>::getObjectID() == "screws_box"  ||
+             ClientTemplate<string>::getObjectID() == "brackets_box")
     {
         if (!hoverAboveTable(Z_LOW))    return false;
 
-        if (CartesianEstimatorClient::getObjectName() == "brackets_box")
+        if (ClientTemplate<string>::getObjectID() == "brackets_box")
         {
             if (!goToPose(0.63, -0.10, -0.14, VERTICAL_ORI_R2)) return false;
         }
@@ -110,11 +110,11 @@ bool ToolPicker::cleanUpObject()
         int id = chooseObjectID(getObjectIDs());
         if (id == -1)       return false;
         setObjectID(id);
-        ROS_INFO("[%s] Chosen object with ID %i", getLimb().c_str(),
-                                                     getObjectID());
+        ROS_INFO("[%s] Chosen object with name %s", getLimb().c_str(),
+                       ClientTemplate<string>::getObjectID().c_str());
     }
 
-    if (!waitForCartEstObjFound())
+    if (!waitForObjFound())
     {
         setSubState(NO_OBJ);
         return false;
@@ -125,15 +125,15 @@ bool ToolPicker::cleanUpObject()
     if (!moveArm("up", 0.3))        return false;
     if (!homePoseStrict())          return false;
 
-    if (CartesianEstimatorClient::getObjectName() == "screwdriver")
+    if (ClientTemplate<string>::getObjectID() == "screwdriver")
     {
         if (!goToPose( 0.20, -0.85, -0.30, POOL_ORI_R)) return false;
     }
-    else if (CartesianEstimatorClient::getObjectName() == "brackets_box")
+    else if (ClientTemplate<string>::getObjectID() == "brackets_box")
     {
         if (!goToPose( 0.00, -0.85, -0.25, POOL_ORI_R)) return false;
     }
-    else if (CartesianEstimatorClient::getObjectName() == "screws_box")
+    else if (ClientTemplate<string>::getObjectID() == "screws_box")
     {
         if (!goToPose(-0.15, -0.85, -0.25, POOL_ORI_R)) return false;
     }
@@ -148,7 +148,7 @@ bool ToolPicker::cleanUpObject()
 bool ToolPicker::pickUpObject()
 {
     ROS_INFO("[%s] Start Picking up object %s..", getLimb().c_str(),
-                  CartesianEstimatorClient::getObjectName().c_str());
+                  ClientTemplate<string>::getObjectID().c_str());
 
     if (!isIRok())
     {
@@ -157,7 +157,7 @@ bool ToolPicker::pickUpObject()
         return false;
     }
 
-    if (!waitForCartEstData())
+    if (!waitForData())
     {
         setSubState(NO_OBJ);
         return false;
@@ -185,7 +185,7 @@ bool ToolPicker::pickUpObject()
         return false;
     }
 
-    if (!waitForCartEstData())
+    if (!waitForData())
     {
         setSubState(NO_OBJ);
         return false;
@@ -246,7 +246,7 @@ bool ToolPicker::determineContactCondition()
         ROS_INFO("Collision!");
         return true;
     }
-    else if (CartesianEstimatorClient::getObjectName() != "screwdriver")
+    else if (ClientTemplate<string>::getObjectID() != "screwdriver")
     {
         if (getAction() == ACTION_CLEANUP)
         {
@@ -274,26 +274,26 @@ bool ToolPicker::computeOffsets(double &_x_offs, double &_y_offs)
 {
     if      (getAction() == ACTION_GET || getAction() == ACTION_GET_PASS)
     {
-        if (CartesianEstimatorClient::getObjectName() == "screwdriver")
+        if (ClientTemplate<string>::getObjectID() == "screwdriver")
         {
             _x_offs = +0.010;
             // _y_offs = +0.017;
         }
-        else if (CartesianEstimatorClient::getObjectName() == "screws_box"  ||
-                 CartesianEstimatorClient::getObjectName() == "brackets_box")
+        else if (ClientTemplate<string>::getObjectID() == "screws_box"  ||
+                 ClientTemplate<string>::getObjectID() == "brackets_box")
         {
             _x_offs = +0.06;
         }
     }
     else if (getAction() == ACTION_CLEANUP)
     {
-        if (CartesianEstimatorClient::getObjectName() == "screwdriver")
+        if (ClientTemplate<string>::getObjectID() == "screwdriver")
         {
             // _x_offs = -0.020;
             _y_offs = -0.010;
         }
-        else if (CartesianEstimatorClient::getObjectName() == "screws_box"  ||
-                 CartesianEstimatorClient::getObjectName() == "brackets_box")
+        else if (ClientTemplate<string>::getObjectID() == "screws_box"  ||
+                 ClientTemplate<string>::getObjectID() == "brackets_box")
         {
             _x_offs = +0.020;
             _y_offs = -0.058;
@@ -334,37 +334,37 @@ int ToolPicker::chooseObjectID(vector<int> _objs)
         return ArmCtrl::chooseObjectID(_objs);
     }
 
-    ROS_DEBUG("[%s] Choosing object IDs", getLimb().c_str());
-    int res = -1;
+    ROS_INFO_COND(print_level>=2, "[%s] Choosing object IDs", getLimb().c_str());
 
-    if (!waitForCartEstOK())
+    if (!waitForOK())
     {
         setSubState(NO_OBJ);
-        return res;
+        return -1;
     }
 
-    if (!waitForCartEstObjsFound())
+    if (!waitForObjsFound())
     {
         setSubState(NO_OBJ);
-        return res;
+        return -1;
     }
 
-    vector<string> objs_str;
+    std::vector<string> objs_str;
     for (size_t i = 0; i < _objs.size(); ++i)
     {
         objs_str.push_back(getObjectNameFromDB(_objs[i]));
     }
 
-    vector<string> av_objects = getAvailableObjects(objs_str);
+    std::vector<string> av_objects = ClientTemplate<string>::getAvailableObjects(objs_str);
 
-    if (av_objects.size() == 0)     return res;
+    if (av_objects.size() == 0)
+    {
+        setSubState(NO_OBJ);
+        return -1;
+    }
 
     srand(time(0)); //use current time as seed
-    string res_str = av_objects[rand() % av_objects.size()];
 
-    res = getObjectIDFromDB(res_str);
-
-    return res;
+    return ArmCtrl::getObjectIDFromDB(av_objects[rand() % av_objects.size()]);
 }
 
 void ToolPicker::reduceSquish()
@@ -435,7 +435,7 @@ void ToolPicker::setHomeConfiguration()
 void ToolPicker::setObjectID(int _obj)
 {
     ArmCtrl::setObjectID(_obj);
-    CartesianEstimatorClient::setObjectName(ArmCtrl::getObjectNameFromDB(_obj));
+    ClientTemplate<string>::setObjectID(ArmCtrl::getObjectNameFromDB(_obj));
 }
 
 ToolPicker::~ToolPicker()

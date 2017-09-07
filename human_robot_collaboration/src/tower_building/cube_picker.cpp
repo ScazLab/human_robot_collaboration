@@ -103,12 +103,12 @@ bool CubePicker::pickARTag()
         return false;
     }
 
-    if (!waitForARucoData()) return false;
+    if (!waitForData()) return false;
 
     geometry_msgs::Quaternion q;
 
-    double x = getMarkerPos().x;
-    double y = getMarkerPos().y + 0.04;
+    double x = getObjectPos().x;
+    double y = getObjectPos().y + 0.04;
     double z =       getPos().z;
 
     ROS_DEBUG("Going to: %g %g %g", x, y, z);
@@ -117,7 +117,7 @@ bool CubePicker::pickARTag()
         return false;
     }
 
-    if (!waitForARucoData()) return false;
+    if (!waitForData()) return false;
 
     ros::Time start_time = ros::Time::now();
     double z_start       =       getPos().z;
@@ -128,8 +128,8 @@ bool CubePicker::pickARTag()
     {
         double new_elap_time = (ros::Time::now() - start_time).toSec();
 
-        double x = getMarkerPos().x;
-        double y = getMarkerPos().y;
+        double x = getObjectPos().x;
+        double y = getObjectPos().y;
         double z = z_start - ARM_SPEED * new_elap_time;
 
         ROS_DEBUG("Time %g Going to: %g %g %g", new_elap_time, x, y, z);
@@ -181,7 +181,7 @@ void CubePicker::setHomeConfiguration()
 void CubePicker::setObjectID(int _obj)
 {
     ArmCtrl::setObjectID(_obj);
-    ARucoClient::setMarkerID(_obj);
+    ARucoClient::setObjectID(_obj);
 }
 
 CubePicker::~CubePicker()

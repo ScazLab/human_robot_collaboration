@@ -51,7 +51,8 @@ bool ARTagCtrl::getObject()
         if (id == -1)       return false;
         setObjectID(id);
         ROS_INFO_COND(print_level>=1, "[%s] Chosen object with ID %i",
-                                    getLimb().c_str(), getObjectID());
+                                    getLimb().c_str(),
+                                    ClientTemplate<int>::getObjectID());
     }
 
     if (!pickARTag())               return false;
@@ -176,7 +177,7 @@ bool ARTagCtrl::pickARTag()
         return false;
     }
 
-    if (!waitForARucoData())
+    if (!waitForData())
     {
         setSubState(NO_OBJ);
         return false;
@@ -184,12 +185,12 @@ bool ARTagCtrl::pickARTag()
 
     geometry_msgs::Quaternion q;
 
-    double x = getMarkerPos().x;
-    double y = getMarkerPos().y + 0.04;
+    double x = getObjectPos().x;
+    double y = getObjectPos().y + 0.04;
     double z =       getPos().z;
 
     ROS_DEBUG("Going to: %g %g %g", x, y, z);
-    if (getObjectID() == 24)
+    if (ClientTemplate<int>::getObjectID() == 24)
     {
         // If we have to hand_over, let's pre-orient the end effector
         // such that further movements are easier
@@ -202,7 +203,7 @@ bool ARTagCtrl::pickARTag()
         if (!goToPose(x, y, z, POOL_ORI_L,"loose"))        return false;
     }
 
-    if (!waitForARucoData()) return false;
+    if (!waitForData()) return false;
 
     ros::Time start_time = ros::Time::now();
     double z_start       =       getPos().z;
@@ -213,15 +214,15 @@ bool ARTagCtrl::pickARTag()
     {
         double new_elap_time = (ros::Time::now() - start_time).toSec();
 
-        double x = getMarkerPos().x;
-        double y = getMarkerPos().y;
+        double x = getObjectPos().x;
+        double y = getObjectPos().y;
         double z = z_start - ARM_SPEED * new_elap_time;
 
         ROS_DEBUG("Time %g Going to: %g %g %g", new_elap_time, x, y, z);
 
         bool res=false;
 
-        if (getObjectID() == 24)
+        if (ClientTemplate<int>::getObjectID() == 24)
         {
             // q   = computeHOorientation();
             res = goToPoseNoCheck(x,y,z,q.x,q.y,q.z,q.w);
@@ -268,21 +269,21 @@ int ARTagCtrl::chooseObjectID(vector<int> _objs)
 
     ROS_INFO_COND(print_level>=2, "[%s] Choosing object IDs", getLimb().c_str());
 
-    if (!waitForARucoOK())
+    if (!waitForOK())
     {
         setSubState(NO_OBJ);
         return -1;
     }
 
-    if (!waitForARucoMarkersFound())
+    if (!waitForObjsFound())
     {
         setSubState(NO_OBJ);
         return -1;
     }
 
-    std::vector<int> av_markers = getAvailableMarkers(_objs);
+    std::vector<int> av_objects = ClientTemplate<int>::getAvailableObjects(_objs);
 
-    if (av_markers.size() == 0)
+    if (av_objects.size() == 0)
     {
         setSubState(NO_OBJ);
         return -1;
@@ -290,23 +291,23 @@ int ARTagCtrl::chooseObjectID(vector<int> _objs)
 
     srand(time(0)); //use current time as seed
 
-    return av_markers[rand() % av_markers.size()];
+    return av_objects[rand() % av_objects.size()];
 }
 
 geometry_msgs::Quaternion ARTagCtrl::computeHOorientation()
 {
-    // Get the rotation matrix for the marker, as retrieved from ARuco
+    // Get the rotation matrix for the object, as retrieved from
     tf::Quaternion mrk_q;
-    tf::quaternionMsgToTF(getMarkerOri(), mrk_q);
+    tf::quaternionMsgToTF(getObjectOri(), mrk_q);
     tf::Matrix3x3 mrk_rot(mrk_q);
 
-    // printf("Marker Orientation\n");
+    // printf("Object Orientation\n");
     // for (int j = 0; j < 3; ++j)
     // {
     //     printf("%g\t%g\t%g\n", mrk_rot[j][0], mrk_rot[j][1], mrk_rot[j][2]);
     // }
 
-    // Compute the transform matrix between the marker's orientation
+    // Compute the transform matrix between the object's orientation
     // and the end-effector's orientation
     tf::Matrix3x3 mrk2ee;
     mrk2ee[0][0] =  1;  mrk2ee[0][1] =  0;   mrk2ee[0][2] =  0;
@@ -362,7 +363,7 @@ bool ARTagCtrl::moveObjectTowardHuman()
 void ARTagCtrl::setObjectID(int _obj)
 {
     ArmCtrl::setObjectID(_obj);
-    ARucoClient::setMarkerID(_obj);
+    ARucoClient::setObjectID(_obj);
 }
 
 ARTagCtrl::~ARTagCtrl()

@@ -90,16 +90,15 @@ add_library(robot_interface include/robot_interface/robot_interface.h
                             src/robot_interface/gripper.cpp
                             src/robot_interface/arm_ctrl.cpp)
 
-add_library(robot_perception    include/robot_perception/hsv_detection.h
-                                include/robot_perception/aruco_client.h
-                                include/robot_perception/cartesian_estimator.h
+add_library(robot_perception    include/robot_perception/cartesian_estimator.h
                                 include/robot_perception/cartesian_estimator_hsv.h
-                                include/robot_perception/cartesian_estimator_client.h
-                                src/robot_perception/hsv_detection.cpp
-                                src/robot_perception/aruco_client.cpp
+                                include/robot_perception/hsv_detection.h
+                                include/robot_perception/client_template.h
+                                include/robot_perception/perception_client_impl.h
                                 src/robot_perception/cartesian_estimator.cpp
                                 src/robot_perception/cartesian_estimator_hsv.cpp
-                                src/robot_perception/cartesian_estimator_client.cpp)
+                                src/robot_perception/hsv_detection.cpp
+                                src/robot_perception/perception_client_impl.cpp)
 
 ## Add cmake target dependencies of the library
 ## as an example, code may need to be generated before libraries

@@ -28,7 +28,7 @@ bool PartPicker::passObject()
     if (!moveObjectTowardHuman())       return false;
     if (!waitForUserCuffUpperFb())      return false;
 
-    if (getObjectID() != 200)
+    if (ClientTemplate<int>::getObjectID() != 200)
     {
         if (!goToPose(0.50, 0.93, 0.2, POOL_ORI_L)) return false;
         ros::Duration(0.25).sleep();
