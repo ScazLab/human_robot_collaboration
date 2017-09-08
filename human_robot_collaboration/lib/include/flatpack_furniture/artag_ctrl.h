@@ -22,7 +22,7 @@
 #include <aruco_msgs/MarkerArray.h>
 
 #include "robot_interface/arm_ctrl.h"
-#include "robot_perception/aruco_client.h"
+#include "robot_perception/perception_client_impl.h"
 
 class ARTagCtrl : public ArmCtrl, public ARucoClient
 {
