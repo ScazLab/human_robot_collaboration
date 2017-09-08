@@ -5,15 +5,15 @@ using namespace std;
 ARucoClient::ARucoClient(string _name, string _limb) :
                          ClientTemplate(_name, _limb)
 {
-    sub = pnh.subscribe("/aruco_marker_publisher/markers",
-                        SUBSCRIBER_BUFFER, &ARucoClient::ObjectCb, this);
+    sub = ctnh.subscribe("/markers/"+getClientLimb(), SUBSCRIBER_BUFFER,
+                         &ARucoClient::ObjectCb, this);
 
     object_id = -1;
 }
 
 void ARucoClient::ObjectCb(const aruco_msgs::MarkerArray& _msg)
 {
-    // ROS_INFO("ObjectCb");
+    ROS_INFO_COND(ct_print_level>=4, "ObjectCb");
     if (_msg.markers.size() > 0)
     {
         available_objects.clear();
@@ -60,8 +60,8 @@ ARucoClient::~ARucoClient()
 CartesianEstimatorClient::CartesianEstimatorClient(string _name, string _limb) :
                                                    ClientTemplate(_name, _limb)
 {
-    sub = pnh.subscribe("/hsv_detector/objects", SUBSCRIBER_BUFFER,
-                        &CartesianEstimatorClient::ObjectCb, this);
+    sub = ctnh.subscribe("/objects/"+getClientLimb(), SUBSCRIBER_BUFFER,
+                         &CartesianEstimatorClient::ObjectCb, this);
 
     object_id = "";
 }

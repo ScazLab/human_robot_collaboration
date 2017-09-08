@@ -29,9 +29,9 @@
 template<typename T> class ClientTemplate
 {
 protected:
-    ros::NodeHandle pnh; // NodeHandle to handle ros stuff
-    std::string    limb; // Limb of the gripper: left or right
-    ros::Subscriber sub; // Subscriber to the topic that sends perception information
+    ros::NodeHandle ctnh; // NodeHandle to handle ros stuff
+    std::string     limb; // Limb of the gripper: left or right
+    ros::Subscriber  sub; // Subscriber to the topic that sends perception information
 
     bool         is_ok; // Bool to check if the Client is fine or not
     bool objects_found; // Bool to check if there are any objects detected
@@ -74,6 +74,9 @@ protected:
     };
 
 protected:
+    // Print level to be used throughout the code
+    int ct_print_level;
+
     /**
      * Waits to get feedback from the perception node.
      *
@@ -88,12 +91,12 @@ protected:
 
         while (!is_ok)
         {
-            ROS_WARN_COND(cnt>0, "No callback from Perception. Is Perception running?");
+            ROS_WARN_COND(cnt>1, "No callback from perception. Is perception running?");
             ++cnt;
 
             if (cnt == OBJ_NOT_FOUND_NUM_ATTEMPTS)
             {
-                ROS_ERROR("No callback from Perception! Stopping.");
+                ROS_ERROR("No callback from perception! Stopping.");
                 return false;
             }
 
@@ -117,7 +120,7 @@ protected:
 
         while (!objects_found)
         {
-            ROS_WARN_COND(cnt>0, "Objects not found. Are there any the objects there?");
+            ROS_WARN_COND(cnt>1, "Objects not found. Are there any the objects there?");
             ++cnt;
 
             if (cnt == OBJ_NOT_FOUND_NUM_ATTEMPTS)
@@ -227,10 +230,10 @@ public:
      * Constructor
      */
     ClientTemplate(std::string _name, std::string _limb) :
-                             pnh(_name), limb(_limb), is_ok(false),
-                             objects_found(false), object_found(false)
+                   ctnh(_name), limb(_limb), is_ok(false),
+                   objects_found(false), object_found(false), ct_print_level(0)
     {
-
+        ctnh.param<int> ("/print_level", ct_print_level, 0);
     };
 
     /**
