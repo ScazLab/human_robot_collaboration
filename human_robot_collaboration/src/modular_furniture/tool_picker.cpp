@@ -6,7 +6,7 @@ using namespace baxter_core_msgs;
 #define VERTICAL_ORI_R2         0.1, 1.0, 0.0, 0.0
 
 ToolPicker::ToolPicker(string _name, string _limb, bool _use_robot) :
-                       HoldCtrl(_name,_limb, _use_robot),
+                       ArmCtrl(_name,_limb, _use_robot),
                        CartesianEstimatorClient(_name, _limb)
 {
     setHomeConfiguration();

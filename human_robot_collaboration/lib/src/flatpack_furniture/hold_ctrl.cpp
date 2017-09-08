@@ -72,8 +72,7 @@ bool HoldCtrl::waitForOtherArm(double _wait_time, bool disable_coll_av)
 
 void HoldCtrl::setHomeConfiguration()
 {
-    setHomeConf( 0.0717, -1.0009, 1.1083, 1.5520,
-                         -0.5235, 1.3468, 0.4464);
+    ArmCtrl::setHomeConfiguration("table");
 }
 
 bool HoldCtrl::serviceOtherLimbCb(human_robot_collaboration_msgs::AskFeedback::Request  &req,
