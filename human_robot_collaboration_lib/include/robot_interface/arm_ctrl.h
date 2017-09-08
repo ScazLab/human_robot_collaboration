@@ -142,72 +142,6 @@ protected:
     virtual void recoverFromError();
 
     /**
-     * Hovers above table at a specific x-y position.
-     *
-     * @param  _height          the z-axis value of the end-effector position
-     * @param  _mode            (loose/strict) it checks for the final desired position
-     * @param  _disable_coll_av if to disable collision avoidance or not
-     * @return                 true/false if success/failure
-     */
-    bool hoverAboveTable(double _height, std::string _mode = "loose",
-                                     bool _disable_coll_av =  false);
-
-    /**
-     * Hovers above the pool of objects that is located at a specific x-y-z position.
-     *
-     * @param  _mode            (loose/strict) it checks for the final desired position
-     * @param  _disable_coll_av if to disable collision avoidance or not
-     * @return                 true/false if success/failure
-     */
-    bool hoverAbovePool(std::string     _mode = "loose",
-                        bool _disable_coll_av =  false);
-
-    /**
-     * Home position with a specific joint configuration. This has
-     * been introduced in order to force the arms to go to the home configuration
-     * in always the same exact way, in order to clean the seed configuration in
-     * case of subsequent inverse kinematics requests.
-     *
-     * @param  disable_coll_av if to disable the collision avoidance while
-     *                         performing the action or not
-     * @return                 true/false if success/failure
-     */
-    bool homePoseStrict(bool disable_coll_av = false);
-
-    /**
-     * Sets the joint-level configuration for the home position
-     *
-     * @param s0 First  shoulder joint
-     * @param s1 Second shoulder joint
-     * @param e0 First  elbow    joint
-     * @param e1 Second elbow    joint
-     * @param w0 First  wrist    joint
-     * @param w1 Second wrist    joint
-     * @param w2 Third  wrist    joint
-     */
-    void setHomeConf(double _s0, double _s1, double _e0, double _e1,
-                                 double _w0, double _w1, double _w2);
-
-    /**
-     * Sets the joint-level configuration for the home position
-     */
-    virtual void setHomeConfiguration() { return; };
-
-    /**
-     * Sets the high-level configuration for the home position
-     *
-     * @param _loc the home position (either "pool" or "table")
-     */
-    void setHomeConfiguration(std::string _loc);
-
-    /**
-     * Goes to the home position, and "releases" the gripper
-     *
-     * @return        true/false if success/failure
-     */
-    bool goHome();
-
-    /**
      * Moves arm in a direction requested by the user, relative to the current
      * end-effector position
      *
@@ -410,6 +344,78 @@ protected:
      * @param _sub_state the new sub state
      */
     virtual void setSubState(const std::string& _sub_state);
+
+    /********************************************************************/
+    /*                         HOME CAPABILITIES                        */
+    /********************************************************************/
+    /**
+     * Home position with a specific joint configuration. This has
+     * been introduced in order to force the arms to go to the home configuration
+     * in always the same exact way, in order to clean the seed configuration in
+     * case of subsequent inverse kinematics requests.
+     *
+     * @param  disable_coll_av if to disable the collision avoidance while
+     *                         performing the action or not
+     * @return                 true/false if success/failure
+     */
+    bool homePoseStrict(bool disable_coll_av = false);
+
+    /**
+     * Sets the joint-level configuration for the home position
+     *
+     * @param s0 First  shoulder joint
+     * @param s1 Second shoulder joint
+     * @param e0 First  elbow    joint
+     * @param e1 Second elbow    joint
+     * @param w0 First  wrist    joint
+     * @param w1 Second wrist    joint
+     * @param w2 Third  wrist    joint
+     */
+    void setHomeConf(double _s0, double _s1, double _e0, double _e1,
+                                 double _w0, double _w1, double _w2);
+
+    /**
+     * Sets the joint-level configuration for the home position
+     */
+    virtual void setHomeConfiguration() { return; };
+
+    /**
+     * Sets the high-level configuration for the home position
+     *
+     * @param _loc the home position (either "pool" or "table")
+     */
+    void setHomeConfiguration(std::string _loc);
+
+    /**
+     * Goes to the home position, and "releases" the gripper
+     *
+     * @return        true/false if success/failure
+     */
+    bool goHome();
+
+    /********************************************************************/
+    /*                        HOVER CAPABILITIES                        */
+    /********************************************************************/
+    /**
+     * Hovers above table at a specific x-y position.
+     *
+     * @param  _height          the z-axis value of the end-effector position
+     * @param  _mode            (loose/strict) it checks for the final desired position
+     * @param  _disable_coll_av if to disable collision avoidance or not
+     * @return                 true/false if success/failure
+     */
+    bool hoverAboveTable(double _height, std::string _mode = "loose",
+                                     bool _disable_coll_av =  false);
+
+    /**
+     * Hovers above the pool of objects that is located at a specific x-y-z position.
+     *
+     * @param  _mode            (loose/strict) it checks for the final desired position
+     * @param  _disable_coll_av if to disable collision avoidance or not
+     * @return                 true/false if success/failure
+     */
+    bool hoverAbovePool(std::string     _mode = "loose",
+                        bool _disable_coll_av =  false);
 
     /********************************************************************/
     /*                         HOLD CAPABILITIES                        */
