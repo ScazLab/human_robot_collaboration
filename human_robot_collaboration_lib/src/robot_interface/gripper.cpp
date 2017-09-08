@@ -4,21 +4,24 @@ using namespace              std;
 using namespace baxter_core_msgs;
 
 Gripper::Gripper(std::string _limb, bool _use_robot) :
-                 rnh(_limb), limb(_limb), use_robot(_use_robot), first_run(true), prop_set(false),
+                 gnh(_limb), limb(_limb), use_robot(_use_robot),
+                 first_run(true), prop_set(false), g_print_level(0),
                  spinner(4), cmd_sequence(0), cmd_sender(ros::this_node::getName())
 {
     if (not use_robot) return;
 
+    gnh.param<int> ("/print_level", g_print_level, 0);
+
     // create a publisher for the gripper's commands
-    pub_cmd = rnh.advertise<EndEffectorCommand>( "/robot/end_effector/" +
+    pub_cmd = gnh.advertise<EndEffectorCommand>( "/robot/end_effector/" +
                                                 _limb + "_gripper/command", 1);
 
     // create a subscriber to the gripper's properties
-    sub_prop  = rnh.subscribe("/robot/end_effector/" + _limb + "_gripper/properties",
+    sub_prop  = gnh.subscribe("/robot/end_effector/" + _limb + "_gripper/properties",
                                    SUBSCRIBER_BUFFER, &Gripper::gripperPropCb, this);
 
     // create a subscriber to the gripper's state
-    sub_state = rnh.subscribe("/robot/end_effector/" + _limb + "_gripper/state",
+    sub_state = gnh.subscribe("/robot/end_effector/" + _limb + "_gripper/state",
                                   SUBSCRIBER_BUFFER, &Gripper::gripperCb, this);
 
     //Initially all the interesting properties of the state are unknown
@@ -229,6 +232,9 @@ bool Gripper::hasPosition()
 
 bool Gripper::open(bool _block, double _timeout)
 {
+    ROS_INFO_COND(g_print_level>=2, "[%s_gripper][%s] opening",
+                   getGripperLimb().c_str(), type().c_str());
+
     if(type() == "electric")
     {
         return commandPosition(100.0, _block, _timeout);
@@ -256,6 +262,9 @@ bool Gripper::open(bool _block, double _timeout)
 
 bool Gripper::close(bool _block, double _timeout)
 {
+    ROS_INFO_COND(g_print_level>=2, "[%s_gripper][%s] closing",
+                   getGripperLimb().c_str(), type().c_str());
+
     if(type() == "electric")
     {
         return commandPosition(0.0, _block, _timeout);

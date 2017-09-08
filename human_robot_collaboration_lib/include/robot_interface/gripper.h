@@ -28,12 +28,14 @@
 class Gripper
 {
 private:
-    ros::NodeHandle rnh;    // ROS node handle
+    ros::NodeHandle gnh;    // ROS node handle
     std::string    limb;    // Limb of the gripper: left or right
 
     bool   use_robot;       // Flag to know if we're going to use the robot or not
     bool   first_run;       // Flag to calibrate the gripper at startup if needed
     bool    prop_set;       // Flag to know if the properties were successfully set
+
+    int g_print_level;      // Print level to be used throughout the code
 
     ros::Subscriber sub_state; // Subscriber to receive the state of the gripper
     ros::Subscriber  sub_prop; // Subscriber to receive the properties of the gripper
