@@ -49,14 +49,6 @@ private:
      */
     bool waitForOtherArm(double _wait_time = 60.0, bool disable_coll_av = false);
 
-    /**
-     * Computes the end-effector orientation needed to pick the object up with a constant
-     * orientation. Needed by the hand-over action since it requires the object to be picked
-     * up consistently.
-     * @return the desired end-effector orientation, expressed in quaternion form
-     */
-    geometry_msgs::Quaternion computeHOorientation();
-
 protected:
 
     /**
@@ -105,6 +97,36 @@ protected:
      * @return true/false if success/failure
      */
     bool recoverRelease();
+
+    /**
+     * Determines if a contact occurred by reading the IR sensor and looking for
+     * eventual squish events. Since the SDK does not allow for setting custom squish params,
+     * the latter can often fail so there is a check that prevents the end-effector from going
+     * too low if this happens.
+     * @return true/false if success/failure
+     */
+    bool determineContactCondition();
+
+    /**
+     * Computes object-specific (and pose-specific) offsets in order for the robot
+     * to grip the object not in the center of its coordinate system but where
+     * it is most convenient for the gripper
+     *
+     * @param _x_offs The x offset
+     * @param _y_offs The y offset
+     *
+     * @return true/false if success/failure
+     */
+    virtual bool computeOffsets(double &_x_offs, double &_y_offs);
+
+    /**
+     * Computes action-specific orientation in order for the robot to be able to
+     * be transparent with respect to different actions in different poses
+     *
+     * @param _ori The desired orientation as a quaternion
+     * @return true/false if success/failure
+     */
+    virtual bool computeOrientation(geometry_msgs::Quaternion &_ori);
 
     /**
      * Chooses the object to act upon according to some rule. This method

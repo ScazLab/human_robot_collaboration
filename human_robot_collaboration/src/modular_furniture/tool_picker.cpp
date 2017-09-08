@@ -10,6 +10,7 @@ ToolPicker::ToolPicker(string _name, string _limb, bool _use_robot) :
                        CartesianEstimatorClient(_name, _limb)
 {
     setHomeConfiguration();
+    setArmSpeed(getArmSpeed() / 1.3);
 
     setState(START);
 
@@ -203,7 +204,7 @@ bool ToolPicker::pickUpObject()
 
         x = getObjectPos().x + offs_x;
         y = getObjectPos().y + offs_y;
-        z = z_start - ARM_SPEED * new_elap_time / 1.3;
+        z = z_start - getArmSpeed() * new_elap_time;
 
         ROS_DEBUG("Time %g Going to: %g %g %g Position: %g %g %g", new_elap_time, x, y, z,
                                                        getPos().x, getPos().y, getPos().z);

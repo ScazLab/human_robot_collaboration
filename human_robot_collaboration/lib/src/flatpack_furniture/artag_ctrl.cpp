@@ -182,67 +182,61 @@ bool ARTagCtrl::pickARTag()
         return false;
     }
 
+    double offs_x = 0.0;
+    double offs_y = 0.0;
+
+    if (not computeOffsets(offs_x, offs_y))  { return false; }
+
+    // Let's compute a first estimation of the joint position
+    // (we reduce the z by 15 cm to start picking up from a
+    // closer position)
+    double x = getObjectPos().x + offs_x;
+    double y = getObjectPos().y + offs_y;
+    double z =       getPos().z -   0.15;
+
     geometry_msgs::Quaternion q;
+    if (!computeOrientation(q))           { return false; }
 
-    double x = getObjectPos().x;
-    double y = getObjectPos().y + 0.04;
-    double z =       getPos().z;
+    ROS_INFO("Going to: %g %g %g", x, y, z);
 
-    ROS_DEBUG("Going to: %g %g %g", x, y, z);
-    if (ClientTemplate<int>::getObjectID() == 24)
+    if (!goToPose(x, y, z, q.x, q.y, q.z, q.w, "loose"))
     {
-        // If we have to hand_over, let's pre-orient the end effector
-        // such that further movements are easier
-        q = computeHOorientation();
-
-        if (!goToPose(x, y, z, q.x,q.y,q.z,q.w,"loose"))   return false;
-    }
-    else
-    {
-        if (!goToPose(x, y, z, POOL_ORI_L,"loose"))        return false;
+        return false;
     }
 
-    if (!waitForData()) return false;
+    if (!waitForData())
+    {
+        setSubState(NO_OBJ);
+        return false;
+    }
 
     ros::Time start_time = ros::Time::now();
     double z_start       =       getPos().z;
     int cnt_ik_fail      =                0;
 
-    ros::Rate r(100);
+    ros::Rate r(THREAD_FREQ);
     while(RobotInterface::ok())
     {
-        double new_elap_time = (ros::Time::now() - start_time).toSec();
+        double elap_time = (ros::Time::now() - start_time).toSec();
 
-        double x = getObjectPos().x;
-        double y = getObjectPos().y;
-        double z = z_start - ARM_SPEED * new_elap_time;
+        double x = getObjectPos().x + offs_x;
+        double y = getObjectPos().y + offs_y;
+        double z = z_start - getArmSpeed() * elap_time;
 
-        ROS_DEBUG("Time %g Going to: %g %g %g", new_elap_time, x, y, z);
+        ROS_INFO_COND(print_level>=2, "Time %g Going to: %g %g %g Position: %g %g %g",
+                              elap_time, x, y, z, getPos().x, getPos().y, getPos().z);
 
-        bool res=false;
-
-        if (ClientTemplate<int>::getObjectID() == 24)
-        {
-            // q   = computeHOorientation();
-            res = goToPoseNoCheck(x,y,z,q.x,q.y,q.z,q.w);
-        }
-        else
-        {
-            res = goToPoseNoCheck(x,y,z,POOL_ORI_L);
-        }
-
-        if (res == true)
+        if (goToPoseNoCheck(x,y,z,q.x, q.y, q.z, q.w))
         {
             cnt_ik_fail = 0;
-            // if (new_elap_time - elap_time > 0.02)
+            // if (elap_time - old_elap_time > 0.02)
             // {
-            //     ROS_WARN("\t\t\t\t\tTime elapsed: %g", new_elap_time - elap_time);
+            //     ROS_WARN("\t\t\t\t\tTime elapsed: %g", elap_time - old_elap_time);
             // }
-            // elap_time = new_elap_time;
+            // old_elap_time = elap_time;
 
-            if(hasCollidedIR("strict"))
+            if (determineContactCondition())
             {
-                ROS_DEBUG("Collision!");
                 return true;
             }
 
@@ -257,6 +251,38 @@ bool ARTagCtrl::pickARTag()
     }
 
     return false;
+}
+
+bool ARTagCtrl::determineContactCondition()
+{
+    if (hasCollidedIR("strict") || hasCollidedCD())
+    {
+        if (hasCollidedCD())
+        {
+            moveArm("up", 0.002);
+        }
+        ROS_INFO("Collision!");
+        return true;
+    }
+    else
+    {
+        if (getAction() == ACTION_GET      ||
+            getAction() == ACTION_GET_PASS)
+        {
+            if (getPos().z < -0.28)
+            {
+                ROS_INFO("Object reached!");
+                return true;
+            }
+        }
+    }
+
+    return false;
+}
+
+bool ARTagCtrl::computeOffsets(double &_x_offs, double &_y_offs)
+{
+    return true;
 }
 
 int ARTagCtrl::chooseObjectID(vector<int> _objs)
@@ -293,47 +319,68 @@ int ARTagCtrl::chooseObjectID(vector<int> _objs)
     return av_objects[rand() % av_objects.size()];
 }
 
-geometry_msgs::Quaternion ARTagCtrl::computeHOorientation()
+bool ARTagCtrl::computeOrientation(geometry_msgs::Quaternion &_ori)
 {
-    // Get the rotation matrix for the object, as retrieved from
-    tf::Quaternion mrk_q;
-    tf::quaternionMsgToTF(getObjectOri(), mrk_q);
-    tf::Matrix3x3 mrk_rot(mrk_q);
+    if      (ClientTemplate<int>::getObjectID() == 24)
+    {
+        // Get the rotation matrix for the object, as retrieved from
+        tf::Quaternion mrk_q;
+        tf::quaternionMsgToTF(getObjectOri(), mrk_q);
+        tf::Matrix3x3 mrk_rot(mrk_q);
 
-    // printf("Object Orientation\n");
-    // for (int j = 0; j < 3; ++j)
-    // {
-    //     printf("%g\t%g\t%g\n", mrk_rot[j][0], mrk_rot[j][1], mrk_rot[j][2]);
-    // }
+        // printf("Object Orientation\n");
+        // for (int j = 0; j < 3; ++j)
+        // {
+        //     printf("%g\t%g\t%g\n", mrk_rot[j][0], mrk_rot[j][1], mrk_rot[j][2]);
+        // }
 
-    // Compute the transform matrix between the object's orientation
-    // and the end-effector's orientation
-    tf::Matrix3x3 mrk2ee;
-    mrk2ee[0][0] =  1;  mrk2ee[0][1] =  0;   mrk2ee[0][2] =  0;
-    mrk2ee[1][0] =  0;  mrk2ee[1][1] =  0;   mrk2ee[1][2] = -1;
-    mrk2ee[2][0] =  0;  mrk2ee[2][1] =  1;   mrk2ee[2][2] =  0;
+        // Compute the transform matrix between the object's orientation
+        // and the end-effector's orientation
+        tf::Matrix3x3 mrk2ee;
+        mrk2ee[0][0] =  1;  mrk2ee[0][1] =  0;   mrk2ee[0][2] =  0;
+        mrk2ee[1][0] =  0;  mrk2ee[1][1] =  0;   mrk2ee[1][2] = -1;
+        mrk2ee[2][0] =  0;  mrk2ee[2][1] =  1;   mrk2ee[2][2] =  0;
 
-    // printf("Rotation\n");
-    // for (int j = 0; j < 3; ++j)
-    // {
-    //     printf("%g\t%g\t%g\n", mrk2ee[j][0], mrk2ee[j][1], mrk2ee[j][2]);
-    // }
+        // printf("Rotation\n");
+        // for (int j = 0; j < 3; ++j)
+        // {
+        //     printf("%g\t%g\t%g\n", mrk2ee[j][0], mrk2ee[j][1], mrk2ee[j][2]);
+        // }
 
-    // Compute the final end-effector orientation, and convert it to a msg
-    mrk2ee = mrk_rot * mrk2ee;
+        // Compute the final end-effector orientation, and convert it to a msg
+        mrk2ee = mrk_rot * mrk2ee;
 
-    tf::Quaternion ee_q;
-    mrk2ee.getRotation(ee_q);
-    geometry_msgs::Quaternion ee_q_msg;
-    tf::quaternionTFToMsg(ee_q,ee_q_msg);
+        tf::Quaternion ee_q;
+        mrk2ee.getRotation(ee_q);
+        geometry_msgs::Quaternion ee_q_msg;
+        tf::quaternionTFToMsg(ee_q,ee_q_msg);
 
-    // printf("Desired Orientation\n");
-    // for (int j = 0; j < 3; ++j)
-    // {
-    //     printf("%g\t%g\t%g\n", mrk2ee[j][0], mrk2ee[j][1], mrk2ee[j][2]);
-    // }
+        // printf("Desired Orientation\n");
+        // for (int j = 0; j < 3; ++j)
+        // {
+        //     printf("%g\t%g\t%g\n", mrk2ee[j][0], mrk2ee[j][1], mrk2ee[j][2]);
+        // }
 
-    return ee_q_msg;
+        _ori = ee_q_msg;
+    }
+    else if (getAction() == ACTION_GET || getAction() == ACTION_GET_PASS)
+    {
+        if      (getLimb() == "left")
+        {
+            quaternionFromDoubles(_ori, POOL_ORI_L);
+        }
+        else if (getLimb() == "right")
+        {
+            quaternionFromDoubles(_ori, POOL_ORI_R);
+        }
+    }
+    else
+    {
+        ROS_ERROR("State is neither ACTION_GET or ACTION_GET_PASS!");
+        return false;
+    }
+
+    return true;
 }
 
 void ARTagCtrl::setHomeConfiguration()

@@ -13,8 +13,8 @@
  * Public License for more details
 **/
 
-#ifndef __ARTAG_CTRL_IMPL_H__
-#define __ARTAG_CTRL_IMPL_H__
+#ifndef __ARTAG_CTRL_IMPL_FLATPACK_FURNITURE_H__
+#define __ARTAG_CTRL_IMPL_FLATPACK_FURNITURE_H__
 
 #include "flatpack_furniture/artag_ctrl.h"
 
@@ -26,12 +26,42 @@ public:
     /**
      * Constructor
      */
-    ARTagCtrlImpl(std::string _name, std::string _limb, bool _use_robot = true);
+    ARTagCtrlImpl(std::string _name, std::string _limb, bool _use_robot = true) :
+                                             ARTagCtrl(_name,_limb, _use_robot)
+    {
+        setHomeConfiguration();
+
+        insertAction(ACTION_HAND_OVER, static_cast<f_action>(&ARTagCtrlImpl::handOver));
+
+        insertAction("recover_"+std::string(ACTION_RELEASE),
+                     static_cast<f_action>(&ARTagCtrlImpl::recoverRelease));
+
+        insertAction("recover_"+std::string(ACTION_GET),
+                      static_cast<f_action>(&ARTagCtrlImpl::recoverGet));
+
+        // Not implemented actions throw a ROS_ERROR and return always false:
+        insertAction("recover_"+std::string(ACTION_PASS),      &ARTagCtrlImpl::notImplemented);
+        insertAction("recover_"+std::string(ACTION_HAND_OVER), &ARTagCtrlImpl::notImplemented);
+
+        printActionDB();
+
+        if (not _use_robot) return;
+
+        if (!callAction(ACTION_HOME)) setState(ERROR);
+
+        // moveArm("up",0.2,"strict");
+        // moveArm("down",0.2,"strict");
+        // moveArm("right",0.2,"strict");
+        // moveArm("left",0.2,"strict");
+        // moveArm("forward",0.1,"strict");
+        // moveArm("backward",0.2,"strict");
+        // moveArm("forward",0.1,"strict");
+    };
 
     /**
      * Destructor
      */
-    ~ARTagCtrlImpl();
+    ~ARTagCtrlImpl() { };
 };
 
 #endif

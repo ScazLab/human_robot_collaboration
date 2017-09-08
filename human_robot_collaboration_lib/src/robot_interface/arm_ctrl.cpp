@@ -7,7 +7,7 @@ using namespace baxter_core_msgs;
 ArmCtrl::ArmCtrl(string _name, string _limb, bool _use_robot, bool _use_forces, bool _use_trac_ik, bool _use_cart_ctrl) :
                  RobotInterface(_name,_limb, _use_robot, THREAD_FREQ, _use_forces, _use_trac_ik, _use_cart_ctrl),
                  Gripper(_limb, _use_robot), sub_state(""), action(""), prev_action(""), sel_object_id(-1),
-                 home_conf(7), cuff_button_pressed(false)
+                 home_conf(7), arm_speed(ARM_SPEED), cuff_button_pressed(false)
 {
     std::string other_limb = getLimb() == "right" ? "left" : "right";
 
@@ -472,7 +472,7 @@ bool ArmCtrl::moveArm(string dir, double dist, string mode, bool disable_coll_av
             if (dir == "backward" || dir == "forward")
             {
                 int sgn = dir=="backward"?-1:+1;
-                p_c.x = p_c.x + sgn * ARM_SPEED * t_elap;
+                p_c.x = p_c.x + sgn * arm_speed * t_elap;
 
                 if (dir == "backward")
                 {
@@ -486,7 +486,7 @@ bool ArmCtrl::moveArm(string dir, double dist, string mode, bool disable_coll_av
             if (dir == "right" || dir == "left")
             {
                 int sgn = dir=="right"?-1:+1;
-                p_c.y = p_c.y + sgn * ARM_SPEED * t_elap;
+                p_c.y = p_c.y + sgn * arm_speed * t_elap;
 
                 if (dir == "right")
                 {
@@ -500,7 +500,7 @@ bool ArmCtrl::moveArm(string dir, double dist, string mode, bool disable_coll_av
             if (dir == "down" || dir == "up")
             {
                 int sgn = dir=="down"?-1:+1;
-                p_c.z = p_c.z + sgn * ARM_SPEED * t_elap;
+                p_c.z = p_c.z + sgn * arm_speed * t_elap;
 
                 if (dir == "down")
                 {
@@ -735,6 +735,13 @@ bool ArmCtrl::setState(int _state)
     }
 
     return RobotInterface::setState(_state);
+}
+
+bool ArmCtrl::setArmSpeed(double _arm_speed)
+{
+    arm_speed = _arm_speed;
+
+    return true;
 }
 
 void ArmCtrl::setSubState(const string& _sub_state)

@@ -66,9 +66,7 @@ add_subdirectory(lib)
 ## Declare a C++ executable
 add_executable(baxter_controller        src/baxter_controller/baxter_controller.cpp)
 add_executable(flatpack_action_provider src/flatpack_furniture/artag_ctrl_impl.h
-                                        src/flatpack_furniture/artag_ctrl_impl.cpp
                                         src/flatpack_furniture/hold_ctrl_impl.h
-                                        src/flatpack_furniture/hold_ctrl_impl.cpp
                                         src/flatpack_furniture/action_provider.cpp)
 add_executable(tower_action_provider    src/tower_building/cube_picker.h
                                         src/tower_building/cube_picker.cpp
@@ -79,8 +77,7 @@ add_executable(modular_action_provider  src/modular_furniture/tool_picker.h
                                         src/modular_furniture/part_picker.h
                                         src/modular_furniture/part_picker.cpp
                                         src/modular_furniture/action_provider.cpp)
-add_executable(sp_pred_action_provider  src/speech_prediction/artag_hold_ctrl.h
-                                        src/speech_prediction/artag_hold_ctrl.cpp
+add_executable(sp_pred_action_provider  src/speech_prediction/artag_ctrl_impl.h
                                         src/modular_furniture/part_picker.h
                                         src/modular_furniture/part_picker.cpp
                                         src/speech_prediction/action_provider.cpp)

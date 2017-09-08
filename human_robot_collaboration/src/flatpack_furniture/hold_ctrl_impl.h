@@ -13,8 +13,8 @@
  * Public License for more details
 **/
 
-#ifndef __HOLD_CTRL_IMPL_H__
-#define __HOLD_CTRL_IMPL_H__
+#ifndef __HOLD_CTRL_IMPL_FLATPACK_FURNITURE_H__
+#define __HOLD_CTRL_IMPL_FLATPACK_FURNITURE_H__
 
 #include "flatpack_furniture/hold_ctrl.h"
 
@@ -26,12 +26,30 @@ public:
     /**
      * Constructor
      */
-    HoldCtrlImpl(std::string _name, std::string _limb, bool _use_robot = true);
+    HoldCtrlImpl(std::string _name, std::string _limb, bool _use_robot = true) :
+                                             HoldCtrl(_name,_limb, _use_robot)
+    {
+        setHomeConfiguration();
+
+        insertAction(ACTION_HAND_OVER,  static_cast<f_action>(&HoldCtrlImpl::handOver));
+
+        // Not implemented actions throw a ROS_ERROR and return always false:
+        insertAction("recover_"+std::string(ACTION_START_HOLD), &HoldCtrlImpl::notImplemented);
+        insertAction("recover_"+std::string(ACTION_END_HOLD),   &HoldCtrlImpl::notImplemented);
+        insertAction("recover_"+std::string(ACTION_HOLD),       &HoldCtrlImpl::notImplemented);
+        insertAction("recover_"+std::string(ACTION_HAND_OVER),  &HoldCtrlImpl::notImplemented);
+
+        printActionDB();
+
+        if (not _use_robot) return;
+
+        if (!callAction(ACTION_HOME)) setState(ERROR);
+    };
 
     /**
      * Destructor
      */
-    ~HoldCtrlImpl();
+    ~HoldCtrlImpl() { };
 };
 
 #endif

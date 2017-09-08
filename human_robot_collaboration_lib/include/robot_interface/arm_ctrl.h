@@ -80,6 +80,9 @@ private:
     // internal thread functionality
     std::thread arm_thread;
 
+    // speed of the arm during some actions (e.g. pickup)
+    double arm_speed;
+
     // Flag to know if the cuff button has been pressed
     bool cuff_button_pressed;
 
@@ -503,6 +506,14 @@ public:
      */
     bool setState(int _state);
 
+    /**
+     * Sets the speed of the arm during some actions (e.g. pick up)
+     *
+     * @param  _arm_speed the new speed of the arm
+     * @return            true/false if success/failure
+     */
+    bool setArmSpeed(double _arm_speed);
+
     /* Self-explaining "getters" */
     std::string       getSubState() { return         sub_state; };
     std::string         getAction() { return            action; };
@@ -510,6 +521,7 @@ public:
     int               getObjectID() { return     sel_object_id; };
     std::vector<int> getObjectIDs() { return        object_ids; };
     bool      getInternalRecovery() { return internal_recovery; };
+    double            getArmSpeed() { return         arm_speed; };
 };
 
 #endif
