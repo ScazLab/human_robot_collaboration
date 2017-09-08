@@ -35,15 +35,14 @@ RobotInterface::RobotInterface(string _name, string _limb, bool _use_robot, doub
         nh.param<double>("relative_force_threshold_right", rel_force_thres, REL_FORCE_THRES_R);
     }
 
-    nh.param<int> ("print_level", print_level, 0);
+    nh.param<int> ("/print_level", print_level, 0);
 
     ROS_INFO_COND(print_level>=0, "[%s] Print Level set to %i", getLimb().c_str(), print_level);
-    ROS_INFO_COND(print_level>=1, "[%s] ctrlFreq set to %g [Hz]", getLimb().c_str(), getCtrlFreq());
-    ROS_INFO_COND(print_level>=1, "[%s] Force Threshold : %g", getLimb().c_str(), force_thres);
-    ROS_INFO_COND(print_level>=1, "[%s] Force Filter Variance: %g", getLimb().c_str(), filt_variance);
-    ROS_INFO_COND(print_level>=1, "[%s] Relative Force Threshold: %g", getLimb().c_str(), rel_force_thres);
-
     ROS_INFO_COND(print_level>=1, "[%s] Cartesian Controller %s enabled", getLimb().c_str(), use_cart_ctrl?"is":"is NOT");
+    ROS_INFO_COND(print_level>=1 && use_cart_ctrl, "[%s] ctrlFreq set to %g [Hz]", getLimb().c_str(), getCtrlFreq());
+    ROS_INFO_COND(print_level>=3, "[%s] Force Threshold : %g", getLimb().c_str(), force_thres);
+    ROS_INFO_COND(print_level>=3, "[%s] Force Filter Variance: %g", getLimb().c_str(), filt_variance);
+    ROS_INFO_COND(print_level>=3, "[%s] Relative Force Threshold: %g", getLimb().c_str(), rel_force_thres);
 
     joint_cmd_pub  = nh.advertise<JointCommand>("/robot/limb/" + getLimb() + "/joint_command", 1);
     coll_av_pub    = nh.advertise<std_msgs::Empty>("/robot/limb/" + getLimb() + "/suppress_collision_avoidance", 1);
@@ -883,7 +882,7 @@ bool RobotInterface::isConfigurationReached(baxter_core_msgs::JointCommand _dj, 
 
     if (cj.position.size() < 7)    { return false; }
 
-    ROS_INFO_COND(print_level>=4, "[%s] Checking configuration: Current %g %g %g %g %g %g %g"
+    ROS_INFO_COND(print_level>=6, "[%s] Checking configuration: Current %g %g %g %g %g %g %g"
                                                              "\tDesired %g %g %g %g %g %g %g",
                                                                             getLimb().c_str(),
                                cj.position[0], cj.position[1], cj.position[2], cj.position[3],
