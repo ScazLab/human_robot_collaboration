@@ -18,7 +18,7 @@
 
 #include <flatpack_furniture/artag_ctrl.h>
 
-class CubePicker : public ArmCtrl, public ARucoClient
+class CubePicker : public ARTagCtrl
 {
 private:
     /**
@@ -26,30 +26,6 @@ private:
      * @return true/false if success/failure
      */
     bool moveObjectTowardHuman();
-
-    /**
-     * [pickARTag description]
-     * @return true/false if success/failure
-     */
-    bool pickARTag();
-
-    /**
-     * [pickObject description]
-     * @return true/false if success/failure
-     */
-    bool pickObject();
-
-    /**
-     * [passObject description]
-     * @return true/false if success/failure
-     */
-    bool passObject();
-
-    /**
-     * [pickObject description]
-     * @return true/false if success/failure
-     */
-    bool pickPassObject();
 
     /**
      * [recoverPickPass description]
@@ -63,11 +39,6 @@ private:
      */
     void recoverFromError();
 
-    /**
-     * Sets the joint-level configuration for the home position
-     */
-    void setHomeConfiguration();
-
 public:
     /**
      * Constructor
@@ -78,8 +49,6 @@ public:
      * Destructor
      */
     ~CubePicker();
-
-    void setObjectID(int _obj);
 };
 
 #endif

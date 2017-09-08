@@ -106,7 +106,7 @@ add_dependencies(baxter_display           ${${PROJECT_NAME}_EXPORTED_TARGETS}
 ## Specify libraries to link a library or executable target against
 target_link_libraries(baxter_controller                            ${catkin_LIBRARIES} )
 target_link_libraries(flatpack_action_provider  flatpack_furniture ${catkin_LIBRARIES} )
-target_link_libraries(tower_action_provider                        ${catkin_LIBRARIES} )
+target_link_libraries(tower_action_provider     flatpack_furniture ${catkin_LIBRARIES} )
 target_link_libraries(hsv_detector                                 ${catkin_LIBRARIES} )
 target_link_libraries(modular_action_provider   flatpack_furniture ${catkin_LIBRARIES} )
 target_link_libraries(sp_pred_action_provider   flatpack_furniture ${catkin_LIBRARIES} )

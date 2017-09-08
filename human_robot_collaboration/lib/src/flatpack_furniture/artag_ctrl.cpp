@@ -253,7 +253,7 @@ bool ARTagCtrl::pickARTag()
             ++cnt_ik_fail;
         }
 
-        if (cnt_ik_fail == 10)      return false;
+        if (cnt_ik_fail == 10)      { return false; }
     }
 
     return false;
