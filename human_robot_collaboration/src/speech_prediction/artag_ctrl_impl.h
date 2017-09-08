@@ -24,7 +24,42 @@
  */
 class ARTagCtrlImpl : public ARTagCtrl
 {
-private:
+protected:
+    /**
+     * Determines if a contact occurred by reading the IR sensor and looking for
+     * eventual squish events. Since the SDK does not allow for setting custom squish params,
+     * the latter can often fail so there is a check that prevents the end-effector from going
+     * too low if this happens.
+     *
+     * @return true/false if success/failure
+     */
+    bool determineContactCondition()
+    {
+        if (hasCollidedIR("strict") || hasCollidedCD())
+        {
+            if (hasCollidedCD())
+            {
+                moveArm("up", 0.002);
+            }
+            ROS_INFO("Collision!");
+            return true;
+        }
+        else
+        {
+            if (getAction() == ACTION_GET      ||
+                getAction() == ACTION_GET_PASS)
+            {
+                if (getPos().z < -0.32)
+                {
+                    ROS_INFO("Object reached!");
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    };
+
     /**
      * Computes object-specific (and pose-specific) offsets in order for the robot
      * to grip the object not in the center of its coordinate system but where
@@ -41,7 +76,7 @@ private:
         {
             if      (getObjectNameFromDB(ClientTemplate<int>::getObjectID()) ==          "foot")
             {
-
+                _y_offs = 0.0545;
             }
             else if (getObjectNameFromDB(ClientTemplate<int>::getObjectID()) == "bracket_front")
             {
@@ -62,7 +97,7 @@ public:
      * Constructor
      */
     ARTagCtrlImpl(std::string _name, std::string _limb, bool _use_robot = true) :
-                  ARTagCtrl(_name, _limb, _use_robot)
+                                            ARTagCtrl(_name, _limb, _use_robot)
     {
         setHomeConfiguration();
         setArmSpeed(getArmSpeed() / 1.3);

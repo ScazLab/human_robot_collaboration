@@ -103,9 +103,10 @@ protected:
      * eventual squish events. Since the SDK does not allow for setting custom squish params,
      * the latter can often fail so there is a check that prevents the end-effector from going
      * too low if this happens.
+     *
      * @return true/false if success/failure
      */
-    bool determineContactCondition();
+    virtual bool determineContactCondition();
 
     /**
      * Computes object-specific (and pose-specific) offsets in order for the robot

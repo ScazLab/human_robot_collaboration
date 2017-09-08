@@ -40,7 +40,7 @@ ARTagCtrl::ARTagCtrl(std::string _name, std::string _limb, bool _use_robot) :
 
 bool ARTagCtrl::getObject()
 {
-    if (!hoverAbovePool())          return false;
+    if (!homePoseStrict())          return false;
     ros::Duration(0.05).sleep();
 
     if (getObjectIDs().size() >  1)
@@ -50,13 +50,14 @@ bool ARTagCtrl::getObject()
         if (id == -1)       return false;
         setObjectID(id);
         ROS_INFO_COND(print_level>=1, "[%s] Chosen object with ID %i",
-                                    getLimb().c_str(),
-                                    ClientTemplate<int>::getObjectID());
+               getLimb().c_str(), ClientTemplate<int>::getObjectID());
     }
 
     if (!pickARTag())               return false;
     if (!close())                   return false;
-    if (!moveArm("up", 0.4))        return false;
+    ros::Duration(2.0).sleep();
+    if (!open())                    return false;
+    if (!homePoseStrict())          return false;
 
     return true;
 }
@@ -68,6 +69,7 @@ bool ARTagCtrl::passObject()
     ros::Duration(1.0).sleep();
     if (!waitForUserCuffUpperFb())      return false;
     if (!open())                        return false;
+    ros::Duration(0.2).sleep();
     if (!homePoseStrict())              return false;
 
     return true;
@@ -167,7 +169,7 @@ bool ARTagCtrl::waitForOtherArm(double _wait_time, bool disable_coll_av)
 
 bool ARTagCtrl::pickARTag()
 {
-    ROS_INFO("[%s] Start Picking up tag..", getLimb().c_str());
+    ROS_INFO_COND(print_level>=0, "[%s] Start Picking up tag..", getLimb().c_str());
 
     if (!isIRok())
     {
@@ -195,9 +197,9 @@ bool ARTagCtrl::pickARTag()
     double z =       getPos().z -   0.15;
 
     geometry_msgs::Quaternion q;
-    if (!computeOrientation(q))           { return false; }
+    if (not computeOrientation(q))           { return false; }
 
-    ROS_INFO("Going to: %g %g %g", x, y, z);
+    ROS_INFO_COND(print_level>=1, "Going to: %g %g %g", x, y, z);
 
     if (!goToPose(x, y, z, q.x, q.y, q.z, q.w, "loose"))
     {
@@ -223,7 +225,7 @@ bool ARTagCtrl::pickARTag()
         double y = getObjectPos().y + offs_y;
         double z = z_start - getArmSpeed() * elap_time;
 
-        ROS_INFO_COND(print_level>=2, "Time %g Going to: %g %g %g Position: %g %g %g",
+        ROS_INFO_COND(print_level>=3, "Time %g Going to: %g %g %g Position: %g %g %g",
                               elap_time, x, y, z, getPos().x, getPos().y, getPos().z);
 
         if (goToPoseNoCheck(x,y,z,q.x, q.y, q.z, q.w))
