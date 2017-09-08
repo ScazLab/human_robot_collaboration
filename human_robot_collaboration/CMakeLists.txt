@@ -75,11 +75,9 @@ add_executable(hsv_detector             src/modular_furniture/hsv_detector.cpp)
 add_executable(modular_action_provider  src/modular_furniture/tool_picker.h
                                         src/modular_furniture/tool_picker.cpp
                                         src/modular_furniture/part_picker.h
-                                        src/modular_furniture/part_picker.cpp
                                         src/modular_furniture/action_provider.cpp)
 add_executable(sp_pred_action_provider  src/speech_prediction/artag_ctrl_impl.h
                                         src/modular_furniture/part_picker.h
-                                        src/modular_furniture/part_picker.cpp
                                         src/speech_prediction/action_provider.cpp)
 add_executable(baxter_display           src/baxter_display.cpp)
 
