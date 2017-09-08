@@ -6,8 +6,7 @@ using namespace std;
 using namespace human_robot_collaboration_msgs;
 
 ARTagCtrl::ARTagCtrl(std::string _name, std::string _limb, bool _use_robot) :
-                     ArmCtrl(_name,_limb, _use_robot), ARucoClient(_name, _limb),
-                     elap_time(0)
+                     ArmCtrl(_name,_limb, _use_robot), ARucoClient(_name, _limb)
 {
     setHomeConfiguration();
     setState(START);
@@ -235,11 +234,11 @@ bool ARTagCtrl::pickARTag()
         if (res == true)
         {
             cnt_ik_fail = 0;
-            if (new_elap_time - elap_time > 0.02)
-            {
-                ROS_WARN("\t\t\t\t\tTime elapsed: %g", new_elap_time - elap_time);
-            }
-            elap_time = new_elap_time;
+            // if (new_elap_time - elap_time > 0.02)
+            // {
+            //     ROS_WARN("\t\t\t\t\tTime elapsed: %g", new_elap_time - elap_time);
+            // }
+            // elap_time = new_elap_time;
 
             if(hasCollidedIR("strict"))
             {

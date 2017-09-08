@@ -7,7 +7,7 @@ using namespace baxter_core_msgs;
 
 ToolPicker::ToolPicker(string _name, string _limb, bool _use_robot) :
                        HoldCtrl(_name,_limb, _use_robot),
-                       CartesianEstimatorClient(_name, _limb), elap_time(0)
+                       CartesianEstimatorClient(_name, _limb)
 {
     setHomeConfiguration();
 
@@ -211,11 +211,11 @@ bool ToolPicker::pickUpObject()
         if (goToPoseNoCheck(x,y,z,q.x, q.y, q.z, q.w))
         {
             cnt_ik_fail = 0;
-            if (new_elap_time - elap_time > 0.02)
-            {
-                ROS_WARN("\t\t\t\t\tTime elapsed: %g", new_elap_time - elap_time);
-            }
-            elap_time = new_elap_time;
+            // if (new_elap_time - elap_time > 0.02)
+            // {
+            //     ROS_WARN("\t\t\t\t\tTime elapsed: %g", new_elap_time - elap_time);
+            // }
+            // elap_time = new_elap_time;
 
             if (determineContactCondition())
             {

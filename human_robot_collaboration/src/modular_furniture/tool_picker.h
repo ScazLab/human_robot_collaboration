@@ -26,8 +26,6 @@
 class ToolPicker : public HoldCtrl, public CartesianEstimatorClient
 {
 private:
-    double elap_time;
-
     std::vector<double> squish_thresholds;
 
     /**

@@ -21,8 +21,6 @@
 class CubePicker : public ArmCtrl, public ARucoClient
 {
 private:
-    double elap_time;
-
     /**
      * [moveObjectTowardHuman description]
      * @return true/false if success/failure

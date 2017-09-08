@@ -22,11 +22,6 @@ class PartPicker : public ARTagCtrl
 {
 protected:
     /**
-     * Sets the joint-level configuration for the home position
-     */
-    void setHomeConfiguration();
-
-    /**
      * [passObject description]
      * @return true/false if success/failure
      */

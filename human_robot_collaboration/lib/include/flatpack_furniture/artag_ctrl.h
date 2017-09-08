@@ -27,9 +27,6 @@
 class ARTagCtrl : public ArmCtrl, public ARucoClient
 {
 private:
-    // Elapsed time (useful for testing purposes)
-    double elap_time;
-
     /**
      * Picks up the selected object by using ARuco's info on the tag
      *

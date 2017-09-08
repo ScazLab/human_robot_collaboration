@@ -17,11 +17,6 @@ PartPicker::PartPicker(std::string _name, std::string _limb, bool _use_robot) :
     if (!callAction(ACTION_HOME)) setState(ERROR);
 }
 
-void PartPicker::setHomeConfiguration()
-{
-    ArmCtrl::setHomeConfiguration("pool");
-}
-
 bool PartPicker::passObject()
 {
     if (getPrevAction() != ACTION_GET)  return false;

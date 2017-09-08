@@ -6,7 +6,7 @@ using namespace baxter_core_msgs;
 #define VERTICAL_ORI_R2         0.1, 1.0, 0.0, 0.0
 
 ARTagHoldCtrl::ARTagHoldCtrl(string _name, string _limb, bool _use_robot) :
-                             ARTagCtrl(_name, _limb, _use_robot), elap_time(0)
+                             ARTagCtrl(_name, _limb, _use_robot)
 {
     setHomeConfiguration();
 
@@ -87,11 +87,11 @@ bool ARTagHoldCtrl::pickARTag()
         if (goToPoseNoCheck(x,y,z,q.x, q.y, q.z, q.w))
         {
             cnt_ik_fail = 0;
-            if (new_elap_time - elap_time > 0.02)
-            {
-                ROS_WARN("\t\t\t\t\tTime elapsed: %g", new_elap_time - elap_time);
-            }
-            elap_time = new_elap_time;
+            // if (new_elap_time - elap_time > 0.02)
+            // {
+            //     ROS_WARN("\t\t\t\t\tTime elapsed: %g", new_elap_time - elap_time);
+            // }
+            // elap_time = new_elap_time;
 
             if (determineContactCondition())
             {

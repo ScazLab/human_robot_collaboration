@@ -16,9 +16,6 @@
 #ifndef __ARTAG_HOLD_CTRL__
 #define __ARTAG_HOLD_CTRL__
 
-#include <stdlib.h>
-#include <time.h>
-
 #include "flatpack_furniture/artag_ctrl.h"
 
 /**
@@ -28,8 +25,6 @@
 class ARTagHoldCtrl : public ARTagCtrl
 {
 private:
-    double elap_time;
-
     /**
      * Picks up the selected object by using ARuco's info on the tag
      *

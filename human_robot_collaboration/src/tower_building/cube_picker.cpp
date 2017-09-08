@@ -5,7 +5,7 @@ using namespace baxter_core_msgs;
 
 CubePicker::CubePicker(std::string _name, std::string _limb, bool _use_robot) :
                        ArmCtrl(_name,_limb, _use_robot),
-                       ARucoClient(_name, _limb), elap_time(0)
+                       ARucoClient(_name, _limb)
 {
     setHomeConfiguration();
 
@@ -137,11 +137,11 @@ bool CubePicker::pickARTag()
         if (goToPoseNoCheck(x,y,z,POOL_ORI_L))
         {
             cnt_ik_fail = 0;
-            if (new_elap_time - elap_time > 0.02)
-            {
-                ROS_WARN("\t\t\t\t\tTime elapsed: %g", new_elap_time - elap_time);
-            }
-            elap_time = new_elap_time;
+            // if (new_elap_time - elap_time > 0.02)
+            // {
+            //     ROS_WARN("\t\t\t\t\tTime elapsed: %g", new_elap_time - elap_time);
+            // }
+            // elap_time = new_elap_time;
 
             if(hasCollidedIR("strict"))
             {
