@@ -100,12 +100,12 @@ bool ArmCtrl::serviceCb(human_robot_collaboration_msgs::DoAction::Request  &req,
     setObjectID(-1);
 
     string action = req.action;
-    std::vector<int> object_ids;
+    std::vector<int> obj_ids;
     std::string objs_str = "";
 
     for (size_t i = 0; i < req.objects.size(); ++i)
     {
-        object_ids.push_back(req.objects[i]);
+        obj_ids.push_back(req.objects[i]);
         objs_str += toString(req.objects[i]) + ", ";
     }
     objs_str = objs_str.substr(0, objs_str.size()-2); // Remove the last ", "
@@ -137,30 +137,30 @@ bool ArmCtrl::serviceCb(human_robot_collaboration_msgs::DoAction::Request  &req,
         action != std::string(ACTION_HOLD) +   "_leg" && action != std::string(ACTION_HOLD) + "_top" &&
         action != "start_" + std::string(ACTION_HOLD) && action != "end_" + std::string(ACTION_HOLD))
     {
-        setObjectIDs(areObjectsInDB(object_ids));
+        setObjectIDs(areObjectsInDB(obj_ids));
 
-        if      (object_ids.size() == 0)
+        if      (getObjectIDs().size() == 0)
         {
             res.response = OBJ_NOT_IN_DB;
             ROS_ERROR("[%s] Requested object(s) are not in the database! Action %s",
                                                  getLimb().c_str(), action.c_str());
             return true;
         }
-        else if (object_ids.size() == 1)
+        else if (getObjectIDs().size() == 1)
         {
-            setObjectID(object_ids[0]);
+            setObjectID(getObjectIDs()[0]);
             // ROS_INFO("I will perform action %s on object with ID %i",
             //                           action.c_str(), getObjectID());
         }
-        else if (object_ids.size() >  1)
+        else if (getObjectIDs().size() >  1)
         {
-            setObjectID(chooseObjectID(object_ids));
+            setObjectID(chooseObjectID(getObjectIDs()));
         }
     }
     else if (action == ACTION_HOLD || action == std::string(ACTION_HOLD) + "_leg" ||
                                       action == std::string(ACTION_HOLD) + "_top"   )
     {
-        setObjectIDs(object_ids);
+        setObjectIDs(getObjectIDs());
     }
 
     startThread();
@@ -292,7 +292,8 @@ std::vector<int> ArmCtrl::areObjectsInDB(const std::vector<int> &_objs)
         }
     }
 
-    ROS_DEBUG("[%s] Found %lu objects in DB.", getLimb().c_str(), res.size());
+    ROS_INFO_COND(print_level>=2,"[%s] Found %lu objects in DB.",
+                                  getLimb().c_str(), res.size());
 
     return res;
 }

@@ -37,6 +37,7 @@ RobotInterface::RobotInterface(string _name, string _limb, bool _use_robot, doub
 
     nh.param<int> ("print_level", print_level, 0);
 
+    ROS_INFO_COND(print_level>=0, "[%s] Print Level set to %i", getLimb().c_str(), print_level);
     ROS_INFO_COND(print_level>=1, "[%s] ctrlFreq set to %g [Hz]", getLimb().c_str(), getCtrlFreq());
     ROS_INFO_COND(print_level>=1, "[%s] Force Threshold : %g", getLimb().c_str(), force_thres);
     ROS_INFO_COND(print_level>=1, "[%s] Force Filter Variance: %g", getLimb().c_str(), filt_variance);
