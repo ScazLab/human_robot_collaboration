@@ -13,8 +13,8 @@
  * Public License for more details
 **/
 
-#ifndef __BRACKETS_PICKER_H__
-#define __BRACKETS_PICKER_H__
+#ifndef __ARTAG_HOLD_CTRL__
+#define __ARTAG_HOLD_CTRL__
 
 #include <stdlib.h>
 #include <time.h>
@@ -36,18 +36,6 @@ private:
      * @return true/false if success/failure
      */
     bool pickARTag();
-
-    /**
-     * [startHold description]
-     * @return true/false if success/failure
-     */
-    bool startHold();
-
-    /**
-     * [endHold description]
-     * @return true/false if success/failure
-     */
-    bool endHold();
 
     /**
      * Determines if a contact occurred by reading the IR sensor and looking for
@@ -78,20 +66,6 @@ private:
      * @return true/false if success/failure
      */
     bool computeOrientation(geometry_msgs::Quaternion &_q);
-
-protected:
-    /**
-     * [goHoldPose description]
-     * @param  _height [description]
-     * @return        true/false if success/failure
-     */
-    bool goHoldPose(double _height);
-
-    /**
-     * [holdObject description]
-     * @return true/false if success/failure
-     */
-    bool holdObject();
 
 public:
     /**

@@ -36,46 +36,13 @@ bool HoldCtrl::handOver()
     if (!waitForOtherArm(120.0, true))    return false;
     if (!close())                         return false;
     ros::Duration(1.2).sleep();
-    if (!goHoldPose(0.24))                return false;
+    if (!goHandOverPose())                return false;
     // ros::Duration(1.0).sleep();
     // if (!waitForForceInteraction(180.0))  return false;
     // if (!open())                          return false;
     // ros::Duration(1.0).sleep();
     // if (!homePoseStrict())         return false;
     setSubState("");
-
-    return true;
-}
-
-
-bool HoldCtrl::startHold()
-{
-    double time=getObjectIDs().size()>=2?getObjectIDs()[0]:30.0;
-
-    if (!goHoldPose(0.30))              return false;
-    ros::Duration(1.0).sleep();
-    if (!waitForUserCuffUpperFb(time))  return false;
-    if (!close())                       return false;
-    ros::Duration(1.0).sleep();
-
-    return true;
-}
-
-bool HoldCtrl::endHold()
-{
-    double time=getObjectIDs().size()>=2?getObjectIDs()[1]:180.0;
-
-    if (!waitForUserCuffUpperFb(time))  return false;
-    if (!open())                        return false;
-    ros::Duration(1.0).sleep();
-    if (!homePoseStrict())              return false;
-    return true;
-}
-
-bool HoldCtrl::holdObject()
-{
-    if (!startHold())            return false;
-    if (!endHold())              return false;
 
     return true;
 }
@@ -132,10 +99,10 @@ bool HoldCtrl::prepare4HandOver()
     return goToPose(0.61, 0.15, Z_LOW+0.02, HANDOVER_ORI_R);
 }
 
-bool HoldCtrl::goHoldPose(double height)
+bool HoldCtrl::goHandOverPose()
 {
-    ROS_INFO("[%s] Going to hold position..", getLimb().c_str());
-    return goToPose(0.80, -0.4, height, HORIZONTAL_ORI_R);
+    ROS_INFO("[%s] Going to handover position..", getLimb().c_str());
+    return goToPose(0.80, -0.4, 0.24, HORIZONTAL_ORI_R);
 }
 
 HoldCtrl::~HoldCtrl()

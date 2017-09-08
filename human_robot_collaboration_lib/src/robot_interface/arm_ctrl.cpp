@@ -580,6 +580,70 @@ bool ArmCtrl::hoverAbovePool(string _mode, bool _disable_coll_av)
     }
 }
 
+bool ArmCtrl::startHold()
+{
+    if (Gripper::type() == "suction")
+    {
+        return false;
+    }
+
+    double time=getObjectIDs().size()>=2?getObjectIDs()[0]:30.0;
+
+    if (!goHoldPose())                  { return false; }
+    ros::Duration(1.0).sleep();
+    if (!waitForUserCuffUpperFb(time))  { return false; }
+    if (!close())                       { return false; }
+    ros::Duration(1.0).sleep();
+
+    return true;
+}
+
+bool ArmCtrl::endHold()
+{
+    if (Gripper::type() == "suction")
+    {
+        return false;
+    }
+
+    double time=getObjectIDs().size()>=2?getObjectIDs()[1]:180.0;
+
+    if (!waitForUserCuffUpperFb(time))  { return false; }
+    if (!open())                        { return false; }
+    ros::Duration(1.0).sleep();
+    if (!homePoseStrict())              { return false; }
+
+    return true;
+}
+
+bool ArmCtrl::holdObject()
+{
+    if (Gripper::type() == "suction")
+    {
+        return false;
+    }
+
+    if (!startHold()) { return false; }
+    if (!endHold())   { return false; }
+
+    return true;
+}
+
+bool ArmCtrl::goHoldPose()
+{
+    ROS_INFO("[%s] Going to %s position..", getLimb().c_str(), getAction().c_str());
+
+    if      (getAction() == string(ACTION_HOLD) + "_top")
+    {
+        return goToPose(0.72, -0.31, 0.032, 0.54, 0.75, 0.29,0.22);
+    }
+    else if (getAction() == string(ACTION_HOLD) + "_top")
+    {
+        return goToPose(0.80, -0.4, 0.3, HORIZONTAL_ORI_R);
+    }
+
+    return false;
+}
+
 bool ArmCtrl::homePoseStrict(bool disable_coll_av)
 {
     ROS_INFO("[%s] Going to home position strict..", getLimb().c_str());

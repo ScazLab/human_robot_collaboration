@@ -22,18 +22,6 @@ class HoldCtrl : public ArmCtrl
 {
 private:
     /**
-     * [startHold description]
-     * @return true/false if success/failure
-     */
-    bool startHold();
-
-    /**
-     * [endHold description]
-     * @return true/false if success/failure
-     */
-    bool endHold();
-
-    /**
      * [prepare4HandOver description]
      * @return true/false if success/failure
      */
@@ -54,13 +42,7 @@ protected:
      * @param  height [description]
      * @return        true/false if success/failure
      */
-    virtual bool goHoldPose(double height);
-
-    /**
-     * [holdObject description]
-     * @return true/false if success/failure
-     */
-    bool holdObject();
+    bool goHandOverPose();
 
     /**
      * [handOver description]

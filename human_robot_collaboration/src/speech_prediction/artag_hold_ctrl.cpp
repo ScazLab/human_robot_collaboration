@@ -111,38 +111,6 @@ bool ARTagHoldCtrl::pickARTag()
     return false;
 }
 
-bool ARTagHoldCtrl::holdObject()
-{
-    if (!startHold())            return false;
-    if (!endHold())              return false;
-
-    return true;
-}
-
-bool ARTagHoldCtrl::startHold()
-{
-    double time=getObjectIDs().size()>=2?getObjectIDs()[0]:30.0;
-
-    if (!goHoldPose(0.30))              return false;
-    ros::Duration(1.0).sleep();
-    if (!waitForUserCuffUpperFb(time))  return false;
-    if (!close())                       return false;
-    ros::Duration(1.0).sleep();
-
-    return true;
-}
-
-bool ARTagHoldCtrl::endHold()
-{
-    double time=getObjectIDs().size()>=2?getObjectIDs()[1]:180.0;
-
-    if (!waitForUserCuffUpperFb(time))  return false;
-    if (!open())                        return false;
-    ros::Duration(1.0).sleep();
-    if (!homePoseStrict())              return false;
-    return true;
-}
-
 bool ARTagHoldCtrl::determineContactCondition()
 {
     if (hasCollidedIR("strict") || hasCollidedCD())
@@ -205,18 +173,6 @@ bool ARTagHoldCtrl::computeOrientation(geometry_msgs::Quaternion &_q)
     }
 
     return true;
-}
-
-bool ARTagHoldCtrl::goHoldPose(double _height)
-{
-    ROS_INFO("[%s] Going to %s position..", getLimb().c_str(), getAction().c_str());
-
-    if (getAction() == string(ACTION_HOLD) + "_top")
-    {
-        return goToPose(0.72, -0.31, 0.032, 0.54, 0.75, 0.29,0.22);
-    }
-
-    return goToPose(0.80, -0.4, _height, HORIZONTAL_ORI_R);
 }
 
 ARTagHoldCtrl::~ARTagHoldCtrl()

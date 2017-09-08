@@ -411,6 +411,37 @@ protected:
      */
     virtual void setSubState(const std::string& _sub_state);
 
+    /********************************************************************/
+    /*                         HOLD CAPABILITIES                        */
+    /********************************************************************/
+    /**
+     * Starts the hold behavior. Only available if gripper is electric.
+     *
+     * @return true/false if success/failure
+     */
+    bool startHold();
+
+    /**
+     * Ends the hold behavior. Only available if gripper is electric.
+     * @return true/false if success/failure
+     */
+    bool endHold();
+
+    /**
+     * Holds the object. Only available if gripper is electric.
+     *
+     * @return true/false if success/failure
+     */
+    bool holdObject();
+
+    /**
+     * Reaches the hold position from which to initiate the holding behavior.
+     * Right now two different hold positions are allowed: hold_leg and hold_top
+     *
+     * @return        true/false if success/failure
+     */
+    bool goHoldPose();
+
 public:
     /**
      * Constructor
