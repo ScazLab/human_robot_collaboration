@@ -50,9 +50,6 @@ notifications:
     - secure: DHrr+QWmiliV0O3EvNUqqPYiuqqBkvYSwxIR+ufyDOCo2itGNakOzfmcJP0QEBBRvz6R84SqNPq4xxHwrnFJ9T82gfyiDznStptCS0j2+JVlFkvDYA+K9ZbJZcBLzg812S6H6me+0rdS1Ho0rI8d5uIK6DcLHR0inBE26AKOLmvpFfoGqfBPDxOftJR9s/vk9hl8hkj6Z/3F7w45VKWHCI4pqaiFxcVoQ+jS9BajB5eDmCglxD8yHkL06hsMcDw27eOyKgsg2mt0A+VETCCt+9GtYraSDyxPvm2oOt7L99spVmWfURtmZxSBwRmeLxVdamBKdGJPH7TpzLFR6VinGIbdOk87ptGKgVMSMsOQMHFlEKY+3zNqBkAE4Q34es+JJA0r1ZSIDXj10VUBQ9CXkeKr3782sdGNepMtXUkJM2xNNsUo8ibKfcK7CA3vOcQWjYJtAt+2F5OqRNDUFWH0L3LloCHyY4cVywBTC0hNdfOofE0e9YZqs6et8loVw+d3ehmYw1TdCOZCzItD4RMQ7DYoc6KCMRX5fErRAYqI2ClHx39j+4F85oUTJxyhklQswAbfg6i5L+o5EgPjH/JuEqRuSw7/dKyv/QcCxn4FsAv45jw7/P69rpSfNougNggWUuIDx2AeFzAFge1VEfeJcUE9MdPgcoBI0dOr1TejTrM=
     on_success: change
     on_failure: always
-
-# Configuration variables. All variables are global now, but this can be used to
-# trigger a build matrix for different ROS distributions if desired.
 env:
   global:
   - ROS_CI_DESKTOP="`lsb_release -cs`"
@@ -101,9 +98,6 @@ matrix:
 
 # Install system dependencies, namely a very barebones ROS setup.
 before_install:
-  # - echo $ROS_CI_DESKTOP
-  # - echo $ROS_DISTRO
-  # - echo `lsb_release -cs`
   - sudo sh -c "echo \"deb http://packages.ros.org/ros/ubuntu $ROS_CI_DESKTOP main\" > /etc/apt/sources.list.d/ros-latest.list"
   - wget http://packages.ros.org/ros.key -O - | sudo apt-key add -
   - sudo apt-get update -qq
@@ -113,28 +107,21 @@ before_install:
   - sudo rosdep init
   - rosdep update
 
-# Create a catkin workspace with the package under integration.
+# Create a catkin workspace with the package under CI
 install:
   - mkdir -p ~/catkin_ws/src
-  - cd ~/catkin_ws/
-  - catkin init
-  # Create the devel/setup.bash (run catkin_make with an empty workspace) and
-  # source it to set the path variables.
-  - cd ~/catkin_ws
-  - catkin build
+  - cd ~/catkin_ws/ && catkin init
+  - cd ~/catkin_ws/ && catkin build
   - source devel/setup.bash
-  # Add the package under integration to the workspace using a symlink.
-  - cd ~/catkin_ws/src
-  - ln -s $CI_SOURCE_PATH .
+  - cd ~/catkin_ws/src && ln -s $CI_SOURCE_PATH .
 
 # Install all dependencies, using wstool first and rosdep second.
 # wstool looks for a ROSINSTALL_FILE defined in the environment variables.
 before_script:
   # source dependencies: install using wstool.
-  - cd ~/catkin_ws/src
-  - wstool init
+  - cd ~/catkin_ws/src && wstool init
   - if [[ -f $ROSINSTALL_FILE ]] ; then wstool merge $ROSINSTALL_FILE ; fi
-  - wstool up
+  - cd ~/catkin_ws/src && wstool up
   # package depedencies: install using rosdep.
   - cd ~/catkin_ws
   - rosdep install -y --from-paths src --ignore-src --rosdistro $ROS_DISTRO
@@ -150,7 +137,7 @@ before_script:
 script:
   - source /opt/ros/$ROS_DISTRO/setup.bash
   - cd ~/catkin_ws
-  # To remove this -> libdc1394 error: Failed to initialize libdc1394
+  # To remove libdc1394 error: Failed to initialize libdc1394
   - sudo ln /dev/null /dev/raw1394
   # Build the repo
   - catkin build $REPO_NAME $( [ -f $CATKIN_OPTIONS ] && cat $CATKIN_OPTIONS )
