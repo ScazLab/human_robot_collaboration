@@ -35,19 +35,12 @@ protected:
      */
     bool determineContactCondition()
     {
-        if (hasCollidedIR("strict") || hasCollidedCD())
+        if (getAction() == ACTION_GET || getAction() == ACTION_GET_PASS)
         {
-            if (hasCollidedCD())
-            {
-                moveArm("up", 0.002);
-            }
-            ROS_INFO("Collision!");
-            return true;
-        }
-        else
-        {
-            if (getAction() == ACTION_GET      ||
-                getAction() == ACTION_GET_PASS)
+            if      (getObjectNameFromDB(ClientTemplate<int>::getObjectID()) == "foot_1" ||
+                     getObjectNameFromDB(ClientTemplate<int>::getObjectID()) == "foot_2" ||
+                     getObjectNameFromDB(ClientTemplate<int>::getObjectID()) == "foot_3" ||
+                     getObjectNameFromDB(ClientTemplate<int>::getObjectID()) == "foot_4"   )
             {
                 if (getPos().z < -0.32)
                 {
@@ -55,8 +48,16 @@ protected:
                     return true;
                 }
             }
+            else if (getObjectNameFromDB(ClientTemplate<int>::getObjectID()) == "front_1" ||
+                     getObjectNameFromDB(ClientTemplate<int>::getObjectID()) == "front_2"   )
+            {
+                if (getPos().z < -0.30)
+                {
+                    ROS_INFO("Object reached!");
+                    return true;
+                }
+            }
         }
-
         return false;
     };
 
@@ -74,13 +75,18 @@ protected:
     {
         if (getAction() == ACTION_GET || getAction() == ACTION_GET_PASS)
         {
-            if      (getObjectNameFromDB(ClientTemplate<int>::getObjectID()) ==          "foot")
+            if      (getObjectNameFromDB(ClientTemplate<int>::getObjectID()) == "foot_1" ||
+                     getObjectNameFromDB(ClientTemplate<int>::getObjectID()) == "foot_2" ||
+                     getObjectNameFromDB(ClientTemplate<int>::getObjectID()) == "foot_3" ||
+                     getObjectNameFromDB(ClientTemplate<int>::getObjectID()) == "foot_4"   )
             {
-                _y_offs = 0.0545;
+                _y_offs = -0.05022;
             }
-            else if (getObjectNameFromDB(ClientTemplate<int>::getObjectID()) == "bracket_front")
+            else if (getObjectNameFromDB(ClientTemplate<int>::getObjectID()) == "front_1" ||
+                     getObjectNameFromDB(ClientTemplate<int>::getObjectID()) == "front_2"   )
             {
-
+                _x_offs = +0.01091;
+                _y_offs = -0.03952;
             }
         }
         else
