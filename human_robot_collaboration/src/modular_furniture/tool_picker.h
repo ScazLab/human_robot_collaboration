@@ -107,13 +107,6 @@ protected:
     void setHomeConfiguration();
 
     /**
-     * [goHoldPose description]
-     * @param  height [description]
-     * @return        true/false if success/failure
-     */
-    bool goHoldPose(double height);
-
-    /**
      * Chooses the object to act upon according to some rule. This method
      * needs to be specialized in any derived class because it is dependent
      * on the type of action and the type of sensory capabilities available.

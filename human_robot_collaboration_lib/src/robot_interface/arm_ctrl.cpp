@@ -631,13 +631,21 @@ bool ArmCtrl::holdObject()
 
 bool ArmCtrl::goHoldPose()
 {
+    if (getLimb() == "left")
+    {
+        ROS_ERROR("[%s] %s action currently not implemented for %s arm!!",
+                  getLimb().c_str(), getAction().c_str(), getLimb().c_str());
+
+        return false;
+    }
+
     ROS_INFO("[%s] Going to %s position..", getLimb().c_str(), getAction().c_str());
 
     if      (getAction() == string(ACTION_HOLD) + "_top")
     {
-        return goToPose(0.72, -0.31, 0.032, 0.54, 0.75, 0.29,0.22);
+        return goToPose(0.72, -0.31, 0.032, 0.54, 0.75, 0.29, 0.22);
     }
-    else if (getAction() == string(ACTION_HOLD) + "_top")
+    else if (getAction() == string(ACTION_HOLD) + "_leg")
     {
         return goToPose(0.80, -0.4, 0.3, HORIZONTAL_ORI_R);
     }

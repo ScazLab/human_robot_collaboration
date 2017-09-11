@@ -416,18 +416,6 @@ void ToolPicker::resetSquish()
     nh.setParam("/collision/"+getLimb()+"/baxter/squish_thresholds", squish_params);
 }
 
-bool ToolPicker::goHoldPose(double height)
-{
-    ROS_INFO("[%s] Going to %s position..", getLimb().c_str(), getAction().c_str());
-
-    if (getAction() == string(ACTION_HOLD) + "_top")
-    {
-        return goToPose(0.72, -0.31, 0.032, 0.54, 0.75, 0.29,0.22);
-    }
-
-    return goToPose(0.80, -0.4, height, HORIZONTAL_ORI_R);
-}
-
 void ToolPicker::setHomeConfiguration()
 {
     ArmCtrl::setHomeConfiguration("pool");
