@@ -42,16 +42,29 @@ protected:
                      getObjectNameFromDB(ClientTemplate<int>::getObjectID()) == "foot_3" ||
                      getObjectNameFromDB(ClientTemplate<int>::getObjectID()) == "foot_4"   )
             {
-                if (getPos().z < -0.32)
+                if (getPos().z < -0.315)
                 {
                     ROS_INFO("Object reached!");
                     return true;
                 }
             }
             else if (getObjectNameFromDB(ClientTemplate<int>::getObjectID()) == "front_1" ||
-                     getObjectNameFromDB(ClientTemplate<int>::getObjectID()) == "front_2"   )
+                     getObjectNameFromDB(ClientTemplate<int>::getObjectID()) == "front_2" ||
+                     getObjectNameFromDB(ClientTemplate<int>::getObjectID()) ==   "top_1" ||
+                     getObjectNameFromDB(ClientTemplate<int>::getObjectID()) ==   "top_2" ||
+                     getObjectNameFromDB(ClientTemplate<int>::getObjectID()) ==  "back_1" ||
+                     getObjectNameFromDB(ClientTemplate<int>::getObjectID()) ==  "back_2"   )
             {
                 if (getPos().z < -0.30)
+                {
+                    ROS_INFO("Object reached!");
+                    return true;
+                }
+            }
+            if      (getObjectNameFromDB(ClientTemplate<int>::getObjectID()) == "screwdriver_1" ||
+                     getObjectNameFromDB(ClientTemplate<int>::getObjectID()) == "screwdriver_2"   )
+            {
+                if (getPos().z < -0.325)
                 {
                     ROS_INFO("Object reached!");
                     return true;
@@ -80,13 +93,29 @@ protected:
                      getObjectNameFromDB(ClientTemplate<int>::getObjectID()) == "foot_3" ||
                      getObjectNameFromDB(ClientTemplate<int>::getObjectID()) == "foot_4"   )
             {
-                _y_offs = -0.05022;
+                _y_offs = -0.05222;
             }
             else if (getObjectNameFromDB(ClientTemplate<int>::getObjectID()) == "front_1" ||
                      getObjectNameFromDB(ClientTemplate<int>::getObjectID()) == "front_2"   )
             {
                 _x_offs = +0.01091;
                 _y_offs = -0.03952;
+            }
+            else if (getObjectNameFromDB(ClientTemplate<int>::getObjectID()) == "top_1" ||
+                     getObjectNameFromDB(ClientTemplate<int>::getObjectID()) == "top_2"   )
+            {
+                _y_offs = -0.04183;
+            }
+            else if (getObjectNameFromDB(ClientTemplate<int>::getObjectID()) == "back_1" ||
+                     getObjectNameFromDB(ClientTemplate<int>::getObjectID()) == "back_2"   )
+            {
+                _x_offs = +0.00295;
+                _y_offs = -0.06204;
+            }
+            else if (getObjectNameFromDB(ClientTemplate<int>::getObjectID()) == "screwdriver_1" ||
+                     getObjectNameFromDB(ClientTemplate<int>::getObjectID()) == "screwdriver_2"   )
+            {
+                _y_offs = -0.08195;
             }
         }
         else
