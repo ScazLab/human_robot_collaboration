@@ -1,5 +1,13 @@
 <launch>
-    <!-- PERCEPTION -->
+    <!-- ARUCO -->
+    <include file="$(find human_robot_collaboration)/launch/baxter_aruco.launch">
+        <arg name="arm" value= "left" />
+    </include>
+
+    <!-- ROSBRIDGE -->
+    <include file="$(find rosbridge_server)/launch/rosbridge_websocket.launch" />
+
+    <!-- HSV DETECTION -->
     <node name="image_view_hsv" pkg="image_view" type="image_view" respawn="false" output="log">
         <remap from="image" to="/hsv_detector/image_result"/>
         <param name="autosize" value="true" />
@@ -9,9 +17,6 @@
         <remap from="image" to="/hsv_detector/image_result_thres"/>
         <param name="autosize" value="true" />
     </node> -->
-
-    <include file="$(find human_robot_collaboration)/launch/baxter_aruco.launch" />
-    <include file="$(find rosbridge_server)/launch/rosbridge_websocket.launch"/>
 
     <param name="hsv_detector/reference_frame" value="/base"/>
     <param name="hsv_detector/camera_frame"    value="/right_hand_camera"/>
@@ -52,12 +57,12 @@
     <arg name="useRobot"            default="true"/>
     <!-- If the system should use the robot or not (useful for debugging) -->
     <param name="action_provider/use_robot"             value="$(arg useRobot)"/>
+    <rosparam param="/print_level">0</rosparam>
 
-    <!-- If the robot will recover from an error or will wait for the external planner's decisions -->
-    <arg name="internalRecovery"    default="true"/>
-    <param name="action_provider/internal_recovery"     value="$(arg internalRecovery)"/>
-
-    <node pkg="human_robot_collaboration" type="modular_action_provider" name="modular_action_provider" output="screen"/>
+    <node pkg="human_robot_collaboration" type="modular_action_provider" name="modular_action_provider" output="screen">
+        <remap from="/markers/left"  to="/baxter_aruco_left/markers"/>
+        <remap from="/markers/right" to="/hsv_detector/objects"/>
+    </node>
 
     <!-- VISUALIZATION & MISC -->
     <!-- Parameter for speech pop up duration -->
