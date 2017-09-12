@@ -8,20 +8,8 @@ using namespace std;
 /*                                 SEGMENTED OBJECT                                 */
 /************************************************************************************/
 SegmentedObj::SegmentedObj(vector<double> _size) :
-                           name(""), is_there(false), size(_size), area_threshold(AREA_THRES),
-                           rect(cv::Point2f(0,0), cv::Size2f(0,0), 0.0)
-{
-    init();
-}
-
-SegmentedObj::SegmentedObj(string _name, vector<double> _size, int _area_thres) :
-                           name(_name), is_there(false), size(_size), area_threshold(_area_thres),
-                           rect(cv::Point2f(0,0), cv::Size2f(0,0), 0.0)
-{
-    init();
-}
-
-void SegmentedObj::init()
+                           name(""), is_there(false), id(-1), size(_size),
+                           area_threshold(AREA_THRES), rect(cv::Point2f(0,0), cv::Size2f(0,0), 0.0)
 {
     Rvec.create(3,1,CV_32FC1);
     Tvec.create(3,1,CV_32FC1);
@@ -30,6 +18,16 @@ void SegmentedObj::init()
     {
         Tvec.at<float>(i,0)=Rvec.at<float>(i,0)=-999999;
     }
+}
+
+SegmentedObj::SegmentedObj(string _name, int _id, vector<double> _size,
+                           int _area_thres) : SegmentedObj(_size)
+
+{
+    name           =       _name;
+    id             =         _id;
+    size           =       _size;
+    area_threshold = _area_thres;
 }
 
 bool SegmentedObj::detectObject(const cv::Mat& _in, cv::Mat& _out)
@@ -117,9 +115,9 @@ bool SegmentedObj::draw(cv::Mat &_img, const cv::Mat& _cam_mat,
     return res;
 }
 
-SegmentedObj::operator std::string()
+SegmentedObj::operator string()
 {
-    return std::string(name + " [" + toString(size[0]) + " "
+    return string(name + " [" + toString(size[0]) + " "
                                    + toString(size[1]) + "]");
 }
 
@@ -161,13 +159,13 @@ CartesianEstimator::CartesianEstimator(string _name) : ROSThreadImage(_name)
     startThread();
 }
 
-CartesianEstimator::CartesianEstimator(string _name, vector<string> _objs_name,
+CartesianEstimator::CartesianEstimator(string _name, vector<string> _objs_name, vector<int> _objs_id,
                                        cv::Mat _objs_size) : CartesianEstimator(_name)
 {
     ROS_ASSERT_MSG(_objs_size.cols == 2, "Objects' sizes should have two columns. "
-                   "%i found instead", _objs_size.cols);
+                                         "%i found instead", _objs_size.cols);
 
-    addObjects(_objs_name, _objs_size);
+    addObjects(_objs_name, _objs_id, _objs_size);
 }
 
 bool CartesianEstimator::publishObjects()
@@ -186,7 +184,7 @@ bool CartesianEstimator::publishObjects()
         {
             human_robot_collaboration_msgs::Object &object_cnt = objects_msg.objects.at(cnt);
             object_cnt.pose = objs[i]->pose;
-            object_cnt.id   = i;
+            object_cnt.id   = objs[i]->id;
             object_cnt.name = objs[i]->getName();
 
             geometry_msgs::Point cent;
@@ -231,7 +229,7 @@ void CartesianEstimator::internalThread()
         if (!img_empty)
         {
             {
-                std::lock_guard<std::mutex> lock(mutex_img);
+                lock_guard<mutex> lock(mutex_img);
                 img_in  = curr_img;
             }
             img_out = img_in.clone();
@@ -253,7 +251,7 @@ void CartesianEstimator::internalThread()
     }
 }
 
-bool CartesianEstimator::addObject(std::string _name, double _h, double _w)
+bool CartesianEstimator::addObject(string _name, int _id, double _h, double _w)
 {
     vector<double> size;
 
@@ -269,20 +267,26 @@ bool CartesianEstimator::addObject(std::string _name, double _h, double _w)
         size.push_back(_h);
     }
 
-    objs.push_back(new SegmentedObj(_name, size, getAreaThreshold()));
+    objs.push_back(new SegmentedObj(_name, _id, size, getAreaThreshold()));
 
     return true;
 }
 
-bool CartesianEstimator::addObjects(std::vector<std::string> _names, cv::Mat _o)
+bool CartesianEstimator::addObjects(vector<string> _names, vector<int> _ids, cv::Mat _o)
 {
+    if (_names.size() != _ids.size())
+    {
+        ROS_ERROR("Vector of names is different in size from the vector of ids!");
+        return false;
+    }
+
     clearObjs();
 
     bool res = true;
 
     for (int i = 0; i < _o.rows; ++i)
     {
-        res = res & addObject(_names[i], _o.at<float>(i, 0), _o.at<float>(i, 1));
+        res = res & addObject(_names[i], _ids[i], _o.at<float>(i, 0), _o.at<float>(i, 1));
     }
 
     return res;
@@ -304,18 +308,22 @@ bool CartesianEstimator::addObjects(XmlRpc::XmlRpcValue _params)
         for (XmlRpc::XmlRpcValue::iterator j=i->second.begin(); j!=i->second.end(); ++j)
         {
             // ROS_ASSERT(j->first.getType()==XmlRpc::XmlRpcValue::TypeString);
-            if (j->first=="size")
+            if      (j->first=="size")
             {
                 ROS_ASSERT(j->second.getType()==XmlRpc::XmlRpcValue::TypeArray);
                 ROS_ASSERT(j->second[0].getType()==XmlRpc::XmlRpcValue::TypeDouble);
                 ROS_ASSERT(j->second[1].getType()==XmlRpc::XmlRpcValue::TypeDouble);
-
-                res = res & addObject(static_cast<string>(i->first.c_str()),
-                              static_cast<double>(i->second["size"][0]),
-                              static_cast<double>(i->second["size"][1]));
+            }
+            else if (j->first=="id")
+            {
+                ROS_ASSERT(j->second.getType()==XmlRpc::XmlRpcValue::TypeInt);
             }
         }
 
+        res = res & addObject(static_cast<string>(i->first.c_str()),
+                              static_cast<int>(i->second["id"][0]),
+                              static_cast<double>(i->second["size"][0]),
+                              static_cast<double>(i->second["size"][1]));
     }
 
     return res;
@@ -360,7 +368,7 @@ string CartesianEstimator::objectDBToString()
     {
         if (objs[i])
         {
-            res = res + std::string(*objs[i]) + ", ";
+            res = res + string(*objs[i]) + ", ";
         }
     }
     res = res.substr(0, res.size()-2); // Remove the last ", "

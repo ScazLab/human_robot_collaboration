@@ -28,7 +28,8 @@ public:
 
     /* CONSTRUCTOR */
     SegmentedObjHSV(std::vector<double> _size, hsvColorRange _col);
-    SegmentedObjHSV(std::string _name, std::vector<double> _size, int _area_thres, hsvColorRange _col);
+    SegmentedObjHSV(std::string _name, int _id,
+                    std::vector<double> _size, int _area_thres, hsvColorRange _col);
 
     /* DESTRUCTOR */
     ~SegmentedObjHSV();
@@ -73,21 +74,27 @@ protected:
     /**
      * Adds an object to the database of objects.
      *
-     * @param h Its physical height in meters
-     * @param w Its physical width in meters
+     * @param _name its name
+     * @param _id   its id
+     * @param _h    its physical height in meters
+     * @param _w    its physical width in meters
+     * @param _hsv  its HSV color range
      *
      * @return true/false if success/failure
      */
-    bool addObject(std::string _name, double _h, double _w, hsvColorRange _hsv);
+    bool addObject(std::string _name, int _id, double _h, double _w, hsvColorRange _hsv);
 
     /**
      * Adds the full database of objects from a cv::Mat
      *
-     * @param _o the database of objects
-     * @return true/false if success/failure
+     * @param  _names the vector of object names
+     * @param  _ids   the vector of object ids
+     * @param  _o     the matrix of object sizes
+     * @param  _hsvs  the vector of HSV color ranges
+     * @return        true/false if success/failure
      */
-    bool addObjects(std::vector<std::string> _names, cv::Mat _o,
-                    std::vector<hsvColorRange> _hsvs);
+    bool addObjects(std::vector<std::string> _names, std::vector<int> _ids,
+                    cv::Mat _o, std::vector<hsvColorRange> _hsvs);
 
     /**
      * Creates the objects database from an XmlRpcValue::TypeStruct in the parameter server.

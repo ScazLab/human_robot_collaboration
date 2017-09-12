@@ -11,9 +11,9 @@ SegmentedObjHSV::SegmentedObjHSV(vector<double> _size, hsvColorRange _col) :
 
 }
 
-SegmentedObjHSV::SegmentedObjHSV(string _name, vector<double> _size, int _area_thres,
-                                 hsvColorRange _col) :
-                                 SegmentedObj(_name, _size, _area_thres), col(_col)
+SegmentedObjHSV::SegmentedObjHSV(string _name, int _id, vector<double> _size,
+                                 int _area_thres, hsvColorRange _col) :
+                                 SegmentedObj(_name, _id, _size, _area_thres), col(_col)
 {
 
 }
@@ -136,7 +136,8 @@ CartesianEstimatorHSV::CartesianEstimatorHSV(string  _name) : CartesianEstimator
     }
 }
 
-bool CartesianEstimatorHSV::addObject(string _name, double _h, double _w, hsvColorRange _hsv)
+bool CartesianEstimatorHSV::addObject(string _name, int _id,
+                                      double _h, double _w, hsvColorRange _hsv)
 {
     vector<double> size;
 
@@ -152,14 +153,20 @@ bool CartesianEstimatorHSV::addObject(string _name, double _h, double _w, hsvCol
         size.push_back(_h);
     }
 
-    objs.push_back(new SegmentedObjHSV(_name, size, getAreaThreshold(), _hsv));
+    objs.push_back(new SegmentedObjHSV(_name, _id, size, getAreaThreshold(), _hsv));
 
     return true;
 }
 
-bool CartesianEstimatorHSV::addObjects(vector<string> _names, cv::Mat _o,
-                                       vector<hsvColorRange> _hsvs)
+bool CartesianEstimatorHSV::addObjects(vector<string> _names, vector<int> _ids,
+                                       cv::Mat _o, vector<hsvColorRange> _hsvs)
 {
+    if (_names.size() != _ids.size())
+    {
+        ROS_ERROR("Vector of names is different in size from the vector of ids!");
+        return false;
+    }
+
     if (_o.rows != int(_hsvs.size()))
     {
         ROS_ERROR("Rows of the matrix should be equal to the size of the hsv color vector!");
@@ -172,7 +179,7 @@ bool CartesianEstimatorHSV::addObjects(vector<string> _names, cv::Mat _o,
 
     for (int i = 0; i < _o.rows; ++i)
     {
-        res = res & addObject(_names[i], _o.at<float>(i, 0), _o.at<float>(i, 1), _hsvs[i]);
+        res = res & addObject(_names[i], _ids[i], _o.at<float>(i, 0), _o.at<float>(i, 1), _hsvs[i]);
     }
 
     return res;
@@ -194,13 +201,17 @@ bool CartesianEstimatorHSV::addObjects(XmlRpc::XmlRpcValue _params)
         for (XmlRpc::XmlRpcValue::iterator j=i->second.begin(); j!=i->second.end(); ++j)
         {
             // ROS_ASSERT(j->first.getType()==XmlRpc::XmlRpcValue::TypeString);
-            if (j->first=="size")
+            if     (j->first=="size")
             {
                 ROS_ASSERT(j->second.getType()==XmlRpc::XmlRpcValue::TypeArray);
                 ROS_ASSERT(j->second[0].getType()==XmlRpc::XmlRpcValue::TypeDouble);
                 ROS_ASSERT(j->second[1].getType()==XmlRpc::XmlRpcValue::TypeDouble);
             }
-            if (j->first=="HSV")
+            else if (j->first=="id")
+            {
+                ROS_ASSERT(j->second.getType()==XmlRpc::XmlRpcValue::TypeInt);
+            }
+            else if (j->first=="HSV")
             {
                 ROS_ASSERT(j->second.getType()==XmlRpc::XmlRpcValue::TypeStruct);
                 ROS_ASSERT(j->second["H"].getType()==XmlRpc::XmlRpcValue::TypeArray);
@@ -217,6 +228,7 @@ bool CartesianEstimatorHSV::addObjects(XmlRpc::XmlRpcValue _params)
         }
 
         res = res & addObject(static_cast<string>(i->first.c_str()),
+                              static_cast<int>(i->second["id"][0]),
                               static_cast<double>(i->second["size"][0]),
                               static_cast<double>(i->second["size"][1]),
                               hsvColorRange(i->second["HSV"]["H"], i->second["HSV"]["S"], i->second["HSV"]["V"]));

@@ -47,6 +47,9 @@ private:
     bool is_there;
 
 public:
+    // ID of the object
+    int id;
+
     // Real size of the object in meters. We consider only rectangular shapes.
     std::vector<double> size;
 
@@ -64,15 +67,10 @@ public:
 
     /* CONSTRUCTOR */
     explicit SegmentedObj(std::vector<double> _size);
-    SegmentedObj(std::string _name, std::vector<double> _size, int _area_thres);
+    SegmentedObj(std::string _name, int _id, std::vector<double> _size, int _area_thres);
 
     /* DESTRUCTOR */
     virtual ~SegmentedObj();
-
-    /**
-     * Class initializer
-     */
-    void init();
 
     /**
      * Detects the object in the image
@@ -234,25 +232,29 @@ protected:
     /**
      * Adds an object to the database of objects.
      *
-     * @param h Its physical height in meters
-     * @param w Its physical width in meters
+     * @param _name its name
+     * @param _id   its id
+     * @param _h    its physical height in meters
+     * @param _w    its physical width in meters
      *
      * @return true/false if success/failure
      */
-    bool addObject(std::string _name, double _h, double _w);
+    bool addObject(std::string _name, int _id, double _h, double _w);
 
     /**
      * Adds the full database of objects from a cv::Mat
      *
-     * @param _o the database of objects
-     * @return true/false if success/failure
+     * @param  _names the object names
+     * @param  _ids   the object ids
+     * @param  _o     the matrix of object sizes
+     * @return        true/false if success/failure
      */
-    bool addObjects(std::vector<std::string> _names, cv::Mat _o);
+    bool addObjects(std::vector<std::string> _names, std::vector<int> _ids, cv::Mat _o);
 
     /**
      * Creates the objects database from an XmlRpcValue::TypeStruct in the parameter server.
      * It is encoded as an entire namespace of parameters using a YAML dictionary.
-     * The format is an array of arrays composed of a string (the name of the obejct),
+     * The format is an array of arrays composed of a string (the name of the object),
      * and the width and heigth of the object as another array.
      * This is a valid parameter to set in your launch file:
      *
@@ -357,6 +359,7 @@ public:
     explicit CartesianEstimator(std::string _name);
     CartesianEstimator(std::string _name,
                        std::vector<std::string> _objs_name,
+                       std::vector<int> _objs_id,
                        cv::Mat _objs_size);
 
     /* DESTRUCTOR */
