@@ -57,9 +57,10 @@ bool ARTagCtrl::getObject()
     if (!close())                   return false;
     ros::Duration(2.0).sleep();
     if (!open())                    return false;
+    if (!moveArm("up", 0.1))        return false;
     if (!homePoseStrict())          return false;
 
-    return true;
+    return false;
 }
 
 bool ARTagCtrl::passObject()
