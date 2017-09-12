@@ -305,7 +305,7 @@ std::vector<int> ArmCtrl::areObjectsInDB(const std::vector<int> &_objs)
         }
     }
 
-    ROS_INFO_COND(print_level>=2,"[%s] Found %lu objects in DB.",
+    ROS_INFO_COND(print_level>=4,"[%s] Found %lu objects in DB.",
                                   getLimb().c_str(), res.size());
 
     return res;
@@ -668,9 +668,9 @@ bool ArmCtrl::goHoldPose()
 
 bool ArmCtrl::homePoseStrict(bool disable_coll_av)
 {
-    ROS_INFO("[%s] Going to home position strict..", getLimb().c_str());
+    ROS_INFO_COND(print_level>=2, "[%s] Going to home position..", getLimb().c_str());
 
-    ros::Rate r(100);
+    ros::Rate r(THREAD_FREQ);
     while(RobotInterface::ok() && !isConfigurationReached(home_conf) && not isClosing())
     {
         if (disable_coll_av)    suppressCollisionAv();

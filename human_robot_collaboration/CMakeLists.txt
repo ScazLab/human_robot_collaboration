@@ -56,7 +56,6 @@ ADD_DEFINITIONS ( -Wall -Wextra -Wno-unused-parameter -Werror)
 
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
-include_directories(lib/include)
 include_directories(SYSTEM ${OpenCV_INCLUDE_DIRS}
                            ${catkin_INCLUDE_DIRS})
 

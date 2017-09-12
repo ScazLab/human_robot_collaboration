@@ -56,7 +56,9 @@ public:
                                ArmPerceptionCtrl(_name, _limb, _use_robot)
     {
         setHomeConfiguration();
+        setState(START);
 
+        removeAction(ACTION_HOLD);
         removeAction(ACTION_PASS);
         insertAction(ACTION_PASS, static_cast<f_action>(&LeftCtrl::passObject));
 

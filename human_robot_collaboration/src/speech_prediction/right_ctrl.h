@@ -131,7 +131,9 @@ public:
                                 ArmPerceptionCtrl(_name, _limb, _use_robot)
     {
         setHomeConfiguration();
-        setArmSpeed(getArmSpeed() / 1.3);
+        setState(START);
+
+        removeAction(std::string(ACTION_HOLD));
 
         insertAction(std::string(ACTION_HOLD) + "_leg", static_cast<f_action>(&RightCtrl::holdObject));
         insertAction(std::string(ACTION_HOLD) + "_top", static_cast<f_action>(&RightCtrl::holdObject));

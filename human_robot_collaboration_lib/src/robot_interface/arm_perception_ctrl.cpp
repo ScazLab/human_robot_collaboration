@@ -190,7 +190,7 @@ int ArmPerceptionCtrl::chooseObjectID(vector<int> _objs)
         return ArmCtrl::chooseObjectID(_objs);
     }
 
-    ROS_INFO_COND(print_level>=2, "[%s] Choosing object IDs", getLimb().c_str());
+    ROS_INFO_COND(print_level>=3, "[%s] Choosing object IDs", getLimb().c_str());
 
     if (!waitForOK())
     {
