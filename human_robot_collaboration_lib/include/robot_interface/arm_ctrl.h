@@ -86,6 +86,9 @@ private:
     // Flag to know if the cuff button has been pressed
     bool cuff_button_pressed;
 
+    // Vector of squish thresholds (NOT CURRENTLY USED)
+    std::vector<double> squish_thresholds;
+
     /**
      * Provides basic functionalities for the object, such as a goHome and open.
      * For deeper, class-specific specialization, please modify doAction() instead.
@@ -456,18 +459,42 @@ protected:
     /********************************************************************/
 
     /**
-     * Retrieves an object from the pool of objects
+     * Retrieves an object from the pool of objects.
      *
      * @return true/false if success/failure
      */
-    virtual bool getObject() { return false; };
+    virtual bool getObject();
+
+    /**
+     * Selects the object for pickup, if there are more than one object to
+     * choose from. Usually relies on perception in order to also look for
+     * the objects that are actually present in the scene.
+     *
+     * @return true/false if success/failure
+     */
+    virtual bool selectObject4PickUp() { return true; };
+
+    /**
+     * Picks up the selected object by using ARuco's info on the tag
+     *
+     * @return true/false if success/failure
+     */
+    virtual bool pickUpObject() { return false; };
 
     /**
      * Passes an object to the human (or places it onto the workspace)
      *
      * @return true/false if success/failure
      */
-    virtual bool passObject() { return false; };
+    virtual bool passObject();
+
+    /**
+     * Moves an object to its final position during pass actions.
+     *
+     * @param  _human  if the object needs to be taken by an human
+     * @return         true/false if success/failure
+     */
+    virtual bool moveObjectToPassPosition(bool &_human);
 
     /**
      * Combines getObject() and passObject() into a single action
@@ -475,6 +502,41 @@ protected:
      * @return true/false if success/failure
      */
     bool getPassObject();
+
+    /********************************************************************/
+    /*                       CLEANUP CAPABILITIES                       */
+    /********************************************************************/
+
+    /**
+     * Cleans up the selected object from the workspace
+     *
+     * @return true/false if success/failure
+     */
+    bool cleanUpObject();
+
+    /**
+     * Moves an object to its final position in the pool during cleanup actions.
+     *
+     * @return         true/false if success/failure
+     */
+    virtual bool moveObjectToPoolPosition() { return false; };
+
+    /********************************************************************/
+    /*                        SQUISH CAPABILITIES                       */
+    /********************************************************************/
+
+    /**
+     * WARNING Not used since the API does not allow to change the squish
+     * Stores initial squish thresholds to squish_thresholds, then
+     * reduces and rewrites squish thresholds to aid in picking up tools
+     */
+    void reduceSquish();
+
+    /**
+     * WARNING Not used since the API does not allow to change the squish
+     * Resets squish thresholds to original values stored in squish_thresholds
+     */
+    void resetSquish();
 
 public:
     /**

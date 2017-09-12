@@ -19,21 +19,11 @@
 #include <stdlib.h>
 #include <time.h>
 
-#include <aruco_msgs/MarkerArray.h>
+#include "robot_interface/arm_perception_ctrl.h"
 
-#include "robot_interface/arm_ctrl.h"
-#include "robot_perception/perception_client_impl.h"
-
-class ARTagCtrl : public ArmCtrl, public PerceptionClientImpl
+class ARTagCtrl : public ArmPerceptionCtrl
 {
 private:
-    /**
-     * Picks up the selected object by using ARuco's info on the tag
-     *
-     * @return true/false if success/failure
-     */
-    virtual bool pickARTag();
-
     /**
      * [prepare4HandOver description]
      * @return true/false if success/failure
@@ -52,87 +42,10 @@ private:
 protected:
 
     /**
-     * Sets the joint-level configuration for the home position
-     */
-    void setHomeConfiguration();
-
-    /**
-     * [getObject description]
-     * @return true/false if success/failure
-     */
-    virtual bool getObject();
-
-    /**
-     * [passObject description]
-     * @return true/false if success/failure
-     */
-    virtual bool passObject();
-
-    /**
      * [handOver description]
      * @return true/false if success/failure
      */
     bool handOver();
-
-    /**
-     * [moveObjectTowardHuman description]
-     * @return true/false if success/failure
-     */
-    bool moveObjectTowardHuman();
-
-    /**
-     * [recoverRelease description]
-     * @return true/false if success/failure
-     */
-    bool recoverGet();
-
-    /**
-     * [recoverRelease description]
-     * @return true/false if success/failure
-     */
-    bool recoverRelease();
-
-    /**
-     * Determines if a contact occurred by reading the IR sensor and looking for
-     * eventual squish events. Since the SDK does not allow for setting custom squish params,
-     * the latter can often fail so there is a check that prevents the end-effector from going
-     * too low if this happens.
-     *
-     * @return true/false if success/failure
-     */
-    virtual bool determineContactCondition();
-
-    /**
-     * Computes object-specific (and pose-specific) offsets in order for the robot
-     * to grip the object not in the center of its coordinate system but where
-     * it is most convenient for the gripper
-     *
-     * @param _x_offs The x offset
-     * @param _y_offs The y offset
-     *
-     * @return true/false if success/failure
-     */
-    virtual bool computeOffsets(double &_x_offs, double &_y_offs);
-
-    /**
-     * Computes action-specific orientation in order for the robot to be able to
-     * be transparent with respect to different actions in different poses
-     *
-     * @param _ori The desired orientation as a quaternion
-     * @return true/false if success/failure
-     */
-    virtual bool computeOrientation(geometry_msgs::Quaternion &_ori);
-
-    /**
-     * Chooses the object to act upon according to some rule. This method
-     * needs to be specialized in any derived class because it is dependent
-     * on the type of action and the type of sensory capabilities available.
-     *
-     * @param _objs The list of IDs of objects to choose from
-     * @return      the ID of the chosen object (by default the ID of the
-     *              first object will be chosen)
-     */
-    int chooseObjectID(std::vector<int> _objs);
 
 public:
     /**
@@ -144,8 +57,6 @@ public:
      * Destructor
      */
     ~ARTagCtrl();
-
-    void setObjectID(int _obj);
 };
 
 #endif

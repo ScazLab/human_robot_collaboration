@@ -83,13 +83,6 @@ add_library(robot_utils     include/robot_utils/utils.h
                             src/robot_utils/baxter_trac_ik.cpp
                             src/robot_utils/ros_thread_image.cpp)
 
-add_library(robot_interface include/robot_interface/robot_interface.h
-                            include/robot_interface/gripper.h
-                            include/robot_interface/arm_ctrl.h
-                            src/robot_interface/robot_interface.cpp
-                            src/robot_interface/gripper.cpp
-                            src/robot_interface/arm_ctrl.cpp)
-
 add_library(robot_perception    include/robot_perception/cartesian_estimator.h
                                 include/robot_perception/cartesian_estimator_hsv.h
                                 include/robot_perception/hsv_detection.h
@@ -99,25 +92,34 @@ add_library(robot_perception    include/robot_perception/cartesian_estimator.h
                                 src/robot_perception/cartesian_estimator_hsv.cpp
                                 src/robot_perception/hsv_detection.cpp)
 
+add_library(robot_interface include/robot_interface/robot_interface.h
+                            include/robot_interface/gripper.h
+                            include/robot_interface/arm_ctrl.h
+                            include/robot_interface/arm_perception_ctrl.h
+                            src/robot_interface/robot_interface.cpp
+                            src/robot_interface/gripper.cpp
+                            src/robot_interface/arm_ctrl.cpp
+                            src/robot_interface/arm_perception_ctrl.cpp)
+
 ## Add cmake target dependencies of the library
 ## as an example, code may need to be generated before libraries
 ## either from message generation or dynamic reconfigure
 add_dependencies(robot_utils        ${catkin_EXPORTED_TARGETS})
 
-add_dependencies(robot_interface    robot_utils
+add_dependencies(robot_perception   robot_utils
                                     ${catkin_EXPORTED_TARGETS})
 
-add_dependencies(robot_perception   robot_utils
+add_dependencies(robot_interface    robot_utils
                                     ${catkin_EXPORTED_TARGETS})
 
 ## Specify libraries to link a library or executable target against
 target_link_libraries(robot_utils           ${catkin_LIBRARIES})
 
-target_link_libraries(robot_interface       robot_utils
-                                            ${catkin_LIBRARIES})
-
 target_link_libraries(robot_perception      robot_utils
                                             ${OpenCV_LIBS}
+                                            ${catkin_LIBRARIES})
+
+target_link_libraries(robot_interface       robot_perception
                                             ${catkin_LIBRARIES})
 
 #############

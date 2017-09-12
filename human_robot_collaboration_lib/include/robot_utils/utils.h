@@ -93,6 +93,7 @@
 #define HANDOVER_ORI_R        0.0, 0.7, 0.7, 0.0
 
 #define VERTICAL_ORI_R        0.0, 1.0, 0.0, 0.0
+#define VERTICAL_ORI_R2       0.1, 1.0, 0.0, 0.0
 
 #define POOL_POS_L  -0.05,  0.85, 0.30
 #define POOL_ORI_L   -0.7,   0.7,  0.0, 0.0

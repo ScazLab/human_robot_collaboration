@@ -670,6 +670,67 @@ bool ArmCtrl::homePoseStrict(bool disable_coll_av)
     return true;
 }
 
+bool ArmCtrl::getObject()
+{
+    if (!homePoseStrict())          return false;
+    ros::Duration(0.05).sleep();
+    if (!selectObject4PickUp())     return false;
+    if (!pickUpObject())            return false;
+    if (!close())                   return false;
+    ros::Duration(2.0).sleep();
+    if (!open())                    return false;
+    if (!moveArm("up", 0.1))        return false;
+    if (!homePoseStrict())          return false;
+
+    return false;
+}
+
+bool ArmCtrl::passObject()
+{
+    if (getPrevAction() != ACTION_GET)     return false;
+
+    bool human = true;
+    if (!moveObjectToPassPosition(human))  return false;
+
+    ros::Duration(0.25).sleep();
+
+    if (human)
+    {
+        if (!waitForUserCuffUpperFb())     return false;
+    }
+
+    if (!open())                           return false;
+    ros::Duration(0.2).sleep();
+
+    if (not human)
+    {
+        if (!hoverAboveTable(Z_LOW))       return false;
+    }
+    if (!homePoseStrict())                 return false;
+
+    return true;
+}
+
+bool ArmCtrl::moveObjectToPassPosition(bool &_human)
+{
+    ROS_INFO_COND(print_level>=1, "[%s] Moving object to pass position..", getLimb().c_str());
+
+    _human = true;
+
+    if      (getLimb() == "left")
+    {
+        return goToPose(0.80,  0.26, 0.32, HORIZONTAL_ORI_L);
+    }
+    else if (getLimb() == "right")
+    {
+        return goToPose(0.85, -0.26, 0.27, HORIZONTAL_ORI_R);
+    }
+    else
+    {
+        return false;
+    }
+}
+
 bool ArmCtrl::getPassObject()
 {
     if (!getObject())      return false;
@@ -723,6 +784,71 @@ bool ArmCtrl::goHome()
     bool res = homePoseStrict();
     open();
     return res;
+}
+
+bool ArmCtrl::cleanUpObject()
+{
+    if (!goToPose(0.65, -0.25, 0.25, VERTICAL_ORI_R)) return false;
+    ros::Duration(0.05).sleep();
+    selectObject4PickUp();
+    if (!pickUpObject())            return false;
+    if (!close())                   return false;
+    if (!moveArm("up", 0.3))        return false;
+    if (!homePoseStrict())          return false;
+    if (!moveObjectToPoolPosition())          return false;
+    ros::Duration(0.25).sleep();
+    if (!open())                    return false;
+    if (!homePoseStrict())          return false;
+
+    return true;
+}
+
+void ArmCtrl::reduceSquish()
+{
+    XmlRpc::XmlRpcValue squish_params;
+    // store the initial squish thresholds from the parameter server
+    nh.getParam("/collision/"+getLimb()+"/baxter/squish_thresholds", squish_params);
+
+    ROS_ASSERT_MSG(squish_params.getType()==XmlRpc::XmlRpcValue::TypeArray,
+                          "[%s] Squish params is not an array! Type is %i",
+                               getLimb().c_str(), squish_params.getType());
+
+    for (int i = 0; i < squish_params.size(); ++i)
+    {
+        // store the initial squish thresholds for reset later
+        squish_thresholds.push_back(squish_params[i]);
+    }
+
+    // adjust the squish thresholds for better tool picking
+    squish_params[3] = 0.5 * static_cast<double>(squish_params[3]);
+    squish_params[4] = 0.5 * static_cast<double>(squish_params[4]);
+    squish_params[5] = 0.5 * static_cast<double>(squish_params[5]);
+
+    ROS_INFO("[%s] Reduced squish thresholds for joint 3, 4 and 5 to %g. %g and %g .",
+                            getLimb().c_str(), static_cast<double>(squish_params[3]),
+                                               static_cast<double>(squish_params[5]),
+                                               static_cast<double>(squish_params[5]));
+
+    // set the squish thresholds in the parameter server to the new values
+    nh.setParam("/collision/"+getLimb()+"/baxter/squish_thresholds", squish_params);
+}
+
+void ArmCtrl::resetSquish()
+{
+    XmlRpc::XmlRpcValue squish_params;
+    for (vector<int>::size_type i = 0; i != squish_thresholds.size(); ++i)
+    {
+        // rewrite the squish parameters from the initial squish thresholds stored in reduceSquish()
+        squish_params[i] = squish_thresholds[i];
+    }
+
+    ROS_INFO("[%s] Squish thresholds for joint 3, 4 and 5 set back to %g. %g and %g .",
+                             getLimb().c_str(), static_cast<double>(squish_params[3]),
+                                                static_cast<double>(squish_params[5]),
+                                                static_cast<double>(squish_params[5]));
+
+    // reset squish thresholds in the parameter server to the new values
+    nh.setParam("/collision/"+getLimb()+"/baxter/squish_thresholds", squish_params);
 }
 
 void ArmCtrl::recoverFromError()

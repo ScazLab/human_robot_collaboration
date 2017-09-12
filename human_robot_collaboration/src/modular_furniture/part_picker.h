@@ -22,23 +22,28 @@ class PartPicker : public ARTagCtrl
 {
 protected:
     /**
-     * [passObject description]
+     * Passes an object to the human (or places it onto the workspace)
+     *
      * @return true/false if success/failure
      */
     bool passObject()
     {
-        if (getPrevAction() != ACTION_GET)  return false;
-        if (!moveObjectTowardHuman())       return false;
-        if (!waitForUserCuffUpperFb())      return false;
+        if (getPrevAction() != ACTION_GET)     return false;
+
+        bool human = true;
+        if (!moveObjectToPassPosition(human))  return false;
+
+        ros::Duration(0.5).sleep();
+        if (!waitForUserCuffUpperFb())         return false;
 
         if (ClientTemplate<int>::getObjectID() != 200)
         {
             if (!goToPose(0.50, 0.93, 0.2, POOL_ORI_L)) return false;
-            ros::Duration(0.25).sleep();
+            ros::Duration(0.22).sleep();
         }
 
-        if (!open())                        return false;
-        if (!homePoseStrict())              return false;
+        if (!open())                           return false;
+        if (!homePoseStrict())                 return false;
 
         return true;
     };
