@@ -77,13 +77,13 @@
 #define ARM_SPEED      0.120    // [m/s]
 #define ARM_ROT_SPEED  0.500    // [rad/s] ?
 
-#define FORCE_THRES_R   2.0  // [N]
-#define FORCE_THRES_L   2.0  // [N]
-#define FORCE_ALPHA     0.2
-#define FILTER_EPSILON  1e-6
-#define FORCE_FILT_VAR_L 0.001
-#define FORCE_FILT_VAR_R 0.01
-#define REL_FORCE_THRES_L 65.0
+#define FORCE_THRES_R       2.0  // [N]
+#define FORCE_THRES_L       2.0  // [N]
+#define FORCE_ALPHA         0.2
+#define FILTER_EPSILON     1e-6
+#define FORCE_FILT_VAR_L  0.001
+#define FORCE_FILT_VAR_R   0.01
+#define REL_FORCE_THRES_L  65.0
 #define REL_FORCE_THRES_R 500.0
 
 #define HORIZONTAL_ORI_L      0.0, 0.70, 0.10, 0.70
