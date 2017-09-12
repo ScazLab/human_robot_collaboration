@@ -29,22 +29,18 @@ private:
     std::vector<double> squish_thresholds;
 
     /**
-     * [getObject description]
+     * Retrieves an object from the pool of objects
+     *
      * @return true/false if success/failure
      */
     bool getObject();
 
     /**
-     * [passObject description]
+     * Passes an object to the human (or places it onto the workspace)
+     *
      * @return true/false if success/failure
      */
     bool passObject();
-
-    /**
-     * [getPassObject description]
-     * @return true/false if success/failure
-     */
-    bool getPassObject();
 
     /**
      * Cleans up the selected obejct from the table by using the cartesian estimator's info

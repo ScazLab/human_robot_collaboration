@@ -670,6 +670,15 @@ bool ArmCtrl::homePoseStrict(bool disable_coll_av)
     return true;
 }
 
+bool ArmCtrl::getPassObject()
+{
+    if (!getObject())      return false;
+    setPrevAction(ACTION_GET);
+    if (!passObject())     return false;
+
+    return true;
+}
+
 void ArmCtrl::setHomeConf(double _s0, double _s1, double _e0, double _e1,
                                       double _w0, double _w1, double _w2)
 {

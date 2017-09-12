@@ -451,6 +451,31 @@ protected:
      */
     bool goHoldPose();
 
+    /********************************************************************/
+    /*                        PICKUP CAPABILITIES                       */
+    /********************************************************************/
+
+    /**
+     * Retrieves an object from the pool of objects
+     *
+     * @return true/false if success/failure
+     */
+    virtual bool getObject() { return false; };
+
+    /**
+     * Passes an object to the human (or places it onto the workspace)
+     *
+     * @return true/false if success/failure
+     */
+    virtual bool passObject() { return false; };
+
+    /**
+     * Combines getObject() and passObject() into a single action
+     *
+     * @return true/false if success/failure
+     */
+    bool getPassObject();
+
 public:
     /**
      * Constructor

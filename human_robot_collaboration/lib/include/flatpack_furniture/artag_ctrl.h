@@ -69,12 +69,6 @@ protected:
     virtual bool passObject();
 
     /**
-     * [getPassObject description]
-     * @return true/false if success/failure
-     */
-    bool getPassObject();
-
-    /**
      * [handOver description]
      * @return true/false if success/failure
      */

@@ -91,15 +91,6 @@ bool ToolPicker::passObject()
     return true;
 }
 
-bool ToolPicker::getPassObject()
-{
-    if (!getObject())      return false;
-    setPrevAction(ACTION_GET);
-    if (!passObject())     return false;
-
-    return true;
-}
-
 bool ToolPicker::cleanUpObject()
 {
     if (!goToPose(0.65, -0.25, 0.25, VERTICAL_ORI_R)) return false;

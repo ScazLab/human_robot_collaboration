@@ -76,15 +76,6 @@ bool ARTagCtrl::passObject()
     return true;
 }
 
-bool ARTagCtrl::getPassObject()
-{
-    if (!getObject())      return false;
-    setPrevAction(ACTION_GET);
-    if (!passObject())     return false;
-
-    return true;
-}
-
 bool ARTagCtrl::recoverRelease()
 {
     if (getPrevAction() != ACTION_RELEASE)  return false;

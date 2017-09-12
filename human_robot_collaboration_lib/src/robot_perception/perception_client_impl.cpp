@@ -14,6 +14,7 @@ ARucoClient::ARucoClient(string _name, string _limb) :
 void ARucoClient::ObjectCb(const aruco_msgs::MarkerArray& _msg)
 {
     ROS_INFO_COND(ct_print_level>=4, "ObjectCb");
+
     if (_msg.markers.size() > 0)
     {
         available_objects.clear();
@@ -39,17 +40,11 @@ void ARucoClient::ObjectCb(const aruco_msgs::MarkerArray& _msg)
             //                                       curr_object_ori.z,
             //                                       curr_object_ori.w);
 
-            if (!object_found)
-            {
-                object_found = true;
-            }
+            if (!object_found) { object_found = true; }
         }
     }
 
-    if (not is_ok)
-    {
-        is_ok = true;
-    }
+    if (not is_ok) { is_ok = true; }
 }
 
 ARucoClient::~ARucoClient()
@@ -68,7 +63,8 @@ CartesianEstimatorClient::CartesianEstimatorClient(string _name, string _limb) :
 
 void CartesianEstimatorClient::ObjectCb(const human_robot_collaboration_msgs::ObjectsArray& _msg)
 {
-    // ROS_INFO("ObjectCb");
+    ROS_INFO_COND(ct_print_level>=4, "ObjectCb");
+
     if (_msg.objects.size() > 0)
     {
         available_objects.clear();
@@ -94,17 +90,11 @@ void CartesianEstimatorClient::ObjectCb(const human_robot_collaboration_msgs::Ob
             //                                       curr_object_ori.z,
             //                                       curr_object_ori.w);
 
-            if (!object_found)
-            {
-                object_found = true;
-            }
+            if (!object_found) { object_found = true; }
         }
     }
 
-    if (not is_ok)
-    {
-        is_ok = true;
-    }
+    if (not is_ok) { is_ok = true; }
 }
 
 CartesianEstimatorClient::~CartesianEstimatorClient()
