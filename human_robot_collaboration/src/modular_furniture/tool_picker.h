@@ -21,9 +21,8 @@
 
 #include <flatpack_furniture/hold_ctrl.h>
 #include <robot_perception/perception_client_impl.h>
-#include <human_robot_collaboration_msgs/ObjectsArray.h>
 
-class ToolPicker : public ArmCtrl, public CartesianEstimatorClient
+class ToolPicker : public ArmCtrl, public PerceptionClientImpl
 {
 private:
     std::vector<double> squish_thresholds;

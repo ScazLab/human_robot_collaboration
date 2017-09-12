@@ -133,7 +133,7 @@ CartesianEstimator::CartesianEstimator(string _name) : ROSThreadImage(_name)
 {
     img_pub        = img_trp.advertise(      "/"+getName()+"/image_result", SUBSCRIBER_BUFFER);
     img_pub_thres  = img_trp.advertise("/"+getName()+"/image_result_thres", SUBSCRIBER_BUFFER);
-    objs_pub       = nh.advertise<human_robot_collaboration_msgs::ObjectsArray>("/"+getName()+"/objects", 1);
+    objs_pub       = nh.advertise<aruco_msgs::MarkerArray>("/"+getName()+"/objects", 1);
 
     nh.param<string>("/"+getName()+"/reference_frame", reference_frame,         "");
     nh.param<string>("/"+getName()+   "/camera_frame",    camera_frame,         "");
@@ -154,8 +154,8 @@ CartesianEstimator::CartesianEstimator(string _name) : ROSThreadImage(_name)
     // For now, we'll assume images that are always rectified
     cam_param = aruco_ros::rosCameraInfo2ArucoCamParams(*msg, true);
 
-    objects_msg.header.frame_id = reference_frame;
-    objects_msg.header.seq      = 0;
+    markers_msg.header.frame_id = reference_frame;
+    markers_msg.header.seq      = 0;
     startThread();
 }
 
@@ -172,26 +172,25 @@ bool CartesianEstimator::publishObjects()
 {
     ros::Time curr_stamp(ros::Time::now());
 
-    objects_msg.objects.clear();
-    objects_msg.objects.resize(getNumValidObjects());
-    objects_msg.header.stamp = curr_stamp;
-    ++objects_msg.header.seq;
+    markers_msg.markers.clear();
+    markers_msg.markers.resize(getNumValidObjects());
+    markers_msg.header.stamp = curr_stamp;
+    ++markers_msg.header.seq;
 
     int cnt = 0;
     for(size_t i = 0; i < objs.size(); ++i)
     {
         if (objs[i]->isThere())
         {
-            human_robot_collaboration_msgs::Object &object_cnt = objects_msg.objects.at(cnt);
-            object_cnt.pose = objs[i]->pose;
-            object_cnt.id   = objs[i]->id;
-            object_cnt.name = objs[i]->getName();
+            aruco_msgs::Marker &marker_cnt = markers_msg.markers.at(cnt);
+            marker_cnt.pose.pose = objs[i]->pose;
+            marker_cnt.id        = objs[i]->id;
 
             geometry_msgs::Point cent;
             cent.x = objs[i]->rect.center.x;
             cent.y = objs[i]->rect.center.y;
 
-            object_cnt.center = cent;
+            marker_cnt.center = cent;
 
             cv::Point2f rect_points[4];
             objs[i]->rect.points(rect_points);
@@ -202,14 +201,14 @@ bool CartesianEstimator::publishObjects()
                 pixel.x = rect_points[j].x;
                 pixel.y = rect_points[j].y;
 
-                object_cnt.corners.push_back(pixel);
+                marker_cnt.corners.push_back(pixel);
             }
 
             ++cnt;
         }
     }
 
-    objs_pub.publish(objects_msg);
+    objs_pub.publish(markers_msg);
 
     return true;
 }

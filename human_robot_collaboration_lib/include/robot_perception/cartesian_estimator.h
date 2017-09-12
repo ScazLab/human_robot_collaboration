@@ -26,10 +26,9 @@
 
 #include <aruco/cameraparameters.h>
 #include <aruco_ros/aruco_ros_utils.h>
+#include <aruco_msgs/MarkerArray.h>
 
 #include "robot_utils/ros_thread_image.h"
-
-#include "human_robot_collaboration_msgs/ObjectsArray.h"
 
 #define AREA_THRES  50      // px
 
@@ -174,7 +173,7 @@ private:
     ros::Publisher objs_pub;
 
     // Message to send through objs_pub
-    human_robot_collaboration_msgs::ObjectsArray objects_msg;
+    aruco_msgs::MarkerArray markers_msg;
 
     // Camera parameters
     aruco::CameraParameters cam_param;

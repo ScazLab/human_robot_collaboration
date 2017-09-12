@@ -24,7 +24,7 @@
 #include "robot_interface/arm_ctrl.h"
 #include "robot_perception/perception_client_impl.h"
 
-class ARTagCtrl : public ArmCtrl, public ARucoClient
+class ARTagCtrl : public ArmCtrl, public PerceptionClientImpl
 {
 private:
     /**

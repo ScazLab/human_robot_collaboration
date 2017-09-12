@@ -6,7 +6,7 @@ using namespace std;
 using namespace human_robot_collaboration_msgs;
 
 ARTagCtrl::ARTagCtrl(std::string _name, std::string _limb, bool _use_robot) :
-                     ArmCtrl(_name,_limb, _use_robot), ARucoClient(_name, _limb)
+                     ArmCtrl(_name,_limb, _use_robot), PerceptionClientImpl(_name, _limb)
 {
     setHomeConfiguration();
     setState(START);
@@ -49,8 +49,8 @@ bool ARTagCtrl::getObject()
         int id = chooseObjectID(getObjectIDs());
         if (id == -1)       return false;
         setObjectID(id);
-        ROS_INFO_COND(print_level>=1, "[%s] Chosen object with ID %i",
-               getLimb().c_str(), ClientTemplate<int>::getObjectID());
+        ROS_INFO_COND(print_level>=1, "[%s] Chosen object with name %s", getLimb().c_str(),
+                          getObjectNameFromDB(ClientTemplate<int>::getObjectID()).c_str());
     }
 
     if (!pickARTag())               return false;
@@ -403,7 +403,7 @@ bool ARTagCtrl::moveObjectTowardHuman()
 void ARTagCtrl::setObjectID(int _obj)
 {
     ArmCtrl::setObjectID(_obj);
-    ARucoClient::setObjectID(_obj);
+    PerceptionClientImpl::setObjectID(_obj);
 }
 
 ARTagCtrl::~ARTagCtrl()

@@ -20,7 +20,7 @@
 
 #include <aruco_msgs/MarkerArray.h>
 
-class ARucoClient : public ClientTemplate<int>
+class PerceptionClientImpl : public ClientTemplate<int>
 {
 protected:
     /**
@@ -28,43 +28,60 @@ protected:
      *
      * @param _msg the topic message
      */
-    void ObjectCb(const aruco_msgs::MarkerArray& _msg);
+    void ObjectCb(const aruco_msgs::MarkerArray& _msg)
+    {
+        ROS_INFO_COND(ct_print_level>=4, "ObjectCb");
+
+        if (_msg.markers.size() > 0)
+        {
+            available_objects.clear();
+        }
+
+        for (size_t i = 0; i < _msg.markers.size(); ++i)
+        {
+            // ROS_DEBUG("Processing object with id %i",_msg.markers[i].id);
+
+            available_objects.push_back(int(_msg.markers[i].id));
+            objects_found = true;
+
+            if (int(_msg.markers[i].id) == getObjectID())
+            {
+                curr_object_pos = _msg.markers[i].pose.pose.position;
+                curr_object_ori = _msg.markers[i].pose.pose.orientation;
+
+                ROS_DEBUG("Object is in: %g %g %g", curr_object_pos.x,
+                                                    curr_object_pos.y,
+                                                    curr_object_pos.z);
+                // ROS_INFO("Object is in: %g %g %g %g", curr_object_ori.x,
+                //                                       curr_object_ori.y,
+                //                                       curr_object_ori.z,
+                //                                       curr_object_ori.w);
+
+                if (!object_found) { object_found = true; }
+            }
+        }
+
+        if (not is_ok) { is_ok = true; }
+    };
 
 public:
     /**
      * Constructor
      */
-    ARucoClient(std::string _name, std::string _limb);
+    PerceptionClientImpl(std::string _name, std::string _limb) :
+                         ClientTemplate(_name, _limb)
+    {
+        sub = ctnh.subscribe("/markers/"+getClientLimb(), SUBSCRIBER_BUFFER,
+                                     &PerceptionClientImpl::ObjectCb, this);
+
+        object_id = -1;
+    };
 
     /**
      * Destructor
      */
-    ~ARucoClient();
+    ~PerceptionClientImpl() { };
 
-};
-
-#include <human_robot_collaboration_msgs/ObjectsArray.h>
-
-class CartesianEstimatorClient : public ClientTemplate<std::string>
-{
-protected:
-    /**
-     * Callback function for the CartesianEstimator topic
-     *
-     * @param _msg the topic message
-     */
-    void ObjectCb(const human_robot_collaboration_msgs::ObjectsArray& _msg);
-
-public:
-    /**
-     * Constructor
-     */
-    CartesianEstimatorClient(std::string _name, std::string _limb);
-
-    /**
-     * Destructor
-     */
-    ~CartesianEstimatorClient();
 };
 
 #endif

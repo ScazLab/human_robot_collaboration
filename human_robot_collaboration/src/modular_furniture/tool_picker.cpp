@@ -7,7 +7,7 @@ using namespace baxter_core_msgs;
 
 ToolPicker::ToolPicker(string _name, string _limb, bool _use_robot) :
                        ArmCtrl(_name,_limb, _use_robot),
-                       CartesianEstimatorClient(_name, _limb)
+                       PerceptionClientImpl(_name, _limb)
 {
     setHomeConfiguration();
     setArmSpeed(getArmSpeed() / 1.3);
@@ -44,8 +44,8 @@ bool ToolPicker::getObject()
         int id = chooseObjectID(getObjectIDs());
         if (id == -1)       return false;
         setObjectID(id);
-        ROS_INFO("[%s] Chosen object with name %s", getLimb().c_str(),
-                       ClientTemplate<string>::getObjectID().c_str());
+        ROS_INFO_COND(print_level>=1, "[%s] Chosen object with name %s", getLimb().c_str(),
+                          getObjectNameFromDB(ClientTemplate<int>::getObjectID()).c_str());
     }
 
     if (!pickUpObject())            return false;
@@ -60,19 +60,19 @@ bool ToolPicker::passObject()
 {
     if (getPrevAction() != ACTION_GET)  return false;
 
-    if (ClientTemplate<string>::getObjectID() == "screwdriver")
+    if (getObjectNameFromDB(ClientTemplate<int>::getObjectID()) == "screwdriver")
     {
         if (!goToPose(0.85, -0.26, 0.27,
                       HORIZONTAL_ORI_R))    return false;
         if (!waitForUserCuffUpperFb())      return false;
         if (!open())                        return false;
     }
-    else if (ClientTemplate<string>::getObjectID() == "screws_box"  ||
-             ClientTemplate<string>::getObjectID() == "brackets_box")
+    else if (getObjectNameFromDB(ClientTemplate<int>::getObjectID()) == "screws_box"  ||
+             getObjectNameFromDB(ClientTemplate<int>::getObjectID()) == "brackets_box")
     {
         if (!hoverAboveTable(Z_LOW))    return false;
 
-        if (ClientTemplate<string>::getObjectID() == "brackets_box")
+        if (getObjectNameFromDB(ClientTemplate<int>::getObjectID()) == "brackets_box")
         {
             if (!goToPose(0.63, -0.10, -0.14, VERTICAL_ORI_R2)) return false;
         }
@@ -103,7 +103,7 @@ bool ToolPicker::cleanUpObject()
         if (id == -1)       return false;
         setObjectID(id);
         ROS_INFO("[%s] Chosen object with name %s", getLimb().c_str(),
-                       ClientTemplate<string>::getObjectID().c_str());
+                       getObjectNameFromDB(ClientTemplate<int>::getObjectID()).c_str());
     }
 
     if (!waitForObjFound())
@@ -117,15 +117,15 @@ bool ToolPicker::cleanUpObject()
     if (!moveArm("up", 0.3))        return false;
     if (!homePoseStrict())          return false;
 
-    if (ClientTemplate<string>::getObjectID() == "screwdriver")
+    if (getObjectNameFromDB(ClientTemplate<int>::getObjectID()) == "screwdriver")
     {
         if (!goToPose( 0.20, -0.85, -0.30, POOL_ORI_R)) return false;
     }
-    else if (ClientTemplate<string>::getObjectID() == "brackets_box")
+    else if (getObjectNameFromDB(ClientTemplate<int>::getObjectID()) == "brackets_box")
     {
         if (!goToPose( 0.00, -0.85, -0.25, POOL_ORI_R)) return false;
     }
-    else if (ClientTemplate<string>::getObjectID() == "screws_box")
+    else if (getObjectNameFromDB(ClientTemplate<int>::getObjectID()) == "screws_box")
     {
         if (!goToPose(-0.15, -0.85, -0.25, POOL_ORI_R)) return false;
     }
@@ -140,7 +140,7 @@ bool ToolPicker::cleanUpObject()
 bool ToolPicker::pickUpObject()
 {
     ROS_INFO("[%s] Start Picking up object %s..", getLimb().c_str(),
-                  ClientTemplate<string>::getObjectID().c_str());
+                  getObjectNameFromDB(ClientTemplate<int>::getObjectID()).c_str());
 
     if (!isIRok())
     {
@@ -238,7 +238,7 @@ bool ToolPicker::determineContactCondition()
         ROS_INFO("Collision!");
         return true;
     }
-    else if (ClientTemplate<string>::getObjectID() != "screwdriver")
+    else if (getObjectNameFromDB(ClientTemplate<int>::getObjectID()) != "screwdriver")
     {
         if (getAction() == ACTION_CLEANUP)
         {
@@ -266,26 +266,26 @@ bool ToolPicker::computeOffsets(double &_x_offs, double &_y_offs)
 {
     if      (getAction() == ACTION_GET || getAction() == ACTION_GET_PASS)
     {
-        if (ClientTemplate<string>::getObjectID() == "screwdriver")
+        if (getObjectNameFromDB(ClientTemplate<int>::getObjectID()) == "screwdriver")
         {
             _x_offs = +0.010;
             // _y_offs = +0.017;
         }
-        else if (ClientTemplate<string>::getObjectID() == "screws_box"  ||
-                 ClientTemplate<string>::getObjectID() == "brackets_box")
+        else if (getObjectNameFromDB(ClientTemplate<int>::getObjectID()) == "screws_box"  ||
+                 getObjectNameFromDB(ClientTemplate<int>::getObjectID()) == "brackets_box")
         {
             _x_offs = +0.06;
         }
     }
     else if (getAction() == ACTION_CLEANUP)
     {
-        if (ClientTemplate<string>::getObjectID() == "screwdriver")
+        if (getObjectNameFromDB(ClientTemplate<int>::getObjectID()) == "screwdriver")
         {
             // _x_offs = -0.020;
             _y_offs = -0.010;
         }
-        else if (ClientTemplate<string>::getObjectID() == "screws_box"  ||
-                 ClientTemplate<string>::getObjectID() == "brackets_box")
+        else if (getObjectNameFromDB(ClientTemplate<int>::getObjectID()) == "screws_box"  ||
+                 getObjectNameFromDB(ClientTemplate<int>::getObjectID()) == "brackets_box")
         {
             _x_offs = +0.020;
             _y_offs = -0.058;
@@ -340,13 +340,7 @@ int ToolPicker::chooseObjectID(vector<int> _objs)
         return -1;
     }
 
-    std::vector<string> objs_str;
-    for (size_t i = 0; i < _objs.size(); ++i)
-    {
-        objs_str.push_back(getObjectNameFromDB(_objs[i]));
-    }
-
-    std::vector<string> av_objects = ClientTemplate<string>::getAvailableObjects(objs_str);
+    std::vector<int> av_objects = ClientTemplate<int>::getAvailableObjects(_objs);
 
     if (av_objects.size() == 0)
     {
@@ -356,7 +350,7 @@ int ToolPicker::chooseObjectID(vector<int> _objs)
 
     srand(time(0)); //use current time as seed
 
-    return ArmCtrl::getObjectIDFromDB(av_objects[rand() % av_objects.size()]);
+    return av_objects[rand() % av_objects.size()];
 }
 
 void ToolPicker::reduceSquish()
@@ -415,7 +409,7 @@ void ToolPicker::setHomeConfiguration()
 void ToolPicker::setObjectID(int _obj)
 {
     ArmCtrl::setObjectID(_obj);
-    ClientTemplate<string>::setObjectID(ArmCtrl::getObjectNameFromDB(_obj));
+    PerceptionClientImpl::setObjectID(_obj);
 }
 
 ToolPicker::~ToolPicker()

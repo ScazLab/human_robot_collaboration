@@ -97,8 +97,7 @@ add_library(robot_perception    include/robot_perception/cartesian_estimator.h
                                 include/robot_perception/perception_client_impl.h
                                 src/robot_perception/cartesian_estimator.cpp
                                 src/robot_perception/cartesian_estimator_hsv.cpp
-                                src/robot_perception/hsv_detection.cpp
-                                src/robot_perception/perception_client_impl.cpp)
+                                src/robot_perception/hsv_detection.cpp)
 
 ## Add cmake target dependencies of the library
 ## as an example, code may need to be generated before libraries
