@@ -13,18 +13,6 @@ HoldCtrl::HoldCtrl(string _name, string _limb, bool _use_robot) :
     insertAction(ACTION_END_HOLD,   static_cast<f_action>(&HoldCtrl::endHold));
     insertAction(ACTION_HOLD,       static_cast<f_action>(&HoldCtrl::holdObject));
 
-    XmlRpc::XmlRpcValue objects_db;
-    if(!nh.getParam("objects_"+getLimb(), objects_db))
-    {
-        ROS_INFO("No objects' database found in the parameter server. "
-                 "Looked up param is %s", ("objects_"+getLimb()).c_str());
-    }
-    else
-    {
-        insertObjects(objects_db);
-        printObjectDB();
-    }
-
     if (not _use_robot) return;
 }
 

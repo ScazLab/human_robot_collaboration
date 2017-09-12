@@ -15,18 +15,6 @@ ARTagCtrl::ARTagCtrl(std::string _name, std::string _limb, bool _use_robot) :
     insertAction(ACTION_PASS,      static_cast<f_action>(&ARTagCtrl::passObject));
     insertAction(ACTION_GET_PASS,  static_cast<f_action>(&ARTagCtrl::getPassObject));
 
-    XmlRpc::XmlRpcValue objects_db;
-    if(!nh.getParam("objects_"+getLimb(), objects_db))
-    {
-        ROS_INFO("No objects' database found in the parameter server. "
-                 "Looked up param is %s", ("objects_"+getLimb()).c_str());
-    }
-    else
-    {
-        insertObjects(objects_db);
-        printObjectDB();
-    }
-
     if (not _use_robot) return;
 
     // moveArm("up",0.2,"strict");

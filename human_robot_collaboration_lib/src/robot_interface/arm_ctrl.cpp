@@ -25,6 +25,18 @@ ArmCtrl::ArmCtrl(string _name, string _limb, bool _use_robot, bool _use_forces, 
     nh.param<bool>("internal_recovery",  internal_recovery, true);
     ROS_INFO("[%s] Internal_recovery flag set to %s", getLimb().c_str(),
                                 internal_recovery==true?"true":"false");
+
+    XmlRpc::XmlRpcValue objects_db;
+    if(not nh.getParam("objects_"+getLimb(), objects_db))
+    {
+        ROS_INFO("No objects' database found in the parameter server. "
+                 "Looked up param is %s", ("objects_"+getLimb()).c_str());
+    }
+    else
+    {
+        insertObjects(objects_db);
+        printObjectDB();
+    }
 }
 
 bool ArmCtrl::startThread()
