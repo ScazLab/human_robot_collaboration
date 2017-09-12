@@ -71,7 +71,6 @@ add_executable(flatpack_action_provider src/flatpack_furniture/artag_ctrl_impl.h
 add_executable(tower_action_provider    src/tower_building/cube_picker.h
                                         src/tower_building/cube_picker.cpp
                                         src/tower_building/action_provider.cpp)
-add_executable(hsv_detector             src/modular_furniture/hsv_detector.cpp)
 add_executable(modular_action_provider  src/modular_furniture/tool_picker.h
                                         src/modular_furniture/part_picker.h
                                         src/modular_furniture/action_provider.cpp)
@@ -79,6 +78,7 @@ add_executable(sp_pred_action_provider  src/speech_prediction/artag_ctrl_impl.h
                                         src/modular_furniture/part_picker.h
                                         src/speech_prediction/action_provider.cpp)
 add_executable(baxter_display           src/baxter_display.cpp)
+add_executable(hsv_detector             src/hsv_detector.cpp)
 
 ## Add cmake target dependencies of the executable
 ## same as for the library above
