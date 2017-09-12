@@ -16,8 +16,6 @@ find_package(catkin REQUIRED
 add_message_files(FILES
                   ArmState.msg
                   GoToPose.msg
-                  Object.msg
-                  ObjectsArray.msg
 )
 
 ## Generate services in the 'srv' folder
