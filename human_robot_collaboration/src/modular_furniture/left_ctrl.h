@@ -13,12 +13,12 @@
  * Public License for more details
 **/
 
-#ifndef __PART_PICKER_H__
-#define __PART_PICKER_H__
+#ifndef __LEFT_CTRL_MODULAR_FURNITURE_H__
+#define __LEFT_CTRL_MODULAR_FURNITURE_H__
 
-#include <flatpack_furniture/artag_ctrl.h>
+#include "robot_interface/arm_perception_ctrl.h"
 
-class PartPicker : public ARTagCtrl
+class LeftCtrl : public ArmPerceptionCtrl
 {
 protected:
     /**
@@ -52,13 +52,13 @@ public:
     /**
      * Constructor
      */
-    PartPicker(std::string _name, std::string _limb, bool _use_robot = true) :
-                                         ARTagCtrl(_name, _limb, _use_robot)
+    LeftCtrl(std::string _name, std::string _limb, bool _use_robot = true) :
+                               ArmPerceptionCtrl(_name, _limb, _use_robot)
     {
         setHomeConfiguration();
 
         removeAction(ACTION_PASS);
-        insertAction(ACTION_PASS, static_cast<f_action>(&PartPicker::passObject));
+        insertAction(ACTION_PASS, static_cast<f_action>(&LeftCtrl::passObject));
 
         printActionDB();
 
@@ -70,7 +70,7 @@ public:
     /**
      * Destructor
      */
-    ~PartPicker() { };
+    ~LeftCtrl() { };
 };
 
 #endif

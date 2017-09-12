@@ -431,13 +431,13 @@ protected:
      *
      * @return true/false if success/failure
      */
-    bool startHold();
+    virtual bool startHold();
 
     /**
      * Ends the hold behavior. Only available if gripper is electric.
      * @return true/false if success/failure
      */
-    bool endHold();
+    virtual bool endHold();
 
     /**
      * Holds the object. Only available if gripper is electric.

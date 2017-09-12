@@ -21,6 +21,7 @@ ArmCtrl::ArmCtrl(string _name, string _limb, bool _use_robot, bool _use_forces, 
 
     insertAction(ACTION_HOME,    &ArmCtrl::goHome);
     insertAction(ACTION_RELEASE, &ArmCtrl::openImpl);
+    insertAction(ACTION_HOLD,    &ArmCtrl::holdObject);
 
     nh.param<bool>("internal_recovery",  internal_recovery, true);
     ROS_INFO("[%s] Internal_recovery flag set to %s", getLimb().c_str(),

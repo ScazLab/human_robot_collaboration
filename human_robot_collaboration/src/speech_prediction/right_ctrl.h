@@ -13,16 +13,12 @@
  * Public License for more details
 **/
 
-#ifndef __ARTAG_CTRL_IMPL_SPEECH_PREDICTION_H__
-#define __ARTAG_CTRL_IMPL_SPEECH_PREDICTION_H__
+#ifndef __RIGHT_CTRL_SPEECH_PREDICTION_H__
+#define __RIGHT_CTRL_SPEECH_PREDICTION_H__
 
-#include "flatpack_furniture/artag_ctrl.h"
+#include "robot_interface/arm_perception_ctrl.h"
 
-/**
- * This class performs hold actions plus ARuco recognition and pick up.
- * It is not directly inheriting from HoldCtrl to avoid diamond inheritance w.r.t. ArmCtrl.
- */
-class ARTagCtrlImpl : public ARTagCtrl
+class RightCtrl : public ArmPerceptionCtrl
 {
 protected:
     /**
@@ -131,14 +127,14 @@ public:
     /**
      * Constructor
      */
-    ARTagCtrlImpl(std::string _name, std::string _limb, bool _use_robot = true) :
-                                            ARTagCtrl(_name, _limb, _use_robot)
+    RightCtrl(std::string _name, std::string _limb, bool _use_robot = true) :
+                                ArmPerceptionCtrl(_name, _limb, _use_robot)
     {
         setHomeConfiguration();
         setArmSpeed(getArmSpeed() / 1.3);
 
-        insertAction(std::string(ACTION_HOLD) + "_leg", static_cast<f_action>(&ARTagCtrlImpl::holdObject));
-        insertAction(std::string(ACTION_HOLD) + "_top", static_cast<f_action>(&ARTagCtrlImpl::holdObject));
+        insertAction(std::string(ACTION_HOLD) + "_leg", static_cast<f_action>(&RightCtrl::holdObject));
+        insertAction(std::string(ACTION_HOLD) + "_top", static_cast<f_action>(&RightCtrl::holdObject));
 
         printActionDB();
 
@@ -150,7 +146,7 @@ public:
     /**
      * Destructor
      */
-    ~ARTagCtrlImpl() { };
+    ~RightCtrl() { };
 };
 
 #endif

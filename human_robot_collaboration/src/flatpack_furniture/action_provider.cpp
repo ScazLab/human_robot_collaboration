@@ -2,8 +2,8 @@
 
 #include <ros/ros.h>
 #include <signal.h>
-#include "artag_ctrl_impl.h"
-#include "hold_ctrl_impl.h"
+#include "left_ctrl.h"
+#include "right_ctrl.h"
 
 using namespace std;
 
@@ -27,9 +27,9 @@ int main(int argc, char ** argv)
     ROS_INFO("use_robot flag set to %s", use_robot==true?"true":"false");
 
     printf("\n");
-    ARTagCtrlImpl  left_ctrl("action_provider", "left", use_robot);
+    LeftCtrl   left_ctrl("action_provider", "left", use_robot);
     printf("\n");
-    HoldCtrlImpl  right_ctrl("action_provider","right", use_robot);
+    RightCtrl right_ctrl("action_provider","right", use_robot);
     printf("\n");
     ROS_INFO("READY! Waiting for service messages..\n");
 

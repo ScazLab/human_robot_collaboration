@@ -44,7 +44,7 @@ catkin_python_setup()
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
     INCLUDE_DIRS lib/include
-    LIBRARIES flatpack_furniture
+    LIBRARIES
     CATKIN_DEPENDS human_robot_collaboration_lib
 )
 
@@ -60,22 +60,18 @@ include_directories(lib/include)
 include_directories(SYSTEM ${OpenCV_INCLUDE_DIRS}
                            ${catkin_INCLUDE_DIRS})
 
-## Add C++ libraries
-add_subdirectory(lib)
-
 ## Declare a C++ executable
 add_executable(baxter_controller        src/baxter_controller/baxter_controller.cpp)
-add_executable(flatpack_action_provider src/flatpack_furniture/artag_ctrl_impl.h
-                                        src/flatpack_furniture/hold_ctrl_impl.h
+add_executable(flatpack_action_provider src/flatpack_furniture/left_ctrl.h
+                                        src/flatpack_furniture/right_ctrl.h
                                         src/flatpack_furniture/action_provider.cpp)
-add_executable(tower_action_provider    src/tower_building/cube_picker.h
-                                        src/tower_building/cube_picker.cpp
+add_executable(tower_action_provider    src/tower_building/left_ctrl.h
                                         src/tower_building/action_provider.cpp)
-add_executable(modular_action_provider  src/modular_furniture/tool_picker.h
-                                        src/modular_furniture/part_picker.h
+add_executable(modular_action_provider  src/modular_furniture/right_ctrl.h
+                                        src/modular_furniture/left_ctrl.h
                                         src/modular_furniture/action_provider.cpp)
-add_executable(sp_pred_action_provider  src/speech_prediction/artag_ctrl_impl.h
-                                        src/modular_furniture/part_picker.h
+add_executable(sp_pred_action_provider  src/speech_prediction/right_ctrl.h
+                                        src/modular_furniture/left_ctrl.h
                                         src/speech_prediction/action_provider.cpp)
 add_executable(baxter_display           src/baxter_display.cpp)
 add_executable(hsv_detector             src/hsv_detector.cpp)
@@ -98,13 +94,13 @@ add_dependencies(baxter_display           ${${PROJECT_NAME}_EXPORTED_TARGETS}
                                           ${catkin_EXPORTED_TARGETS})
 
 ## Specify libraries to link a library or executable target against
-target_link_libraries(baxter_controller                            ${catkin_LIBRARIES} )
-target_link_libraries(flatpack_action_provider  flatpack_furniture ${catkin_LIBRARIES} )
-target_link_libraries(tower_action_provider     flatpack_furniture ${catkin_LIBRARIES} )
-target_link_libraries(hsv_detector                                 ${catkin_LIBRARIES} )
-target_link_libraries(modular_action_provider   flatpack_furniture ${catkin_LIBRARIES} )
-target_link_libraries(sp_pred_action_provider   flatpack_furniture ${catkin_LIBRARIES} )
-target_link_libraries(baxter_display            ${OpenCV_LIBS}     ${catkin_LIBRARIES} )
+target_link_libraries(baxter_controller                         ${catkin_LIBRARIES} )
+target_link_libraries(flatpack_action_provider                  ${catkin_LIBRARIES} )
+target_link_libraries(tower_action_provider                     ${catkin_LIBRARIES} )
+target_link_libraries(hsv_detector                              ${catkin_LIBRARIES} )
+target_link_libraries(modular_action_provider                   ${catkin_LIBRARIES} )
+target_link_libraries(sp_pred_action_provider                   ${catkin_LIBRARIES} )
+target_link_libraries(baxter_display            ${OpenCV_LIBS}  ${catkin_LIBRARIES} )
 
 #############
 ## Install ##

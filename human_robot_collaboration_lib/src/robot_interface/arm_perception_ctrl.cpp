@@ -65,67 +65,6 @@ bool ArmPerceptionCtrl::recoverGet()
     return true;
 }
 
-bool ArmPerceptionCtrl::handOver()
-{
-    if (getPrevAction() != ACTION_GET)  return false;
-    if (!prepare4HandOver())            return false;
-    ros::Duration(0.2).sleep();
-    if (!waitForOtherArm(30.0, true))   return false;
-    ros::Duration(0.8).sleep();
-    if (!open())                        return false;
-    if (!moveArm("up", 0.05))           return false;
-    if (!homePoseStrict())              return false;
-    setSubState("");
-
-    return true;
-}
-
-bool ArmPerceptionCtrl::prepare4HandOver()
-{
-    return moveArm("right", 0.32, "loose", true);
-}
-
-bool ArmPerceptionCtrl::waitForOtherArm(double _wait_time, bool disable_coll_av)
-{
-    ros::Time _init = ros::Time::now();
-
-    string other_limb = getLimb() == "right" ? "left" : "right";
-
-    ROS_INFO("[%s] Waiting for %s arm", getLimb().c_str(), other_limb.c_str());
-
-    ros::ServiceClient _c;
-    string service_name = "/"+getName()+"/service_"+other_limb+"_to_"+getLimb();
-    _c = nh.serviceClient<AskFeedback>(service_name);
-
-    AskFeedback srv;
-    srv.request.ask = HAND_OVER_READY;
-
-    ros::Rate r(100);
-    while(RobotInterface::ok())
-    {
-        if (disable_coll_av)      suppressCollisionAv();
-        if (!_c.call(srv)) break;
-
-        ROS_DEBUG("[%s] Received: %s ", getLimb().c_str(), srv.response.reply.c_str());
-
-        if (srv.response.reply == HAND_OVER_DONE)
-        {
-            return true;
-        }
-
-        r.sleep();
-
-        if ((ros::Time::now()-_init).toSec() > _wait_time)
-        {
-            ROS_ERROR("[%s] No feedback from other arm has been received in %gs!",
-                                                    getLimb().c_str(), _wait_time);
-            return false;
-        }
-    }
-
-    return false;
-}
-
 bool ArmPerceptionCtrl::pickUpObject()
 {
     ROS_INFO_COND(print_level>=0, "[%s] Start Picking up object %s..", getLimb().c_str(),

@@ -13,15 +13,12 @@
  * Public License for more details
 **/
 
-#ifndef __TOOL_PICKER_H__
-#define __TOOL_PICKER_H__
+#ifndef __RIGHT_CTRL_MODULAR_FURNITURE_H__
+#define __RIGHT_CTRL_MODULAR_FURNITURE_H__
 
-#include <stdlib.h>
-#include <time.h>
+#include "robot_interface/arm_perception_ctrl.h"
 
-#include <robot_interface/arm_perception_ctrl.h>
-
-class ToolPicker : public ArmPerceptionCtrl
+class RightCtrl : public ArmPerceptionCtrl
 {
 private:
     /**
@@ -172,23 +169,23 @@ public:
     /**
      * Constructor
      */
-    ToolPicker(std::string _name, std::string _limb,
-               bool _use_robot = true) : ArmPerceptionCtrl(_name, _limb, _use_robot)
+    RightCtrl(std::string _name, std::string _limb, bool _use_robot = true) :
+                                ArmPerceptionCtrl(_name, _limb, _use_robot)
     {
         setHomeConfiguration();
-        setArmSpeed(getArmSpeed() / 1.3);
-
         setState(START);
 
-        insertAction(ACTION_GET,       static_cast<f_action>(&ToolPicker::getObject));
-        insertAction(ACTION_PASS,      static_cast<f_action>(&ToolPicker::passObject));
-        insertAction(ACTION_GET_PASS,  static_cast<f_action>(&ToolPicker::getPassObject));
-        insertAction(ACTION_CLEANUP,   static_cast<f_action>(&ToolPicker::cleanUpObject));
+        setArmSpeed(getArmSpeed() / 1.3);
+
+        insertAction(ACTION_GET,       static_cast<f_action>(&RightCtrl::getObject));
+        insertAction(ACTION_PASS,      static_cast<f_action>(&RightCtrl::passObject));
+        insertAction(ACTION_GET_PASS,  static_cast<f_action>(&RightCtrl::getPassObject));
+        insertAction(ACTION_CLEANUP,   static_cast<f_action>(&RightCtrl::cleanUpObject));
 
         removeAction(ACTION_HOLD);
 
-        insertAction(std::string(ACTION_HOLD) + "_leg", static_cast<f_action>(&ToolPicker::holdObject));
-        insertAction(std::string(ACTION_HOLD) + "_top", static_cast<f_action>(&ToolPicker::holdObject));
+        insertAction(std::string(ACTION_HOLD) + "_leg", static_cast<f_action>(&RightCtrl::holdObject));
+        insertAction(std::string(ACTION_HOLD) + "_top", static_cast<f_action>(&RightCtrl::holdObject));
 
         printActionDB();
 
@@ -202,7 +199,7 @@ public:
     /**
      * Destructor
      */
-    ~ToolPicker() { };
+    ~RightCtrl() { };
 
 };
 
