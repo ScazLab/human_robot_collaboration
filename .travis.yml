@@ -57,7 +57,7 @@ env:
   - ROSINSTALL_FILE=$CI_SOURCE_PATH/dependencies.rosinstall
   - CATKIN_OPTIONS=$CI_SOURCE_PATH/catkin.options
   - ROS_PARALLEL_JOBS='-j8 -l6'
-  - REPO_NAME=$(echo $TRAVIS_REPO_SLUG | cut -d"/" -f2)
+  - REPO_NAME=$(echo "$TRAVIS_REPO_SLUG" | cut -d"/" -f2)
   - secure: STRpcqvGYbbmuvtgLIouJloeUib6sljp4BiXCtS1m7xRpwd33N9VMsO2nUSbvNzpKJl/TRGj0bmrjs0XbHKPdadyKPtwKl1sGD2oNJQSi8dNF0ACWwVuLwamaSnAGd8Y7PY5Dkh2NyPSVjYDxNP5nGC+cY/Jnjn3gMayln6YRBIERWilfu5iKOXqVZ9sCOneKNG+t6QrZrdMxCxwDvJuS73ZMb+J/e+OjWDnojwv/Px6DhiDsmyyQcpFOItfCY18PoCScLgwc9b/0RyLApOayJPGNIrEMgfi61BPh9rbqTkO7KRUCggg9cc6TvKprAYHdBFcjHekCL6q8FWRhCAY14tO0E1Phm8YIOD8GPCmdN9G5qcye4bb3V+LpbNXHrwQzXlhNA++Q73W3djem9At/Xxxlvjo13iGpcJEd+ORy1YYFadAzRabo5Qev3m6l6Q+FoarKjsllLVtmXPSbXuTPXjyPIdvCKFTUfDpKET8z3BQUm/U9JRF92tlbt+Z93f8oskYabps33MKvTAz6VT12TxlrY6DZHdHCCBHN7h2tAHD6sFne1dqbzMZt/RPk1kaummb0iIQrtbWQZ+OwRlKMrmu4TH1+eeG42Xn+ghQBA6YlC2tDqTndxnos5sE71B0RN8AaDIVWjWo5CXdNukKWOOj0fzidPWwQPA7BJPf5ZI=
 matrix:
   include:
