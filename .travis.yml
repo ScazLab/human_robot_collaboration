@@ -121,7 +121,7 @@ before_script:
   - if [[ -f $ROSINSTALL_FILE ]] ; then wstool merge $ROSINSTALL_FILE ; fi
   - cd ~/catkin_ws/src && wstool up
   # package depedencies: install using rosdep.
-  - cd ~/catkin_ws && ls src
+  - cd ~/catkin_ws
   - rosdep install -y --from-paths src --ignore-src --rosdistro $ROS_DISTRO
 
 # Compile and test (mark the build as failed if any step fails). If the
