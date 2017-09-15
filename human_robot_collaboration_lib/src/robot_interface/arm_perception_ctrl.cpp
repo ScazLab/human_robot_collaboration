@@ -284,7 +284,7 @@ bool ArmPerceptionCtrl::computeOrientation(geometry_msgs::Quaternion &_ori)
     {
         if (getAction() == ACTION_GET || getAction() == ACTION_GET_PASS)
         {
-            quaternionFromDoubles(_ori, POOL_ORI_L);
+            quaternionFromDoubles(_ori, POOL_ORI_R);
         }
         else if (getAction() == ACTION_CLEANUP)
         {
