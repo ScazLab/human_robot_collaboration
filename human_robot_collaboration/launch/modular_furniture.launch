@@ -72,6 +72,9 @@
 
     <include file="$(find svox_tts)/launch/svox_tts.launch" />
 
+    <!-- Send recognize speech to baxter screen -->
+    <remap from="/speech_to_text/text" to="/svox_tts/speech_output"/>
     <include file="$(find ros_speech2text)/launch/ros_speech2text.launch"/>
+        
 </launch>
 
