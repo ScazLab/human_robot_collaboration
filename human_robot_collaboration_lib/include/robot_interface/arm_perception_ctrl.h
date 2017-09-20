@@ -33,7 +33,6 @@ private:
     virtual bool pickUpObject();
 
 protected:
-
     /**
      * Sets the joint-level configuration for the home position
      */
@@ -46,7 +45,7 @@ protected:
     virtual bool selectObject4PickUp();
 
     /**
-     * [recoverRelease description]
+     * [recoverget description]
      * @return true/false if success/failure
      */
     bool recoverGet();

@@ -58,7 +58,26 @@ bool ArmPerceptionCtrl::recoverRelease()
 
 bool ArmPerceptionCtrl::recoverGet()
 {
-    if (!hoverAbovePool())          return false;
+    ROS_INFO_COND(print_level>=2, "[%s] Recovering get..", getLimb().c_str());
+
+    if (!hoverAbovePool("loose"))   return false;
+
+    Eigen::Vector3d pick_pos = getPickedUpPos();
+
+    if (pick_pos == Eigen::Vector3d(-10.0, -10.0, -10.0))
+    {
+        return goHome();
+    }
+
+    if (getLimb() == "right")
+    {
+        if (! goToPose(pick_pos[0], pick_pos[1], pick_pos[2], POOL_ORI_R)) return false;
+    }
+    else if (getLimb() == "left")
+    {
+        if (! goToPose(pick_pos[0], pick_pos[1], pick_pos[2] + 0.01, POOL_ORI_L)) return false;
+    }
+
     if (!open())                    return false;
     if (!homePoseStrict())          return false;
 
