@@ -77,8 +77,7 @@ protected:
                     return true;
                 }
             }
-            if      (getObjectNameFromDB(ClientTemplate<int>::getObjectID()) == "screwdriver_1" ||
-                     getObjectNameFromDB(ClientTemplate<int>::getObjectID()) == "screwdriver_2"   )
+            if      (getObjectNameFromDB(ClientTemplate<int>::getObjectID()) == "screwdriver"   )
             {
                 if (getPos().z < -0.325)
                 {
@@ -107,7 +106,9 @@ protected:
             if      (getObjectNameFromDB(ClientTemplate<int>::getObjectID()) == "foot_1" ||
                      getObjectNameFromDB(ClientTemplate<int>::getObjectID()) == "foot_2" ||
                      getObjectNameFromDB(ClientTemplate<int>::getObjectID()) == "foot_3" ||
-                     getObjectNameFromDB(ClientTemplate<int>::getObjectID()) == "foot_4"   )
+                     getObjectNameFromDB(ClientTemplate<int>::getObjectID()) == "foot_4" ||
+                     getObjectNameFromDB(ClientTemplate<int>::getObjectID()) == "foot_5" ||
+                     getObjectNameFromDB(ClientTemplate<int>::getObjectID()) == "foot_6"   )
             {
                 _y_offs = -0.05222;
             }
@@ -128,8 +129,7 @@ protected:
                 _x_offs = +0.00295;
                 _y_offs = -0.06204;
             }
-            else if (getObjectNameFromDB(ClientTemplate<int>::getObjectID()) == "screwdriver_1" ||
-                     getObjectNameFromDB(ClientTemplate<int>::getObjectID()) == "screwdriver_2"   )
+            else if (getObjectNameFromDB(ClientTemplate<int>::getObjectID()) == "screwdriver")
             {
                 _y_offs = -0.08195;
             }
