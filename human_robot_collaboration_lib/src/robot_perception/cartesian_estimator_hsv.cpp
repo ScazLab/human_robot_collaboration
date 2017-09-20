@@ -228,7 +228,7 @@ bool CartesianEstimatorHSV::addObjects(XmlRpc::XmlRpcValue _params)
         }
 
         res = res & addObject(static_cast<string>(i->first.c_str()),
-                              static_cast<int>(i->second["id"][0]),
+                              static_cast<int>(i->second["id"]),
                               static_cast<double>(i->second["size"][0]),
                               static_cast<double>(i->second["size"][1]),
                               hsvColorRange(i->second["HSV"]["H"], i->second["HSV"]["S"], i->second["HSV"]["V"]));
