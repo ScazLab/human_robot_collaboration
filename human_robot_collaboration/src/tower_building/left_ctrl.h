@@ -63,8 +63,6 @@ public:
     {
         setHomeConfiguration();
 
-        setState(START);
-
         insertAction("recover_"+std::string(ACTION_GET_PASS),
                      static_cast<f_action>(&LeftCtrl::recoverGetPass));
 

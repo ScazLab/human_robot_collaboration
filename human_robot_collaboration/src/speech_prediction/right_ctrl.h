@@ -21,6 +21,26 @@
 class RightCtrl : public ArmPerceptionCtrl
 {
 protected:
+
+    /**
+     * Recovers from errors during execution. It provides a basic interface,
+     * but it is advised to specialize this function in the ArmCtrl's children.
+     */
+    void recoverFromError()
+    {
+        if (getInternalRecovery() == true)
+        {
+            if (getAction() == ACTION_GET || getAction() == ACTION_GET_PASS)
+            {
+                recoverGet();
+            }
+            else
+            {
+                goHome();
+            }
+        }
+    }
+
     /**
      * Determines if a contact occurred by reading the IR sensor and looking for
      * eventual squish events. Since the SDK does not allow for setting custom squish params,
@@ -131,7 +151,6 @@ public:
                                 ArmPerceptionCtrl(_name, _limb, _use_robot)
     {
         setHomeConfiguration();
-        setState(START);
 
         removeAction(std::string(ACTION_HOLD));
 
