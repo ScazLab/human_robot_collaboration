@@ -30,6 +30,8 @@ protected:
     {
         if (getInternalRecovery() == true)
         {
+            ROS_INFO_COND(print_level>=1, "[%s] Recovering from error..", getLimb().c_str());
+
             if (getAction() == ACTION_GET || getAction() == ACTION_GET_PASS)
             {
                 recoverGet();
@@ -56,9 +58,11 @@ protected:
             if      (getObjectNameFromDB(ClientTemplate<int>::getObjectID()) == "foot_1" ||
                      getObjectNameFromDB(ClientTemplate<int>::getObjectID()) == "foot_2" ||
                      getObjectNameFromDB(ClientTemplate<int>::getObjectID()) == "foot_3" ||
-                     getObjectNameFromDB(ClientTemplate<int>::getObjectID()) == "foot_4"   )
+                     getObjectNameFromDB(ClientTemplate<int>::getObjectID()) == "foot_4" ||
+                     getObjectNameFromDB(ClientTemplate<int>::getObjectID()) == "foot_5" ||
+                     getObjectNameFromDB(ClientTemplate<int>::getObjectID()) == "foot_6"   )
             {
-                if (getPos().z < -0.315)
+                if (getPos().z < -0.327)
                 {
                     ROS_INFO("Object reached!");
                     return true;
@@ -71,7 +75,7 @@ protected:
                      getObjectNameFromDB(ClientTemplate<int>::getObjectID()) ==  "back_1" ||
                      getObjectNameFromDB(ClientTemplate<int>::getObjectID()) ==  "back_2"   )
             {
-                if (getPos().z < -0.30)
+                if (getPos().z < -0.312)
                 {
                     ROS_INFO("Object reached!");
                     return true;
@@ -79,7 +83,7 @@ protected:
             }
             if      (getObjectNameFromDB(ClientTemplate<int>::getObjectID()) == "screwdriver"   )
             {
-                if (getPos().z < -0.325)
+                if (getPos().z < -0.337)
                 {
                     ROS_INFO("Object reached!");
                     return true;
@@ -121,7 +125,7 @@ protected:
             else if (getObjectNameFromDB(ClientTemplate<int>::getObjectID()) == "top_1" ||
                      getObjectNameFromDB(ClientTemplate<int>::getObjectID()) == "top_2"   )
             {
-                _y_offs = -0.04183;
+                _y_offs = -0.04483;
             }
             else if (getObjectNameFromDB(ClientTemplate<int>::getObjectID()) == "back_1" ||
                      getObjectNameFromDB(ClientTemplate<int>::getObjectID()) == "back_2"   )

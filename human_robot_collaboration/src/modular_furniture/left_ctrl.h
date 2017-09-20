@@ -22,6 +22,27 @@ class LeftCtrl : public ArmPerceptionCtrl
 {
 protected:
     /**
+     * Recovers from errors during execution. It provides a basic interface,
+     * but it is advised to specialize this function in the ArmCtrl's children.
+     */
+    void recoverFromError()
+    {
+        if (getInternalRecovery() == true)
+        {
+            ROS_INFO_COND(print_level>=1, "[%s] Recovering from errror..", getLimb().c_str());
+
+            if (getAction() == ACTION_GET || getAction() == ACTION_GET_PASS)
+            {
+                recoverGet();
+            }
+            else
+            {
+                goHome();
+            }
+        }
+    }
+
+    /**
      * Passes an object to the human (or places it onto the workspace)
      *
      * @return true/false if success/failure
