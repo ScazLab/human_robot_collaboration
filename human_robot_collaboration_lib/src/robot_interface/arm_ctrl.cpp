@@ -4,10 +4,13 @@ using namespace std;
 using namespace geometry_msgs;
 using namespace baxter_core_msgs;
 
-ArmCtrl::ArmCtrl(string _name, string _limb, bool _use_robot, bool _use_forces, bool _use_trac_ik, bool _use_cart_ctrl) :
-                 RobotInterface(_name,_limb, _use_robot, THREAD_FREQ, _use_forces, _use_trac_ik, _use_cart_ctrl),
-                 Gripper(_limb, _use_robot), sub_state(""), action(""), prev_action(""), sel_object_id(-1),
-                 home_conf(7), arm_speed(ARM_SPEED), cuff_button_pressed(false)
+ArmCtrl::ArmCtrl(string _name, string _limb, bool _use_robot,
+                 bool _use_forces, bool _use_trac_ik, bool _use_cart_ctrl) :
+                 RobotInterface(_name,_limb, _use_robot, THREAD_FREQ,
+                                _use_forces, _use_trac_ik, _use_cart_ctrl),
+                 Gripper(_limb, _use_robot), sub_state(""), action(""),
+                 prev_action(""), sel_object_id(-1), home_conf(7), arm_speed(ARM_SPEED),
+                 cuff_button_pressed(false), pickedup_pos(-10.0, -10.0, -10.0)
 {
     std::string other_limb = getLimb() == "right" ? "left" : "right";
 
@@ -44,7 +47,8 @@ bool ArmCtrl::startThread()
 {
     // This allows to call multiple threads within the same thread object.
     // As written in http://en.cppreference.com/w/cpp/thread/thread/joinable :
-    //      A thread that has finished executing code, but has not yet been joined is still considered
+    //      A thread that has finished executing code,
+    //      but has not yet been joined is still considered
     //      an active thread of execution and is therefore joinable.
     // So, we need to join the thread in order to spun out a new one anyways.
     if (arm_thread.joinable())    { arm_thread.join(); };
@@ -75,7 +79,13 @@ void ArmCtrl::InternalThreadEntry()
              s == DONE  || s == KILLED )
     {
         if (doAction(s, a))   setState(DONE);
-        else                  setState(ERROR);
+        else
+        {
+            ROS_INFO_COND(print_level>=1, "[%s] Action %s in state %i failed",
+                                             getLimb().c_str(), a.c_str(), s);
+            setState(ERROR);
+            recoverFromError();
+        }
     }
     else
     {
@@ -147,8 +157,10 @@ bool ArmCtrl::serviceCb(human_robot_collaboration_msgs::DoAction::Request  &req,
     setAction(action);
 
     if (action != ACTION_HOME && action != ACTION_RELEASE && action != ACTION_HOLD &&
-        action != std::string(ACTION_HOLD) +   "_leg" && action != std::string(ACTION_HOLD) + "_top" &&
-        action != "start_" + std::string(ACTION_HOLD) && action != "end_" + std::string(ACTION_HOLD))
+        action != std::string(ACTION_HOLD) + "_leg" &&
+        action != std::string(ACTION_HOLD) + "_top" &&
+        action != "start_" + std::string(ACTION_HOLD) &&
+        action !=   "end_" + std::string(ACTION_HOLD))
     {
         setObjectIDs(areObjectsInDB(obj_ids));
 
@@ -193,10 +205,9 @@ bool ArmCtrl::serviceCb(human_robot_collaboration_msgs::DoAction::Request  &req,
             return true;
         }
 
-        if (getState() == KILLED)
+        if (int(getState()) == KILLED)
         {
             res.response = ACT_FAILED;
-            recoverFromError();
         }
 
         r.sleep();
@@ -208,7 +219,7 @@ bool ArmCtrl::serviceCb(human_robot_collaboration_msgs::DoAction::Request  &req,
         res.success = true;
     }
 
-    if (getState() == ERROR)
+    if (int(getState()) == ERROR)
     {
         res.response = getSubState();
     }
@@ -274,7 +285,8 @@ string ArmCtrl::getObjectNameFromDB(int id)
 
 int ArmCtrl::getObjectIDFromDB(string _name)
 {
-    for( map<int, string>::const_iterator it = object_db.begin(); it != object_db.end(); ++it )
+    for(map<int, string>::const_iterator it = object_db.begin();
+                                    it != object_db.end(); ++it)
     {
         if (_name == it->second) return it->first;
     }
@@ -375,8 +387,7 @@ bool ArmCtrl::doAction(int s, std::string a)
 {
     if (isActionInDB(a))
     {
-        if (callAction(a))         return true;
-        else                recoverFromError();
+        return callAction(a);
     }
     else
     {
@@ -546,7 +557,7 @@ bool ArmCtrl::goToPose(double px, double py, double pz,
     bool res = RobotInterface::goToPose(px, py, pz,
                                         ox, oy, oz, ow, mode, disable_coll_av);
 
-    if (res == false && getSubState() != ACT_FAILED)
+    if (res == false && int(getState()) != KILLED && getSubState() != ACT_FAILED)
     {
         setSubState(INV_KIN_FAILED);
     }
@@ -604,7 +615,7 @@ bool ArmCtrl::startHold()
     double time=getObjectIDs().size()>=2?getObjectIDs()[0]:30.0;
 
     if (!goHoldPose())                  { return false; }
-    ros::Duration(1.0).sleep();
+    ros::Duration(0.5).sleep();
     if (!waitForUserCuffUpperFb(time))  { return false; }
     if (!close())                       { return false; }
     ros::Duration(1.0).sleep();
@@ -685,17 +696,17 @@ bool ArmCtrl::homePoseStrict(bool disable_coll_av)
 
 bool ArmCtrl::getObject()
 {
+    setPickedUpPos(Eigen::Vector3d(-10.0, -10.0, -10.0));
     if (!homePoseStrict())          return false;
     ros::Duration(0.05).sleep();
     if (!selectObject4PickUp())     return false;
     if (!pickUpObject())            return false;
     if (!close())                   return false;
-    ros::Duration(2.0).sleep();
-    if (!open())                    return false;
+    setPickedUpPos(getPos());
     if (!moveArm("up", 0.1))        return false;
     if (!homePoseStrict())          return false;
 
-    return false;
+    return true;
 }
 
 bool ArmCtrl::passObject()
@@ -851,7 +862,8 @@ void ArmCtrl::resetSquish()
     XmlRpc::XmlRpcValue squish_params;
     for (vector<int>::size_type i = 0; i != squish_thresholds.size(); ++i)
     {
-        // rewrite the squish parameters from the initial squish thresholds stored in reduceSquish()
+        // rewrite the squish parameters from the initial
+        // squish thresholds stored in reduceSquish()
         squish_params[i] = squish_thresholds[i];
     }
 
@@ -868,17 +880,24 @@ void ArmCtrl::recoverFromError()
 {
     if (internal_recovery == true)
     {
+        ROS_INFO_COND(print_level>=1, "[%s] Recovering from errror..", getLimb().c_str());
+
         goHome();
     }
 }
 
 bool ArmCtrl::setState(int _state)
 {
-    ROS_DEBUG("[%s] Setting state to %i", getLimb().c_str(), _state);
+    ROS_INFO_COND(print_level>=5, "[%s] Setting state to %i", getLimb().c_str(), _state);
 
-    if (_state == KILLED && getState() != WORKING)
+    if (_state == KILLED && int(getState()) != WORKING)
     {
-        ROS_WARN_THROTTLE(2, "[%s] Attempted to kill a non-working controller", getLimb().c_str());
+        if (int(getState()) != KILLED)
+        {
+            ROS_WARN_THROTTLE(2, "[%s] Attempted to kill a non-working controller",
+                                                                getLimb().c_str());
+        }
+
         return false;
     }
 
@@ -903,7 +922,8 @@ bool ArmCtrl::setArmSpeed(double _arm_speed)
 
 void ArmCtrl::setSubState(const string& _sub_state)
 {
-    // ROS_DEBUG("[%s] Setting sub state to: %s", getLimb().c_str(), _sub_state.c_str());
+    ROS_INFO_COND(print_level>=2, "[%s] Setting sub state to: %s",
+                                   getLimb().c_str(), _sub_state.c_str());
     sub_state =  _sub_state;
 }
 
@@ -919,6 +939,20 @@ bool ArmCtrl::setAction(const string& _action)
 bool ArmCtrl::setPrevAction(const string& _prev_action)
 {
     prev_action = _prev_action;
+
+    return true;
+}
+
+bool ArmCtrl::setPickedUpPos(const geometry_msgs::Point& _pickedup_pos)
+{
+    Eigen::Vector3d p_pos(_pickedup_pos.x, _pickedup_pos.y, _pickedup_pos.z);
+
+    return setPickedUpPos(p_pos);
+}
+
+bool ArmCtrl::setPickedUpPos(const Eigen::Vector3d& _pickedup_pos)
+{
+    pickedup_pos = _pickedup_pos;
 
     return true;
 }

@@ -89,6 +89,9 @@ private:
     // Vector of squish thresholds (NOT CURRENTLY USED)
     std::vector<double> squish_thresholds;
 
+    // Position of the latest picked up object.
+    Eigen::Vector3d pickedup_pos;
+
     /**
      * Provides basic functionalities for the object, such as a goHome and open.
      * For deeper, class-specific specialization, please modify doAction() instead.
@@ -601,14 +604,31 @@ public:
      */
     bool setArmSpeed(double _arm_speed);
 
+    /**
+     * Sets the position of the picked up object to a new value
+     *
+     * @param  _pickedup_pos The new picked up object position
+     * @return               true/false if success/failure
+     */
+    bool setPickedUpPos(const geometry_msgs::Point& _pickedup_pos);
+
+    /**
+     * Sets the position of the picked up object to a new value
+     *
+     * @param  _pickedup_pos The new picked up object position
+     * @return               true/false if success/failure
+     */
+    bool setPickedUpPos(const Eigen::Vector3d& _pickedup_pos);
+
     /* Self-explaining "getters" */
-    std::string       getSubState() { return         sub_state; };
-    std::string         getAction() { return            action; };
-    std::string     getPrevAction() { return       prev_action; };
-    int               getObjectID() { return     sel_object_id; };
-    std::vector<int> getObjectIDs() { return        object_ids; };
-    bool      getInternalRecovery() { return internal_recovery; };
-    double            getArmSpeed() { return         arm_speed; };
+    std::string        getSubState() { return         sub_state; };
+    std::string          getAction() { return            action; };
+    std::string      getPrevAction() { return       prev_action; };
+    int                getObjectID() { return     sel_object_id; };
+    std::vector<int>  getObjectIDs() { return        object_ids; };
+    bool       getInternalRecovery() { return internal_recovery; };
+    double             getArmSpeed() { return         arm_speed; };
+    Eigen::Vector3d getPickedUpPos() { return      pickedup_pos; };
 };
 
 #endif
