@@ -244,8 +244,9 @@ bool Gripper::open(bool _block, double _timeout)
         // check if the gripper is already not sucking
         if(not is_sucking())
         {
-            ROS_WARN("[%s_gripper][%s] requested open but gripper is already open",
-                                         getGripperLimb().c_str(), type().c_str());
+            ROS_WARN_COND(g_print_level>=1,"[%s_gripper][%s] requested open"
+                                           " but gripper is already open",
+                                           getGripperLimb().c_str(), type().c_str());
 
             return false;
         }
