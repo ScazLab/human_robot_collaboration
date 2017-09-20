@@ -473,6 +473,12 @@ void RobotInterface::cuffLowerCb(const baxter_core_msgs::DigitalIOState& _msg)
 {
     if (_msg.state == baxter_core_msgs::DigitalIOState::PRESSED)
     {
+        // This if is placed because we couldn't have a ROS_INFO_COND_THROTTLE
+        if (print_level >= 2)
+        {
+            ROS_INFO_THROTTLE(1, "Lower cuff button pressed!");
+        }
+
         setState(KILLED);
     }
 
@@ -483,6 +489,12 @@ void RobotInterface::cuffUpperCb(const baxter_core_msgs::DigitalIOState& _msg)
 {
     if (_msg.state == baxter_core_msgs::DigitalIOState::PRESSED)
     {
+        // This if is placed because we couldn't have a ROS_INFO_COND_THROTTLE
+        if (print_level >= 2)
+        {
+            ROS_INFO_THROTTLE(1, "Upper cuff button pressed!");
+        }
+
         setState(KILLED);
     }
 
@@ -1055,6 +1067,14 @@ geometry_msgs::Pose RobotInterface::getPose()
 bool RobotInterface::setState(int _state)
 {
     state.set(_state);
+
+    // This if is placed because we couldn't have a ROS_INFO_COND_THROTTLE
+    if (print_level >= 1)
+    {
+        ROS_INFO_THROTTLE(1, "[%s] State set to %s",
+                             getLimb().c_str(), string(getState()).c_str());
+    }
+
 
     // disable the cartesian controller server
     if (state == WORKING)
