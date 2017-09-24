@@ -57,21 +57,16 @@ protected:
         {
             std::string object_name = getObjectNameFromDB(ClientTemplate<int>::getObjectID());
             double z_contact = 0.0;
-            if      (object_name == "foot_1" ||
-                     object_name == "foot_2" ||
-                     object_name == "foot_3" ||
-                     object_name == "foot_4" ||
-                     object_name == "foot_5" ||
-                     object_name == "foot_6"   )
+
+            if      (object_name == "foot_1" || object_name == "foot_2" ||
+                     object_name == "foot_3" || object_name == "foot_4" ||
+                     object_name == "foot_5" || object_name == "foot_6"   )
             {
                 z_contact = -0.327;
             }
-            else if (object_name == "front_1" ||
-                     object_name == "front_2" ||
-                     object_name ==   "top_1" ||
-                     object_name ==   "top_2" ||
-                     object_name ==  "back_1" ||
-                     object_name ==  "back_2"   )
+            else if (object_name == "front_1" || object_name == "front_2" ||
+                     object_name ==   "top_1" || object_name ==   "top_2" ||
+                     object_name ==  "back_1" || object_name ==  "back_2"   )
             {
                 z_contact = -0.312;
             }
@@ -79,6 +74,11 @@ protected:
             {
                 z_contact = -0.337;
             }
+            else
+            {
+                return ArmPerceptionCtrl::determineContactCondition();
+            }
+
             if (getPos().z < z_contact)
             {
                 ROS_INFO("Object reached!");
@@ -103,28 +103,23 @@ protected:
         if (getAction() == ACTION_GET || getAction() == ACTION_GET_PASS)
         {
             std::string object_name = getObjectNameFromDB(ClientTemplate<int>::getObjectID());
-            if      (object_name == "foot_1" ||
-                     object_name == "foot_2" ||
-                     object_name == "foot_3" ||
-                     object_name == "foot_4" ||
-                     object_name == "foot_5" ||
-                     object_name == "foot_6"   )
+
+            if      (object_name == "foot_1" || object_name == "foot_2" ||
+                     object_name == "foot_3" || object_name == "foot_4" ||
+                     object_name == "foot_5" || object_name == "foot_6"   )
             {
                 _y_offs = -0.05222;
             }
-            else if (object_name == "front_1" ||
-                     object_name == "front_2"   )
+            else if (object_name == "front_1" || object_name == "front_2"   )
             {
                 _x_offs = +0.01091;
                 _y_offs = -0.03952;
             }
-            else if (object_name == "top_1" ||
-                     object_name == "top_2"   )
+            else if (object_name == "top_1" || object_name == "top_2"   )
             {
                 _y_offs = -0.04483;
             }
-            else if (object_name == "back_1" ||
-                     object_name == "back_2"   )
+            else if (object_name == "back_1" || object_name == "back_2"   )
             {
                 _x_offs = +0.00295;
                 _y_offs = -0.06204;
