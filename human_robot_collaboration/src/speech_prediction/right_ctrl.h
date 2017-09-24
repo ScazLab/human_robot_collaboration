@@ -55,39 +55,34 @@ protected:
     {
         if (getAction() == ACTION_GET || getAction() == ACTION_GET_PASS)
         {
-            if      (getObjectNameFromDB(ClientTemplate<int>::getObjectID()) == "foot_1" ||
-                     getObjectNameFromDB(ClientTemplate<int>::getObjectID()) == "foot_2" ||
-                     getObjectNameFromDB(ClientTemplate<int>::getObjectID()) == "foot_3" ||
-                     getObjectNameFromDB(ClientTemplate<int>::getObjectID()) == "foot_4" ||
-                     getObjectNameFromDB(ClientTemplate<int>::getObjectID()) == "foot_5" ||
-                     getObjectNameFromDB(ClientTemplate<int>::getObjectID()) == "foot_6"   )
+            std::string object_name = getObjectNameFromDB(ClientTemplate<int>::getObjectID());
+            double z_contact = 0.0;
+            if      (object_name == "foot_1" ||
+                     object_name == "foot_2" ||
+                     object_name == "foot_3" ||
+                     object_name == "foot_4" ||
+                     object_name == "foot_5" ||
+                     object_name == "foot_6"   )
             {
-                if (getPos().z < -0.327)
-                {
-                    ROS_INFO("Object reached!");
-                    return true;
-                }
+                z_contact = -0.327;
             }
-            else if (getObjectNameFromDB(ClientTemplate<int>::getObjectID()) == "front_1" ||
-                     getObjectNameFromDB(ClientTemplate<int>::getObjectID()) == "front_2" ||
-                     getObjectNameFromDB(ClientTemplate<int>::getObjectID()) ==   "top_1" ||
-                     getObjectNameFromDB(ClientTemplate<int>::getObjectID()) ==   "top_2" ||
-                     getObjectNameFromDB(ClientTemplate<int>::getObjectID()) ==  "back_1" ||
-                     getObjectNameFromDB(ClientTemplate<int>::getObjectID()) ==  "back_2"   )
+            else if (object_name == "front_1" ||
+                     object_name == "front_2" ||
+                     object_name ==   "top_1" ||
+                     object_name ==   "top_2" ||
+                     object_name ==  "back_1" ||
+                     object_name ==  "back_2"   )
             {
-                if (getPos().z < -0.312)
-                {
-                    ROS_INFO("Object reached!");
-                    return true;
-                }
+                z_contact = -0.312;
             }
-            if      (getObjectNameFromDB(ClientTemplate<int>::getObjectID()) == "screwdriver"   )
+            else if (object_name == "screwdriver_1"   )
             {
-                if (getPos().z < -0.337)
-                {
-                    ROS_INFO("Object reached!");
-                    return true;
-                }
+                z_contact = -0.337;
+            }
+            if (getPos().z < z_contact)
+            {
+                ROS_INFO("Object reached!");
+                return true;
             }
         }
         return false;
@@ -107,33 +102,34 @@ protected:
     {
         if (getAction() == ACTION_GET || getAction() == ACTION_GET_PASS)
         {
-            if      (getObjectNameFromDB(ClientTemplate<int>::getObjectID()) == "foot_1" ||
-                     getObjectNameFromDB(ClientTemplate<int>::getObjectID()) == "foot_2" ||
-                     getObjectNameFromDB(ClientTemplate<int>::getObjectID()) == "foot_3" ||
-                     getObjectNameFromDB(ClientTemplate<int>::getObjectID()) == "foot_4" ||
-                     getObjectNameFromDB(ClientTemplate<int>::getObjectID()) == "foot_5" ||
-                     getObjectNameFromDB(ClientTemplate<int>::getObjectID()) == "foot_6"   )
+            std::string object_name = getObjectNameFromDB(ClientTemplate<int>::getObjectID());
+            if      (object_name == "foot_1" ||
+                     object_name == "foot_2" ||
+                     object_name == "foot_3" ||
+                     object_name == "foot_4" ||
+                     object_name == "foot_5" ||
+                     object_name == "foot_6"   )
             {
                 _y_offs = -0.05222;
             }
-            else if (getObjectNameFromDB(ClientTemplate<int>::getObjectID()) == "front_1" ||
-                     getObjectNameFromDB(ClientTemplate<int>::getObjectID()) == "front_2"   )
+            else if (object_name == "front_1" ||
+                     object_name == "front_2"   )
             {
                 _x_offs = +0.01091;
                 _y_offs = -0.03952;
             }
-            else if (getObjectNameFromDB(ClientTemplate<int>::getObjectID()) == "top_1" ||
-                     getObjectNameFromDB(ClientTemplate<int>::getObjectID()) == "top_2"   )
+            else if (object_name == "top_1" ||
+                     object_name == "top_2"   )
             {
                 _y_offs = -0.04483;
             }
-            else if (getObjectNameFromDB(ClientTemplate<int>::getObjectID()) == "back_1" ||
-                     getObjectNameFromDB(ClientTemplate<int>::getObjectID()) == "back_2"   )
+            else if (object_name == "back_1" ||
+                     object_name == "back_2"   )
             {
                 _x_offs = +0.00295;
                 _y_offs = -0.06204;
             }
-            else if (getObjectNameFromDB(ClientTemplate<int>::getObjectID()) == "screwdriver")
+            else if (object_name == "screwdriver_1")
             {
                 _y_offs = -0.08195;
             }
