@@ -57,7 +57,10 @@ protected:
         ros::Duration(0.5).sleep();
         if (!waitForUserCuffUpperFb())         return false;
 
-        if (ClientTemplate<int>::getObjectID() != 200)
+        std::string object_name = getObjectNameFromDB(ClientTemplate<int>::getObjectID());
+        if (object_name != "seat" &&
+            object_name != "chair_back" &&
+            object_name != "table_top")
         {
             if (!goToPose(0.50, 0.93, 0.2, POOL_ORI_L)) return false;
             ros::Duration(0.22).sleep();
