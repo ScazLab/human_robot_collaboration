@@ -123,7 +123,8 @@ protected:
             }
             else if (object_name == "top_1" || object_name == "top_2"   )
             {
-                _y_offs = -0.04483;
+                _x_offs = +0.01300;
+                _y_offs = -0.05500;
             }
             else if (object_name == "back_1" || object_name == "back_2"   )
             {
