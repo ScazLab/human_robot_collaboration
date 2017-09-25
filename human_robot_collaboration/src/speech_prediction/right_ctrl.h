@@ -65,10 +65,13 @@ protected:
                 z_contact = -0.327;
             }
             else if (object_name == "front_1" || object_name == "front_2" ||
-                     object_name ==   "top_1" || object_name ==   "top_2" ||
-                     object_name ==  "back_1" || object_name ==  "back_2"   )
+                     object_name ==   "top_1" || object_name ==   "top_2"   )
             {
                 z_contact = -0.312;
+            }
+            else if (object_name ==  "back_1" || object_name ==  "back_2")
+            {
+                z_contact = -0.320;
             }
             else if (object_name == "screwdriver_1"   )
             {
