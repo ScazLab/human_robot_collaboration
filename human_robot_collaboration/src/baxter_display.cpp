@@ -184,7 +184,7 @@ private:
             putText(img, "action:", cv::Point(20,400), fontFace, fontScale/2, col, 2, 8);
             putText(img, state.action, cv::Point(150,400), fontFace, fontScale/1.25, col, thickness, CV_AA);
         }
-        if (state.object !="")
+        if (false)
         {
             putText(img, "object:", cv::Point(20,500), fontFace, fontScale/2, col, 2, 8);
             putText(img, state.object, cv::Point(150,500), fontFace, fontScale/1.25, col, thickness, CV_AA);
