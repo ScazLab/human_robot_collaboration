@@ -65,7 +65,9 @@ protected:
                 z_contact = -0.327;
             }
             else if (object_name == "front_1" || object_name == "front_2" ||
-                     object_name ==   "top_1" || object_name ==   "top_2"   )
+                     object_name == "front_3" || object_name == "front_4" ||
+                     object_name ==   "top_1" || object_name ==   "top_2" ||
+                     object_name ==   "top_3" || object_name ==   "top_4"   )
             {
                 z_contact = -0.312;
             }
@@ -113,7 +115,8 @@ protected:
             {
                 _y_offs = -0.05222;
             }
-            else if (object_name == "front_1" || object_name == "front_2"   )
+            else if (object_name == "front_1" || object_name == "front_2" ||
+                     object_name == "front_3" || object_name == "front_4"   )
             {
                 _x_offs = +0.01091;
                 _y_offs = -0.03952;
