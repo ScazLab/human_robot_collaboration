@@ -84,7 +84,7 @@ class ListenSuscriber(CommunicationSuscriber):
         self.sub = rospy.Subscriber(topic, transcript, self.cb)
 
     def _handle_msg(self, msg):
-        self.found_message(msg.data.transcript)
+        self.found_message(msg.transcript)
 
     def cb(self, msg):
         if self.listening:
