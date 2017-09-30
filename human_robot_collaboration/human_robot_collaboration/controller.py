@@ -72,6 +72,7 @@ class BaseController(object):
         rospy.set_param('/action_provider/internal_recovery', recovery)
         # Timer to log events
         self.timer = Timer(path=timer_path)
+        self.print_level = rospy.get_param('/print_level', 0)
         rospy.loginfo('Done.')
         self._home()  # Home position
 
