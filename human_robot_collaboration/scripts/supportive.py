@@ -186,7 +186,7 @@ class POMCPController(BaseController):
         self.ask('Tell me when you are done.', context=['done', "I'm done", "finished"])
         togo = 8
         while togo > 0:
-            ans = self.answer_sub.wait_for_msg() or ""
+            ans = self.listen_sub.wait_for_msg() or ""
             if ans:
               rospy.loginfo("Got human message: '%s'", ans)
             if 'done' in ans or 'finish' in ans:
@@ -199,7 +199,7 @@ class POMCPController(BaseController):
         if topic != 'hold':
             raise ValueError("Don't know how to ask about '%s'." % topic)
         self.ask('Do you want me to hold?', context=['Yes', "No", "don't"])
-        ans = self.answer_sub.wait_for_msg()
+        ans = self.listen_sub.wait_for_msg()
         ans = "" if ans is None else ans
         rospy.loginfo("Got human message: '%s'", ans)
         ans = ans.lower()

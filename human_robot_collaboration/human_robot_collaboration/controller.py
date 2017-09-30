@@ -23,6 +23,9 @@ class BaseController(object):
 
     NODE_NAME = "experiment_controller"
 
+    LEFT = 0
+    RIGHT = 1
+
     COM_TOPIC = '/web_interface/pub'
     LISTEN_TOPIC = '/ros_speech2text/user_output'
     ERR_TOPIC = '/robot/digital_io/left_lower_button/state'
@@ -58,9 +61,9 @@ class BaseController(object):
         self._last_say_req = finished_request
         # Suscriber to human answers
         if listen:
-            self.answer_sub = ListenSuscriber(self.LISTEN_TOPIC, self._stop)
+            self.listen_sub = ListenSuscriber(self.LISTEN_TOPIC, self._stop)
         else:
-            self.answer_sub = CommunicationSuscriber(self.COM_TOPIC, self._stop)
+            self.listen_sub = CommunicationSuscriber(self.COM_TOPIC, self._stop)
         # Suscriber to errors
         self.error_sub = ButtonSuscriber(self.ERR_TOPIC, timeout=5)
         self.left_button_sub = ButtonSuscriber(self.LEFT_BUTTON, timeout=60)
@@ -74,14 +77,14 @@ class BaseController(object):
 
     def _action(self, side, args, kwargs):
         wait = kwargs.pop('wait', True)
-        if side == 0:
+        if side == self.LEFT:
             self._last_action_left_request.wait_result()
             s = self._action_left
         else:
             self._last_action_right_request.wait_result()
             s = self._action_right
         r = ServiceRequest(s, *args)
-        if side == 0:
+        if side == self.RIGHT:
             self._last_action_left_request = r
         else:
             self._last_action_right_request = r
@@ -101,10 +104,10 @@ class BaseController(object):
             return None
 
     def action_left(self, *args, **kwargs):
-        return self._action(0, args, kwargs)
+        return self._action(self.LEFT, args, kwargs)
 
     def action_right(self, *args, **kwargs):
-        return self._action(1, args, kwargs)
+        return self._action(self.RIGHT, args, kwargs)
 
     def _home(self):
         rospy.loginfo('Going home before starting.')
@@ -137,7 +140,7 @@ class BaseController(object):
         rospy.signal_shutdown("controller shutdown")
 
     def _abort_waiting_suscribers(self):
-        self.answer_sub.listening = False
+        self.listen_sub.listening = False
         self.error_sub.listening = False
         self.error_sub.listening = False
         self.left_button_sub.listening = False
@@ -164,6 +167,6 @@ class BaseController(object):
         self.say(question, sync=False)
         if context is not None:
             self.set_listen_context(context)
-        ans = self.answer_sub.wait_for_msg(timeout=timeout)
+        ans = self.listen_sub.wait_for_msg(timeout=timeout)
         rospy.loginfo("Got human answer: '%s'" % ans)
         return ans

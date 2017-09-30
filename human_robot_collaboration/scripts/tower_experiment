@@ -147,7 +147,7 @@ class GPController(BaseGPController):
     def __init__(self, *args, **kargs):
         kargs['right'] = False
         super(GPController, self).__init__(*args, **kargs)
-        self.answer_sub.timeout = 200
+        self.listen_sub.timeout = 200
 
     def take_action(self, action):
         a, o = action.split('-', 1)
@@ -169,9 +169,9 @@ class GPController(BaseGPController):
     def action_ask(self, obj):
         sentence = self._get_sentence(int(obj))
         rospy.loginfo("Asking: \"{}\"".format(sentence))
-        ans = self.answer_sub.start_listening()
+        ans = self.listen_sub.start_listening()
         self.say(sentence, sync=False)
-        ans = self.answer_sub.wait_for_msg(continuing=True)
+        ans = self.listen_sub.wait_for_msg(continuing=True)
         if ans is None or ans == 'stop':
             return self.NONE  # Not handled
         elif ans == 'yes':
