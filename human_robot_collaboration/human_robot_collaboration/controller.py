@@ -27,7 +27,7 @@ class BaseController(object):
     RIGHT = 1
 
     COM_TOPIC = '/web_interface/pub'
-    LISTEN_TOPIC = '/ros_speech2text/user_output'
+    LISTEN_TOPIC = '/ros_speech2text/transcript'
     ERR_TOPIC = '/robot/digital_io/left_lower_button/state'
     LEFT_BUTTON = '/robot/digital_io/left_upper_button/state'
     RIGHT_BUTTON = '/robot/digital_io/right_upper_button/state'
