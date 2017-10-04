@@ -1,3 +1,5 @@
+from threading import Lock
+
 import rospy
 from std_msgs.msg import String
 
@@ -5,19 +7,20 @@ from baxter_core_msgs.msg import DigitalIOState
 from ros_speech2text.msg import transcript
 
 
-class WaitForOneSuscriber(object):
-    """Suscriber to wait for an expected message.
+class WaitForOneSubscriber(object):
+    """Subscriber to wait for an expected message.
     """
 
     period = .1
 
     def __init__(self, topic, timeout=10.):
-        self._suscribe(topic)
-        self.listening = False
-        self.timeout = timeout
+        self._lock = Lock()
         self._reset_msg()
+        self._listening = False
+        self.timeout = timeout
+        self._subscribe(topic)
 
-    def _suscribe(self, topic):
+    def _subscribe(self, topic):
         raise NotImplementedError()
 
     def _reset_msg(self):
@@ -32,13 +35,24 @@ class WaitForOneSuscriber(object):
         else:
             pass
 
+    @property
+    def listening(self):
+        with self._lock:
+            return self._listening
+
     def start_listening(self):
-        self._reset_msg()
-        self.listening = True
+        with self._lock:
+            self._reset_msg()
+            self._listening = True
+
+    def stop_listening(self, found=None):
+        with self._lock:
+            self._listening = False
+            if found is not None:
+                self.last_msg = found
 
     def found_message(self, value):
-        self.last_msg = value
-        self.listening = False
+        self.stop_listening(found=value)
 
     def wait_for_msg(self, timeout=None, continuing=False):
         if timeout is None:
@@ -49,19 +63,20 @@ class WaitForOneSuscriber(object):
         while (self.listening and
                rospy.Time.now() < start_time + rospy.Duration(timeout)):
             rospy.sleep(self.period)
-        self.listening = False
-        return self.last_msg
+        self.stop_listening()
+        with self._lock:
+            return self.last_msg
 
 
-class CommunicationSuscriber(WaitForOneSuscriber):
+class CommunicationSubscriber(WaitForOneSubscriber):
 
     STOP = 'stop'
 
     def __init__(self, topic, stop_cb, timeout=10):
-        super(CommunicationSuscriber, self).__init__(topic, timeout=timeout)
+        super(CommunicationSubscriber, self).__init__(topic, timeout=timeout)
         self.stop_cb = stop_cb
 
-    def _suscribe(self, topic):
+    def _subscribe(self, topic):
         self.sub = rospy.Subscriber(topic, String, self.cb)
 
     def _handle_msg(self, msg):
@@ -76,26 +91,18 @@ class CommunicationSuscriber(WaitForOneSuscriber):
             pass
 
 
-class ListenSuscriber(CommunicationSuscriber):
+class ListenSubscriber(WaitForOneSubscriber):
 
-    STOP = 'stop'
-
-    def _suscribe(self, topic):
+    def _subscribe(self, topic):
         self.sub = rospy.Subscriber(topic, transcript, self.cb)
 
     def _handle_msg(self, msg):
         self.found_message(msg.transcript)
 
-    def cb(self, msg):
-        if self.listening:
-            self._handle_msg(msg)
-        else:
-            pass
 
+class ButtonSubscriber(WaitForOneSubscriber):
 
-class ButtonSuscriber(WaitForOneSuscriber):
-
-    def _suscribe(self, topic):
+    def _subscribe(self, topic):
         self.sub = rospy.Subscriber(topic, DigitalIOState, self.cb)
 
     def _handle_msg(self, msg):

@@ -21,7 +21,7 @@ RELEASE = 'release'
 RECOVER = 'recover'
 
 
-class WaitForOneSuscriber:
+class WaitForOneSubscriber:
 
     period = .1
 
@@ -56,7 +56,7 @@ class WaitForOneSuscriber:
         return self.last_msg
 
 
-class CommunicationSuscriber(WaitForOneSuscriber):
+class CommunicationSubscriber(WaitForOneSubscriber):
 
     def _suscribe(self, topic):
         self.sub = rospy.Subscriber(COM_TOPIC, String, self.cb)
@@ -65,7 +65,7 @@ class CommunicationSuscriber(WaitForOneSuscriber):
         self.last_msg = msg.data
 
 
-class ErrorSuscriber(WaitForOneSuscriber):
+class ErrorSubscriber(WaitForOneSubscriber):
 
     def _suscribe(self, topic):
         self.sub = rospy.Subscriber(ERR_TOPIC, DigitalIOState, self.cb)
@@ -84,8 +84,8 @@ pgr = GraphPolicyRunner(p.solve())
 rospy.init_node("hold_and_release_controller")
 rospy.wait_for_service(SERVICE)
 action_service = rospy.ServiceProxy(SERVICE, DoAction)
-com_sub = CommunicationSuscriber(COM_TOPIC)
-error_sub = ErrorSuscriber(ERR_TOPIC, timeout=5)
+com_sub = CommunicationSubscriber(COM_TOPIC)
+error_sub = ErrorSubscriber(ERR_TOPIC, timeout=5)
 # TODO: filter irrelevant messages
 
 finished = False

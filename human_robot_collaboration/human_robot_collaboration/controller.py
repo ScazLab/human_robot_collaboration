@@ -2,7 +2,7 @@ import rospy
 
 from .timer import Timer
 from .service_request import ServiceRequest, finished_request
-from .suscribers import CommunicationSuscriber, ButtonSuscriber, ListenSuscriber
+from .suscribers import CommunicationSubscriber, ButtonSubscriber, ListenSubscriber
 from human_robot_collaboration_msgs.srv import DoAction, DoActionRequest
 from svox_tts.srv import Speech, SpeechRequest
 
@@ -38,6 +38,7 @@ class BaseController(object):
     def __init__(self, timer_path=None, left=True, right=True, speech=True,
                  listen=True, recovery=False):
         self.finished = False
+        self.listeners = []
         # ROS stuff
         rospy.init_node(self.NODE_NAME, disable_signals=True)
         if left:  # Left arm action service client
@@ -59,15 +60,19 @@ class BaseController(object):
             rospy.wait_for_service(self.SPEECH_SERVICE)
             self.speech = rospy.ServiceProxy(self.SPEECH_SERVICE, Speech)
         self._last_say_req = finished_request
-        # Suscriber to human answers
+        # Subscriber to human answers
         if listen:
-            self.listen_sub = ListenSuscriber(self.LISTEN_TOPIC, self._stop)
+            self.listen_sub = ListenSubscriber(self.LISTEN_TOPIC, self._stop)
         else:
-            self.listen_sub = CommunicationSuscriber(self.COM_TOPIC, self._stop)
-        # Suscriber to errors
-        self.error_sub = ButtonSuscriber(self.ERR_TOPIC, timeout=5)
-        self.left_button_sub = ButtonSuscriber(self.LEFT_BUTTON, timeout=60)
-        self.right_button_sub = ButtonSuscriber(self.RIGHT_BUTTON, timeout=60)
+            self.listen_sub = CommunicationSubscriber(self.COM_TOPIC, self._stop)
+        self.listeners.append(self.listen_sub)
+        # Subscriber to errors
+        self.error_sub = ButtonSubscriber(self.ERR_TOPIC, timeout=5)
+        self.listeners.append(self.error_sub)
+        self.left_button_sub = ButtonSubscriber(self.LEFT_BUTTON, timeout=60)
+        self.listeners.append(self.left_button_sub)
+        self.right_button_sub = ButtonSubscriber(self.RIGHT_BUTTON, timeout=60)
+        self.listeners.append(self.right_button_sub)
         # Set ROS parameter for recovery
         rospy.set_param('/action_provider/internal_recovery', recovery)
         # Timer to log events
@@ -141,11 +146,8 @@ class BaseController(object):
         rospy.signal_shutdown("controller shutdown")
 
     def _abort_waiting_suscribers(self):
-        self.listen_sub.listening = False
-        self.error_sub.listening = False
-        self.error_sub.listening = False
-        self.left_button_sub.listening = False
-        self.right_button_sub.listening = False
+        for l in self.listeners:
+            l.stop_listening()
 
     def run(self):
         try:
