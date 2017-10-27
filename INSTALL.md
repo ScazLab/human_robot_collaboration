@@ -1,4 +1,4 @@
-# catkin workspace start-up guide
+# Catkin Workspace Installation Tutorial
 Guide for building the catkin workspace in ROS. 
 
 # Getting ready
