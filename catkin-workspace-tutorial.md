@@ -5,18 +5,15 @@ Guide for building the catkin workspace in ROS.
 * Install ROS: [Alessandro's guide to ROS installation](https://alecive.github.io/ros_installation.html#installing-and-configuring-your-ros-environment)
 * Make sure you have `catkin_tools` installed:
  ```
- sudo sh -c 'echo "deb http://packages.ros.org/ros/ubuntu `lsb_release -sc` main" > /etc/apt/sources.list.d/ros-latest.list'
- wget http://packages.ros.org/ros.key -O - | sudo apt-key add -
  sudo apt-get update
  sudo apt-get install python-catkin-tools
  ```
- (The first two lines just make sure you have the proper ROS respositories, but better to be safe than sorry!)
 * Create and initialize your new workspace (we'll call it `baxter_ws`, but you can call it whatever you like).
 ```
 cd ~/code
 mkdir -p baxter_ws/src
-cd baxter_ws/src
-catkin_init_workspace
+cd baxter_ws
+catkin init
 ```
 
 # Prequisites & more
