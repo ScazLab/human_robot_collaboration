@@ -1,62 +1,123 @@
-# Catkin Workspace Installation Tutorial
-Guide for building the catkin workspace in ROS. 
+# Installation
 
-# Getting ready
-* Install ROS: [Alessandro's guide to ROS installation](https://alecive.github.io/ros_installation.html#installing-and-configuring-your-ros-environment)
-* Make sure you have `catkin_tools` installed:
- ```
- sudo apt-get update
- sudo apt-get install python-catkin-tools
- ```
-* Create and initialize your new workspace (we'll call it `baxter_ws`, but you can call it whatever you like).
+Guide for installing, compiling and testing the `human_robot_collaboration` package in your ROS environment. This tutorial should be useful regardless of your skill level, from a first-time ROS user to an experienced engineer.
+
+## Prerequisites
+
+### System Dependencies
+
+This repository needs `nlopt` and `std-c++14`.
+
+#### NLOPT
+
 ```
-cd ~/code
-mkdir -p baxter_ws/src
-cd baxter_ws
+sudo apt-get install libnlopt-dev
+````
+
+#### C++14
+
+Building `human_robot_collaboration` requires that you have `C++14` supported on your computer in some fashion. `C++14` is not available by default on Ubuntu 14.04, so your best bet is to get a `gcc` version that supports it (from `gcc-4.9` upwards).
+From [here](https://gist.github.com/application2000/73fd6f4bf1be6600a2cf9f56315a2d91)):
+
+```
+sudo apt-get install build-essential software-properties-common
+sudo add-apt-repository ppa:ubuntu-toolchain-r/test
+sudo apt-get update
+sudo apt-get install gcc-snapshot gcc-4.9 g++-4.9
+```
+
+If you have other versions of `gcc` installed already (Ubuntu 14.04 comes with `gcc-4.8` by default), you might need to select  `gcc-4.9` as default. You can do this by typing `sudo update-alternatives --config gcc` and following the instructions in the terminal.
+
+### ROS Dependencies
+
+This repository supports `ROS indigo`, although more recent versions should work just fine. [Here](https://alecive.github.io/ros_installation.html#installing-and-configuring-your-ros-environment)'s a not-so-recent guide on how to install ROS.
+
+#### Catkin Tools
+
+We use the new Catkin Command Line Tools `catkin_tools`, a Python package that provides command line tools for working with the catkin meta build system and catkin workspaces. This package was announced in **March 2015** and is still in beta, but we didn't experience any problem with it. The following instructions apply to this new package, even though the repository can be used and compile with the old `catkin_make` without issues.
+
+```
+sudo apt-get install python-catkin-tools
+```
+
+#### ROS Package Dependencies
+
+* `aruco_ros`: you should use [this version of `aruco_ros`](https://github.com/ScazLab/aruco_ros) which is a fork of (https://github.com/pal-robotics/aruco_ros)
+ * `trac_ik` : for the time being, you should use [this version of `trac_ik`](https://bitbucket.org/alecive/trac_ik). It is a fork of [the original `trac_ik`](https://bitbucket.org/traclabs/trac_ik).
+ * `baxter_description`: it is used for testing the `robot_interface` library. It can be downloaded from the `baxter_common` repository, available [here](https://github.com/RethinkRobotics/baxter_common).
+ * `svox_tts` : it's a SVOX-PICO based wrapper for text-to-speech. It's not necessary, but recommended. Available [here](https://github.com/ScazLab/svox_tts).
+ * `rosbridge` : Not necessary, but recommended.
+ * `ros_speech2text` : Not necessary, but recommended.
+
+## Compilation & Testing
+
+### Create a new ROS workspace
+
+It is good practice to separate your development workspace from the workspace in which ROS resides. So, let's create and initialize a new workspace called `hrc_ws` into an already existing `code` folder.
+
+```
+mkdir -p ~/code/hrc_ws/src
+cd ~/code/hrc_ws
 catkin init
+catkin build
 ```
 
-# Prequisites & more
-First, the basic prerequisites as listed on guide [here](https://github.com/ScazLab/human_robot_collaboration).
-Start by navigating to your workspace's `src` file (e.g. `cd ~/code/baxter_ws/src`). Now you can grab the prerequisites.
-* `nlopt`: This should be installed from the Ubuntu repositories: `sudo apt-get install libnlopt-dev`. 
-* `aruco_ros`: Get the recommended version via `git clone https://github.com/ScazLab/aruco_ros`
-* `trac_ik`: For now, use this version of it via `git clone https://bitbucket.org/alecive/trac_ik.git`
-  - Next, navigate to `trac_ik/trac_ik_kinematics_plugin` and make an empty file `CATKIN_IGNORE`.
-  ```
-  cd trac_ik/trac-ik_kinematics_plugin
-  touch CATKIN_IGNORE
-  cd ~/code/baxter_ws/src
-  ```
-* `svox_tts`: Not necessary, but recommended. Available via `git clone https://github.com/ScazLab/svox_tts.git`
-* `baxter_description`: Contained in the `baxter_common` repository. It's easiest to grab the whole thing: `git clone https://github.com/RethinkRobotics/baxter_common.git`
+The last `build` command should assure you that everything works. Now you should add the following line to your `.bashrc`:
 
-Some other useful prequisites as listed in the `human_robot_collaboration/dependencies.rosinstall`:
-* `rosbridge`: Available via `git clone https://github.com/RobotWebTools/rosbridge_suite.git`
-* `ros_s2t`: Available via `git clone https://github.com/scazlab/ros_speech2text.git`
-
-And finally...
-* `human_robot_collaboration`: Available via `git clone https://github.com/ScazLab/human_robot_collaboration.git`
-
-# Supporting std-c++14
-
-Building `human_robot_collaboration` requires that you have `std-c++14` supported on your computer in some fashion. This does not come with Ubuntu 14.04, so your best bet is to get a gcc package that supports it like `gcc-4.9`. 
-There's probably an easier way to install it, but here's how I did it (from a guide [here](https://gist.github.com/application2000/73fd6f4bf1be6600a2cf9f56315a2d91)):
 ```
-sudo apt-get install build-essential software-properties-common -y
-sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
-sudo apt-get update
-sudo apt-get install gcc-snapshot -y
-sudo apt-get update
-sudo apt-get install gcc-4.9 g++-4.9 -y 
+source $HOME/code/hrc_ws/devel/setup.bash
 ```
-If you have other versions of gcc installed already (Ubuntu 14.04 comes with gcc 4.8 by default), you might need to select 4.9 as the gcc you want to work with by default. You can do this by typing `sudo update-alternatives --config gcc` and following the instructions in the terminal.  
 
-# Building the workspace
+### Download dependencies
 
-The easy part: just navigate back to your workspace(e.g. `cd ../`) and run `catkin build`. 
-You should now have three new folders in your workspace folder: build, devel, and logs. Open your `~/.bashrc` file and add the following line:
+Mandatory dependencies:
+
 ```
-source ~/code/<workspace name>/devel/setup.bash
+cd ~/code/hrc_ws/src
+git clone https://github.com/ScazLab/aruco_ros
+git clone https://bitbucket.org/alecive/trac_ik.git
+git clone https://github.com/RethinkRobotics/baxter_common.git
 ```
-where `<workspace name>` in our example is `baxter_ws`. 
+
+To avoid downloading all the dependencies needed to compile `track_ik_kinematics_plugin`, we need to tell `catkin` to ignore it:
+
+```
+cd ~/code/hrc_ws/src/trac_ik/trac_ik_kinematics_plugin
+touch CATKIN_IGNORE
+```
+
+Optional (but recommended) dependencies:
+
+```
+cd ~/code/hrc_ws/src
+git clone https://github.com/ScazLab/svox_tts.git
+git clone https://github.com/RobotWebTools/rosbridge_suite.git
+git clone https://github.com/scazlab/ros_speech2text.git
+```
+And finally:
+
+```
+cd ~/code/hrc_ws/src
+git clone https://github.com/ScazLab/human_robot_collaboration.git
+```
+
+### Compilation & Testing
+
+Compile `human_robot_collaboration`:
+
+```
+cd ~/code/hrc_ws
+catkin build human_robot_collaboration
+```
+
+Compile tests and run them:
+
+```
+catkin build human_robot_collaboration --catkin-make-args run_tests
+```
+
+Check the results of the tests:
+
+```
+catkin build human_robot_collaboration_lib --catkin-make-args run_tests && catkin_test_results build/human_robot_collaboration_lib
+```

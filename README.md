@@ -9,21 +9,9 @@ If you are using this software and or one of its components, we warmly recommend
 
   > [Roncone2017] Roncone Alessandro, Mangin Olivier, Scassellati Brian **Transparent Role Assignment and Task Allocation in Human Robot Collaboration** *IEEE International Conference on Robotics and Automation (ICRA 2017)*, Singapore. [[PDF]](http://alecive.github.io/papers/[Roncone%20et%20al.%202017]%20Transparent%20Role%20Assignment%20and%20Task%20Allocation%20in%20Human%20Robot%20Collaboration.pdf) [[BIB]](http://alecive.github.io/papers/[Roncone%20et%20al.%202017]%20Transparent%20Role%20Assignment%20and%20Task%20Allocation%20in%20Human%20Robot%20Collaboration.bib)
 
-## Prerequisites
+## Installation, Compilation and Testing
 
- * `aruco_ros`: you should use [this version of `aruco_ros`](https://github.com/ScazLab/aruco_ros) which is a fork of (https://github.com/pal-robotics/aruco_ros)
- * `nlopt`: it should be installed by from the Ubuntu repositories: `sudo apt-get install libnlopt-dev `
- * `trac_ik` : for the time being, you should use [this version of `trac_ik`](https://bitbucket.org/alecive/trac_ik). It is a fork of [the original `trac_ik`](https://bitbucket.org/traclabs/trac_ik).
- * `svox_tts` : it's a SVOX-PICO based wrapper for text-to-speech. It's not necessary, but recommended. Available [here](https://github.com/ScazLab/svox_tts).
- * `baxter_description`: it is used for testing the `robot_interface` library. It can be downloaded from the `baxter_common` repository, available [here](https://github.com/RethinkRobotics/baxter_common).
-
-## Compilation & Testing
-
-We use the new Catkin Command Line Tools `catkin_tools`, a Python package that provides command line tools for working with the catkin meta-buildsystem and catkin workspaces. This package was announced in March 2015 and is still in beta, but we didn't experience any problem with it. The following instructions apply to this new package, even though the repository can be used and compile with the old `catkin_make` without issues.
-
- 1. Compile the repo: `catkin build human_robot_collaboration`
- 2. Compile tests and run them (to be done after compiling the repo with command #1): `catkin build human_robot_collaboration --catkin-make-args run_tests`
- 3. Check the results of step #2: `catkin build human_robot_collaboration_lib --catkin-make-args run_tests && catkin_test_results build/human_robot_collaboration_lib`
+To install, compile and test this software, please refer to the [installation tutorial](https://github.com/ScazLab/human_robot_collaboration/blob/master/INSTALL.md).
 
 ### Tested environments
 
@@ -37,7 +25,7 @@ We use the new Catkin Command Line Tools `catkin_tools`, a Python package that p
 **NOTE1:** Apparently, it is very difficult to make clang work with Ubuntu 14.04 Trusty, C++14 enabled, and all of the old ROS libraries (`indigo`, `OpenCV2.4`, etc). I disabled compilation because I would rather prefer using the latest C++14 features.
 **NOTE2:** As of today (June 7th 2017), `kinetic` builds are disabled, since [travis](travis-ci.org) does not support Ubuntu 16.04 Xenial Xerus yet. 16.04 support should come on Q2 2017.
 
-## Execution
+## Execution on the robot
 
 ### Initial steps (mainly for Scazlab students)
 
