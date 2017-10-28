@@ -46,8 +46,8 @@ sudo apt-get install python-catkin-tools
  * `trac_ik` : for the time being, you should use [this version of `trac_ik`](https://bitbucket.org/alecive/trac_ik). It is a fork of [the original `trac_ik`](https://bitbucket.org/traclabs/trac_ik).
  * `baxter_description`: it is used for testing the `robot_interface` library. It can be downloaded from the `baxter_common` repository, available [here](https://github.com/RethinkRobotics/baxter_common).
  * `svox_tts` : it's a SVOX-PICO based wrapper for text-to-speech. It's not necessary, but recommended. Available [here](https://github.com/ScazLab/svox_tts).
- * `rosbridge` : Not necessary, but recommended.
- * `ros_speech2text` : Not necessary, but recommended.
+ * `ros_speech2text` : Our ROS wrapper for speech-to-text through the Google API. Not necessary, but recommended. Available [here](https://github.com/ScazLab/ros_speech2text).
+ * `rosbridge` : it provides a JSON interface to ROS, allowing any client to send JSON to publish or subscribe to ROS topics, call ROS services, and more. Used for our web applications. Not necessary, but recommended. Available [here](https://github.com/RobotWebTools/rosbridge_suite).
 
 ## Compilation & Testing
 
