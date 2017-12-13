@@ -120,7 +120,7 @@ protected:
 
         while (!objects_found)
         {
-            ROS_WARN_COND(cnt>1, "Objects not found. Are there any the objects there?");
+            ROS_WARN_COND(ct_print_level>0 && cnt>1, "Objects not found. Are there any the objects there?");
             ++cnt;
 
             if (cnt == OBJ_NOT_FOUND_NUM_ATTEMPTS)
@@ -149,7 +149,8 @@ protected:
 
         while (!object_found)
         {
-            ROS_WARN_COND(cnt>0, "Object not found. Is the object there?");
+            ROS_WARN_COND(ct_print_level>0 && cnt>0, "Object not found. Is the object there?");
+
             ++cnt;
 
             if (cnt == OBJ_NOT_FOUND_NUM_ATTEMPTS)

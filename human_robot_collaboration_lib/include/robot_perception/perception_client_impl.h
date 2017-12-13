@@ -30,7 +30,7 @@ protected:
      */
     void ObjectCb(const aruco_msgs::MarkerArray& _msg)
     {
-        ROS_INFO_COND(ct_print_level>=12, "ObjectCb");
+        ROS_INFO_COND(ct_print_level>=12, "[PerceptionClientImpl] ObjectCb");
 
         if (_msg.markers.size() > 0)
         {
