@@ -19,6 +19,8 @@ class BaxterDisplay
 private:
     ros::NodeHandle    nh;
 
+    int print_level;        // Print level to be used throughout the code
+
     std::string name;
 
     ros::Subscriber l_sub;  // Subscriber for the left  arm state
@@ -56,7 +58,7 @@ private:
 
     void armStateCb(const ArmState& msg, std::string _limb)
     {
-        ROS_DEBUG("Received callback! Arm %s", _limb.c_str());
+        ROS_INFO_COND(print_level>=2, "Arm %s", _limb.c_str());
 
         if      (_limb == "left")
         {
@@ -74,6 +76,8 @@ private:
     {
         if (speech !="")
         {
+            ROS_INFO_COND(print_level>=3, "Displaying speech: %s", speech.c_str());
+
             int thickness = 3;
             int baseline  = 0;
             int fontFace  = cv::FONT_HERSHEY_SIMPLEX;
@@ -195,7 +199,7 @@ private:
 
 public:
 
-    explicit BaxterDisplay(string _name) : name(_name), speech(""), it(nh)
+    explicit BaxterDisplay(string _name) : print_level(0), name(_name), speech(""), it(nh)
     {
         im_pub = it.advertise("/robot/xdisplay", 1);
 
@@ -203,6 +207,8 @@ public:
         r_sub = nh.subscribe("/action_provider/right/state", 1, &BaxterDisplay::armStateCbR, this);
 
         s_sub = nh.subscribe("/svox_tts/speech_output",1, &BaxterDisplay::speechCb, this);
+
+        nh.param<int> ("/print_level", print_level, 0);
 
         h = 600;
         w = 1024;
@@ -233,6 +239,8 @@ public:
 
     void speechCb(const std_msgs::String& msg)
     {
+        ROS_INFO_COND(print_level>=2, "Text: %s", msg.data.c_str());
+
         setSpeech(msg.data);
 
         speech_timer = nh.createTimer(ros::Duration(speech_duration),
@@ -243,6 +251,7 @@ public:
 
     void deleteSpeechCb(const ros::TimerEvent&)
     {
+        ROS_INFO_COND(print_level>=2, "Deleting speech");
         setSpeech("");
         displayArmStates();
     };

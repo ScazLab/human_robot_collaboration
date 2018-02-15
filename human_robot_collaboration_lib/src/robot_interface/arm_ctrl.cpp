@@ -73,12 +73,12 @@ void ArmCtrl::InternalThreadEntry()
     }
     else if (a == ACTION_HOME || a == ACTION_RELEASE)
     {
-        if (callAction(a))   setState(DONE);
+        if (doAction(s, a))  { setState(DONE); }
     }
     else if (s == START || s == ERROR ||
              s == DONE  || s == KILLED )
     {
-        if (doAction(s, a))   setState(DONE);
+        if (doAction(s, a))  { setState(DONE); }
         else
         {
             ROS_INFO_COND(print_level>=1, "[%s] Action %s in state %i failed",
