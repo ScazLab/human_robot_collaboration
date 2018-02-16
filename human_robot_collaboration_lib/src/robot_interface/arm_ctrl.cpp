@@ -207,7 +207,7 @@ bool ArmCtrl::serviceCb(human_robot_collaboration_msgs::DoAction::Request  &req,
 
         if (int(getState()) == KILLED)
         {
-            res.response = ACT_FAILED;
+            res.response = ACT_KILLED;
         }
 
         r.sleep();
@@ -557,7 +557,7 @@ bool ArmCtrl::goToPose(double px, double py, double pz,
     bool res = RobotInterface::goToPose(px, py, pz,
                                         ox, oy, oz, ow, mode, disable_coll_av);
 
-    if (res == false && int(getState()) != KILLED && getSubState() != ACT_FAILED)
+    if (res == false && int(getState()) != KILLED && getSubState() != ACT_KILLED)
     {
         setSubState(INV_KIN_FAILED);
     }

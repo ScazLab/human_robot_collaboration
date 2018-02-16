@@ -65,9 +65,10 @@
 #define NO_IR_SENSOR    human_robot_collaboration_msgs::DoAction::Response::NO_IR_SENSOR
 #define OBJ_NOT_IN_DB   human_robot_collaboration_msgs::DoAction::Response::OBJ_NOT_IN_DB
 #define NO_OBJ          human_robot_collaboration_msgs::DoAction::Response::NO_OBJ
-#define ACT_FAILED      human_robot_collaboration_msgs::DoAction::Response::ACT_FAILED
+#define ACT_KILLED      human_robot_collaboration_msgs::DoAction::Response::ACT_KILLED
 #define ACT_NOT_IN_DB   human_robot_collaboration_msgs::DoAction::Response::ACT_NOT_IN_DB
 #define ACT_NOT_IMPL    human_robot_collaboration_msgs::DoAction::Response::ACT_NOT_IMPL
+#define ACT_FAILED      human_robot_collaboration_msgs::DoAction::Response::ACT_FAILED
 #define INV_KIN_FAILED  human_robot_collaboration_msgs::DoAction::Response::INV_KIN_FAILED
 #define CHECK_OBJ_IDS   "check_obj_ids"
 

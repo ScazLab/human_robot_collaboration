@@ -24,9 +24,10 @@ bool   success
 string NO_IR_SENSOR   = No callback from the IR sensor
 string OBJ_NOT_IN_DB  = Requested object not available in DB
 string NO_OBJ         = No object detected
-string ACT_FAILED     = Action failed from user input
+string ACT_KILLED     = Action killed by user
 string ACT_NOT_IN_DB  = Requested action not available in DB
 string ACT_NOT_IMPL   = Action not implemented
+string ACT_FAILED     = Action failed
 string INV_KIN_FAILED = Inverse Kinematics failed
 
 string response
