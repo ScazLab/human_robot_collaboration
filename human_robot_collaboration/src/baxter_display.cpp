@@ -21,7 +21,7 @@ private:
 
     int print_level;        // Print level to be used throughout the code
 
-    std::string name;
+    std::string name;       // Name of the node
 
     ros::Subscriber l_sub;  // Subscriber for the left  arm state
     ros::Subscriber r_sub;  // Subscriber for the right arm state
@@ -37,14 +37,14 @@ private:
     image_transport::ImageTransport     it;
     image_transport::Publisher      im_pub;
 
-    int h;
-    int w;
+    int h;     // height of the image to be shown (equal to the height of the baxter display)
+    int w;     //  width of the image to be shown (equal to the  width of the baxter display)
+    int w_d;   //  width of the delimiter between sub-screens
+    int w_b;   //  width of the bottom sub-screen
 
-    int w_delim;
-
-    cv::Scalar red;
+    cv::Scalar   red;
     cv::Scalar green;
-    cv::Scalar blue;
+    cv::Scalar  blue;
 
     void armStateCbL(const ArmState& msg)
     {
@@ -85,7 +85,7 @@ private:
 
             int border = 20;
 
-            int max_width = 700; // max width of a text line
+            int max_width = 800; // max width of a text line
 
             cv::Size textSize = cv::getTextSize( speech, fontFace, fontScale, thickness, &baseline);
             int numLines = int(textSize.width/max_width)+1;
@@ -97,7 +97,7 @@ private:
                 textSize = cv::getTextSize( speech, fontFace, fontScale, thickness, &baseline);
                 numLines = int(textSize.width/max_width);
             }
-            ROS_DEBUG("Size of the text %i %i numLines %i", textSize.height, textSize.width, numLines);
+            ROS_INFO_COND(print_level>=4, "Size of the text %i %i numLines %i", textSize.height, textSize.width, numLines);
 
             std::vector<std::string> line;
             std::vector<cv::Size>    size;
@@ -120,16 +120,17 @@ private:
                 }
 
                 size.push_back(cv::getTextSize( line.back(), fontFace, fontScale, thickness, &baseline));
-                if (size.back().width>rec_width) rec_width=size.back().width;
+                if (size.back().width>rec_width) { rec_width=size.back().width; }
                 rec_height += interline + size.back().height;
 
-                ROS_DEBUG("   Line %i: size: %i %i\ttext: %s", i, size.back().height, size.back().width, line.back().c_str());
+                ROS_INFO_COND(print_level>=6, "   Line %i: size: %i %i\ttext: %s", i,
+                              size.back().height, size.back().width, line.back().c_str());
             }
             rec_height += 2*border;
             rec_width  += 2*border;
 
-            cv::Point rectOrg((in.cols - rec_width)/2, (in.rows - rec_height)/2);
-            cv::Point rectEnd((in.cols + rec_width)/2, (in.rows + rec_height)/2);
+            cv::Point rectOrg((in.cols-rec_width)/2, (in.rows-w_d/2-w_b-rec_height)/2);
+            cv::Point rectEnd((in.cols+rec_width)/2, (in.rows-w_d/2-w_b+rec_height)/2);
             rectangle(in, rectOrg, rectEnd, blue, -1);
 
             int textOrgy = rectOrg.y + border;
@@ -140,16 +141,17 @@ private:
                 putText(in, line[i], textOrg, fontFace, fontScale, cv::Scalar::all(255), thickness, CV_AA);
                 textOrgy += interline;
             }
-
-            printf("\n");
         }
     };
 
-    cv::Mat createSubImage(std::string _limb)
+    // Creates sub-image for either arm
+    cv::Mat createArmImage(std::string _limb)
     {
         ArmState state = _limb=="LEFT"?l_state:r_state;
 
-        cv::Mat img(h,(w-w_delim)/2,CV_8UC3,cv::Scalar::all(255));
+        cv::Mat img(h-w_d/2-w_b,(w-w_d)/2,CV_8UC3,cv::Scalar::all(255));
+        ROS_INFO_COND(print_level>=4, "Created %s image with size %i %i", _limb.c_str(), img.rows, img.cols);
+
         cv::Scalar col       = cv::Scalar::all(60);
         cv::Scalar col_state = green;
 
@@ -178,24 +180,33 @@ private:
         cv::Point textOrg((img.cols - textSize.width)/2, (img.rows + textSize.height)/6);
         putText(img, title, textOrg, fontFace, fontScale, col, thickness, CV_AA);
 
-        if (state.state !="")
+        if (state.state !=" ")
         {
-            putText(img, "state:", cv::Point(20,300), fontFace, fontScale/2, col, 2, 8);
-            putText(img, state.state, cv::Point(150,300), fontFace, fontScale, col_state, thickness, CV_AA);
+            putText(img,    "state:", cv::Point( 20,300-60), fontFace, fontScale/2, col, 2, 8);
+            putText(img, state.state, cv::Point(150,300-60), fontFace,   fontScale, col_state, thickness, CV_AA);
         }
-        if (state.action !="")
+        if (state.action !=" ")
         {
-            putText(img, "action:", cv::Point(20,400), fontFace, fontScale/2, col, 2, 8);
-            putText(img, state.action, cv::Point(150,400), fontFace, fontScale/1.25, col, thickness, CV_AA);
+            putText(img,    "action:", cv::Point( 20,400-60), fontFace,    fontScale/2, col, 2, 8);
+            putText(img, state.action, cv::Point(150,400-60), fontFace, fontScale/1.25, col, thickness, CV_AA);
         }
-        if (state.object !="")
+        if (state.object !=" ")
         {
-            putText(img, "object:", cv::Point(20,500), fontFace, fontScale/2, col, 2, 8);
-            putText(img, state.object, cv::Point(150,500), fontFace, fontScale/1.25, col, thickness, CV_AA);
+            putText(img,    "object:", cv::Point( 20,500-60), fontFace,    fontScale/2, col, 2, 8);
+            putText(img, state.object, cv::Point(150,500-60), fontFace, fontScale/1.25, col, thickness, CV_AA);
         }
 
         return img;
     };
+
+    // Creates sub-image for the bottom bar
+    cv::Mat createBtmImage()
+    {
+        cv::Mat img(w_b-w_d/2,w,CV_8UC3,cv::Scalar::all(255));
+        ROS_INFO_COND(print_level>=4, "Created BOTTOM image with size %i %i", img.rows, img.cols);
+
+        return img;
+    }
 
 public:
 
@@ -213,7 +224,8 @@ public:
         h = 600;
         w = 1024;
 
-        w_delim = 8;
+        w_d =  8;
+        w_b = 80;
 
         l_state.state  = "START";
         l_state.action =     "";
@@ -230,6 +242,8 @@ public:
         nh.param<double>("baxter_display/speech_duration", speech_duration, DEFAULT_DURATION);
 
         displayArmStates();
+
+        ROS_INFO_COND(print_level>=1, "Ready");
     };
 
     void setSpeech(const std::string &s)
@@ -258,28 +272,37 @@ public:
 
     bool displayArmStates()
     {
-        cv::Mat l = createSubImage("LEFT");
-        cv::Mat r = createSubImage("RIGHT");
-        cv::Mat d(h,w_delim,CV_8UC3,cv::Scalar::all(80));
+        cv::Mat l = createArmImage("LEFT");
+        cv::Mat r = createArmImage("RIGHT");
+        cv::Mat b = createBtmImage();
+        cv::Mat d_v(r.rows,w_d,CV_8UC3,cv::Scalar::all(80));    // Vertical delimiter
+        cv::Mat d_h(w_d,w,CV_8UC3,cv::Scalar::all(80));         // Horizontal delimiter
+
+        ROS_INFO_COND(print_level>=5, "d_v size %i %i", d_v.rows, d_v.cols);
+        ROS_INFO_COND(print_level>=5, "d_h size %i %i", d_h.rows, d_h.cols);
 
         cv::Mat res(h,w,CV_8UC3,cv::Scalar(255,100,255));
+        res.locateROI(size,offs);
 
-        // Move right boundary to the left.
-        res.adjustROI(0,0,0,-(w+w_delim)/2);
-        r.copyTo(res);
+        // Draw sub-image for right arm
+        r.copyTo(res(cv::Rect(0, 0, r.cols, r.rows)));
 
-        // Move the left boundary to the right, right boundary to the right.
-        res.adjustROI(0, 0, -(w-w_delim)/2, w_delim);
-        d.copyTo(res);
+        // Draw sub-image for the vertical delimiter
+        d_v.copyTo(res(cv::Rect(r.cols, 0, d_v.cols, d_v.rows)));
 
-        // Move the left boundary to the right, right boundary to the right.
-        res.adjustROI(0, 0, -w_delim, (w-w_delim)/2);
-        l.copyTo(res);
+        // Draw sub-image for left arm
+        l.copyTo(res(cv::Rect(r.cols+d_v.cols, 0, l.cols, l.rows)));
 
-        res.adjustROI(0, 0, (w+w_delim)/2, 0);
+        // Draw sub-image for horizontal delimiter
+        d_h.copyTo(res(cv::Rect(0, r.rows, d_h.cols, d_h.rows)));
 
+        // Draw sub-image for bottom bar
+        b.copyTo(res(cv::Rect(0, r.rows+d_h.rows, b.cols, b.rows)));
+
+        // Eventually draw the speech on top of everything
         displaySpeech(res);
 
+        // Publish the resulting image
         cv_bridge::CvImage msg;
         msg.encoding = sensor_msgs::image_encodings::BGR8;
         msg.image    = res;
