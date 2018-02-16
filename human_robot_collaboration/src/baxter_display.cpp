@@ -14,6 +14,9 @@ using namespace human_robot_collaboration_msgs;
 
 #define DEFAULT_DURATION 10.0  // [s]
 
+/**
+ * Class that manages the output to the baxter display. By default, it publishes an image
+ */
 class BaxterDisplay
 {
 private:
@@ -46,16 +49,29 @@ private:
     cv::Scalar green;
     cv::Scalar  blue;
 
+    /**
+     * Callback for the left arm state
+     * @param msg the left arm state
+     */
     void armStateCbL(const ArmState& msg)
     {
         armStateCb(msg, "left");
     };
 
+    /**
+     * Callback for the right arm state
+     * @param msg the right arm state
+     */
     void armStateCbR(const ArmState& msg)
     {
         armStateCb(msg, "right");
     };
 
+    /**
+     * Unified callback manager for both arm states
+     * @param msg   the arm state
+     * @param _limb the arm it is referred to
+     */
     void armStateCb(const ArmState& msg, std::string _limb)
     {
         ROS_INFO_COND(print_level>=2, "Arm %s", _limb.c_str());
@@ -72,39 +88,70 @@ private:
         displayArmStates();
     };
 
+    /**
+     * Callback from the speech
+     * @param msg the speech
+     */
+    void speechCb(const std_msgs::String& msg)
+    {
+        ROS_INFO_COND(print_level>=2, "Text: %s", msg.data.c_str());
+
+        setSpeech(msg.data);
+
+        speech_timer = nh.createTimer(ros::Duration(speech_duration),
+                                      &BaxterDisplay::deleteSpeechCb, this, true);
+
+        displayArmStates();
+    };
+
+    /**
+     * Callback to delete the speech from the screen (after t=speech_duration)
+     */
+    void deleteSpeechCb(const ros::TimerEvent&)
+    {
+        ROS_INFO_COND(print_level>=2, "Deleting speech");
+        setSpeech("");
+        displayArmStates();
+    };
+
+    /**
+     * Function to display speech on top of the generated image
+     * @param in the already generated image ready to be sent to the robot
+     */
     void displaySpeech(cv::Mat& in)
     {
         if (speech !="")
         {
             ROS_INFO_COND(print_level>=3, "Displaying speech: %s", speech.c_str());
 
-            int thickness = 3;
-            int baseline  = 0;
-            int fontFace  = cv::FONT_HERSHEY_SIMPLEX;
-            int fontScale = 2;
+            int thickn = 3;                         // thickness
+            int bsline = 0;                         // baseline
+            int fontFc = cv::FONT_HERSHEY_SIMPLEX;  // fontFace
+            int fontSc = 2;                         // fontScale
 
             int border = 20;
 
             int max_width = 800; // max width of a text line
 
-            cv::Size textSize = cv::getTextSize( speech, fontFace, fontScale, thickness, &baseline);
+            cv::Size textSize = cv::getTextSize( speech, fontFc, fontSc, thickn, &bsline);
             int numLines = int(textSize.width/max_width)+1;
 
             if (numLines>5)
             {
-                fontScale = 1.6;
-                thickness =   2;
-                textSize = cv::getTextSize( speech, fontFace, fontScale, thickness, &baseline);
+                fontSc = 1.6;
+                thickn =   2;
+                textSize = cv::getTextSize( speech, fontFc, fontSc, thickn, &bsline);
                 numLines = int(textSize.width/max_width);
             }
-            ROS_INFO_COND(print_level>=4, "Size of the text %i %i numLines %i", textSize.height, textSize.width, numLines);
+            ROS_INFO_COND(print_level>=4, "Size of the text %i %i numLines %i",
+                                          textSize.height, textSize.width, numLines);
 
             std::vector<std::string> line;
             std::vector<cv::Size>    size;
 
             int interline  =         20;  // Number of pixels between a line and the next one
-            int rec_height = -interline;  // Height of the rectangle container (line_heigth + interline)
-            int rec_width  =          0;  // Width  of the rectangle container (max of the width of each of the lines)
+            int rec_height = -interline;  // Height of the container (line_heigth + interline)
+            int rec_width  =          0;  // Width  of the container (max width of each line)
             int line_length = int(speech.size()/numLines);
 
             for (int i = 0; i < numLines; ++i)
@@ -119,7 +166,7 @@ private:
                     line.push_back(speech.substr(i*line_length,line_length));
                 }
 
-                size.push_back(cv::getTextSize( line.back(), fontFace, fontScale, thickness, &baseline));
+                size.push_back(cv::getTextSize( line.back(), fontFc, fontSc, thickn, &bsline));
                 if (size.back().width>rec_width) { rec_width=size.back().width; }
                 rec_height += interline + size.back().height;
 
@@ -138,29 +185,34 @@ private:
             {
                 textOrgy += size[i].height;
                 cv::Point textOrg((in.cols - size[i].width)/2, textOrgy);
-                putText(in, line[i], textOrg, fontFace, fontScale, cv::Scalar::all(255), thickness, CV_AA);
+                putText(in, line[i], textOrg, fontFc, fontSc, cv::Scalar::all(255), thickn, CV_AA);
                 textOrgy += interline;
             }
         }
     };
 
-    // Creates sub-image for either arm
+    /**
+     * Function to create sub-image for either arm
+     * @param  _limb the arm to create the image for
+     * @return       the sub-image
+     */
     cv::Mat createArmImage(std::string _limb)
     {
         ArmState state = _limb=="LEFT"?l_state:r_state;
 
         cv::Mat img(h-w_d/2-w_b,(w-w_d)/2,CV_8UC3,cv::Scalar::all(255));
-        ROS_INFO_COND(print_level>=4, "Created %s image with size %i %i", _limb.c_str(), img.rows, img.cols);
+        ROS_INFO_COND(print_level>=4, "Created %s image with size %i %i",
+                                      _limb.c_str(), img.rows, img.cols);
 
-        cv::Scalar col       = cv::Scalar::all(60);
-        cv::Scalar col_state = green;
+        cv::Scalar col   = cv::Scalar::all(60);
+        cv::Scalar col_s = green;
 
         if (state.state == "ERROR"  || state.state == "RECOVER" ||
             state.state == "KILLED" || state.state == "DONE" ||
             state.state == "START" )
         {
-            col = cv::Scalar::all(240);
-            col_state = col;
+            col   = cv::Scalar::all(240);
+            col_s = col;
             img.setTo(red);
 
             if (state.state == "DONE" || state.state == "TEST" || state.state == "START")
@@ -169,37 +221,40 @@ private:
             }
         }
 
-        int thickness = 3;
-        int baseline  = 0;
-        int fontFace  = cv::FONT_HERSHEY_SIMPLEX;
-        int fontScale = 2;
+        int thickn = 3;                         // thickness
+        int bsline = 0;                         // baseline
+        int fontFc = cv::FONT_HERSHEY_SIMPLEX;  // fontFace
+        int fontSc = 2;                         // fontScale
 
         // Place a centered title on top
         string title = _limb + " ARM";
-        cv::Size textSize = cv::getTextSize( title, fontFace, fontScale, thickness, &baseline);
+        cv::Size textSize = cv::getTextSize( title, fontFc, fontSc, thickn, &bsline);
         cv::Point textOrg((img.cols - textSize.width)/2, (img.rows + textSize.height)/6);
-        putText(img, title, textOrg, fontFace, fontScale, col, thickness, CV_AA);
+        putText(img, title, textOrg, fontFc, fontSc, col, thickn, CV_AA);
 
         if (state.state !=" ")
         {
-            putText(img,    "state:", cv::Point( 20,300-60), fontFace, fontScale/2, col, 2, 8);
-            putText(img, state.state, cv::Point(150,300-60), fontFace,   fontScale, col_state, thickness, CV_AA);
+            putText(img,    "state:", cv::Point( 20,300-60), fontFc, fontSc/2, col, 2, 8);
+            putText(img, state.state, cv::Point(150,300-60), fontFc,   fontSc, col, thickn, CV_AA);
         }
         if (state.action !=" ")
         {
-            putText(img,    "action:", cv::Point( 20,400-60), fontFace,    fontScale/2, col, 2, 8);
-            putText(img, state.action, cv::Point(150,400-60), fontFace, fontScale/1.25, col, thickness, CV_AA);
+            putText(img,    "action:", cv::Point( 20,400-60), fontFc,    fontSc/2, col, 2, 8);
+            putText(img, state.action, cv::Point(150,400-60), fontFc, fontSc/1.25, col, thickn, CV_AA);
         }
         if (state.object !=" ")
         {
-            putText(img,    "object:", cv::Point( 20,500-60), fontFace,    fontScale/2, col, 2, 8);
-            putText(img, state.object, cv::Point(150,500-60), fontFace, fontScale/1.25, col, thickness, CV_AA);
+            putText(img,    "object:", cv::Point( 20,500-60), fontFc,    fontSc/2, col, 2, 8);
+            putText(img, state.object, cv::Point(150,500-60), fontFc, fontSc/1.25, col, thickn, CV_AA);
         }
 
         return img;
     };
 
-    // Creates sub-image for the bottom bar
+    /**
+     * Function to create sub-image for the bottom bar (to be filled with status icons)
+     * @return the sub-image
+     */
     cv::Mat createBtmImage()
     {
         cv::Mat img(w_b-w_d/2,w,CV_8UC3,cv::Scalar::all(255));
@@ -210,6 +265,9 @@ private:
 
 public:
 
+    /**
+     * Constructor
+     */
     explicit BaxterDisplay(string _name) : print_level(0), name(_name), speech(""), it(nh)
     {
         im_pub = it.advertise("/robot/xdisplay", 1);
@@ -243,33 +301,29 @@ public:
 
         displayArmStates();
 
-        ROS_INFO_COND(print_level>=1, "Ready");
+        ROS_INFO_COND(print_level>=3, "Subscribing to %s and %s", l_sub.getTopic().c_str(),
+                                                                  r_sub.getTopic().c_str());
+        ROS_INFO_COND(print_level>=3, "Subscribing to %s", s_sub.getTopic().c_str());
+        ROS_INFO_COND(print_level>=3, "Publishing  to %s", im_pub.getTopic().c_str());
+        ROS_INFO_COND(print_level>=1, "Print     Level set to %i", print_level);
+        ROS_INFO_COND(print_level>=1, "Speech Duration set to %g", speech_duration);
+        ROS_INFO_COND(print_level>=1, "Ready!!");
     };
 
+    /**
+     * Function to set the speech to a specific value
+     * @param s the speech text
+     */
     void setSpeech(const std::string &s)
     {
         speech = s;
     }
 
-    void speechCb(const std_msgs::String& msg)
-    {
-        ROS_INFO_COND(print_level>=2, "Text: %s", msg.data.c_str());
-
-        setSpeech(msg.data);
-
-        speech_timer = nh.createTimer(ros::Duration(speech_duration),
-                                      &BaxterDisplay::deleteSpeechCb, this, true);
-
-        displayArmStates();
-    };
-
-    void deleteSpeechCb(const ros::TimerEvent&)
-    {
-        ROS_INFO_COND(print_level>=2, "Deleting speech");
-        setSpeech("");
-        displayArmStates();
-    };
-
+    /**
+     * Function to display arm states into a single image. It combines each individual sub-image
+     * (the one for the left arm, the one for the right arm, and the bottom status bar)
+     * @return true/false if success/failure
+     */
     bool displayArmStates()
     {
         cv::Mat l = createArmImage("LEFT");
@@ -282,7 +336,6 @@ public:
         ROS_INFO_COND(print_level>=5, "d_h size %i %i", d_h.rows, d_h.cols);
 
         cv::Mat res(h,w,CV_8UC3,cv::Scalar(255,100,255));
-        res.locateROI(size,offs);
 
         // Draw sub-image for right arm
         r.copyTo(res(cv::Rect(0, 0, r.cols, r.rows)));
