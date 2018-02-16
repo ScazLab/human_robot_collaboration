@@ -74,7 +74,7 @@ private:
      */
     void armStateCb(const ArmState& msg, std::string _limb)
     {
-        ROS_INFO_COND(print_level>=2, "Arm %s", _limb.c_str());
+        ROS_INFO_COND(print_level>=4, "Arm %s", _limb.c_str());
 
         if      (_limb == "left")
         {
@@ -94,7 +94,7 @@ private:
      */
     void speechCb(const std_msgs::String& msg)
     {
-        ROS_INFO_COND(print_level>=2, "Text: %s", msg.data.c_str());
+        ROS_INFO_COND(print_level>=4, "Text: %s", msg.data.c_str());
 
         setSpeech(msg.data);
 
@@ -109,7 +109,7 @@ private:
      */
     void deleteSpeechCb(const ros::TimerEvent&)
     {
-        ROS_INFO_COND(print_level>=2, "Deleting speech");
+        ROS_INFO_COND(print_level>=4, "Deleting speech");
         setSpeech("");
         displayArmStates();
     };
@@ -122,7 +122,7 @@ private:
     {
         if (speech !="")
         {
-            ROS_INFO_COND(print_level>=3, "Displaying speech: %s", speech.c_str());
+            ROS_INFO_COND(print_level>=5, "Displaying speech: %s", speech.c_str());
 
             int thickn = 3;                         // thickness
             int bsline = 0;                         // baseline
@@ -143,7 +143,7 @@ private:
                 textSize = cv::getTextSize( speech, fontFc, fontSc, thickn, &bsline);
                 numLines = int(textSize.width/max_width);
             }
-            ROS_INFO_COND(print_level>=4, "Size of the text %i %i numLines %i",
+            ROS_INFO_COND(print_level>=6, "Size of the text %i %i numLines %i",
                                           textSize.height, textSize.width, numLines);
 
             std::vector<std::string> line;
@@ -170,7 +170,7 @@ private:
                 if (size.back().width>rec_width) { rec_width=size.back().width; }
                 rec_height += interline + size.back().height;
 
-                ROS_INFO_COND(print_level>=6, "   Line %i: size: %i %i\ttext: %s", i,
+                ROS_INFO_COND(print_level>=7, "   Line %i: size: %i %i\ttext: %s", i,
                               size.back().height, size.back().width, line.back().c_str());
             }
             rec_height += 2*border;
@@ -201,7 +201,7 @@ private:
         ArmState state = _limb=="LEFT"?l_state:r_state;
 
         cv::Mat img(h-w_d/2-w_b,(w-w_d)/2,CV_8UC3,cv::Scalar::all(255));
-        ROS_INFO_COND(print_level>=4, "Created %s image with size %i %i",
+        ROS_INFO_COND(print_level>=6, "Created %s image with size %i %i",
                                       _limb.c_str(), img.rows, img.cols);
 
         cv::Scalar col   = cv::Scalar::all(60);
@@ -258,7 +258,7 @@ private:
     cv::Mat createBtmImage()
     {
         cv::Mat res(w_b-w_d/2,w,CV_8UC3,cv::Scalar::all(255));
-        ROS_INFO_COND(print_level>=4, "Created BOTTOM image with size %i %i", res.rows, res.cols);
+        ROS_INFO_COND(print_level>=6, "Created BOTTOM image with size %i %i", res.rows, res.cols);
 
         return res;
     }
