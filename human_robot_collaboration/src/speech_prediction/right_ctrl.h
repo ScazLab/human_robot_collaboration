@@ -21,7 +21,6 @@
 class RightCtrl : public ArmPerceptionCtrl
 {
 protected:
-
     /**
      * Recovers from errors during execution. It provides a basic interface,
      * but it is advised to specialize this function in the ArmCtrl's children.
@@ -32,7 +31,7 @@ protected:
         {
             ROS_INFO_COND(print_level>=1, "[%s] Recovering from error..", getLimb().c_str());
 
-            if (getAction() == ACTION_GET || getAction() == ACTION_GET_PASS)
+            if ((getAction() == ACTION_GET || getAction() == ACTION_GET_PASS) && is_gripping())
             {
                 recoverGet();
             }

@@ -705,6 +705,7 @@ bool ArmCtrl::getObject()
     setPickedUpPos(getPos());
     if (!moveArm("up", 0.1))        return false;
     if (!homePoseStrict())          return false;
+    if (!is_gripping())             return false;
 
     return true;
 }
@@ -880,7 +881,7 @@ void ArmCtrl::recoverFromError()
 {
     if (internal_recovery == true)
     {
-        ROS_INFO_COND(print_level>=1, "[%s] Recovering from errror..", getLimb().c_str());
+        ROS_INFO_COND(print_level>=1, "[%s] Recovering from error..", getLimb().c_str());
 
         goHome();
     }
@@ -889,6 +890,8 @@ void ArmCtrl::recoverFromError()
 bool ArmCtrl::setState(int _state)
 {
     ROS_INFO_COND(print_level>=5, "[%s] Setting state to %i", getLimb().c_str(), _state);
+    ROS_INFO_COND(print_level>=5, "[%s] Existing state %s %s", getLimb().c_str(),
+                                  string(getState()).c_str(), getSubState().c_str());
 
     if (_state == KILLED && int(getState()) != WORKING)
     {
@@ -904,6 +907,10 @@ bool ArmCtrl::setState(int _state)
     if      (_state == DONE)
     {
         setSubState(getAction());
+    }
+    else if (_state == KILLED)
+    {
+        setSubState(ACT_KILLED);
     }
     else if (_state == ERROR && (getSubState() == "" || getSubState() == CHECK_OBJ_IDS))
     {

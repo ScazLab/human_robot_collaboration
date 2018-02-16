@@ -29,9 +29,9 @@ protected:
     {
         if (getInternalRecovery() == true)
         {
-            ROS_INFO_COND(print_level>=1, "[%s] Recovering from errror..", getLimb().c_str());
+            ROS_INFO_COND(print_level>=1, "[%s] Recovering from error..", getLimb().c_str());
 
-            if (getAction() == ACTION_GET || getAction() == ACTION_GET_PASS)
+            if ((getAction() == ACTION_GET || getAction() == ACTION_GET_PASS) && is_gripping())
             {
                 recoverGet();
             }
