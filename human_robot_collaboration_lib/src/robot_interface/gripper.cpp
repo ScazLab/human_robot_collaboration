@@ -57,16 +57,16 @@ baxter_core_msgs::EndEffectorState Gripper::getGripperState()
     return state;
 }
 
-void Gripper::setGripperProperties(const baxter_core_msgs::EndEffectorProperties& _properties)
+void Gripper::setGripperProperties(const baxter_core_msgs::EndEffectorProperties& _props)
 {
-    std::lock_guard<std::mutex> lock(mutex_properties);
-    properties = _properties;
+    std::lock_guard<std::mutex> lock(mutex_props);
+    props = _props;
 }
 
 baxter_core_msgs::EndEffectorProperties Gripper::getGripperProperties()
 {
-    std::lock_guard<std::mutex> lock(mutex_properties);
-    return properties;
+    std::lock_guard<std::mutex> lock(mutex_props);
+    return props;
 }
 
 void Gripper::gripperCb(const EndEffectorState &msg)

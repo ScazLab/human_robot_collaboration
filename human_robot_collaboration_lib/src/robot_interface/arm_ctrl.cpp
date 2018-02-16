@@ -677,14 +677,14 @@ bool ArmCtrl::goHoldPose()
     return false;
 }
 
-bool ArmCtrl::homePoseStrict(bool disable_coll_av)
+bool ArmCtrl::homePoseStrict(bool _disable_coll_av)
 {
     ROS_INFO_COND(print_level>=2, "[%s] Going to home position..", getLimb().c_str());
 
     ros::Rate r(THREAD_FREQ);
     while(RobotInterface::ok() && !isConfigurationReached(home_conf) && not isClosing())
     {
-        if (disable_coll_av)    suppressCollisionAv();
+        if (_disable_coll_av)   { suppressCollisionAv(); }
 
         goToJointConfNoCheck(home_conf);
 

@@ -363,11 +363,11 @@ protected:
      * in always the same exact way, in order to clean the seed configuration in
      * case of subsequent inverse kinematics requests.
      *
-     * @param  disable_coll_av if to disable the collision avoidance while
-     *                         performing the action or not
-     * @return                 true/false if success/failure
+     * @param  _disable_coll_av if to disable the collision avoidance while
+     *                          performing the action or not
+     * @return                  true/false if success/failure
      */
-    bool homePoseStrict(bool disable_coll_av = false);
+    bool homePoseStrict(bool _disable_coll_av = false);
 
     /**
      * Sets the joint-level configuration for the home position

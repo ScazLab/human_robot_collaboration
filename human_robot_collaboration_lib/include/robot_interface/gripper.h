@@ -43,10 +43,10 @@ private:
 
     ros::AsyncSpinner spinner; // AsyncSpinner to handle callbacks
 
-    baxter_core_msgs::EndEffectorState           state; // State of the gripper
-    baxter_core_msgs::EndEffectorProperties properties; // properties of the gripper
-    std::mutex      mutex_state;                        // mutex for controlled state access
-    std::mutex mutex_properties;                        // mutex for controlled properties access
+    baxter_core_msgs::EndEffectorState      state; // State of the gripper
+    baxter_core_msgs::EndEffectorProperties props; // properties of the gripper
+    std::mutex mutex_state;                        // mutex for controlled state access
+    std::mutex mutex_props;                        // mutex for controlled properties access
 
     std::string parameters; // parameters for the gripper
 

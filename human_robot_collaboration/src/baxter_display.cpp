@@ -257,10 +257,10 @@ private:
      */
     cv::Mat createBtmImage()
     {
-        cv::Mat img(w_b-w_d/2,w,CV_8UC3,cv::Scalar::all(255));
-        ROS_INFO_COND(print_level>=4, "Created BOTTOM image with size %i %i", img.rows, img.cols);
+        cv::Mat res(w_b-w_d/2,w,CV_8UC3,cv::Scalar::all(255));
+        ROS_INFO_COND(print_level>=4, "Created BOTTOM image with size %i %i", res.rows, res.cols);
 
-        return img;
+        return res;
     }
 
 public:
