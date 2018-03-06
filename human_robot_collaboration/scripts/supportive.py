@@ -172,7 +172,7 @@ class POMCPController(BaseController):
         req = self.action_right(hold, [60, 180], wait=False)
         result = self.wait_for_request_returns_or_button_pressed(
             req, self.right_button_sub)
-        if result is None: # We need to wait for two buttons
+        if result is None:  # We need to wait for two buttons
             rospy.logdebug('First button received')
             rospy.sleep(.5)
             result = self.wait_for_request_returns_or_button_pressed(

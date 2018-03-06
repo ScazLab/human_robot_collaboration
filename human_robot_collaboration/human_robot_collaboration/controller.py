@@ -2,7 +2,7 @@ import rospy
 
 from .timer import Timer
 from .service_request import ServiceRequest, finished_request
-from .suscribers import CommunicationSubscriber, ButtonSubscriber, ListenSubscriber
+from .subscribers import CommunicationSubscriber, ButtonSubscriber, ListenSubscriber
 from human_robot_collaboration_msgs.srv import DoAction, DoActionRequest
 from svox_tts.srv import Speech, SpeechRequest
 
@@ -17,8 +17,8 @@ class BaseController(object):
     Uses the following ressources:
     - service clients for left and right arm action providers,
     - service client for text to speech,
-    - suscriber to communication topic,
-    - suscriber to error topic.
+    - subscriber to communication topic,
+    - subscriber to error topic.
     """
 
     NODE_NAME = "experiment_controller"
@@ -141,11 +141,11 @@ class BaseController(object):
 
     def _abort(self):
         self.finished = True
-        self._abort_waiting_suscribers()
+        self._abort_waiting_subscribers()
         self._home()
         rospy.signal_shutdown("controller shutdown")
 
-    def _abort_waiting_suscribers(self):
+    def _abort_waiting_subscribers(self):
         for l in self.listeners:
             l.stop_listening()
 
