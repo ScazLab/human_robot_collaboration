@@ -14,7 +14,7 @@ def fake_service_proxy(*args):
 class BaseController(object):
     """Abstract interaction with robot's ROS nodes.
 
-    Uses the following ressources:
+    Uses the following resources:
     - service clients for left and right arm action providers,
     - service client for text to speech,
     - subscriber to communication topic,
@@ -162,9 +162,17 @@ class BaseController(object):
         raise NotImplementedError
 
     def set_listen_context(self, context):
+        """Sets speech to text context parameter.
+
+        :param context: iterable of strings
+        """
         rospy.get_param('/ros_speech2text/speech_context', context)
 
     def ask(self, question, context=None, timeout=None):
+        """Ask question aloud and waits for answer from speech to text.
+
+        :return: answer as a string
+        """
         if timeout is None:
             timeout = 15
         self.say(question, sync=False)
