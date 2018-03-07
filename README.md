@@ -79,6 +79,14 @@ Similarly to Mode A, these same services can be requested directly _within_ your
  * `pass` (left arm): if the robot has an object in its vacuum gripper, it moves it toward the human partner and waits for force interaction in order to release the gripper. The force filter we applied is a low-pass filter, so in order to trigger the `release` action, the human is suggested to apply an high-frequency, spike-y interaction.
  * `hold` (right arm): the robot moves into a configuration in which it is optimal to hold an object as a supportive action for the human partner. After that, it waits for force interaction to close the gripper, and again to open the gripper when the human has finished. See above for a description of the proper force interaction that should be applied to the arm in order to trigger the behaviors.
 
+
+### Python controller
+
+The [`BaseController` class](https://github.com/ScazLab/human_robot_collaboration/blob/master/human_robot_collaboration/human_robot_collaboration/controller.py) abstracts python access to the robot resources, including the high-level action `action_provider` service. It is based on a few Python helpers for
+ * [asynchronous service requests](https://github.com/ScazLab/human_robot_collaboration/blob/master/human_robot_collaboration/human_robot_collaboration/service_request.py)
+ * [subscribers to wait for the next relevant message](https://github.com/ScazLab/human_robot_collaboration/blob/master/human_robot_collaboration/human_robot_collaboration/subscribers.py)
+ * [an experiment timer](https://github.com/ScazLab/human_robot_collaboration/blob/master/human_robot_collaboration/human_robot_collaboration/timer.py) (mostly a log function that records times and can save to json)
+
 ### Misc
 
  * To kill an action from the terminal, you can simulate a button press on the arm's cuff: `rostopic pub --once /robot/digital_io/left_lower_button/state baxter_core_msgs/DigitalIOState "{state: 1, isInputOnly: true}"`.

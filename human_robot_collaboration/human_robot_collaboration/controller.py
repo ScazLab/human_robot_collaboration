@@ -14,6 +14,9 @@ def fake_service_proxy(*args):
 class BaseController(object):
     """Abstract interaction with robot's ROS nodes.
 
+    Meant to be extended by implementing the `_run` method. Exceptions are
+    caught outside of it and results in stopping the controller.
+
     Uses the following resources:
     - service clients for left and right arm action providers,
     - service client for text to speech,
@@ -116,6 +119,7 @@ class BaseController(object):
         return self._action(self.RIGHT, args, kwargs)
 
     def _home(self):
+        """Put both arms into _home_ position."""
         rospy.loginfo('Going home before starting.')
         l = ServiceRequest(self.action_left, DoActionRequest.ACTION_HOME, [])
         r = ServiceRequest(self.action_right, DoActionRequest.ACTION_HOME, [])
@@ -123,6 +127,11 @@ class BaseController(object):
         r.wait_result()
 
     def say(self, sentence, sync=True):
+        """Speaks out given sentence.
+
+        :param sync: Boolean
+            Whether to wait for text to speech service to return.
+        """
         self._last_say_req.wait_result()
         self._last_say_req = ServiceRequest(
             self.speech, SpeechRequest.SAY, sentence, None)
@@ -132,6 +141,10 @@ class BaseController(object):
             return self._last_say_req
 
     def _stop(self):
+        """Stops and exits controller.
+
+        To be used as callback on some events.
+        """
         if not self.finished:
             rospy.loginfo('Stopping controller')
             self.timer.log('Stop')
@@ -140,6 +153,7 @@ class BaseController(object):
         self._abort()
 
     def _abort(self):
+        """Attempts to cleanly exit the controller."""
         self.finished = True
         self._abort_waiting_subscribers()
         self._home()
@@ -157,6 +171,10 @@ class BaseController(object):
             rospy.logerr('Exiting.')
             self._abort()
             raise
+
+    def _run(self):
+        """Function to run the main controller loop."""
+        raise NotImplementedError
 
     def take_action(self, action):
         raise NotImplementedError
