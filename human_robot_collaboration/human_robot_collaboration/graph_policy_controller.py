@@ -4,6 +4,10 @@ from .controller import BaseController
 
 
 class BaseGPController(BaseController):
+    """Controller to execute a policy runner.
+
+    (See `github.com/ScazLab/task-models/task_models/policy.py >https://github.com/ScazLab/task-models/blob/master/task_models/policy.py>`.)
+    """
 
     NODE_NAME = "graph_policy_controller"
 
@@ -19,7 +23,13 @@ class BaseGPController(BaseController):
         self.pr = policy_runner
         super(BaseGPController, self).__init__(**kwargs)
 
+    def take_action(self, action):
+        """Implements how abstract actions from the policy are executed on the robot.
+        """
+        raise NotImplementedError
+
     def action_wait(self):
+        """Waits for T_WAIT."""
         rospy.loginfo("Waiting")
         rospy.sleep(self.T_WAIT)
         return self.NONE

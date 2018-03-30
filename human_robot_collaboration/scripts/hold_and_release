@@ -1,5 +1,11 @@
 #!/usr/bin/env python
 
+
+"""Experiment controller on using a POMDP in order to decide when to release
+a grasped object.
+"""
+
+
 from task_models.hold_and_release import hold_and_release_pomdp
 from task_models.lib.pomdp import GraphPolicyRunner
 

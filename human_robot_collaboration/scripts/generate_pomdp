@@ -1,19 +1,19 @@
 #!/usr/bin/env python
 
+
+"""
+This script generates the policy used in icra_experiment.
+"""
+
+
 import os
 import sys
 import argparse
 
-from task_models.lib.pomdp import GraphPolicyRunner, GraphPolicyBeliefRunner
+from task_models.task_to_pomdp import HTMToPOMDP
+from task_models.stool_scenarios import (stool_task_sequential, T_WAIT, T_ASK,
+                                         T_TELL, C_INTR)
 
-from task_models.task import (HierarchicalTask, AbstractAction, SequentialCombination,
-                              LeafCombination)
-from task_models.task_to_pomdp import CollaborativeAction, HTMToPOMDP
-from task_models.stool_scenarios import (stool_task_sequential, T_WAIT, T_ASK, T_TELL,
-                                         C_INTR, C_ERR, INF)
-
-from human_robot_collaboration.graph_policy_controller import BaseGPController
-from human_robot_collaboration.service_request import ServiceRequest
 
 parser = argparse.ArgumentParser(
     description="Script to generate, solve, and store POMDP and policy.")

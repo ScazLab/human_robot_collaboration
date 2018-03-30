@@ -103,6 +103,6 @@ The [`BaseController` class](https://github.com/ScazLab/human_robot_collaboratio
 
 To reproduce the experiment from the following paper on the Baxter research robot, we provide the script `human_robot_collaboration/scripts/icra_experiment`.
 
-    [Roncone2017] Roncone Alessandro, Mangin Olivier, Scassellati Brian **Transparent Role Assignment and Task Allocation in Human Robot Collaboration** *IEEE International Conference on Robotics and Automation (ICRA 2017)*, Singapore.
+[Roncone2017] Roncone Alessandro, Mangin Olivier, Scassellati Brian **Transparent Role Assignment and Task Allocation in Human Robot Collaboration** *IEEE International Conference on Robotics and Automation (ICRA 2017)*, Singapore.
 
 It needs to be given the path to an offline computed policy, as possible with [github.com/ScazLab/task-models](https://github.com/ScazLab/task-models).

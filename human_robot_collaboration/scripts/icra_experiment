@@ -3,9 +3,12 @@
 
 """
 This scripts run the experiment from the following paper on the baxter robot.
-    [Roncone2017] Roncone Alessandro, Mangin Olivier, Scassellati Brian **Transparent Role Assignment and Task Allocation in Human Robot Collaboration** *IEEE International Conference on Robotics and Automation (ICRA 2017)*, Singapore.
 
-It needs to be given the path to an offline computed policy, as possible with `github.com/ScazLab/task-models <https://github.com/ScazLab/task-models>`_.
+[Roncone2017] Roncone Alessandro, Mangin Olivier, Scassellati Brian **Transparent Role Assignment and Task Allocation in Human Robot Collaboration** *IEEE International Conference on Robotics and Automation (ICRA 2017)*, Singapore.
+
+It needs to be given the path to an offline policy computed for example by the
+other script generate_pomdp based on
+`github.com/ScazLab/task-models <https://github.com/ScazLab/task-models>`_.
 """
 
 

@@ -1,5 +1,16 @@
 #!/usr/bin/env python
 
+
+"""
+Controller code to interface with non-ROS python code.
+
+Based on the code from `github.com/ScazLab/remote_control <https://github.com/ScazLab/remote_control>`_.
+
+Note: The code probably needs some updates to work with the current version
+of the action service.
+"""
+
+
 from remote_control import Server
 
 import sys
@@ -11,11 +22,11 @@ limb = 'left'
 if len(sys.argv) > 1:
     limb = sys.argv[1]
 
-if   limb ==  'left':
-    PORT    = 5000
+if limb == 'left':
+    PORT = 5000
     SERVICE = '/action_provider/service_left'
 elif limb == 'right':
-    PORT    = 6000
+    PORT = 6000
     SERVICE = '/action_provider/service_right'
 
 OBJECT_IDS = {
@@ -23,7 +34,7 @@ OBJECT_IDS = {
     'right_leg': 26,
     'central_frame': 24,
     'top': 21,
-    }
+}
 
 
 def remote_message_to_action(msg):
@@ -37,7 +48,7 @@ def remote_message_to_action(msg):
 
 class RemoteControlNode:
 
-    name = 'remote_control_'+limb
+    name = 'remote_control_' + limb
 
     def __init__(self, port=PORT):
         rospy.init_node(self.name, disable_signals=True)
@@ -47,17 +58,17 @@ class RemoteControlNode:
         rospy.wait_for_service(SERVICE)
         self.service = rospy.ServiceProxy(SERVICE, DoAction)
         with Server(port=self.rc_port, callback=self._remote_msg_cb) as rc:
-	    rospy.loginfo("Started remote control server for %s arm.", limb)
+            rospy.loginfo("Started remote control server for %s arm.", limb)
             rc.run()
 
     def _remote_msg_cb(self, message):
-	rospy.loginfo("Received message: %s" % message)
+        rospy.loginfo("Received message: %s" % message)
         try:
             result = self.service(*remote_message_to_action(message))
             return result.success
-        except Exception, e:
+        except Exception as e:
             rospy.logerr("Unable to call service: %s" % e)
-	    return False
+        return False
 
 
 if __name__ == "__main__":

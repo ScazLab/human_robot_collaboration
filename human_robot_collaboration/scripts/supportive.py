@@ -1,5 +1,9 @@
 #!/usr/bin/env python
 
+
+"""Controller code for the supportive action experiment."""
+
+
 from __future__ import print_function
 
 import os
@@ -105,11 +109,11 @@ class POMCPController(BaseController):
                 rospy.loginfo("Belief / HTM: {} and on preferences: "
                               "{:.2f}".format(format_belief_array(bq), bp))
                 self.timer.log({
-                  'history': self.pol.history,
-                  'belief': list(b),
-                  'belief quotient': list(bq),
-                  'belief preference': list(bq),
-                  })
+                    'history': self.pol.history,
+                    'belief': list(b),
+                    'belief quotient': list(bq),
+                    'belief preference': list(bq),
+                })
                 t = rospy.Time.now()
                 a = self.pol.get_action()
                 rospy.logdebug('Computed action during {}s'.format(
@@ -188,7 +192,7 @@ class POMCPController(BaseController):
         while togo > 0:
             ans = self.listen_sub.wait_for_msg() or ""
             if ans:
-              rospy.loginfo("Got human message: '%s'", ans)
+                rospy.loginfo("Got human message: '%s'", ans)
             if 'done' in ans or 'finish' in ans:
                 togo = 0
                 self.say('OK')
@@ -210,7 +214,6 @@ class POMCPController(BaseController):
         else:
             self.say("I didn't get what you meant.", sync=False)
             return self.model.observations[self.model.O_NONE]
-
 
 
 # Problem definition
@@ -253,7 +256,7 @@ try:
         print('Found {} distinct beliefs.'.format(len(pol.tree._obs_nodes)))
 
     p_save = Process(target=export_pomcp,
-		     args=(pol, EXPORT_DEST),
+                     args=(pol, EXPORT_DEST),
                      kwargs={"belief_as_quotient": EXPORT_BELIEF_QUOTIENT})
     p_save.start()
 

@@ -22,6 +22,21 @@ class BaseController(object):
     - service client for text to speech,
     - subscriber to communication topic,
     - subscriber to error topic.
+
+    Note: this code does not load the associated ROS services and resources,
+          which needs to be done for example in the launch file.
+
+    :param timer_path: string
+        Path to which the timer object is dumped (see timer module).
+    :param left/right: boolean
+        Whether to create a service connection for the left/right arm.
+    :param speech: boolean
+        Whether to connect to the text to speech service provided by svox_tts.
+    :param listen: boolean
+        Whether to connect to the speech to text service provided by
+        ros_speech2text.
+    :param recovery: boolean
+        Sets the action provider recovery variable to the given value.
     """
 
     NODE_NAME = "experiment_controller"
@@ -85,6 +100,7 @@ class BaseController(object):
         self._home()  # Home position
 
     def _action(self, side, args, kwargs):
+        """Passes actions to the corresponding arm service."""
         wait = kwargs.pop('wait', True)
         if side == self.LEFT:
             self._last_action_left_request.wait_result()
@@ -104,6 +120,14 @@ class BaseController(object):
 
     @staticmethod
     def wait_for_request_returns_or_button_pressed(req, button_sub):
+        """
+        :param req: .service_request.ServiceRequest
+            Asynchronous service request
+        :param button_sub: .suscribers.ButtonSubscriber
+        :return: boolean
+            The result of the request if completed or None if interrupted
+            by button pressed.
+        """
         button_sub.start_listening()
         while (button_sub.listening and not req.finished):
             rospy.sleep(.1)
@@ -113,9 +137,17 @@ class BaseController(object):
             return None
 
     def action_left(self, *args, **kwargs):
+        """Takes action on left arm.
+
+        Parameters defined by the service.
+        """
         return self._action(self.LEFT, args, kwargs)
 
     def action_right(self, *args, **kwargs):
+        """Takes action on right arm.
+
+        Parameters defined by the service.
+        """
         return self._action(self.RIGHT, args, kwargs)
 
     def _home(self):
@@ -164,6 +196,7 @@ class BaseController(object):
             l.stop_listening()
 
     def run(self):
+        """Wrapper function to run the controller."""
         try:
             self._run()
         except (Exception, KeyboardInterrupt) as e:
@@ -173,10 +206,11 @@ class BaseController(object):
             raise
 
     def _run(self):
-        """Function to run the main controller loop."""
-        raise NotImplementedError
+        """Function to run the main controller loop.
 
-    def take_action(self, action):
+        Needs to be implemented but intended to be run as part of the run
+        method.
+        """
         raise NotImplementedError
 
     def set_listen_context(self, context):
