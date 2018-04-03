@@ -282,8 +282,6 @@ private:
             }
         }
 
-        if(!icon.data) { puts("imread failed"); } // DELETE LATER
-
         if(listen) {
             icon.copyTo(res(cv::Rect(0, 0, w_b-w_d/2, w_b-w_d/2))); 
         }
