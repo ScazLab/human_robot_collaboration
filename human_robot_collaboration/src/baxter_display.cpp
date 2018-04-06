@@ -14,7 +14,6 @@ using namespace std;
 using namespace human_robot_collaboration_msgs;
 
 #define DEFAULT_DURATION 10.0  // [s]
-#define LISTENING 1
 
 /**
  * Class that manages the output to the baxter display. By default, it publishes an image
@@ -40,7 +39,7 @@ private:
     ros::Timer  speech_timer;       // Timer remove the speech pop-up after specific duration
     double      speech_duration;    // Duration of the speech pop-up
 
-    int listen;                     // Set to 1 if listening, 0 otherwise
+    bool listen;                    // True if ros_speech2text is listening
 
     image_transport::ImageTransport     it;
     image_transport::Publisher      im_pub;
@@ -54,7 +53,6 @@ private:
     cv::Scalar green;
     cv::Scalar  blue;
 
-    cv::Mat icon; 
 
     /**
      * Callback for the left arm state
@@ -98,7 +96,7 @@ private:
     void eventCb(const ros_speech2text::event& msg)
     {
         if(msg.event == msg.STARTED) {
-            listen = LISTENING; 
+            listen = true; 
         }
     }
 
@@ -271,15 +269,15 @@ private:
      */
     cv::Mat createBtmImage()
     {
+        cv::Mat icon;
+
         cv::Mat res(w_b-w_d/2,w,CV_8UC3,cv::Scalar::all(255));
         ROS_INFO_COND(print_level>=6, "Created BOTTOM image with size %i %i", res.rows, res.cols);
 
-        if(!icon.data) { // check if already loaded
-            icon = cv::imread("/home/kayleigh/mic.bmp", CV_LOAD_IMAGE_GRAYSCALE);
+        icon = cv::imread("/home/kayleigh/mic.bmp", CV_LOAD_IMAGE_GRAYSCALE);
 
-            if(!icon.data) { // check that it actually worked
-                ROS_INFO_COND(print_level>=6, "Imread failed"); 
-            }
+        if(!icon.data) { 
+            ROS_INFO_COND(print_level>=6, "Imread failed");    
         }
 
         if(listen) {
