@@ -10,7 +10,6 @@
     <arg name="forceFilterVarianceR" default="1.0"/>
     <arg name="relativeForceThresholdL"   default="65.0"/>
     <arg name="relativeForceThresholdR"   default="1.0"/>
-    <arg name="speechPopUpDuration"  default="20.0"/>    <!-- [s] -->
 
     <!-- If the robot will recover from an error or will wait the external planner's decisions -->
     <arg name="internalRecovery"    default="true"/>
@@ -26,7 +25,6 @@
 
     <param name="action_provider/internal_recovery"     value="$(arg internalRecovery)"/>
     <param name="action_provider/use_robot"             value="$(arg useRobot)"/>
-    <param name="baxter_display/speech_duration"        value="$(arg speechPopUpDuration)"/>
 
     <!-- Objects database for the left arm -->
     <rosparam param = "action_provider/objects_left">
@@ -41,8 +39,12 @@
         "blue_top"          : 9
     </rosparam>
 
-    <node pkg="human_robot_collaboration" type="baxter_display"  name="baxter_display"  output="screen"/>
     <node pkg="human_robot_collaboration" type="tower_action_provider" name="tower_action_provider" output="screen"/>
+
+    <!-- BAXTER DISPLAY -->
+    <include file="$(find human_robot_collaboration)/launch/baxter_display.launch">
+        <arg name="speech_duration" value = "20.0" />
+    </include>
 
     <!-- <node name="image_baxter_display" pkg="image_view" type="image_view" respawn="false" output="log">
         <remap from="image" to="/robot/xdisplay"/>

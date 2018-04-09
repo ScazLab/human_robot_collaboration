@@ -4,6 +4,11 @@
         <arg name="arm" value= "left" />
     </include>
 
+    <!-- BAXTER DISPLAY -->
+    <include file="$(find human_robot_collaboration)/launch/baxter_display.launch">
+        <arg name="speech_duration" value = "16.0" />
+    </include>
+
     <!-- ROSBRIDGE -->
     <include file="$(find rosbridge_server)/launch/rosbridge_websocket.launch" />
 
@@ -65,10 +70,6 @@
     </node>
 
     <!-- VISUALIZATION & MISC -->
-    <!-- Parameter for speech pop up duration -->
-    <param name="baxter_display/speech_duration"        value="16.0"/>
-
-    <node pkg="human_robot_collaboration" type="baxter_display"  name="baxter_display"  output="screen"/>
 
     <include file="$(find svox_tts)/launch/svox_tts.launch" />
 
