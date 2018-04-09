@@ -1,6 +1,7 @@
 <launch>
     <env name="ROSCONSOLE_CONFIG_FILE" value="$(find human_robot_collaboration)/rosconsole.conf"/>
     <include file="$(find human_robot_collaboration)/launch/baxter_aruco.launch" />
+    <include file="$(find human_robot_collaboration)/launch/baxter_display.launch" />
     <include file="$(find rosbridge_server)/launch/rosbridge_websocket.launch"/>
     <include file="$(find svox_tts)/launch/svox_tts.launch" />
 
@@ -10,7 +11,6 @@
     <arg name="forceFilterVarianceR"    default="1.0"/>
     <arg name="relativeForceThresholdL" default="65.0"/>
     <arg name="relativeForceThresholdR" default="1.0"/>
-    <arg name="speech_duration"         default="8.0"/>    <!-- [s] -->
 
     <!-- If the robot will recover from an error or will wait the external planner's decisions -->
     <arg name="internal_recovery"    default="false"/>
@@ -26,7 +26,6 @@
 
     <param name="action_provider/internal_recovery"     value="$(arg internal_recovery)"/>
     <param name="action_provider/use_robot"             value="$(arg use_robot)"/>
-    <param name="baxter_display/speech_duration"        value="$(arg speech_duration)"/>
 
     <!-- Objects database for the left arm -->
     <rosparam param = "action_provider/objects_left">
@@ -36,7 +35,6 @@
         "right_leg":     26
     </rosparam>
 
-    <node pkg="human_robot_collaboration" type="baxter_display"  name="baxter_display"  output="screen"/>
     <node pkg="human_robot_collaboration" type="flatpack_action_provider" name="flatpack_action_provider" output="screen"/>
 
     <!-- <node name="image_baxter_display" pkg="image_view" type="image_view" respawn="false" output="log">

@@ -37,9 +37,11 @@ private:
 
     std::string speech;             // Text to display
     ros::Timer  speech_timer;       // Timer remove the speech pop-up after specific duration
-    double      speech_duration;    // Duration of the speech pop-up
+    double      onscreen_duration;    // Duration of the speech pop-up
 
-    bool listen;                    // True if ros_speech2text is listening
+    bool        listening;          // True if ros_speech2text is listening, false otherwise
+    ros::Timer  event_timer;        // Timer to remove the microphone icon after specific duration
+    std::string mic_icon_file;      // Filename of the microphone icon file
 
     image_transport::ImageTransport     it;
     image_transport::Publisher      im_pub;
@@ -52,7 +54,6 @@ private:
     cv::Scalar   red;
     cv::Scalar green;
     cv::Scalar  blue;
-
 
     /**
      * Callback for the left arm state
@@ -81,24 +82,52 @@ private:
     {
         ROS_INFO_COND(print_level>=4, "Arm %s", _limb.c_str());
 
-        if      (_limb == "left")
-        {
-            l_state = msg;
-        }
-        else if (_limb == "right")
-        {
-            r_state = msg;
-        }
+        if      (_limb ==  "left") { l_state = msg; }
+        else if (_limb == "right") { r_state = msg; }
 
         displayArmStates();
     };
 
+    /**
+     * Callback to handle ros_speech2text event messages
+     */
     void eventCb(const ros_speech2text::event& msg)
     {
-        if(msg.event == msg.STARTED) {
-            listen = true; 
+        ROS_INFO_COND(print_level>=4, "Received speech event with transcript: %s",
+                                               msg.transcript.transcript.c_str());
+
+        if      (msg.event == msg.STARTED)
+        {
+            listening =  true;
+
+            // stop the timer if it was running
+            if (event_timer.isValid()) { event_timer.stop(); }
+
+            // create a new timer
+            event_timer = nh.createTimer(ros::Duration(onscreen_duration),
+                              &BaxterDisplay::deleteListenEventCb, this, true);
         }
+        else if (msg.event == msg.STOPPED)
+        {
+            listening = false;
+
+            // stop the timer if it was running
+            if (event_timer.isValid()) { event_timer.stop(); }
+        }
+
+        displayArmStates();
     }
+
+    /**
+     * Callback to delete a listen even from the screen (after t=onscreen_duration)
+     */
+    void deleteListenEventCb(const ros::TimerEvent&)
+    {
+        ROS_INFO_COND(print_level>=4, "Deleting listen event");
+
+        listening = false;
+        displayArmStates();
+    };
 
     /**
      * Callback from the speech
@@ -110,14 +139,18 @@ private:
 
         setSpeech(msg.data);
 
-        speech_timer = nh.createTimer(ros::Duration(speech_duration),
+        // stop the timer if it was running
+        if (speech_timer.isValid()) { speech_timer.stop(); }
+
+        // create a new timer
+        speech_timer = nh.createTimer(ros::Duration(onscreen_duration),
                                       &BaxterDisplay::deleteSpeechCb, this, true);
 
         displayArmStates();
     };
 
     /**
-     * Callback to delete the speech from the screen (after t=speech_duration)
+     * Callback to delete the speech from the screen (after t=onscreen_duration)
      */
     void deleteSpeechCb(const ros::TimerEvent&)
     {
@@ -269,20 +302,24 @@ private:
      */
     cv::Mat createBtmImage()
     {
-        cv::Mat icon;
-
         cv::Mat res(w_b-w_d/2,w,CV_8UC3,cv::Scalar::all(255));
+
+        if (listening) {
+            cv::Mat icon = cv::imread(mic_icon_file, CV_LOAD_IMAGE_COLOR);
+
+            if (not icon.data) {
+                ROS_WARN_COND(print_level>=1, "Mic icon not found: %s", mic_icon_file.c_str());
+                return res;
+            }
+            else {
+                // cv::imshow( "Display window", icon );
+                // cv::waitKey(0);
+
+                icon.copyTo(res(cv::Rect((res.rows-icon.rows)/2, (res.rows-icon.rows)/2, icon.rows, icon.cols)));
+            }
+        }
+
         ROS_INFO_COND(print_level>=6, "Created BOTTOM image with size %i %i", res.rows, res.cols);
-
-        icon = cv::imread("/home/kayleigh/mic.bmp", CV_LOAD_IMAGE_GRAYSCALE);
-
-        if(!icon.data) { 
-            ROS_INFO_COND(print_level>=6, "Imread failed");    
-        }
-
-        if(listen) {
-            icon.copyTo(res(cv::Rect(0, 0, w_b-w_d/2, w_b-w_d/2))); 
-        }
 
         return res;
     }
@@ -292,18 +329,19 @@ public:
     /**
      * Constructor
      */
-    explicit BaxterDisplay(string _name) : print_level(0), name(_name), speech(""), it(nh)
+    explicit BaxterDisplay(string _name) : print_level(0), name(_name), speech(""), listening(false), it(nh)
     {
         im_pub = it.advertise("/robot/xdisplay", 1);
 
         l_sub = nh.subscribe( "/action_provider/left/state", 1, &BaxterDisplay::armStateCbL, this);
         r_sub = nh.subscribe("/action_provider/right/state", 1, &BaxterDisplay::armStateCbR, this);
 
-        s_sub = nh.subscribe("/svox_tts/speech_output",1, &BaxterDisplay::speechCb, this);
-
-        p_sub = nh.subscribe("/speech_to_text/log", 1, &BaxterDisplay::eventCb, this); 
+        s_sub = nh.subscribe("/svox_tts/speech_output", 1, &BaxterDisplay::speechCb, this);
+        p_sub = nh.subscribe(    "/speech_to_text/log", 1,  &BaxterDisplay::eventCb, this);
 
         nh.param<int> ("/print_level", print_level, 0);
+
+        nh.param<std::string>("baxter_display/mic_icon_file", mic_icon_file, "");
 
         h = 600;
         w = 1024;
@@ -312,27 +350,28 @@ public:
         w_b = 80;
 
         l_state.state  = "START";
-        l_state.action =     "";
-        l_state.object =     "";
+        l_state.action =      "";
+        l_state.object =      "";
 
         r_state.state  = "START";
-        r_state.action =     "";
-        r_state.object =     "";
+        r_state.action =      "";
+        r_state.object =      "";
 
         red   = cv::Scalar(  44,  48, 201);  // BGR color code
         green = cv::Scalar(  60, 160,  60);
         blue  = cv::Scalar( 200, 162,  77);
 
-        nh.param<double>("baxter_display/speech_duration", speech_duration, DEFAULT_DURATION);
+        nh.param<double>("baxter_display/onscreen_duration", onscreen_duration, DEFAULT_DURATION);
 
         displayArmStates();
 
         ROS_INFO_COND(print_level>=3, "Subscribing to %s and %s", l_sub.getTopic().c_str(),
                                                                   r_sub.getTopic().c_str());
-        ROS_INFO_COND(print_level>=3, "Subscribing to %s", s_sub.getTopic().c_str());
+        ROS_INFO_COND(print_level>=3, "Subscribing to %s and %s", s_sub.getTopic().c_str(),
+                                                                  p_sub.getTopic().c_str());
         ROS_INFO_COND(print_level>=3, "Publishing  to %s", im_pub.getTopic().c_str());
         ROS_INFO_COND(print_level>=1, "Print     Level set to %i", print_level);
-        ROS_INFO_COND(print_level>=1, "Speech Duration set to %g", speech_duration);
+        ROS_INFO_COND(print_level>=1, "Speech Duration set to %g", onscreen_duration);
         ROS_INFO_COND(print_level>=1, "Ready!!");
     };
 
@@ -356,7 +395,7 @@ public:
         cv::Mat r = createArmImage("RIGHT");
         cv::Mat b = createBtmImage();
         cv::Mat d_v(r.rows,w_d,CV_8UC3,cv::Scalar::all(80));    // Vertical delimiter
-        cv::Mat d_h(w_d,w,CV_8UC3,cv::Scalar::all(80));         // Horizontal delimiter
+        cv::Mat d_h(   w_d,  w,CV_8UC3,cv::Scalar::all(80));         // Horizontal delimiter
 
         ROS_INFO_COND(print_level>=5, "d_v size %i %i", d_v.rows, d_v.cols);
         ROS_INFO_COND(print_level>=5, "d_h size %i %i", d_h.rows, d_h.cols);
