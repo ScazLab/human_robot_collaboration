@@ -6,7 +6,7 @@
 
     <!-- BAXTER DISPLAY -->
     <include file="$(find human_robot_collaboration)/launch/baxter_display.launch">
-        <arg name="speech_duration" value = "16.0" />
+        <arg name="onscreen_duration" value = "16.0" />
     </include>
 
     <!-- ROSBRIDGE -->

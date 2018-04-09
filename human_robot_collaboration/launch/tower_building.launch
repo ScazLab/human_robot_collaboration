@@ -43,7 +43,7 @@
 
     <!-- BAXTER DISPLAY -->
     <include file="$(find human_robot_collaboration)/launch/baxter_display.launch">
-        <arg name="speech_duration" value = "20.0" />
+        <arg name="onscreen_duration" value = "20.0" />
     </include>
 
     <!-- <node name="image_baxter_display" pkg="image_view" type="image_view" respawn="false" output="log">
