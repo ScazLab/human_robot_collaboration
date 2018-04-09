@@ -39,7 +39,8 @@ private:
     ros::Timer  speech_timer;       // Timer remove the speech pop-up after specific duration
     double      speech_duration;    // Duration of the speech pop-up
 
-    bool listen;                    // True if ros_speech2text is listening
+    bool        listen;             // True if ros_speech2text is listening, false otherwise
+    std::string mic_icon_file;      // Filename of the microphone icon file
 
     image_transport::ImageTransport     it;
     image_transport::Publisher      im_pub;
@@ -52,7 +53,6 @@ private:
     cv::Scalar   red;
     cv::Scalar green;
     cv::Scalar  blue;
-
 
     /**
      * Callback for the left arm state
@@ -95,9 +95,12 @@ private:
 
     void eventCb(const ros_speech2text::event& msg)
     {
-        if(msg.event == msg.STARTED) {
-            listen = true; 
-        }
+        ROS_INFO_COND(print_level>=4, "Received speech event with transcript: %s", msg.transcript.transcript.c_str());
+
+        if      (msg.event == msg.STARTED) { listen =  true; }
+        else if (msg.event == msg.STOPPED) { listen = false; }
+
+        displayArmStates();
     }
 
     /**
@@ -269,20 +272,24 @@ private:
      */
     cv::Mat createBtmImage()
     {
-        cv::Mat icon;
-
         cv::Mat res(w_b-w_d/2,w,CV_8UC3,cv::Scalar::all(255));
+
+        if (listen) {
+            cv::Mat icon = cv::imread(mic_icon_file, CV_LOAD_IMAGE_COLOR);
+
+            if (not icon.data) {
+                ROS_WARN_COND(print_level>=1, "Mic icon not found: %s", mic_icon_file.c_str());
+                return res;
+            }
+            else {
+                // cv::imshow( "Display window", icon );
+                // cv::waitKey(0);
+
+                icon.copyTo(res(cv::Rect((res.rows-icon.rows)/2, (res.rows-icon.rows)/2, icon.rows, icon.cols)));
+            }
+        }
+
         ROS_INFO_COND(print_level>=6, "Created BOTTOM image with size %i %i", res.rows, res.cols);
-
-        icon = cv::imread("/home/kayleigh/mic.bmp", CV_LOAD_IMAGE_GRAYSCALE);
-
-        if(!icon.data) { 
-            ROS_INFO_COND(print_level>=6, "Imread failed");    
-        }
-
-        if(listen) {
-            icon.copyTo(res(cv::Rect(0, 0, w_b-w_d/2, w_b-w_d/2))); 
-        }
 
         return res;
     }
@@ -292,18 +299,19 @@ public:
     /**
      * Constructor
      */
-    explicit BaxterDisplay(string _name) : print_level(0), name(_name), speech(""), it(nh)
+    explicit BaxterDisplay(string _name) : print_level(0), name(_name), speech(""), listen(false), it(nh)
     {
         im_pub = it.advertise("/robot/xdisplay", 1);
 
         l_sub = nh.subscribe( "/action_provider/left/state", 1, &BaxterDisplay::armStateCbL, this);
         r_sub = nh.subscribe("/action_provider/right/state", 1, &BaxterDisplay::armStateCbR, this);
 
-        s_sub = nh.subscribe("/svox_tts/speech_output",1, &BaxterDisplay::speechCb, this);
-
-        p_sub = nh.subscribe("/speech_to_text/log", 1, &BaxterDisplay::eventCb, this); 
+        s_sub = nh.subscribe("/svox_tts/speech_output", 1, &BaxterDisplay::speechCb, this);
+        p_sub = nh.subscribe(    "/speech_to_text/log", 1,  &BaxterDisplay::eventCb, this);
 
         nh.param<int> ("/print_level", print_level, 0);
+
+        nh.param<std::string>("baxter_display/mic_icon_file", mic_icon_file, "");
 
         h = 600;
         w = 1024;
@@ -312,12 +320,12 @@ public:
         w_b = 80;
 
         l_state.state  = "START";
-        l_state.action =     "";
-        l_state.object =     "";
+        l_state.action =      "";
+        l_state.object =      "";
 
         r_state.state  = "START";
-        r_state.action =     "";
-        r_state.object =     "";
+        r_state.action =      "";
+        r_state.object =      "";
 
         red   = cv::Scalar(  44,  48, 201);  // BGR color code
         green = cv::Scalar(  60, 160,  60);
@@ -329,7 +337,8 @@ public:
 
         ROS_INFO_COND(print_level>=3, "Subscribing to %s and %s", l_sub.getTopic().c_str(),
                                                                   r_sub.getTopic().c_str());
-        ROS_INFO_COND(print_level>=3, "Subscribing to %s", s_sub.getTopic().c_str());
+        ROS_INFO_COND(print_level>=3, "Subscribing to %s and %s", s_sub.getTopic().c_str(),
+                                                                  p_sub.getTopic().c_str());
         ROS_INFO_COND(print_level>=3, "Publishing  to %s", im_pub.getTopic().c_str());
         ROS_INFO_COND(print_level>=1, "Print     Level set to %i", print_level);
         ROS_INFO_COND(print_level>=1, "Speech Duration set to %g", speech_duration);
