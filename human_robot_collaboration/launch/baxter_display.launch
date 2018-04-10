@@ -1,0 +1,14 @@
+<launch>
+    <arg name="onscreen_duration"         default="8.0"/>    <!-- [s] -->
+
+    <param name="baxter_display/onscreen_duration"    value="$(arg onscreen_duration)"/>
+    <param name="baxter_display/mic_icon_file"      value="$(find human_robot_collaboration)/img/mic_icon.jpg"/>
+
+    <node pkg="human_robot_collaboration" type="baxter_display"  name="baxter_display"  output="screen"/>
+
+    <!-- <node name="image_view_baxter_display" pkg="image_view" type="image_view" respawn="false" output="log">
+        <remap from="image" to="/robot/xdisplay"/>
+        <param name="autosize" value="true" />
+    </node> -->
+</launch>
+

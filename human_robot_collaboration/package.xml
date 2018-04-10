@@ -36,6 +36,7 @@
   <depend>cv_bridge</depend>
   <depend>image_transport</depend>
   <depend>rosconsole</depend>
+  <depend>ros_speech2text</depend>
   <depend>svox_tts</depend>
 
   <test_depend>baxter_description</test_depend>
