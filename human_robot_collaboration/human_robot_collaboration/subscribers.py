@@ -1,4 +1,4 @@
-from threading import Lock
+from threading import Lock, current_thread
 
 import rospy
 from std_msgs.msg import String
