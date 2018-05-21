@@ -42,7 +42,7 @@ class ServiceRequest(threading.Thread):
         self.start()
         rospy.logdebug("{} End   Thread {}".format(thread_name, self.args))
 
-    def run(self, debug=False):
+    def run(self):
         thread_name = threading.currentThread().getName()
 
         rospy.logdebug("{} Calling proxy {}".format(thread_name, self.args))
