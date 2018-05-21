@@ -11,7 +11,7 @@ class FakeServiceRequest:
     finished = True
 
     def wait_result(self):
-        rospy.loginfo("FakeServiceRequest wait_result {}")
+        rospy.logdebug("FakeServiceRequest wait_result {}")
         pass
 
 
@@ -36,19 +36,19 @@ class ServiceRequest(threading.Thread):
         self.args = args
         self.finished = False
         self.result = None
-        rospy.loginfo("{} 1 Constructor {}".format(threading.currentThread().getName(),
-                                                   self.args))
+        thread_name = threading.currentThread().getName()
+
+        rospy.logdebug("{} Start Thread {}".format(thread_name, self.args))
         self.start()
-        rospy.loginfo("{} 2 Constructor {}".format(threading.currentThread().getName(),
-                                                   self.args))
+        rospy.logdebug("{} End   Thread {}".format(thread_name, self.args))
 
     def run(self, debug=False):
-        rospy.loginfo("{} ServiceRequest calling proxy {}".format(threading.currentThread().getName(),
-                                                                  self.args))
+        thread_name = threading.currentThread().getName()
 
+        rospy.logdebug("{} Calling proxy {}".format(thread_name, self.args))
         self.result = self.proxy(*self.args)
-        rospy.loginfo("{} ServiceRequest called  proxy {}".format(threading.currentThread().getName(),
-                                                                  self.args))
+        rospy.logdebug("{} Called  proxy {}".format(thread_name, self.args))
+
         self.finished = True
 
     def wait_result(self):
@@ -56,9 +56,11 @@ class ServiceRequest(threading.Thread):
 
         Equivalent to a regular (synchronous) service call.
         """
-        start = time.time()
-        rospy.loginfo("{} ServiceRequest wait_result   {}".format(threading.currentThread().getName(),
-                                                                  self.args))
+        thread_name = threading.currentThread().getName()
+        start_time  = time.time()
+
+        rospy.logdebug("{} Args {}".format(thread_name, self.args))
         self.join()
-        rospy.loginfo("Elapsed time {}".format(time.time()-start))
+        rospy.logdebug("{} Elapsed time {}".format(thread_name, time.time()-start_time))
+
         return self.result
