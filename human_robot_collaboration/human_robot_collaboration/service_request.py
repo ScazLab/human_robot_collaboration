@@ -2,17 +2,20 @@
 
 
 import threading
+import rospy
+import time
 
 
-class FinishedServiceRequest:
+class FakeServiceRequest:
 
     finished = True
 
     def wait_result(self):
+        rospy.loginfo("FakeServiceRequest wait_result {}")
         pass
 
 
-finished_request = FinishedServiceRequest()
+finished_request = FakeServiceRequest()
 
 
 class ServiceRequest(threading.Thread):
@@ -33,10 +36,19 @@ class ServiceRequest(threading.Thread):
         self.args = args
         self.finished = False
         self.result = None
+        rospy.loginfo("{} 1 Constructor {}".format(threading.currentThread().getName(),
+                                                   self.args))
         self.start()
+        rospy.loginfo("{} 2 Constructor {}".format(threading.currentThread().getName(),
+                                                   self.args))
 
-    def run(self):
+    def run(self, debug=False):
+        rospy.loginfo("{} ServiceRequest calling proxy {}".format(threading.currentThread().getName(),
+                                                                  self.args))
+
         self.result = self.proxy(*self.args)
+        rospy.loginfo("{} ServiceRequest called  proxy {}".format(threading.currentThread().getName(),
+                                                                  self.args))
         self.finished = True
 
     def wait_result(self):
@@ -44,5 +56,9 @@ class ServiceRequest(threading.Thread):
 
         Equivalent to a regular (synchronous) service call.
         """
+        start = time.time()
+        rospy.loginfo("{} ServiceRequest wait_result   {}".format(threading.currentThread().getName(),
+                                                                  self.args))
         self.join()
+        rospy.loginfo("Elapsed time {}".format(time.time()-start))
         return self.result

@@ -39,7 +39,7 @@ class BaseController(object):
         Sets the action provider recovery variable to the given value.
     """
 
-    NODE_NAME = "experiment_controller"
+    NODE_NAME = 'experiment_controller'
 
     LEFT = 0
     RIGHT = 1
@@ -59,6 +59,7 @@ class BaseController(object):
         self.listeners = []
         # ROS stuff
         rospy.init_node(self.NODE_NAME, disable_signals=True)
+
         if left:  # Left arm action service client
             rospy.loginfo('Waiting for left service...')
             rospy.wait_for_service(self.ACTION_SERVICE_LEFT)
@@ -66,6 +67,7 @@ class BaseController(object):
         else:
             self._action_left = fake_service_proxy
         self._last_action_left_request = finished_request
+
         if right:  # Right arm action service client
             rospy.loginfo('Waiting for right service...')
             rospy.wait_for_service(self.ACTION_SERVICE_RIGHT)
@@ -73,17 +75,20 @@ class BaseController(object):
         else:
             self._action_right = fake_service_proxy
         self._last_action_right_request = finished_request
+
         if speech:  # Text to speech client
             rospy.loginfo('Waiting for speech service...')
             rospy.wait_for_service(self.SPEECH_SERVICE)
             self.speech = rospy.ServiceProxy(self.SPEECH_SERVICE, Speech)
         self._last_say_req = finished_request
+
         # Subscriber to human answers
         if listen:
             self.listen_sub = ListenSubscriber(self.LISTEN_TOPIC, self._stop)
         else:
             self.listen_sub = CommunicationSubscriber(self.COM_TOPIC, self._stop)
         self.listeners.append(self.listen_sub)
+
         # Subscriber to errors
         self.error_sub = ButtonSubscriber(self.ERR_TOPIC, timeout=5)
         self.listeners.append(self.error_sub)
@@ -91,28 +96,47 @@ class BaseController(object):
         self.listeners.append(self.left_button_sub)
         self.right_button_sub = ButtonSubscriber(self.RIGHT_BUTTON, timeout=60)
         self.listeners.append(self.right_button_sub)
+
         # Set ROS parameter for recovery
         rospy.set_param('/action_provider/internal_recovery', recovery)
+
         # Timer to log events
         self.timer = Timer(path=timer_path)
         self.print_level = rospy.get_param('/print_level', 0)
         rospy.loginfo('Done.')
-        self._home()  # Home position
+
+        # Go to home position
+        self._home()
 
     def _action(self, side, args, kwargs):
         """Passes actions to the corresponding arm service."""
+        rospy.loginfo(
+                'Taking action with {} arm {} {}'.format('LEFT' if side == self.LEFT else 'RIGHT',
+                                                         args,
+                                                         kwargs))
+
         wait = kwargs.pop('wait', True)
+        # If there is an action currently requested, let's wait
+        # for it to finish.
+        # Then, set the ServiceRequest to the correct arm (i.e. s)
         if side == self.LEFT:
             self._last_action_left_request.wait_result()
             s = self._action_left
         else:
             self._last_action_right_request.wait_result()
             s = self._action_right
+
+        # Request the service to the correct arm
         r = ServiceRequest(s, *args)
-        if side == self.RIGHT:
+
+        # Store the previous action request to a parameter so
+        # that you can see if it is finished (see above)
+        if side == self.LEFT:
             self._last_action_left_request = r
         else:
             self._last_action_right_request = r
+
+        # Busy wait if you have to
         if wait:
             return r.wait_result()
         else:
@@ -152,11 +176,14 @@ class BaseController(object):
 
     def _home(self):
         """Put both arms into _home_ position."""
-        rospy.loginfo('Going home before starting.')
-        l = ServiceRequest(self.action_left, DoActionRequest.ACTION_HOME, [])
-        r = ServiceRequest(self.action_right, DoActionRequest.ACTION_HOME, [])
+        rospy.loginfo('Going home...')
+        l = self._action( self.LEFT,(DoActionRequest.ACTION_HOME, []), {'wait': False})
+        r = self._action(self.RIGHT,(DoActionRequest.ACTION_HOME, []), {'wait': False})
+
         l.wait_result()
         r.wait_result()
+
+        rospy.loginfo('Both arms are in home position')
 
     def say(self, sentence, sync=True):
         """Speaks out given sentence.
@@ -186,10 +213,11 @@ class BaseController(object):
 
     def _abort(self):
         """Attempts to cleanly exit the controller."""
+        rospy.loginfo('Aborting...')
         self.finished = True
         self._abort_waiting_subscribers()
         self._home()
-        rospy.signal_shutdown("controller shutdown")
+        rospy.signal_shutdown('Controller shutdown')
 
     def _abort_waiting_subscribers(self):
         for l in self.listeners:
@@ -197,6 +225,7 @@ class BaseController(object):
 
     def run(self):
         """Wrapper function to run the controller."""
+        rospy.loginfo('Calling run')
         try:
             self._run()
         except (Exception, KeyboardInterrupt) as e:
