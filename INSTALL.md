@@ -26,7 +26,11 @@ sudo apt-get update
 sudo apt-get install gcc-snapshot gcc-4.9 g++-4.9
 ```
 
-If you have other versions of `gcc` installed already (Ubuntu 14.04 comes with `gcc-4.8` by default), you might need to select  `gcc-4.9` as default. You can do this by typing `sudo update-alternatives --config gcc` and following the instructions in the terminal.
+If you have other versions of `gcc` installed already (Ubuntu 14.04 comes with `gcc-4.8` by default), you might need to select  `gcc-4.9` as default. You can do this by typing `sudo update-alternatives --config gcc` and following the instructions in the terminal. Or you can also try using `sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-4.9 60 --slave /usr/bin/g++ g++ /usr/bin/g++-4.9`. To see if you got the correct version of gcc, you can check the gcc version by:
+
+```
+gcc -v
+```
 
 ### ROS Dependencies
 
