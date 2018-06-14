@@ -21,6 +21,7 @@ find_package(catkin REQUIRED COMPONENTS
              rosconsole
              roscpp
              rospy
+             ros_speech2text
              )
 
 find_package(OpenCV 2.4 REQUIRED)
