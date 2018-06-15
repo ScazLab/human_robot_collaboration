@@ -26,9 +26,6 @@ find_package(catkin REQUIRED COMPONENTS
 
 find_package(OpenCV 2.4 REQUIRED)
 
-## System dependencies are found with CMake's conventions
-# find_package(Boost REQUIRED COMPONENTS system)
-
 ## Uncomment this if the package has a setup.py. This macro ensures
 ## modules and global scripts declared therein get installed
 ## See http://ros.org/doc/api/catkin/html/user_guide/setup_dot_py.html
@@ -61,46 +58,46 @@ include_directories(SYSTEM ${OpenCV_INCLUDE_DIRS}
                            ${catkin_INCLUDE_DIRS})
 
 ## Declare a C++ executable
-add_executable(baxter_controller        src/baxter_controller/baxter_controller.cpp)
-add_executable(flatpack_action_provider src/flatpack_furniture/left_ctrl.h
-                                        src/flatpack_furniture/right_ctrl.h
-                                        src/flatpack_furniture/action_provider.cpp)
-add_executable(tower_action_provider    src/tower_building/left_ctrl.h
-                                        src/tower_building/action_provider.cpp)
-add_executable(modular_action_provider  src/modular_furniture/right_ctrl.h
-                                        src/modular_furniture/left_ctrl.h
-                                        src/modular_furniture/action_provider.cpp)
-add_executable(sp_pred_action_provider  src/speech_prediction/right_ctrl.h
-                                        src/modular_furniture/left_ctrl.h
-                                        src/speech_prediction/action_provider.cpp)
-add_executable(baxter_display           src/baxter_display.cpp)
-add_executable(hsv_detector             src/hsv_detector.cpp)
+add_executable(baxter_controller           src/baxter_controller/baxter_controller.cpp)
+add_executable(flatpack_action_provider    src/flatpack_furniture/left_ctrl.h
+                                           src/flatpack_furniture/right_ctrl.h
+                                           src/flatpack_furniture/action_provider.cpp)
+add_executable(tower_action_provider       src/tower_building/left_ctrl.h
+                                           src/tower_building/action_provider.cpp)
+add_executable(modular_action_provider     src/modular_furniture/right_ctrl.h
+                                           src/modular_furniture/left_ctrl.h
+                                           src/modular_furniture/action_provider.cpp)
+add_executable(chair_task_action_provider  src/chair_task/right_ctrl.h
+                                           src/modular_furniture/left_ctrl.h
+                                           src/chair_task/action_provider.cpp)
+add_executable(baxter_display              src/baxter_display.cpp)
+add_executable(hsv_detector                src/hsv_detector.cpp)
 
 ## Add cmake target dependencies of the executable
 ## same as for the library above
-add_dependencies(baxter_controller        ${${PROJECT_NAME}_EXPORTED_TARGETS}
-                                          ${catkin_EXPORTED_TARGETS})
-add_dependencies(flatpack_action_provider ${${PROJECT_NAME}_EXPORTED_TARGETS}
-                                          ${catkin_EXPORTED_TARGETS})
-add_dependencies(tower_action_provider    ${${PROJECT_NAME}_EXPORTED_TARGETS}
-                                          ${catkin_EXPORTED_TARGETS})
-add_dependencies(hsv_detector             ${${PROJECT_NAME}_EXPORTED_TARGETS}
-                                          ${catkin_EXPORTED_TARGETS})
-add_dependencies(modular_action_provider  ${${PROJECT_NAME}_EXPORTED_TARGETS}
-                                          ${catkin_EXPORTED_TARGETS})
-add_dependencies(sp_pred_action_provider  ${${PROJECT_NAME}_EXPORTED_TARGETS}
-                                          ${catkin_EXPORTED_TARGETS})
-add_dependencies(baxter_display           ${${PROJECT_NAME}_EXPORTED_TARGETS}
-                                          ${catkin_EXPORTED_TARGETS})
+add_dependencies(baxter_controller           ${${PROJECT_NAME}_EXPORTED_TARGETS}
+                                             ${catkin_EXPORTED_TARGETS})
+add_dependencies(flatpack_action_provider    ${${PROJECT_NAME}_EXPORTED_TARGETS}
+                                             ${catkin_EXPORTED_TARGETS})
+add_dependencies(tower_action_provider       ${${PROJECT_NAME}_EXPORTED_TARGETS}
+                                             ${catkin_EXPORTED_TARGETS})
+add_dependencies(hsv_detector                ${${PROJECT_NAME}_EXPORTED_TARGETS}
+                                             ${catkin_EXPORTED_TARGETS})
+add_dependencies(modular_action_provider     ${${PROJECT_NAME}_EXPORTED_TARGETS}
+                                             ${catkin_EXPORTED_TARGETS})
+add_dependencies(chair_task_action_provider  ${${PROJECT_NAME}_EXPORTED_TARGETS}
+                                             ${catkin_EXPORTED_TARGETS})
+add_dependencies(baxter_display              ${${PROJECT_NAME}_EXPORTED_TARGETS}
+                                             ${catkin_EXPORTED_TARGETS})
 
 ## Specify libraries to link a library or executable target against
-target_link_libraries(baxter_controller                         ${catkin_LIBRARIES} )
-target_link_libraries(flatpack_action_provider                  ${catkin_LIBRARIES} )
-target_link_libraries(tower_action_provider                     ${catkin_LIBRARIES} )
-target_link_libraries(hsv_detector                              ${catkin_LIBRARIES} )
-target_link_libraries(modular_action_provider                   ${catkin_LIBRARIES} )
-target_link_libraries(sp_pred_action_provider                   ${catkin_LIBRARIES} )
-target_link_libraries(baxter_display            ${OpenCV_LIBS}  ${catkin_LIBRARIES} )
+target_link_libraries(baxter_controller                        ${catkin_LIBRARIES} )
+target_link_libraries(flatpack_action_provider                 ${catkin_LIBRARIES} )
+target_link_libraries(tower_action_provider                    ${catkin_LIBRARIES} )
+target_link_libraries(hsv_detector                             ${catkin_LIBRARIES} )
+target_link_libraries(modular_action_provider                  ${catkin_LIBRARIES} )
+target_link_libraries(chair_task_action_provider               ${catkin_LIBRARIES} )
+target_link_libraries(baxter_display            ${OpenCV_LIBS} ${catkin_LIBRARIES} )
 
 #############
 ## Install ##
@@ -119,19 +116,19 @@ install(PROGRAMS
 ## Mark executables and/or libraries for installation
 install(TARGETS baxter_controller flatpack_action_provider tower_action_provider
                 hsv_detector modular_action_provider baxter_display
-  ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-  LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-  RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+        ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+        LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+        RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 
 ## Mark cpp header files for installation
 install(DIRECTORY lib/include/
-  DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
-  FILES_MATCHING PATTERN "*.h"
+        DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
+        FILES_MATCHING PATTERN "*.h"
 )
 
 ## Mark other files for installation (e.g. launch and bag files, etc.)
 foreach(dir launch)
     install(DIRECTORY ${dir}/
-        DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/${dir})
+            DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/${dir})
 endforeach(dir)

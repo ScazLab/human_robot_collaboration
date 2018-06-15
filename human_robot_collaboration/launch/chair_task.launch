@@ -68,7 +68,7 @@
     <param name="action_provider/internal_recovery" value="$(arg internal_recovery)"/>
     <param name="print_level" value="$(arg print_level)" />
 
-    <node pkg="human_robot_collaboration" type="sp_pred_action_provider" name="sp_pred_action_provider" output="screen">
+    <node pkg="human_robot_collaboration" type="chair_task_action_provider" name="chair_task_action_provider" output="screen">
         <remap from="/markers/left"  to="/baxter_aruco_left/markers"/>
         <remap from="/markers/right" to="/baxter_aruco_right/markers"/>
     </node>
