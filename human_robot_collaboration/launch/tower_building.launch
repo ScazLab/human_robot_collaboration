@@ -12,9 +12,9 @@
     <arg name="relativeForceThresholdR"   default="1.0"/>
 
     <!-- If the robot will recover from an error or will wait the external planner's decisions -->
-    <arg name="internalRecovery"    default="true"/>
+    <arg name="internal_recovery"    default="true"/>
     <!-- If the system should use the robot or not (useful for debugging) -->
-    <arg name="useRobot"            default="true"/>
+    <arg name="use_robot"            default="true"/>
 
     <param name="action_provider/force_threshold_left"              value="$(arg forceThresholdL)"/>
     <param name="action_provider/force_threshold_right"             value="$(arg forceThresholdR)"/>
@@ -23,8 +23,8 @@
     <param name="action_provider/relative_force_threshold_left"     value="$(arg relativeForceThresholdL)"/>
     <param name="action_provider/relative_force_threshold_right"    value="$(arg relativeForceThresholdR)"/>
 
-    <param name="action_provider/internal_recovery"     value="$(arg internalRecovery)"/>
-    <param name="action_provider/use_robot"             value="$(arg useRobot)"/>
+    <param name="action_provider/internal_recovery"     value="$(arg internal_recovery)"/>
+    <param name="action_provider/use_robot"             value="$(arg use_robot)"/>
 
     <!-- Objects database for the left arm -->
     <rosparam param = "action_provider/objects_left">

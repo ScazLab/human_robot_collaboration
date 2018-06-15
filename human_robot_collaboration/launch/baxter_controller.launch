@@ -7,11 +7,11 @@
     <arg name="forceThresholdR"      default="2.0"/>    <!-- [N] -->
 
     <!-- If the system should use the robot or not (useful for debugging) -->
-    <arg name="useRobot"            default="true"/>
+    <arg name="use_robot"            default="true"/>
 
     <param name="baxter_controller/force_threshold_left"  value="$(arg forceThresholdL)"/>
     <param name="baxter_controller/force_threshold_right" value="$(arg forceThresholdR)"/>
-    <param name="baxter_controller/use_robot"             value="$(arg useRobot)"/>
+    <param name="baxter_controller/use_robot"             value="$(arg use_robot)"/>
 
     <node pkg="human_robot_collaboration" type="baxter_controller" name="baxter_controller" output="screen"/>
 

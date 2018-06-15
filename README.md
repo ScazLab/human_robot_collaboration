@@ -93,8 +93,8 @@ The [`BaseController` class](https://github.com/ScazLab/human_robot_collaboratio
  * You can also kill an action from the web interface, by pressing the ERROR button. It writes to the same topic and achieves the same behavior.
  * To go **robot-less** (that is try to execute the software without the robot, for testing purposes), you can choose one of the following options:
   * Call the `action_provider` with the argument `--no_robot`, e.g. `rosrun human_robot_collaboration baxter_controller --no_robot`. In this mode, only the service to request actions is enabled. It will always return with a 2s delay and it will always succeed.
-  * Change the `useRobot` flag to `false` in the `launch` file.
-  * Launch the `launch` file with the argument `useRobot:=false`, e.g. `roslaunch human_robot_collaboration baxter_controller.launch useRobot:=false`
+  * Change the `use_robot` flag to `false` in the `launch` file.
+  * Launch the `launch` file with the argument `use_robot:=false`, e.g. `roslaunch human_robot_collaboration baxter_controller.launch use_robot:=false`
 
 
 # Experiments

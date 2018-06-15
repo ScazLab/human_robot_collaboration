@@ -59,9 +59,9 @@
 
     <!-- CONTROL -->
     <!-- If the system should use the robot or not (useful for debugging) -->
-    <arg name="useRobot"            default="true"/>
+    <arg name="use_robot"            default="true"/>
     <!-- If the system should use the robot or not (useful for debugging) -->
-    <param name="action_provider/use_robot"             value="$(arg useRobot)"/>
+    <param name="action_provider/use_robot"             value="$(arg use_robot)"/>
     <rosparam param="/print_level">0</rosparam>
 
     <node pkg="human_robot_collaboration" type="modular_action_provider" name="modular_action_provider" output="screen">
