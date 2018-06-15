@@ -4,24 +4,28 @@
     <arg name="use_robot" default="true"/>
     <!-- If the system should internally recover from error -->
     <arg name="internal_recovery" default="true"/>
+    <!-- If to use the aruco stuff or not -->
+    <arg name="use_aruco" default="true"/>
     <!-- If to use the speech to text or not -->
     <arg name="use_tts" default="true"/>
     <!-- If to use the text to speech or not -->
     <arg name="use_stt" default="true"/>
-    <!-- If to use rosbridge_server or not -->
-    <arg name="use_rosbridge_server" default="true"/>
+    <!-- If to use rosbridge server or not -->
+    <arg name="use_rosbridge" default="true"/>
     <!-- If to use baxter_display or not -->
     <arg name="use_baxter_display" default="true"/>
     <!-- print level (shared throughout the control code) -->
     <arg name="print_level" default="0"/>
 
     <!-- ARUCO -->
-    <include file="$(find human_robot_collaboration)/launch/baxter_aruco.launch">
-        <arg name="arm" value= "left" />
-    </include>
-    <include file="$(find human_robot_collaboration)/launch/baxter_aruco.launch">
-        <arg name="arm" value="right" />
-    </include>
+    <group if="$(arg use_aruco)">
+        <include file="$(find human_robot_collaboration)/launch/baxter_aruco.launch">
+            <arg name="arm" value= "left" />
+        </include>
+        <include file="$(find human_robot_collaboration)/launch/baxter_aruco.launch">
+            <arg name="arm" value="right" />
+        </include>
+    </group>
 
     <!-- BAXTER DISPLAY -->
     <group if="$(arg use_baxter_display)">
@@ -29,7 +33,7 @@
     </group>
 
     <!-- ROSBRIDGE -->
-    <group if="$(arg use_rosbridge_server)">
+    <group if="$(arg use_rosbridge)">
         <include file="$(find rosbridge_server)/launch/rosbridge_websocket.launch"/>
     </group>
 
