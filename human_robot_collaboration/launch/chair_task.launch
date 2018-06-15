@@ -5,11 +5,15 @@
     <!-- If the system should internally recover from error -->
     <arg name="internal_recovery" default="true"/>
     <!-- If to use the speech to text or not -->
-    <arg name="use_tts"   default="true"/>
+    <arg name="use_tts" default="true"/>
     <!-- If to use the text to speech or not -->
-    <arg name="use_stt"   default="true"/>
+    <arg name="use_stt" default="true"/>
+    <!-- If to use rosbridge_server or not -->
+    <arg name="use_rosbridge_server" default="true"/>
+    <!-- If to use baxter_display or not -->
+    <arg name="use_baxter_display" default="true"/>
     <!-- print level (shared throughout the control code) -->
-    <arg name="print_level" default="2"/>
+    <arg name="print_level" default="0"/>
 
     <!-- ARUCO -->
     <include file="$(find human_robot_collaboration)/launch/baxter_aruco.launch">
@@ -18,13 +22,18 @@
     <include file="$(find human_robot_collaboration)/launch/baxter_aruco.launch">
         <arg name="arm" value="right" />
     </include>
-    <include file="$(find human_robot_collaboration)/launch/baxter_display.launch">
-        <arg name="onscreen_duration" value = "5.0" />
-    </include>
+
+    <!-- BAXTER DISPLAY -->
+    <group if="$(arg use_baxter_display)">
+        <include file="$(find human_robot_collaboration)/launch/baxter_display.launch"/>
+    </group>
 
     <!-- ROSBRIDGE -->
-    <include file="$(find rosbridge_server)/launch/rosbridge_websocket.launch"/>
+    <group if="$(arg use_rosbridge_server)">
+        <include file="$(find rosbridge_server)/launch/rosbridge_websocket.launch"/>
+    </group>
 
+    <!-- CONTROL -->
     <!-- Objects database for the left arm -->
     <rosparam param = "action_provider/objects_left">
         "seat"       : 198
@@ -55,7 +64,6 @@
         "front_4"       : 23
     </rosparam>
 
-    <!-- CONTROL -->
     <param name="action_provider/use_robot" value="$(arg use_robot)"/>
     <param name="action_provider/internal_recovery" value="$(arg internal_recovery)"/>
     <param name="print_level" value="$(arg print_level)" />
