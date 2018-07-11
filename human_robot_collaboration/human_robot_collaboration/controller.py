@@ -41,50 +41,55 @@ class BaseController(object):
 
     NODE_NAME = 'experiment_controller'
 
-    LEFT = 0
+    LEFT  = 0
     RIGHT = 1
 
     COM_TOPIC = '/web_interface/pub'
-    LISTEN_TOPIC = '/speech_to_text/transcript'
+    STT_TOPIC = '/speech_to_text/transcript'
     ERR_TOPIC = '/robot/digital_io/left_lower_button/state'
-    LEFT_BUTTON = '/robot/digital_io/left_upper_button/state'
+    LEFT_BUTTON  = '/robot/digital_io/left_upper_button/state'
     RIGHT_BUTTON = '/robot/digital_io/right_upper_button/state'
-    SPEECH_SERVICE = '/svox_tts/speech'
-    ACTION_SERVICE_LEFT = '/action_provider/service_left'
+    STT_SERVICE  = '/svox_tts/speech'
+    ACTION_SERVICE_LEFT  = '/action_provider/service_left'
     ACTION_SERVICE_RIGHT = '/action_provider/service_right'
 
-    def __init__(self, timer_path=None, left=True, right=True, speech=True,
-                 listen=True, recovery=False):
+    def __init__(self, timer_path=None, use_left=True, use_right=True,
+                 use_tts=True, use_stt=True, recovery=False):
         self.finished = False
         self.listeners = []
         # ROS stuff
         rospy.init_node(self.NODE_NAME, disable_signals=True)
 
-        if left:  # Left arm action service client
-            rospy.loginfo('Waiting for left service...')
-            rospy.wait_for_service(self.ACTION_SERVICE_LEFT)
+        self.testing = rospy.get_param('/rpi_integration/testing', False)
+
+        if use_left:  # Left arm action service client
+            if not self.testing:
+                rospy.loginfo('Waiting for left service...')
+                rospy.wait_for_service(self.ACTION_SERVICE_LEFT)
             self._action_left = rospy.ServiceProxy(self.ACTION_SERVICE_LEFT, DoAction)
         else:
             self._action_left = fake_service_proxy
         self._last_action_left_request = finished_request
 
-        if right:  # Right arm action service client
-            rospy.loginfo('Waiting for right service...')
-            rospy.wait_for_service(self.ACTION_SERVICE_RIGHT)
+        if use_right:  # Right arm action service client
+            if not self.testing:
+                rospy.loginfo('Waiting for right service...')
+                rospy.wait_for_service(self.ACTION_SERVICE_RIGHT)
             self._action_right = rospy.ServiceProxy(self.ACTION_SERVICE_RIGHT, DoAction)
         else:
             self._action_right = fake_service_proxy
         self._last_action_right_request = finished_request
 
-        if speech:  # Text to speech client
-            rospy.loginfo('Waiting for speech service...')
-            rospy.wait_for_service(self.SPEECH_SERVICE)
-            self.speech = rospy.ServiceProxy(self.SPEECH_SERVICE, Speech)
+        if use_tts:  # Text to speech client
+            if not self.testing:
+                rospy.loginfo('Waiting for text to speech service...')
+                rospy.wait_for_service(self.STT_SERVICE)
+            self.speech = rospy.ServiceProxy(self.STT_SERVICE, Speech)
         self._last_say_req = finished_request
 
-        # Subscriber to human answers
-        if listen:
-            self.listen_sub = ListenSubscriber(self.LISTEN_TOPIC, self._stop)
+        # Speech to text client
+        if use_stt:
+            self.listen_sub = ListenSubscriber(self.STT_TOPIC, self._stop)
         else:
             self.listen_sub = CommunicationSubscriber(self.COM_TOPIC, self._stop)
         self.listeners.append(self.listen_sub)
