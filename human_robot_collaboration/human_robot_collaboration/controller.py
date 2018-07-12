@@ -49,7 +49,7 @@ class BaseController(object):
     ERR_TOPIC = '/robot/digital_io/left_lower_button/state'
     LEFT_BUTTON  = '/robot/digital_io/left_upper_button/state'
     RIGHT_BUTTON = '/robot/digital_io/right_upper_button/state'
-    STT_SERVICE  = '/svox_tts/speech'
+    TTS_SERVICE  = '/svox_tts/speech'
     ACTION_SERVICE_LEFT  = '/action_provider/service_left'
     ACTION_SERVICE_RIGHT = '/action_provider/service_right'
 
@@ -60,7 +60,7 @@ class BaseController(object):
         # ROS stuff
         rospy.init_node(self.NODE_NAME, disable_signals=True)
 
-        self.testing = rospy.get_param('/rpi_integration/testing', False)
+        self.testing = rospy.get_param('/rpi_integration/testing', True)
 
         if use_left:  # Left arm action service client
             if not self.testing:
@@ -83,8 +83,8 @@ class BaseController(object):
         if use_tts:  # Text to speech client
             if not self.testing:
                 rospy.loginfo('Waiting for text to speech service...')
-                rospy.wait_for_service(self.STT_SERVICE)
-            self.speech = rospy.ServiceProxy(self.STT_SERVICE, Speech)
+                rospy.wait_for_service(self.TTS_SERVICE)
+            self.speech = rospy.ServiceProxy(self.TTS_SERVICE, Speech)
         self._last_say_req = finished_request
 
         # Speech to text client
