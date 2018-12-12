@@ -23,6 +23,7 @@
 - git:
     local-name: rosbridge
     uri: https://github.com/RobotWebTools/rosbridge_suite.git
+    version: indigo
 
 - git:
     local-name: ros_s2t
