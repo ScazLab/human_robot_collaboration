@@ -1,44 +1,4 @@
-# Generic .travis.yml file for running continuous integration on Travis-CI for
-# any ROS package.
-#
-# Available here:
-#   - http://felixduvallet.github.io/ros-travis-integration
-#   - https://github.com/felixduvallet/ros-travis-integration
-#
-# This installs ROS on a clean Travis-CI virtual machine, creates a ROS
-# workspace, resolves all listed dependencies, and sets environment variables
-# (setup.bash). Then, it compiles the entire ROS workspace (ensuring there are
-# no compilation errors), and runs all the tests. If any of the compilation/test
-# phases fail, the build is marked as a failure.
-#
-# We handle two types of package dependencies specified in the package manifest:
-#   - system dependencies that can be installed using `rosdep`, including other
-#     ROS packages and system libraries. These dependencies must be known to
-#     `rosdistro` and get installed using apt-get.
-#   - package dependencies that must be checked out from source. These are handled by
-#     `wstool`, and should be listed in a file named dependencies.rosinstall.
-#
-# There are two variables you may want to change:
-#   - ROS_DISTRO (default is indigo). Note that packages must be available for
-#     ubuntu 14.04 trusty.
-#   - ROSINSTALL_FILE (default is dependencies.rosinstall inside the repo
-#     root). This should list all necessary repositories in wstool format (see
-#     the ros wiki). If the file does not exists then nothing happens.
 
-# NOTE: The build lifecycle on Travis.ci is something like this:
-#    before_install
-#    install
-#    before_script
-#    script
-#    after_success or after_failure
-#    after_script
-#    OPTIONAL before_deploy
-#    OPTIONAL deploy
-#    OPTIONAL after_deploy
-
-################################################################################
-
-# Use ubuntu trusty (14.04) with sudo privileges.
 sudo: required
 language: generic
 cache:
